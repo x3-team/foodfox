@@ -10,14 +10,27 @@ const config: Config = {
     extend: {
       colors: {
         fox: {
-          bg: "#f1f8e9",
-          primary: "#2e7d33",
-          "primary-light": "#4db04f",
-          text: "#1a1a1a",
-          muted: "#666666",
-          border: "#e0e0e0",
-          reminder: "#e3f2e3",
+          bg: "#F7F9F4",
+          surface: "#FFFFFF",
+          primary: "#256029",
+          "primary-dark": "#1B4D1F",
+          "primary-soft": "#E8F5E9",
+          "primary-muted": "#C8E6C9",
+          text: "#1C1C1E",
+          muted: "#6B7280",
+          border: "#E5E7EB",
+          reminder: "#F0FDF4",
+          green: "#059669",
+          yellow: "#D97706",
+          red: "#DC2626",
         },
+      },
+      fontFamily: {
+        sans: ["var(--font-sans)", "Inter", "system-ui", "sans-serif"],
+      },
+      boxShadow: {
+        card: "0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(27,94,32,0.06)",
+        nav: "0 -1px 12px rgba(0,0,0,0.06)",
       },
       maxWidth: {
         phone: "430px",

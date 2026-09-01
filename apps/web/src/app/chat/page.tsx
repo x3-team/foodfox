@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AppShell, Header } from "@/components/AppShell";
+import { AppShell, PageHeader } from "@/components/AppShell";
+import { ChatBubble } from "@/components/ChatBubble";
+import { IconSend } from "@/components/icons";
 
 interface Message {
   id: string;
@@ -56,51 +58,43 @@ export default function ChatPage() {
 
   return (
     <AppShell>
-      <Header title="Чат с ботом" />
-      <main className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pt-4">
-        {messages.map((msg) => {
-          const isUser = msg.role === "user";
-          const isReminder = msg.messageType === "daily_reminder";
-          return (
-            <div
-              key={msg.id}
-              className={`max-w-[90%] rounded-2xl px-3.5 py-3 text-sm ${
-                isReminder
-                  ? "border border-fox-primary-light bg-fox-reminder text-fox-text"
-                  : isUser
-                    ? "ml-auto bg-fox-primary text-white"
-                    : "bg-white text-fox-text"
-              }`}
-            >
-              {isReminder && (
-                <p className="mb-1 text-[11px] font-semibold text-fox-primary">
-                  {msg.content.split("\n")[0]}
-                </p>
-              )}
-              <p className="whitespace-pre-wrap">
-                {isReminder ? msg.content.split("\n").slice(1).join("\n") : msg.content}
-              </p>
-            </div>
-          );
-        })}
+      <PageHeader title="Чат" subtitle="Бот-нутрициолог ответит по вашему плану и зонам" />
+      <main className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-4">
+        {messages.length === 0 && (
+          <p className="py-8 text-center text-[14px] text-fox-muted">Загрузка сообщений…</p>
+        )}
+        {messages.map((msg) => (
+          <ChatBubble
+            key={msg.id}
+            role={msg.role}
+            messageType={msg.messageType}
+            content={msg.content}
+          />
+        ))}
         <div ref={bottomRef} />
       </main>
-      <div className="flex items-center gap-2 border border-fox-border bg-white px-4 pb-7 pt-3">
-        <input
+      <div className="flex items-end gap-2 bg-fox-surface px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-nav">
+        <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Напишите сообщение..."
-          className="flex-1 rounded-full bg-fox-bg px-4 py-3 text-sm outline-none"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              send();
+            }
+          }}
+          rows={1}
+          placeholder="Напишите сообщение…"
+          className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl bg-fox-bg px-4 py-3 text-[15px] leading-relaxed text-fox-text outline-none ring-1 ring-fox-border focus:ring-2 focus:ring-fox-primary/30"
         />
         <button
           type="button"
           onClick={send}
-          disabled={sending}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-fox-primary text-lg text-white disabled:opacity-60"
+          disabled={sending || !input.trim()}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-fox-primary text-white transition hover:bg-fox-primary-dark disabled:opacity-40"
           aria-label="Отправить"
         >
-          ➤
+          <IconSend className="h-5 w-5" />
         </button>
       </div>
     </AppShell>

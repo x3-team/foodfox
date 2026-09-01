@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { IconChart, IconChat, IconRecipe, IconUpload } from "./icons";
 
 const NAV = [
-  { href: "/upload", icon: "📤", label: "Отчёт", key: "upload" },
-  { href: "/results", icon: "📊", label: "Результаты", key: "results" },
-  { href: "/recipes", icon: "🥗", label: "Рецепты", key: "recipes" },
-  { href: "/chat", icon: "💬", label: "Чат", key: "chat" },
+  { href: "/upload", label: "Отчёт", key: "upload", Icon: IconUpload },
+  { href: "/results", label: "Результаты", key: "results", Icon: IconChart },
+  { href: "/recipes", label: "Рецепты", key: "recipes", Icon: IconRecipe },
+  { href: "/chat", label: "Чат", key: "chat", Icon: IconChat },
 ] as const;
 
 export function BottomNav() {
@@ -23,22 +24,24 @@ export function BottomNav() {
   }, [pathname]);
 
   return (
-    <nav className="flex shrink-0 items-center justify-between border border-fox-border bg-white px-4 pb-7 pt-3">
-      {NAV.map((item) => {
-        const active = pathname.startsWith(item.href);
+    <nav className="flex shrink-0 items-stretch justify-around bg-fox-surface px-2 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2 shadow-nav">
+      {NAV.map(({ href, label, key, Icon }) => {
+        const active = pathname.startsWith(href);
         return (
           <Link
-            key={item.key}
-            href={item.href}
-            className={`relative flex w-[72px] flex-col items-center gap-1 text-[11px] ${
-              active ? "font-semibold text-fox-primary" : "font-normal text-fox-muted"
+            key={key}
+            href={href}
+            className={`relative flex min-w-[64px] flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 transition-colors ${
+              active ? "bg-fox-primary-soft text-fox-primary" : "text-fox-muted"
             }`}
           >
-            <span className="text-xl">{item.icon}</span>
-            <span>{item.label}</span>
-            {item.key === "chat" && unread > 0 && (
-              <span className="absolute -right-1 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
-                {unread}
+            <Icon className="h-6 w-6" aria-hidden />
+            <span className={`text-[11px] leading-none ${active ? "font-semibold" : "font-medium"}`}>
+              {label}
+            </span>
+            {key === "chat" && unread > 0 && (
+              <span className="absolute right-3 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-fox-red px-1 text-[10px] font-bold text-white">
+                {unread > 9 ? "9+" : unread}
               </span>
             )}
           </Link>

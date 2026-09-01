@@ -5,18 +5,22 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
-  --fox-bg: #f1f8e9;
-  --fox-primary: #2e7d33;
+  --fox-bg: #f7f9f4;
+  --fox-primary: #256029;
 }
 
 body {
-  font-family: Inter, system-ui, sans-serif;
-  color: #1a1a1a;
+  font-family: var(--font-sans), Inter, system-ui, sans-serif;
+  color: #1c1c1e;
   background: var(--fox-bg);
+  -webkit-font-smoothing: antialiased;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@layer components {
+  .fox-card {
+    @apply rounded-2xl bg-fox-surface shadow-card;
+  }
+  .fox-btn-primary {
+    @apply rounded-xl bg-fox-primary px-6 py-3.5 text-center text-[15px] font-semibold text-white transition hover:bg-fox-primary-dark active:scale-[0.98] disabled:opacity-50;
   }
 }

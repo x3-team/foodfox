@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppShell, Header } from "@/components/AppShell";
+import { AppShell, PageHeader } from "@/components/AppShell";
 import { getWeekPhase } from "@/lib/plan-engine";
 
 interface Recipe {
@@ -26,23 +26,29 @@ export default function RecipesPage() {
 
   return (
     <AppShell>
-      <Header title="Зелёные рецепты" />
-      <main className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pt-5 pb-4">
-        <p className="text-sm font-semibold text-fox-primary">
-          Неделя {weekNumber} · {getWeekPhase(weekNumber)}
-        </p>
+      <PageHeader
+        title="Рецепты"
+        subtitle={`Неделя ${weekNumber} · ${getWeekPhase(weekNumber)} — только зелёные продукты`}
+      />
+      <main className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pb-6 pt-5">
         {recipes.map((recipe) => (
-          <article
-            key={recipe.id}
-            className="flex flex-col gap-2 rounded-2xl bg-white p-4"
-          >
-            <div className="flex h-[120px] items-start rounded-xl bg-fox-primary-light/30 p-3">
-              <span className="text-4xl">🥗</span>
+          <article key={recipe.id} className="fox-card overflow-hidden">
+            <div className="flex h-32 items-center justify-center bg-gradient-to-br from-fox-primary-soft to-fox-primary-muted/40">
+              <span className="text-[13px] font-medium uppercase tracking-wider text-fox-primary/70">
+                Фото блюда
+              </span>
             </div>
-            <h2 className="text-base font-semibold text-fox-text">{recipe.title}</h2>
-            <p className="text-[13px] text-fox-muted">
-              ⏱ {recipe.tags[0] ?? "—"} · только зелёные продукты
-            </p>
+            <div className="space-y-1.5 px-4 py-4">
+              <h2 className="text-[17px] font-semibold leading-snug text-fox-text">
+                {recipe.title}
+              </h2>
+              {recipe.description && (
+                <p className="text-[14px] leading-relaxed text-fox-muted">{recipe.description}</p>
+              )}
+              <p className="text-[13px] font-medium text-fox-primary">
+                {recipe.tags[0] ?? "—"} · без красной зоны
+              </p>
+            </div>
           </article>
         ))}
       </main>

@@ -2,7 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AppShell, Header } from "@/components/AppShell";
+import { AppShell, PageHeader } from "@/components/AppShell";
+import { IconFile } from "@/components/icons";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -43,8 +44,11 @@ export default function UploadPage() {
 
   return (
     <AppShell>
-      <Header title="Загрузка отчёта" />
-      <main className="flex flex-1 flex-col gap-6 px-5 pt-8">
+      <PageHeader
+        title="Загрузка отчёта"
+        subtitle="Загрузите PDF FOX Food Xplorer — мы разберём 286 антигенов"
+      />
+      <main className="flex flex-1 flex-col gap-5 px-5 pb-6 pt-6">
         <label
           htmlFor="pdf-input"
           onDragOver={(e) => {
@@ -53,13 +57,21 @@ export default function UploadPage() {
           }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
-          className={`flex cursor-pointer flex-col items-center gap-3 rounded-2xl border-2 border-dashed bg-white px-6 py-12 transition-colors ${
-            dragging ? "border-fox-primary bg-fox-reminder" : "border-fox-primary-light"
+          className={`fox-card flex cursor-pointer flex-col items-center gap-4 border-2 border-dashed px-6 py-10 transition ${
+            dragging
+              ? "border-fox-primary bg-fox-primary-soft"
+              : "border-fox-primary-muted hover:border-fox-primary"
           }`}
         >
-          <span className="text-5xl">📄</span>
-          <p className="text-lg font-semibold text-fox-text">Перетащите PDF FOX</p>
-          <p className="text-sm text-fox-muted">или нажмите для выбора файла</p>
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-fox-primary-soft text-fox-primary">
+            <IconFile className="h-8 w-8" />
+          </div>
+          <div className="text-center">
+            <p className="text-[17px] font-semibold text-fox-text">Перетащите PDF сюда</p>
+            <p className="mt-1 text-[14px] leading-relaxed text-fox-muted">
+              или нажмите, чтобы выбрать файл на устройстве
+            </p>
+          </div>
           <input
             id="pdf-input"
             type="file"
@@ -71,16 +83,26 @@ export default function UploadPage() {
             }}
           />
         </label>
-        <p className="text-[13px] text-fox-muted">FOX Food Xplorer — 286 IgG антигенов</p>
-        <p className="text-xs text-fox-muted">IgG ≠ диагноз. Рекомендации информационные.</p>
-        {error && <p className="text-sm text-red-700">{error}</p>}
+
+        <div className="fox-card space-y-2 px-4 py-3.5">
+          <p className="text-[13px] font-medium text-fox-text">FOX Food Xplorer</p>
+          <p className="text-[13px] leading-relaxed text-fox-muted">
+            IgG-анализ 286 пищевых антигенов. Результаты носят информационный характер и не
+            заменяют консультацию врача.
+          </p>
+        </div>
+
+        {error && (
+          <p className="rounded-xl bg-red-50 px-4 py-3 text-[14px] text-fox-red">{error}</p>
+        )}
+
         <button
           type="button"
           disabled={loading}
           onClick={() => document.getElementById("pdf-input")?.click()}
-          className="rounded-xl bg-fox-primary px-6 py-4 text-center text-base font-semibold text-white disabled:opacity-60"
+          className="fox-btn-primary w-full"
         >
-          {loading ? "Парсим отчёт…" : "Загрузить отчёт"}
+          {loading ? "Разбираем отчёт…" : "Загрузить отчёт"}
         </button>
       </main>
     </AppShell>
