@@ -38,15 +38,5 @@ services:
         sync: false
       - key: S3_SECRET_ACCESS_KEY
         sync: false
-      - key: CRON_SECRET
-        generateValue: true
 
-  - type: cron
-    name: foodfox-daily-reminder
-    region: frankfurt
-    schedule: "0 5 * * *"
-    buildCommand: "true"
-    startCommand: >
-      curl -sf -X POST
-      -H "Authorization: Bearer ${CRON_SECRET}"
-      https://foodfox-web.onrender.com/api/cron/daily-reminder
+  # v0.1: on-open reminders in chat — cron disabled (free)

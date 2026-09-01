@@ -2,48 +2,64 @@
 
 Приложение для нутрициологов и клиентов на базе теста **FOX Food Xplorer** (286 IgG антигенов).
 
-Клиент загружает PDF-отчёт → видит зоны продуктов → получает 8-недельный план → общается с ботом и получает напоминания **внутри приложения**.
+## Figma (источник макетов)
+
+**[Fox приложение](https://www.figma.com/design/DSXq09GRmYROMmX9SIrWlm/Fox-приложение)** — все актуальные экраны MVP.
+
+| Экран | Route |
+|-------|-------|
+| Upload | `/upload` |
+| Results | `/results` |
+| Recipes | `/recipes` |
+| Chat | `/chat` |
+
+Подробнее: [docs/FIGMA.md](docs/FIGMA.md)
 
 ## Стек MVP v0.1
 
 | Слой | Технология |
 |------|------------|
-| Web UI + API | Next.js 14 on Render |
-| БД | **PostgreSQL 16** (своя, Render Postgres) |
-| Файлы | S3-compatible (Cloudflare R2) |
-| LLM | **[getheli.ru](https://getheli.ru)** — доступ ко всем моделям через OpenAI-compatible API |
-| Push | **In-app only** — сообщения бота в чате + badge unread |
+| Web UI + API | Next.js 14 (`apps/web`) |
+| БД | PostgreSQL 16 (Render) / in-memory для локальной разработки |
+| LLM | [getheli.ru](https://getheli.ru) (OpenAI-compatible) |
+| Push | **In-app on-open** — напоминание при открытии чата |
 
-**Не используем в MVP:** Supabase, OpenAI напрямую, Web Push, Telegram, email.
-
-## Документация
-
-- [MVP v0.1 — Web + Chat Bot](docs/MVP-v0.1-web-chat.md)
-- [Полная архитектура и оценки](docs/FoodFox_Architecture_Plan.html)
-
-## Структура репозитория
-
-```
-foodfox/
-├── apps/web/                 # Next.js (TODO: scaffold)
-├── packages/
-│   ├── database/
-│   │   └── schema.sql        # PostgreSQL schema
-│   └── llm/
-│       └── heli.ts           # Heli LLM client
-├── docs/
-└── render.yaml               # Render Blueprint
-```
-
-## Быстрый старт (после scaffold)
+## Быстрый старт
 
 ```bash
-# Env
+cd apps/web
+npm install
+npm run dev
+# → http://localhost:3000
+```
+
+Env (production на Render):
+
+```env
 DATABASE_URL=postgresql://...
 HELI_API_KEY=...
 HELI_BASE_URL=https://...getheli.ru/v1
 HELI_CHAT_MODEL=gpt-4o-mini
+```
 
-# Миграции
+Миграции:
+
+```bash
 psql $DATABASE_URL -f packages/database/schema.sql
 ```
+
+## Структура
+
+```
+foodfox/
+├── apps/web/              # Next.js MVP
+├── packages/database/     # PostgreSQL schema
+├── packages/llm/          # Heli client (reference)
+├── docs/
+└── render.yaml
+```
+
+## Документация
+
+- [MVP v0.1 spec](docs/MVP-v0.1-web-chat.md)
+- [Архитектура](docs/FoodFox_Architecture_Plan.html)
