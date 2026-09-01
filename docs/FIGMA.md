@@ -2,25 +2,39 @@
 
 **Файл:** [Fox приложение](https://www.figma.com/design/DSXq09GRmYROMmX9SIrWlm/Fox-приложение)
 
-Все актуальные макеты MVP v0.1 живут в этом файле. Код строится из них через `get_design_context`.
+## Актуальные макеты → страница **MVP v2**
 
-| Экран | Node ID (v1) | Route |
-|-------|--------------|-------|
-| 01 Upload | `1:2` | `/upload` |
-| 02 Results | `1:28` | `/results` |
-| 03 Recipes | `1:69` | `/recipes` |
-| 04 Chat | `1:103` | `/chat` |
+Откройте файл и переключитесь на вкладку страницы **«MVP v2»** (не «MVP Screens» — это старый черновик v1).
 
-**MVP v2** — страница «MVP v2» в Figma (обновлённые макеты без обрезанного текста). Код — источник правды после v2 redesign.
+**Прямая ссылка на страницу v2:**  
+https://www.figma.com/design/DSXq09GRmYROMmX9SIrWlm/Fox-приложение?node-id=9-2
+
+| Экран | Node ID | Route |
+|-------|---------|-------|
+| 01 Upload v2 | `10:34` | `/upload` |
+| 02 Results v2 | `10:55` | `/results` |
+| 03 Recipes v2 | `10:2` | `/recipes` |
+| 04 Chat v2 | `10:91` | `/chat` |
+
+### Что исправлено в v2
+
+- Полный текст в чате (без обрезки «Можно ли м…»)
+- Карточки с тенью, summary-зоны на Results
+- Подзаголовки в header
+- Токены как в коде: `#F7F9F4`, `#256029`
+
+## Старые макеты (v1)
+
+Страница **MVP Screens** — устаревший черновик, можно скрыть или удалить.
 
 ## Design tokens
 
 | Token | Value |
 |-------|-------|
-| `bg` | `#f1f8e9` |
-| `primary` | `#2e7d33` |
-| `primary-light` | `#4db04f` |
-| `text` | `#1a1a1a` |
-| `text-muted` | `#666666` |
-| `border` | `#e0e0e0` |
-| `reminder-bg` | `#e3f2e3` |
+| `bg` | `#F7F9F4` |
+| `primary` | `#256029` |
+| `surface` | `#FFFFFF` |
+| `text` | `#1C1C1E` |
+| `text-muted` | `#6B7280` |
+
+Референсы: [DESIGN-REFERENCES.md](DESIGN-REFERENCES.md)
