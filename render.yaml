@@ -1,0 +1,35 @@
+# FoodFox MVP v0.1 — Render Blueprint (draft)
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: foodfox-web
+    runtime: node
+    region: frankfurt
+    plan: starter
+    buildCommand: cd apps/web && npm ci && npm run build
+    startCommand: cd apps/web && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: CRON_SECRET
+        generateValue: true
+
+  - type: cron
+    name: foodfox-daily-push
+    region: frankfurt
+    schedule: "0 5 * * *"
+    buildCommand: "true"
+    startCommand: >
+      curl -sf -X POST
+      -H "Authorization: Bearer ${CRON_SECRET}"
+      https://foodfox-web.onrender.com/api/cron/daily-push
