@@ -18,7 +18,6 @@ export interface ParseValidation {
   parsedCount: number;
   missingFromCatalog: string[];
   extraVsCatalog: string[];
-  narrativeFiltered: number;
 }
 
 /** FOX zones: green <10, yellow 10–19.99, red ≥20 µg/ml */

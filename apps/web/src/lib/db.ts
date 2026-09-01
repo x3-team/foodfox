@@ -96,11 +96,27 @@ function seedMemoryIfNeeded() {
     planDays,
     messages: [
       {
+        id: "reminder",
+        role: "system",
+        messageType: "daily_reminder",
+        content: "✦ НАПОМИНАНИЕ · Неделя 1, день 3\n\nДоброе утро! Сегодня можно: индейка, брокколи, гречка. Избегайте молочных продуктов — они в красной зоне.",
+        readAt: null,
+        createdAt: new Date().toISOString(),
+      },
+      {
         id: "welcome",
         role: "assistant",
         messageType: "chat",
         content:
-          "Здравствуйте! Я ваш бот FoodFox. Задайте вопрос о плане или продуктах.",
+          "Здравствуйте! Я ваш бот FoodFox. Задайте вопрос о плане или продуктах из вашего отчёта.",
+        readAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "user-q",
+        role: "user",
+        messageType: "chat",
+        content: "Можно ли сыр на этой неделе?",
         readAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),
       },

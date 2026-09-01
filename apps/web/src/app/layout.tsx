@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -21,6 +22,12 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={`${inter.variable} min-h-screen bg-fox-bg font-sans antialiased`}>
+        {process.env.NEXT_PUBLIC_FIGMA_CAPTURE === "1" ? (
+          <Script
+            src="https://mcp.figma.com/mcp/html-to-design/capture.js"
+            strategy="beforeInteractive"
+          />
+        ) : null}
         {children}
       </body>
     </html>

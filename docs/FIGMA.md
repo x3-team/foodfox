@@ -2,30 +2,33 @@
 
 **Файл:** [Fox приложение](https://www.figma.com/design/DSXq09GRmYROMmX9SIrWlm/Fox-приложение)
 
-## Актуальные макеты → страница **MVP v2**
+## Актуальные макеты → страница **MVP v2** (v3 captures)
 
-Откройте файл и переключитесь на вкладку страницы **«MVP v2»** (не «MVP Screens» — это старый черновик v1).
+Pixel-perfect захваты из работающего Next.js приложения (`generate_figma_design`).
 
 **Прямая ссылка на страницу v2:**  
 https://www.figma.com/design/DSXq09GRmYROMmX9SIrWlm/Fox-приложение?node-id=9-2
 
 | Экран | Node ID | Route |
 |-------|---------|-------|
-| 01 Upload v2 | `14:53` | `/upload` |
-| 02 Results v2 | `14:10` | `/results` |
-| 03 Recipes v2 | `14:111` | `/recipes` |
-| 04 Chat v2 | `14:80` | `/chat` |
+| 01 Upload v3 | `22:2` | `/upload` |
+| 02 Results v3 | `25:2` | `/results` |
+| 03 Chat v3 | `26:2` | `/chat` |
+| 04 Recipes v3 | `27:2` | `/recipes` |
 
-### Что исправлено в v2
+### Как обновить макеты из кода
 
-- Полный текст в чате (без обрезки «Можно ли м…»)
-- Карточки с тенью, summary-зоны на Results
-- Подзаголовки в header
-- Токены как в коде: `#F7F9F4`, `#256029`
+```bash
+cd apps/web
+NEXT_PUBLIC_FIGMA_CAPTURE=1 npm run dev -- -p 3000
+# Получить captureId через Figma MCP generate_figma_design (fileKey DSXq09GRmYROMmX9SIrWlm, nodeId 9:2)
+npx tsx scripts/figma-capture-one.ts /upload <CAPTURE_ID>
+```
 
-## Старые макеты (v1)
+## Устаревшие макеты
 
-Страница **MVP Screens** — устаревший черновик, можно скрыть или удалить.
+- **MVP v2 placeholders** (`14:53`, `14:10`, `14:111`, `14:80`) — ручная сборка через use_figma, можно скрыть
+- **MVP Screens** (v1) — первый черновик, можно удалить
 
 ## Design tokens
 
