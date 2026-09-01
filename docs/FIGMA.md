@@ -11,10 +11,10 @@ https://www.figma.com/design/DSXq09GRmYROMmX9SIrWlm/Fox-приложение?nod
 
 | Экран | Node ID | Route |
 |-------|---------|-------|
-| 01 Upload v2 | `10:34` | `/upload` |
-| 02 Results v2 | `10:55` | `/results` |
-| 03 Recipes v2 | `10:2` | `/recipes` |
-| 04 Chat v2 | `10:91` | `/chat` |
+| 01 Upload v2 | `14:53` | `/upload` |
+| 02 Results v2 | `14:10` | `/results` |
+| 03 Recipes v2 | `14:111` | `/recipes` |
+| 04 Chat v2 | `14:80` | `/chat` |
 
 ### Что исправлено в v2
 

@@ -53,6 +53,7 @@ function isValidProductName(name: string): boolean {
   if (/^[0-9A-F]{6,}\s*\d/i.test(name)) return false;
   if (/^[\d\s/A-F≥]+$/.test(name)) return false;
   if (/^молекулярный антиген/i.test(name)) return false;
+  if (/^\(.+\)$/.test(name)) return false; // e.g. "(Alpha-Lactalbumin)" sub-label, not a food row
   return true;
 }
 
