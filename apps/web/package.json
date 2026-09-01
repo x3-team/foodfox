@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "parser:test": "npx tsx scripts/fox-parser.test.ts",
+    "parser:run": "npx tsx scripts/run-fox-parser.ts",
+    "parser:catalog": "npx tsx scripts/generate-fox-catalog-ru.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1123.0",

@@ -3,7 +3,7 @@
  *
  * Env:
  *   HELI_API_KEY
- *   HELI_BASE_URL   — из личного кабинета, обычно https://.../v1
+ *   HELI_BASE_URL   — https://getheli.ru/v1 (OpenAI-compatible)
  *   HELI_CHAT_MODEL — default: gpt-4o-mini
  */
 

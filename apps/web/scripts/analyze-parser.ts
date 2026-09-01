@@ -1,30 +1,34 @@
+#!/usr/bin/env npx tsx
 import { readFileSync } from "fs";
+import { resolve } from "path";
 import { PDFParse } from "pdf-parse";
-import { parseFoxPdfText } from "../src/lib/fox-parser";
+import { parseFoxPdfText, validateParseResults } from "../src/lib/fox-parser";
+
+const PDF_PATH =
+  process.argv[2] ||
+  "/home/ubuntu/.cursor/projects/workspace/uploads/FOX______________e710.pdf";
+const CATALOG_RU = resolve(process.cwd(), "../../packages/database/seeds/fox-catalog-ru.json");
 
 async function main() {
-  const buf = readFileSync(
-    "/home/ubuntu/.cursor/projects/workspace/uploads/FOX______________e710.pdf",
-  );
+  const buf = readFileSync(PDF_PATH);
   const parser = new PDFParse({ data: buf });
   const { text } = await parser.getText();
+  await parser.destroy();
+
   const results = parseFoxPdfText(text);
+  const catalog = JSON.parse(readFileSync(CATALOG_RU, "utf8")) as {
+    verifiedInPdf: number;
+    names: string[];
+  };
 
-  console.log("Total:", results.length);
+  const v = validateParseResults(results, catalog.names);
 
-  const suspicious = results.filter(
-    (r) =>
-      r.foxName.startsWith("(") ||
-      /^Bos d \d/i.test(r.foxName) ||
-      /Alpha-Lactalbumin|Casein/i.test(r.foxName) ||
-      r.foxName.length < 4,
-  );
-  console.log("\nSuspicious/extra entries:", suspicious.length);
-  suspicious.forEach((r) => console.log(" ", r.foxName, r.valueUgMl, r.zone));
+  console.log("Parsed:", results.length, "/ PDF verified:", catalog.verifiedInPdf);
+  console.log("Extra:", v.extraVsCatalog.length ? v.extraVsCatalog : "(none)");
+  console.log("Missing from RU seed:", v.missingFromCatalog.length ? v.missingFromCatalog : "(none)");
 
-  const molecular = results.filter((r) => /Bos d|Alpha|Lactalbumin|Casein/i.test(r.foxName));
-  console.log("\nMolecular total:", molecular.length);
-  molecular.forEach((r) => console.log(" ", r.foxName));
+  const narrativeLike = results.filter((r) => /ваш уровень|составляет/i.test(r.foxName));
+  console.log("Narrative leaks:", narrativeLike.length);
 }
 
-main();
+main().catch(console.error);
