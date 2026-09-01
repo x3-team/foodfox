@@ -1,117 +1,223 @@
 # FoodFox MVP v0.1 — Web + Chat Bot
 
-Цель: клиент за 5 минут загружает FOX PDF → видит зоны → зелёные продукты → рецепты → 8-недельный план → общается с ботом → получает напоминания.
+Цель: клиент загружает FOX PDF → видит зоны → зелёные продукты → рецепты → 8-недельный план → общается с ботом → получает напоминания **внутри приложения**.
 
-## Стек (минимальный)
+## Стек (утверждено)
 
 | Слой | Технология | Где |
 |------|------------|-----|
-| Web UI | Next.js 14 | Render Web Service |
-| API | Next.js Route Handlers (или FastAPI отдельно) | тот же сервис |
-| БД | Supabase Postgres | supabase.com |
-| Файлы PDF | Supabase Storage | supabase.com |
-| LLM чат | OpenAI gpt-4o-mini | API |
-| Push (v0.1) | Render Cron → API → Web Push / Email | Render |
-| Push (v0.2) | Telegram Bot | optional |
+| Web UI + API | Next.js 14 | Render Web Service |
+| **БД** | **PostgreSQL 16 (своя)** | **Render Postgres** |
+| Миграции | SQL files / Drizzle ORM | repo `packages/database/` |
+| Файлы PDF | S3-compatible (R2 / MinIO) | метаданные в Postgres |
+| **LLM** | **getheli.ru** (OpenAI-compatible) | env `HELI_*` |
+| **Push v0.1** | **In-app only** | сообщения бота в чате + badge unread |
+| Cron (опционально) | Render Cron | генерирует утренние сообщения в `chat_messages` |
+
+**Не используем:** Supabase, OpenAI напрямую, Web Push, Telegram, email.
+
+---
+
+## Своя БД — задел на будущее
+
+```
+packages/database/
+├── migrations/          # версионированные SQL
+├── schema.sql           # актуальная схема
+└── seeds/               # 286 продуктов FOX, рецепты
+```
+
+Принципы:
+- **UUID** для всех PK (масштабирование, шардинг позже)
+- **`tenant_id`** nullable — задел под клиники/нутрициологов
+- **`created_at` / `updated_at`** везде — big data, аналитика
+- **JSONB** для сырых данных парсера (не ломаем схему при смене PDF)
+- **Row-level isolation** по `client_id` на уровне API (не LLM)
+- Отдельные таблицы событий `analytics_events` для кликов, открытий рецептов
+
+### Ядро схемы (v0.1)
+
+```sql
+-- Пользователи и клиенты
+users (id, email, password_hash, role, created_at)
+clients (id, user_id, tenant_id, display_name, metadata jsonb)
+
+-- FOX отчёты
+reports (id, client_id, storage_key, status, metadata jsonb, parse_confidence)
+test_results (id, report_id, food_item_id, value_ug_ml, zone, raw jsonb)
+
+-- Справочник
+food_items (id, fox_name, category_id, aliases jsonb)
+food_categories (id, name_ru, sort_order)
+recipes (id, title, steps jsonb, published)
+recipe_ingredients (recipe_id, food_item_id, amount)
+
+-- План 8 недель
+nutrition_plans (id, client_id, report_id, started_at, weeks_total default 8)
+plan_days (id, plan_id, date, week_number, allowed jsonb, forbidden jsonb, bot_message text)
+
+-- Чат и in-app «push»
+chat_threads (id, client_id, plan_id)
+chat_messages (id, thread_id, role, content, message_type, read_at, created_at)
+-- message_type: user | assistant | daily_reminder | system
+
+-- Big data / аналитика
+analytics_events (id, client_id, event_type, payload jsonb, created_at)
+
+-- LLM audit (опционально, для отладки и billing)
+llm_requests (id, client_id, model, tokens_in, tokens_out, latency_ms, created_at)
+```
+
+---
+
+## Heli (getheli.ru) — LLM gateway
+
+Heli — прокси ко **всем моделям** через **OpenAI-compatible API**.
+
+```typescript
+// lib/llm/heli.ts
+import OpenAI from 'openai';
+
+export const heli = new OpenAI({
+  apiKey: process.env.HELI_API_KEY!,
+  baseURL: process.env.HELI_BASE_URL!, // из личного кабинета getheli.ru, обычно .../v1
+});
+
+// Чат
+const response = await heli.chat.completions.create({
+  model: process.env.HELI_CHAT_MODEL ?? 'gpt-4o-mini', // любая модель из каталога Heli
+  messages: [
+    { role: 'system', content: buildSystemPrompt(clientContext) },
+    ...history,
+    { role: 'user', content: userMessage },
+  ],
+});
+```
+
+### Env vars
+
+```env
+HELI_API_KEY=...
+HELI_BASE_URL=https://...getheli.ru/v1   # уточнить в ЛК Heli
+HELI_CHAT_MODEL=gpt-4o-mini               # дешёвая модель для чата
+HELI_CHAT_MODEL_FALLBACK=claude-sonnet-4  # сложные вопросы (Bos d 4/5/8)
+```
+
+### Выбор модели
+
+| Задача | Модель через Heli | Почему |
+|--------|-------------------|--------|
+| Чат, FAQ, напоминания | `gpt-4o-mini` или аналог | дёшево, быстро |
+| Сложная интерпретация FOX | `claude-sonnet-*` / `gpt-4o` | точнее |
+| Парсинг PDF (v0.2) | `gpt-4o` + structured output | валидация 286 позиций |
+
+**Память бота — не в LLM.** Каждый запрос:
+1. Загрузить контекст из Postgres (`test_results`, `plan_days`, последние 20 `chat_messages`)
+2. Собрать system prompt (disclaimer FOX + KB tone)
+3. Вызвать Heli
+4. Сохранить ответ в `chat_messages` + audit в `llm_requests`
+
+---
+
+## In-app push (без внешних каналов)
+
+```mermaid
+sequenceDiagram
+    participant Cron as Render Cron (08:00)
+    participant API as Next.js API
+    participant DB as PostgreSQL
+    participant App as Web App
+
+    Cron->>API: POST /api/cron/daily-reminder
+    API->>DB: plan_day на сегодня
+    API->>DB: INSERT chat_messages (type=daily_reminder, read_at=NULL)
+    
+    App->>API: GET /api/chat/unread-count
+    API-->>App: badge "1"
+    App->>API: GET /api/chat/messages
+    App-->>App: показать утреннее сообщение бота
+    App->>API: PATCH mark as read
+```
+
+Пользователь **не получает push на телефон** — видит напоминание при входе:
+- Badge на иконке «Чат»
+- Новое сообщение от бота в ленте
+- Опционально: banner «Доброе утро! Сегодня можно: …»
+
+Cron нужен только чтобы **сгенерировать** сообщение в БД. Без cron можно показывать «сегодняшний plan_day» при открытии чата — ещё проще для v0.1.
+
+---
+
+## Хранение PDF (без Supabase)
+
+| Вариант | MVP | Production |
+|---------|-----|------------|
+| **Cloudflare R2** | ✅ рекомендуем | дёшево, S3 API |
+| MinIO self-hosted | dev | полный контроль |
+| BYTEA в Postgres | только demo | не масштабируется |
+
+В `reports.storage_key` храним путь: `reports/{client_id}/{report_id}.pdf`.
+
+---
+
+## Render Blueprint
+
+```yaml
+databases:
+  - name: foodfox-db
+    plan: basic-256mb   # MVP, потом scale
+
+services:
+  - type: web
+    name: foodfox-web
+    runtime: node
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: foodfox-db
+          property: connectionString
+      - key: HELI_API_KEY
+        sync: false
+      - key: HELI_BASE_URL
+        sync: false
+      - key: S3_ENDPOINT / S3_BUCKET / S3_ACCESS_KEY
+        sync: false
+
+  - type: cron
+    name: foodfox-daily-reminder
+    schedule: "0 5 * * *"   # 08:00 MSK — создаёт сообщение в чате
+```
+
+---
 
 ## Экраны v0.1 (4 штуки)
 
-1. **Загрузка отчёта** — drag & drop PDF
-2. **Мои результаты** — фильтр 🟢🟡🔴, поиск
-3. **Зелёные + рецепты** — список + карточка рецепта
-4. **Чат с ботом** — план на 8 недель, вопросы, напоминания
+1. **Загрузка отчёта** — PDF → S3 + парсинг
+2. **Мои результаты** — 🟢🟡🔴 фильтр
+3. **Зелёные + рецепты**
+4. **Чат** — бот + daily reminders + badge unread
 
-## Бот: модель «под капотом»
-
-**Не полагаться на память LLM.** Источник правды — PostgreSQL.
-
-```
-Клиент пишет в чат
-    → API загружает из БД:
-        - профиль клиента
-        - test_results (286 позиций)
-        - nutrition_plan (фаза, неделя 1–8)
-        - plan_day (что сегодня можно / нельзя)
-        - последние 20 сообщений чата
-    → формирует system prompt + context
-    → вызов LLM (gpt-4o-mini)
-    → ответ сохраняется в chat_messages
-```
-
-### Таблицы для контекста и big data
-
-- `clients` — id, created_at, metadata
-- `reports` — pdf_url, status, parsed_at
-- `test_results` — food_item_id, value, zone
-- `nutrition_plans` — 8 weeks JSON, started_at
-- `plan_days` — date, allowed[], forbidden[], message
-- `chat_messages` — client_id, role, content, created_at
-- `push_log` — client_id, type, sent_at, opened_at
-- `recipes` + `recipe_ingredients`
-
-Каждое действие пишется в БД → со временем аналитика (big data).
-
-### Модель LLM
-
-| Задача | Модель | Почему |
-|--------|--------|--------|
-| Чат, напоминания, FAQ | **gpt-4o-mini** | дёшево, быстро, достаточно для MVP |
-| Сложная интерпретация | gpt-4o (fallback) | если вопрос про Bos d 4/5/8 |
-| Альтернатива РФ | YandexGPT / GigaChat | если OpenAI недоступен |
-
-System prompt включает: disclaimer FOX, текущая неделя плана, списки продуктов, tone of voice из KB.
-
-## 8-недельный план + пуши
-
-**Генерация:** после парсинга → Rule Engine создаёт `plan_days` на 56 дней:
-- Нед 1–6: элиминация 🔴, ротация 🟡
-- Нед 7–8: подготовка к реинтродукции
-
-**Push (v0.1):** Render Cron Job 1×/день 08:00 MSK:
-```
-POST /api/cron/daily-push
-  → для каждого active client:
-      → взять plan_day на сегодня
-      → сгенерировать текст (шаблон или LLM)
-      → Web Push / email / запись в чат как system message
-```
-
-Пользователь открывает приложение → видит сообщение бота в чате.
-
-## Deploy на Render
-
-```yaml
-services:
-  - name: foodfox-web
-    type: web
-    runtime: node
-    buildCommand: cd apps/web && npm install && npm run build
-    startCommand: cd apps/web && npm start
-    envVars:
-      - key: DATABASE_URL
-        sync: false
-      - key: OPENAI_API_KEY
-        sync: false
-
-  - name: foodfox-daily-push
-    type: cron
-    schedule: "0 5 * * *"  # 08:00 MSK
-    buildCommand: echo ok
-    startCommand: curl -X POST $APP_URL/api/cron/daily-push
-```
-
-PDF хранить в Supabase Storage, не на диске Render (ephemeral).
+---
 
 ## Порядок разработки (маленькие шаги)
 
-| Шаг | Что | Результат для клиента |
-|-----|-----|----------------------|
-| 1 | Next.js + Supabase + deploy Render | Пустой URL открывается |
-| 2 | Upload PDF → Storage | Файл загружается |
-| 3 | Parser POC → test_results | Видит 286 продуктов с цветами |
-| 4 | Зелёные + 10 seed рецептов | Кликает рецепты |
-| 5 | Plan Engine 8 недель | Видит календарь/план |
-| 6 | Чат с ботом | Задаёт вопросы про рацион |
-| 7 | Cron daily push | Утром сообщение в чате |
+| # | Шаг | Стек |
+|---|-----|------|
+| 1 | Postgres schema + migrate на Render | SQL / Drizzle |
+| 2 | Next.js skeleton + health | Render deploy |
+| 3 | Upload PDF → S3 + reports table | |
+| 4 | Parser → test_results | Python worker или API route |
+| 5 | Зелёные + seed рецепты | |
+| 6 | Plan Engine 8 недель → plan_days | |
+| 7 | Heli chat + chat_messages | |
+| 8 | In-app reminders (cron или on-open) | |
 
-Оценка solo + Cursor: **3–4 недели** до демо клиенту.
+**Solo + Cursor: 3–4 недели** до демо клиенту.
+
+---
+
+## Что нужно от вас сейчас
+
+1. **HELI_BASE_URL** и **HELI_API_KEY** из личного кабинета getheli.ru
+2. **S3/R2** bucket (или временно парсим без хранения — только in-memory для POC)
+3. Подтверждение: **cron утром** или **reminder при открытии чата** для v0.1 (cron можно отложить)
