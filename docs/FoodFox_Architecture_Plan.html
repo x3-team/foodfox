@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>FoodFox — Архитектура и план разработки</title>
+<style>
+  body { font-family: 'Arial', sans-serif; max-width: 900px; margin: 40px auto; padding: 0 24px; color: #1a1a1a; line-height: 1.6; }
+  h1 { color: #1B5E20; font-size: 28px; border-bottom: 3px solid #4CAF50; padding-bottom: 12px; }
+  h2 { color: #2E7D32; font-size: 20px; margin-top: 32px; border-left: 4px solid #4CAF50; padding-left: 12px; }
+  h3 { color: #388E3C; font-size: 16px; margin-top: 24px; }
+  .subtitle { color: #666; font-size: 14px; margin-bottom: 32px; }
+  .cover { background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); padding: 32px; border-radius: 12px; margin-bottom: 32px; }
+  .cover h1 { border: none; margin: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  th { background: #2E7D32; color: white; padding: 10px 12px; text-align: left; }
+  td { border: 1px solid #ddd; padding: 8px 12px; vertical-align: top; }
+  tr:nth-child(even) { background: #F1F8E9; }
+  .zone-green { color: #2E7D32; font-weight: bold; }
+  .zone-yellow { color: #F57F17; font-weight: bold; }
+  .zone-red { color: #C62828; font-weight: bold; }
+  .box { background: #F9FBE7; border: 1px solid #C5E1A5; border-radius: 8px; padding: 16px; margin: 16px 0; }
+  .warning { background: #FFF3E0; border: 1px solid #FFB74D; border-radius: 8px; padding: 16px; margin: 16px 0; }
+  .info { background: #E3F2FD; border: 1px solid #64B5F6; border-radius: 8px; padding: 16px; margin: 16px 0; }
+  ul { padding-left: 24px; }
+  li { margin-bottom: 6px; }
+  .toc { background: #FAFAFA; border: 1px solid #E0E0E0; padding: 20px 28px; border-radius: 8px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin-bottom: 4px; }
+  .page-break { page-break-before: always; margin-top: 40px; }
+  .estimate-table th { background: #1565C0; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 2px solid #4CAF50; color: #666; font-size: 12px; }
+  code { background: #F5F5F5; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>🦊 FoodFox — Архитектура и план разработки</h1>
+  <p class="subtitle">Приложение для нутрициологов на базе теста FOX Food Xplorer<br>
+  Версия документа: 1.0 &nbsp;|&nbsp; Дата: 01.09.2026 &nbsp;|&nbsp; Статус: Draft для обсуждения</p>
+</div>
+
+<div class="toc">
+  <strong>Содержание</strong>
+  <ol>
+    <li>Обзор продукта</li>
+    <li>Роли пользователей</li>
+    <li>Архитектура системы</li>
+    <li>Доменная модель данных</li>
+    <li>Пайплайн распознавания FOX-отчёта</li>
+    <li>Plan Engine — протокол ведения</li>
+    <li>Рецепты для зелёных продуктов</li>
+    <li>Knowledge Base как CMS</li>
+    <li>Экраны MVP (Flutter + Web)</li>
+    <li>Compliance и безопасность</li>
+    <li>Технический стек</li>
+    <li>Roadmap: MVP → v2 → v3</li>
+    <li>Стратегия тестирования мобильного MVP</li>
+    <li>Оценка трудозатрат (спринты)</li>
+  </ol>
+</div>
+
+<h2>1. Обзор продукта</h2>
+
+<p><strong>FoodFox</strong> — цифровая платформа сопровождения пациентов после теста <strong>FOX Food Xplorer</strong> (286 пищевых антигенов, IgG-анализ). Клиент загружает PDF-отчёт, система распознаёт результаты, классифицирует продукты по зонам и формирует персональный план питания. Для «зелёных» (разрешённых) продуктов приложение показывает специальные рецепты из админки.</p>
+
+<div class="box">
+  <strong>Ключевой инсайт (CustDev):</strong> пользователи ищут не просто результаты теста, а <em>руководство и сопровождение</em>. Приложение — инструмент нутрициолога, а не замена специалиста. Доверие к тесту возникает через специалиста.
+</div>
+
+<h3>Что делает система</h3>
+<ol>
+  <li>Клиент загружает PDF-отчёт FOX</li>
+  <li>Система распознаёт 286 антигенов и уровни IgG (мкг/мл)</li>
+  <li>Классифицирует продукты: 🟢 зелёная / 🟡 жёлтая / 🔴 красная зона</li>
+  <li>Генерирует 4-шаговый протокол ведения (4–6 месяцев)</li>
+  <li>Показывает рецепты только из разрешённых ингредиентов</li>
+  <li>Нутрициолог проверяет и корректирует план</li>
+</ol>
+
+<h3>Три зоны результатов FOX</h3>
+<table>
+  <tr><th>Зона</th><th>Уровень IgG</th><th>Тактика</th><th>В приложении</th></tr>
+  <tr><td class="zone-green">🟢 Зелёная</td><td>&lt; 10 мкг/мл</td><td>Без ограничений</td><td>Рецепты, свободное употребление</td></tr>
+  <tr><td class="zone-yellow">🟡 Жёлтая</td><td>10–19,99 мкг/мл</td><td>Ротационная диета</td><td>Не чаще 1 раза в 4 дня</td></tr>
+  <tr><td class="zone-red">🔴 Красная</td><td>≥ 20 мкг/мл</td><td>Полная элиминация</td><td>Исключить на 4–6 недель</td></tr>
+</table>
+
+<h2>2. Роли пользователей</h2>
+<table>
+  <tr><th>Роль</th><th>Интерфейс</th><th>Основные задачи</th></tr>
+  <tr><td><strong>Клиент (B2C)</strong></td><td>Flutter iOS/Android</td><td>Загрузка отчёта, план, зелёные продукты, рецепты, дневник, реинтродукция</td></tr>
+  <tr><td><strong>Нутрициолог / врач (B2B)</strong></td><td>Web-панель</td><td>Подтверждение парсинга, корректировка плана, комментарии, сопровождение</td></tr>
+  <tr><td><strong>Партнёр FOX</strong></td><td>Web + курс</td><td>Сертифицированные специалисты партнёрской программы</td></tr>
+  <tr><td><strong>Контент-менеджер</strong></td><td>Web-админка</td><td>Рецепты, тексты KB, шаблоны протоколов, FAQ</td></tr>
+  <tr><td><strong>Система</strong></td><td>Backend + workers</td><td>Парсинг PDF, генерация плана, уведомления, compliance</td></tr>
+</table>
+
+<div class="info">
+  <strong>Рекомендация:</strong> Flutter — только для клиентского приложения. Админка и панель нутрициолога — Web (Next.js). Нутрициологи работают с ноутбука.
+</div>
+
+<h2>3. Архитектура системы</h2>
+
+<h3>Три слоя</h3>
+<table>
+  <tr><th>Слой</th><th>Компоненты</th></tr>
+  <tr><td><strong>Данные</strong></td><td>FOX PDF (286 антигенов), Knowledge Base (35 файлов), Рецепты из админки</td></tr>
+  <tr><td><strong>Интеллект</strong></td><td>Парсер отчёта, Rule Engine протокола, Ротационный планировщик, Молочный профиль Bos d 4/5/8</td></tr>
+  <tr><td><strong>Интерфейсы</strong></td><td>Flutter (клиент), Web (нутрициолог), Web (админка)</td></tr>
+</table>
+
+<h3>Схема компонентов</h3>
+<ul>
+  <li><strong>Flutter App</strong> → API Gateway (REST) → Auth, Report, Plan, Recipe Services</li>
+  <li><strong>Report Service</strong> → Queue (Redis) → <strong>PDF Parser Worker</strong> (Python)</li>
+  <li><strong>PostgreSQL</strong> — основные данные; <strong>S3/Supabase Storage</strong> — PDF и фото; <strong>Redis</strong> — очереди и кэш</li>
+  <li><strong>Web Admin + Web Nutritionist</strong> → тот же API</li>
+</ul>
+
+<h2>4. Доменная модель данных</h2>
+
+<h3>Справочники</h3>
+<ul>
+  <li><code>food_items</code> — 286 антигенов FOX (13 категорий)</li>
+  <li><code>food_categories</code> — овощи, мясо, рыба, зерновые, орехи, бобовые, фрукты, специи, грибы, новые продукты, кофе/чай, прочие</li>
+  <li><code>food_families</code> — биологические семейства для ротации (dairy, gluten_wheat, nightshades…)</li>
+  <li><code>food_aliases</code> — синонимы («Солея» = «Морской язык»)</li>
+  <li><code>special_rules</code> — Bos d 4/5/8, глютеновые фракции</li>
+</ul>
+
+<h3>Клиентский путь</h3>
+<ul>
+  <li><code>users</code>, <code>client_profiles</code> — симптомы, анамнез, привязка к нутрициологу</li>
+  <li><code>reports</code> — PDF, статус парсинга, metadata (QR, patient_id, дата)</li>
+  <li><code>test_results</code> — food_item_id, value_ug_ml, zone, confidence</li>
+  <li><code>nutrition_plans</code> — активный план, текущая фаза, даты</li>
+  <li><code>plan_phases</code> — elimination / reintroduction / yellow / retest</li>
+  <li><code>rotation_schedule</code> — календарь жёлтых продуктов</li>
+  <li><code>reintroduction_log</code> — продукт, дата, симптомы 48–72ч</li>
+  <li><code>symptom_diary</code> — ежедневные записи</li>
+</ul>
+
+<h3>Контент</h3>
+<ul>
+  <li><code>kb_articles</code> — статьи из Knowledge Base</li>
+  <li><code>recipes</code> + <code>recipe_ingredients</code> — рецепты с привязкой к food_items</li>
+  <li><code>interpretation_blocks</code> — тексты интерпретации</li>
+</ul>
+
+<h2>5. Пайплайн распознавания FOX-отчёта</h2>
+
+<h3>Этапы</h3>
+<ol>
+  <li>Клиент загружает PDF → сохранение в Object Storage</li>
+  <li>Задача в очередь → Parser Worker</li>
+  <li>Извлечение текста (pdfplumber / PyMuPDF)</li>
+  <li>Regex-парсинг: «{название} {число} мкг/мл» или «≤ 5,00 мкг/мл»</li>
+  <li>Fuzzy match названий к справочнику (rapidfuzz + aliases)</li>
+  <li>LLM-валидация (опционально) — сверка 286 позиций</li>
+  <li>Human review если confidence &lt; 85%</li>
+  <li>Генерация плана → статус <code>awaiting_nutritionist_review</code></li>
+</ol>
+
+<div class="warning">
+  <strong>Обязательно:</strong> план не активируется без подтверждения нутрициологом (или явного opt-in «работаю самостоятельно» с усиленным disclaimer).
+</div>
+
+<h2>6. Plan Engine — протокол ведения</h2>
+
+<h3>4-шаговый протокол (4–6 месяцев)</h3>
+<table>
+  <tr><th>Шаг</th><th>Фаза</th><th>Срок</th><th>Действия</th></tr>
+  <tr><td>1</td><td>Элиминация</td><td>4–6 недель</td><td>Исключить 🔴 полностью; 🟡 — ротация (1 раз в 4 дня); цель — восстановление слизистой</td></tr>
+  <tr><td>2</td><td>Реинтродукция</td><td>с 5–6 недели</td><td>Вводить 🔴 по одному, интервал 3 дня, наблюдение 48–72 часа</td></tr>
+  <tr><td>3</td><td>Жёлтая зона</td><td>при необходимости</td><td>Если симптомы остаются — усилить работу с 🟡</td></tr>
+  <tr><td>4</td><td>Повторный тест</td><td>~6 месяцев</td><td>Новый FOX, сравнение профилей, коррекция рациона</td></tr>
+</table>
+
+<h3>Молочный профиль (специальные правила)</h3>
+<table>
+  <tr><th>Антиген</th><th>Термостабильность</th><th>Правило при высоком IgG</th></tr>
+  <tr><td>Bos d 4 (α-лактальбумин)</td><td>Термолабильный</td><td>Исключить сырое молоко; выпечка/варёное — допустимо</td></tr>
+  <tr><td>Bos d 5 (β-лактоглобulin)</td><td>Термолабильный</td><td>Аналогично Bos d 4</td></tr>
+  <tr><td>Bos d 8 (казеин)</td><td>Термостабильный</td><td>Исключить ВСЕ молочные, включая печёные</td></tr>
+</table>
+
+<h3>Ротационная диета</h3>
+<p>Продукты одного биологического семейства чередуются — не употребляются подряд. Пример: пшеница → гречка → рис → овёс с интервалом 4 дня между каждой.</p>
+
+<h2>7. Рецепты для зелёных продуктов</h2>
+
+<h3>Логика подбора</h3>
+<p>Рецепт показывается клиенту, если <strong>все</strong> ингредиенты находятся в 🟢 зоне его отчёта. Сортировка по количеству «зелёных» ингредиентов (максимальное использование разрешённого рациона).</p>
+
+<h3>Админка рецептов</h3>
+<ul>
+  <li>Ингредиенты привязаны к <code>food_items</code> (не свободный текст)</li>
+  <li>Фото, пошаговые инструкции, время, порции, теги</li>
+  <li>Превью: «подходит клиенту X?» — симуляция</li>
+  <li>Bulk import CSV для первичного наполнения</li>
+</ul>
+
+<h2>8. Knowledge Base как CMS</h2>
+<table>
+  <tr><th>Файл KB</th><th>Использование в продукте</th></tr>
+  <tr><td>08_работа_с_результатами.md</td><td>Rule Engine + тексты фаз</td></tr>
+  <tr><td>06_ограничения_и_безопасные_формулировки.md</td><td>Дисклеймеры, модерация</td></tr>
+  <tr><td>04_симптомы_и_показания.md</td><td>Онбординг, «когда тест уместен»</td></tr>
+  <tr><td>09_возражения.md</td><td>FAQ, AI-ассистент (v2)</td></tr>
+  <tr><td>обучение/у1–у6</td><td>Раздел «Обучение» для клиента и B2B</td></tr>
+  <tr><td>кейсы.md</td><td>Stories «до/после»</td></tr>
+</table>
+
+<h2>9. Экраны MVP</h2>
+
+<h3>Flutter — клиент (11 экранов)</h3>
+<table>
+  <tr><th>#</th><th>Экран</th><th>Функции</th></tr>
+  <tr><td>1</td><td>Онбординг / Auth</td><td>Регистрация, привязка к нутрициологу, disclaimer</td></tr>
+  <tr><td>2</td><td>Загрузка отчёта</td><td>Camera / gallery / PDF picker</td></tr>
+  <tr><td>3</td><td>Статус обработки</td><td>pending → parsing → ready</td></tr>
+  <tr><td>4</td><td>Мои результаты</td><td>286 продуктов, фильтр 🟢🟡🔴, категории, поиск</td></tr>
+  <tr><td>5</td><td>Мой план</td><td>Текущая фаза, что исключить/ограничить</td></tr>
+  <tr><td>6</td><td>Зелёные продукты</td><td>Список + «рецепты с этим продуктом»</td></tr>
+  <tr><td>7</td><td>Рецепты</td><td>Каталог, избранное, пошаговая готовка</td></tr>
+  <tr><td>8</td><td>Обучение</td><td>Мини-уроки из KB (FAQ, мифы)</td></tr>
+  <tr><td>9</td><td>Дисклеймер</td><td>Обязательный текст из compliance</td></tr>
+  <tr><td>10</td><td>Профиль</td><td>История отчётов, настройки</td></tr>
+  <tr><td>11</td><td>Нутрициолог</td><td>Контакт, комментарии специалиста</td></tr>
+</table>
+
+<h3>Web — нутрициолог + админка</h3>
+<ul>
+  <li>Список клиентов, подтверждение парсинга, override правил</li>
+  <li>Комментарии к плану, напоминание о ретесте</li>
+  <li>CRUD рецептов, импорт KB, управление справочником продуктов</li>
+</ul>
+
+<h2>10. Compliance и безопасность</h2>
+<ul>
+  <li>Дисклеймер: «IgG ≠ диагноз, интерпретация со специалистом»</li>
+  <li>Не показывать «продукт вреден навсегда» — красная зона временная</li>
+  <li>Не позиционировать как тест на аллергию (IgE)</li>
+  <li>152-ФЗ: согласие на обработку медданных</li>
+  <li>Шифрование at rest, HTTPS, RBAC, аудит изменений плана</li>
+</ul>
+
+<div class="box">
+  <strong>Правильная рамка (из KB):</strong> FOX — лабораторный инструмент поддержки персонализированных диетических вмешательств у симптомных пациентов. Не тест на аллергию. Не замена базовой диагностики.
+</div>
+
+<h2>11. Технический стек</h2>
+<table>
+  <tr><th>Компонент</th><th>Технология</th><th>Обоснование</th></tr>
+  <tr><td>Mobile</td><td>Flutter (Riverpod/Bloc)</td><td>Один код iOS + Android, офлайн-кэш</td></tr>
+  <tr><td>Web B2B + Admin</td><td>Next.js / React</td><td>Формы, rich-text, таблицы 286 продуктов</td></tr>
+  <tr><td>API</td><td>FastAPI (Python)</td><td>Удобно для PDF-парсера и ML</td></tr>
+  <tr><td>Parser worker</td><td>Celery + Redis</td><td>Асинхронная обработка PDF</td></tr>
+  <tr><td>БД</td><td>PostgreSQL (Supabase / Render)</td><td>JSONB, связи, миграции</td></tr>
+  <tr><td>Файлы</td><td>S3 / Supabase Storage</td><td>PDF, фото (Render FS — ephemeral!)</td></tr>
+  <tr><td>Auth</td><td>Supabase Auth</td><td>Roles: client, nutritionist, admin</td></tr>
+  <tr><td>Push</td><td>Firebase Cloud Messaging</td><td>Уведомления о фазах плана</td></tr>
+  <tr><td>Hosting API</td><td>Render</td><td>Web service + worker + postgres</td></tr>
+</table>
+
+<h3>Структура monorepo</h3>
+<pre>
+foodfox/
+├── apps/mobile/              # Flutter
+├── apps/web-nutritionist/    # Next.js
+├── apps/web-admin/           # Next.js
+├── services/api/             # FastAPI
+├── services/parser/          # PDF worker
+├── packages/fox-catalog/     # 286 products JSON
+├── packages/plan-rules/      # YAML протокола
+└── packages/kb-content/      # Knowledge Base
+</pre>
+
+<div class="page-break"></div>
+
+<h2>12. Roadmap</h2>
+
+<h3>MVP (Фаза 1)</h3>
+<ul>
+  <li>Справочник 286 продуктов + семейства + dairy rules</li>
+  <li>Загрузка PDF + парсер + human review</li>
+  <li>Классификация зон + генерация фазы «Элиминация»</li>
+  <li>Зелёные продукты + рецепты (админка)</li>
+  <li>Flutter: загрузка, результаты, план, рецепты</li>
+  <li>Web: подтверждение парсинга нутрициологом</li>
+  <li>Дисклеймеры из KB</li>
+</ul>
+
+<h3>Фаза 2</h3>
+<ul>
+  <li>Календарь ротации (жёлтая зона)</li>
+  <li>Реинтродукция + дневник симптомов</li>
+  <li>Обучающие модули из KB</li>
+  <li>Push-уведомления</li>
+</ul>
+
+<h3>Фаза 3</h3>
+<ul>
+  <li>Партнёрская программа (сертификат курса)</li>
+  <li>Сравнение повторных отчётов</li>
+  <li>AI-ассистент на базе skills из KB</li>
+  <li>Интеграция с лабораторией (API вместо PDF)</li>
+</ul>
+
+<h2>13. Стратегия тестирования мобильного MVP</h2>
+
+<div class="warning">
+  <strong>Важно:</strong> Render <em>не хостит</em> нативные мобильные приложения (APK/IPA). Render подходит для <strong>backend API</strong> и <strong>Flutter Web</strong> (статический сайт). Для реального мобильного тестирования нужны другие инструменты.
+</div>
+
+<h3>Рекомендуемая схема (гибрид)</h3>
+<table>
+  <tr><th>Что</th><th>Где</th><th>Для кого</th><th>Скорость обновления</th></tr>
+  <tr><td><strong>Backend API</strong></td><td>Render Web Service</td><td>Все клиенты</td><td>Auto-deploy из Git</td></tr>
+  <tr><td><strong>Flutter Web (preview)</strong></td><td>Render Static Site</td><td>Заказчик, дизайнер, быстрые демо</td><td>~3–5 мин после push</td></tr>
+  <tr><td><strong>Debug APK</strong></td><td>GitHub Actions → Artifact</td><td>Разработчики, QA</td><td>~10–15 мин после push</td></tr>
+  <tr><td><strong>Firebase App Distribution</strong></td><td>Firebase</td><td>Команда, нутрициологи, beta-тестеры (Android)</td><td>Авто после CI</td></tr>
+  <tr><td><strong>TestFlight</strong></td><td>Apple</td><td>iOS beta-тестеры</td><td>~30–60 мин review</td></tr>
+  <tr><td><strong>Локально</strong></td><td><code>flutter run</code></td><td>Разработчик с эмулятором/устройством</td><td>Мгновенно (hot reload)</td></tr>
+</table>
+
+<h3>Что выбрать на старте MVP</h3>
+
+<p><strong>1. Render — для backend (обязательно)</strong></p>
+<ul>
+  <li>FastAPI на Render Web Service (<code>0.0.0.0:$PORT</code>)</li>
+  <li>Parser Worker на Render Background Worker</li>
+  <li>PostgreSQL на Render Postgres</li>
+  <li>PDF/фото — Supabase Storage или S3 (не локальный диск Render!)</li>
+</ul>
+
+<p><strong>2. Flutter Web на Render — для быстрых демо (рекомендуется параллельно)</strong></p>
+<ul>
+  <li><code>flutter build web</code> → deploy как Static Site на Render</li>
+  <li>URL вида <code>https://foodfox-preview.onrender.com</code> — открывается в браузере за минуты</li>
+  <li>Ограничения: камера/PDF picker работают иначе, UX не 100% как на телефоне, нет push</li>
+  <li>Идеально для: показать заказчику экраны, проверить API-интеграцию, UI-review</li>
+</ul>
+
+<p><strong>3. APK через CI — для реального мобильного тестирования (основной путь)</strong></p>
+<ul>
+  <li>GitHub Actions: на каждый push в <code>main</code> → <code>flutter build apk --debug</code></li>
+  <li>Артефакт скачивается из GitHub Actions (1 клик)</li>
+  <li>Или автозагрузка в Firebase App Distribution → тестеры получают ссылку на телефон</li>
+  <li>Установка: скачать APK → «Разрешить из неизвестных источников» → установить</li>
+</ul>
+
+<p><strong>4. НЕ делать на старте</strong></p>
+<ul>
+  <li>Публикация в Google Play / App Store — долго, нужны аккаунты, review</li>
+  <li>Сборка release APK вручную каждый раз — медленно</li>
+  <li>Ожидать, что Render «запустит приложение» как web-сервис — это не тот use case</li>
+</ul>
+
+<h3>Рекомендуемый pipeline для команды</h3>
+<ol>
+  <li>Разработчик: <code>flutter run</code> на эмуляторе (hot reload, мгновенная итерация)</li>
+  <li>Push в Git → GitHub Actions собирает debug APK + deploy Flutter Web на Render</li>
+  <li>Заказчик/нутрициолог: открывает Web preview в браузере ИЛИ ставит APK через Firebase link</li>
+  <li>Backend API всегда на Render — мобильное приложение и Web смотрят на один URL</li>
+</ol>
+
+<div class="info">
+  <strong>Итог:</strong> Render — для API и Web-preview. APK — через CI + Firebase App Distribution для настоящего мобильного тестирования. Оба канала параллельно с первой недели разработки.
+</div>
+
+<div class="page-break"></div>
+
+<h2>14. Оценка трудозатрат</h2>
+
+<h3>Состав команды для MVP</h3>
+<table>
+  <tr><th>Роль</th><th>FTE</th><th>Зона ответственности</th></tr>
+  <tr><td>Flutter-разработчик</td><td>1.0</td><td>Mobile app, Flutter Web preview, CI для APK</td></tr>
+  <tr><td>Backend-разработчик (Python)</td><td>1.0</td><td>API, парсер PDF, Plan Engine, инфра Render</td></tr>
+  <tr><td>Frontend-разработчик (Next.js)</td><td>0.5–1.0</td><td>Админка рецептов + панель нутрициолога</td></tr>
+  <tr><td>UI/UX дизайнер</td><td>0.3</td><td>Wireframes, дизайн-система, макеты экранов</td></tr>
+  <tr><td>PM / Product Owner</td><td>0.3</td><td>Backlog, приёмка, координация с экспертами FOX</td></tr>
+  <tr><td>QA</td><td>0.3</td><td>Тестирование парсера, регрессия, beta</td></tr>
+</table>
+
+<p><strong>Итого для MVP:</strong> ~3.0–3.5 FTE (3 разработчика + part-time дизайн/PM/QA)</p>
+
+<h3>Декомпозиция по спринтам (1 спринт = 1 неделя)</h3>
+<table class="estimate-table">
+  <tr><th>Спринт</th><th>Неделя</th><th>Задачи</th><th>Flutter</th><th>Backend</th><th>Frontend</th></tr>
+  <tr><td>S0</td><td>1</td><td>Setup: monorepo, CI/CD, Render infra, DB schema, Auth, Flutter skeleton, API skeleton, Flutter Web deploy pipeline</td><td>●●</td><td>●●</td><td>●</td></tr>
+  <tr><td>S1</td><td>2</td><td>Каталог 286 продуктов (import JSON), food_families, dairy rules, базовые API endpoints</td><td>○</td><td>●●</td><td>○</td></tr>
+  <tr><td>S2</td><td>3</td><td>Upload PDF → Storage → Queue; Parser POC на реальном FOX PDF; экран загрузки в Flutter</td><td>●</td><td>●●</td><td>○</td></tr>
+  <tr><td>S3</td><td>4</td><td>Parser v2: fuzzy match, aliases, confidence score; API results; экран «Мои результаты»</td><td>●●</td><td>●●</td><td>○</td></tr>
+  <tr><td>S4</td><td>5</td><td>Plan Engine: зоны, фаза «Элиминация», dairy profile rules; экран «Мой план»</td><td>●</td><td>●●</td><td>○</td></tr>
+  <tr><td>S5</td><td>6</td><td>Recipes API + Admin CRUD; экраны «Зелёные продукты» + «Рецепты»; APK CI pipeline</td><td>●●</td><td>●</td><td>●●</td></tr>
+  <tr><td>S6</td><td>7</td><td>Web-панель нутрициолога: review parsing, confirm plan, override; онбординг + disclaimers</td><td>●</td><td>●</td><td>●●</td></tr>
+  <tr><td>S7</td><td>8</td><td>KB import → CMS; обучающие блоки; Firebase App Distribution setup</td><td>●</td><td>●</td><td>●</td></tr>
+  <tr><td>S8</td><td>9</td><td>Integration testing E2E; bug fixes; polish UI; тест парсера на 5+ PDF</td><td>●●</td><td>●●</td><td>●</td></tr>
+  <tr><td>S9</td><td>10</td><td>Beta release; QA regression; документация; подготовка demo</td><td>●</td><td>●</td><td>●</td></tr>
+</table>
+<p><em>●● = основная нагрузка спринта &nbsp;|&nbsp; ● = участие &nbsp;|&nbsp; ○ = минимально</em></p>
+
+<h3>Сводная оценка</h3>
+<table class="estimate-table">
+  <tr><th>Сценарий</th><th>Команда</th><th>Спринтов</th><th>Календарных недель</th><th>Человеко-недель</th></tr>
+  <tr><td><strong>Оптимальный (рекомендуемый)</strong></td><td>3 dev + 0.3 design + 0.3 PM + 0.3 QA</td><td>10</td><td>10 недель</td><td>~35–38</td></tr>
+  <tr><td>Lean (2 fullstack)</td><td>1 Flutter + 1 Backend/Frontend</td><td>14–16</td><td>14–16 недель</td><td>~30–32</td></tr>
+  <tr><td>Ускоренный</td><td>4 dev + full-time QA</td><td>7–8</td><td>7–8 недель</td><td>~35–40</td></tr>
+</table>
+
+<h3>Оценка по блокам (человеко-дни)</h3>
+<table>
+  <tr><th>Блок</th><th>Дни</th><th>Комментарий</th></tr>
+  <tr><td>Инфра + CI/CD + Auth</td><td>8–10</td><td>Render, GitHub Actions, Supabase Auth, Flutter Web deploy</td></tr>
+  <tr><td>Каталог 286 продуктов + семейства</td><td>5–7</td><td>Import, aliases, dairy rules, API</td></tr>
+  <tr><td>PDF Parser</td><td>15–20</td><td>Самый рискованный блок; POC → v2 → тесты на реальных PDF</td></tr>
+  <tr><td>Plan Engine (фаза 1)</td><td>8–10</td><td>Зоны, элиминация, dairy profile</td></tr>
+  <tr><td>Flutter App (MVP экраны)</td><td>20–25</td><td>11 экранов, API integration, offline cache</td></tr>
+  <tr><td>Admin + Nutritionist Web</td><td>12–15</td><td>Recipes CRUD, review flow, overrides</td></tr>
+  <tr><td>KB/CMS import</td><td>3–5</td><td>Import MD, disclaimers, FAQ</td></tr>
+  <tr><td>QA + Beta + Polish</td><td>8–10</td><td>E2E, парсер accuracy, beta distribution</td></tr>
+  <tr><td><strong>Итого MVP</strong></td><td><strong>79–102</strong></td><td><strong>≈ 16–20 человеко-недель при 3 dev</strong></td></tr>
+</table>
+
+<h3>Риски, влияющие на сроки</h3>
+<table>
+  <tr><th>Риск</th><th>Влияние</th><th>Буфер</th></tr>
+  <tr><td>Точность парсера PDF &lt; 90%</td><td>+2–3 спринта</td><td>Human review flow в MVP</td></tr>
+  <tr><td>Нет финальных макетов UI</td><td>+1–2 спринта</td><td>Wireframes на S0</td></tr>
+  <tr><td>Контент рецептов не готов</td><td>+0 спринтов (не блокер)</td><td>Seed data 20–30 рецептов</td></tr>
+  <tr><td>Изменение scope (ротация, реинтродукция в MVP)</td><td>+2–3 спринта</td><td>Оставить в Фазе 2</td></tr>
+</table>
+
+<h3>Что НЕ входит в MVP (Фаза 2+)</h3>
+<ul>
+  <li>Календарь ротации жёлтых продуктов (+2 спринта)</li>
+  <li>Реинтродукция с дневником симптомов (+2 спринта)</li>
+  <li>Push-уведомления (+1 спринт)</li>
+  <li>Партнёрская программа (+2 спринта)</li>
+  <li>AI-ассистент на KB (+3–4 спринта)</li>
+  <li>Интеграция с лабораторией API (+4+ спринта)</li>
+</ul>
+
+<div class="footer">
+  <p>Документ подготовлен на основе: FOX PDF-отчёта (287 антигенов), Knowledge Base FOX Food Xplorer (35 файлов), протокола «Работа с результатами теста».</p>
+  <p>FoodFox / FOX Food Xplorer &nbsp;|&nbsp; Производитель: MADx (Австрия) &nbsp;|&nbsp; Дистрибьютор: ООО Инмунотех</p>
+</div>
+
+</body>
+</html>
