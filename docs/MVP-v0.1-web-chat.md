@@ -97,10 +97,27 @@ const response = await heli.chat.completions.create({
 ### Env vars
 
 ```env
-HELI_API_KEY=...
-HELI_BASE_URL=https://...getheli.ru/v1   # уточнить в ЛК Heli
-HELI_CHAT_MODEL=gpt-4o-mini               # дешёвая модель для чата
-HELI_CHAT_MODEL_FALLBACK=claude-sonnet-4  # сложные вопросы (Bos d 4/5/8)
+HELI_API_KEY=sk-...                    # ключ из личного кабинета getheli.ru
+HELI_BASE_URL=https://getheli.ru/v1    # адрес API (OpenAI-compatible), см. ниже
+HELI_CHAT_MODEL=gpt-4o-mini             # любая модель из каталога Heli
+```
+
+### Что такое HELI_BASE_URL?
+
+Это **адрес сервера API**, куда приложение шлёт запросы к нейросетям — аналог `https://api.openai.com/v1`, но через Heli.
+
+Heli — прокси с OpenAI-совместимым протоколом: в коде используется обычный OpenAI SDK, просто меняются `apiKey` и `baseURL`.
+
+| Переменная | Значение |
+|------------|----------|
+| `HELI_API_KEY` | Ваш ключ после «Получить ключ» на [getheli.ru](https://getheli.ru) |
+| `HELI_BASE_URL` | **`https://getheli.ru/v1`** (проверено: endpoint `/v1/models` отвечает 401 без ключа — значит живой) |
+
+Пример проверки ключа:
+
+```bash
+curl https://getheli.ru/v1/models \
+  -H "Authorization: Bearer ВАШ_HELI_API_KEY"
 ```
 
 ### Выбор модели

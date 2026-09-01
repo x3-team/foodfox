@@ -38,7 +38,7 @@ Env (production на Render):
 ```env
 DATABASE_URL=postgresql://...
 HELI_API_KEY=...
-HELI_BASE_URL=https://...getheli.ru/v1
+HELI_BASE_URL=https://getheli.ru/v1
 HELI_CHAT_MODEL=gpt-4o-mini
 ```
 
