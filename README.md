@@ -63,6 +63,10 @@ foodfox/
 
 ## Android APK
 
+**Скачать (debug):** [GitHub Actions → Build Android APK](https://github.com/x3-team/foodfox/actions/workflows/android-apk.yml) → последний зелёный run → **Artifacts** → `foodfox-android-debug-apk` → `app-debug.apk`.
+
+Отдельной страницы в Google Play / Releases пока нет — только artifact из CI (хранится 30 дней).
+
 ```bash
 cd apps/mobile && flutter build apk --debug
 ```
