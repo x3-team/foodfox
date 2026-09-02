@@ -63,7 +63,11 @@ foodfox/
 
 ## Android APK
 
-**Скачать (debug):** [GitHub Actions → Build Android APK](https://github.com/x3-team/foodfox/actions/workflows/android-apk.yml) → последний зелёный run → **Artifacts** → `foodfox-android-debug-apk` → `app-debug.apk`.
+**Версия:** см. `VERSION` и номер сборки в `apps/mobile/pubspec.yaml` (формат `0.2.0+N`).
+
+**Скачать (debug):** [GitHub Actions → Build Android APK](https://github.com/x3-team/foodfox/actions/workflows/android-apk.yml) → последний зелёный run → **Artifacts** → `foodfox-android-0.2.0 (N)-debug` → `foodfox-0.2.0 (N)-debug.apk`.
+
+Перед push в `apps/mobile` увеличьте версию: `bash scripts/bump-version.sh build` (CI также бампит сборку автоматически).
 
 Отдельной страницы в Google Play / Releases пока нет — только artifact из CI (хранится 30 дней).
 

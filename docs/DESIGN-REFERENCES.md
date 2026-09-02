@@ -24,18 +24,25 @@ MVP v2 опирается на паттерны зрелых wellness-прило
 
 ## Логотип
 
-Лисья морда из макетов Figma (там она стоит эмодзи 🦊), перерисованная плоским вектором:
+Марк **🦊** из шапки макетов Figma ([MVP Screens](https://www.figma.com/design/DSXq09GRmYROMmX9SIrWlm/Fox-приложение), node `1:4`) — экспортирован как PNG и используется в UI:
 
-| Часть | Цвет |
-|-------|------|
-| Мех, уши | `#ED7B1F` |
-| Внутреннее ухо | `#55555F` |
-| Морда | `#FFF1E0` |
-| Глаза, нос | `#2B2118` |
+| Платформа | Файл |
+|-----------|------|
+| Web | `public/fox-logo.png`, компонент `FoxLogo` |
+| Flutter | `assets/images/fox_logo.png`, виджет `FoxLogo` |
+| Favicon | `apps/web/src/app/icon.png` |
 
-Сетка 32×32, читается от 24px. Web — `FoxLogo` в `components/icons.tsx` и `app/icon.svg`,
-Flutter — `widgets/fox_logo.dart` (тот же путь на `CustomPainter`).
-Без фоновой подложки: в шапке лиса стоит прямо на белой карточке.
+Размер в шапке экранов — **24×24 px**, как в Figma.
+
+## Версионирование
+
+| Файл | Назначение |
+|------|------------|
+| `VERSION` | Semver (`0.2.0`) |
+| `apps/mobile/pubspec.yaml` | `0.2.0+N` — N = номер сборки |
+| `scripts/bump-version.sh` | `build` / `patch` / `minor` / `major` |
+
+Перед релизом: `bash scripts/bump-version.sh build` (или `patch`). CI для Android автоматически увеличивает номер сборки и кладёт APK в artifact с именем `foodfox-0.2.0 (N)-debug.apk`.
 
 ## Принципы v2
 

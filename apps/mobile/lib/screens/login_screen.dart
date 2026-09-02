@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
+import "package:foodfox/version.dart";
+import "package:foodfox/widgets/fox_logo.dart";
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, required this.api, required this.onLoggedIn});
@@ -54,6 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 32),
+              const Center(child: FoxLogo(size: 48)),
+              const SizedBox(height: 12),
               Text(
                 "FoodFox",
                 textAlign: TextAlign.center,
@@ -124,6 +128,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   minimumSize: const Size.fromHeight(48),
                 ),
                 child: Text(_loading ? "Подождите…" : (_register ? "Создать аккаунт" : "Войти")),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                "v$kAppVersionLabel",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: FoxColors.muted),
               ),
             ],
           ),

@@ -22,7 +22,7 @@ class PageHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const FoxLogo(size: 40),
+          const FoxLogo(size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

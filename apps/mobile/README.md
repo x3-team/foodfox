@@ -27,9 +27,20 @@ APK: `build/app/outputs/flutter-apk/app-debug.apk`
 
 Установка на телефон: скопировать APK → «Разрешить из неизвестных источников» → установить.
 
+## Версия
+
+Semver в корне `VERSION`, сборка — суффикс `+N` в `pubspec.yaml`. Обновление:
+
+```bash
+bash scripts/bump-version.sh build   # только номер сборки
+bash scripts/bump-version.sh patch   # 0.2.0 → 0.2.1
+```
+
+Номер виден на экране входа. CI автоматически бампит сборку и называет artifact `foodfox-0.2.0 (N)-debug.apk`.
+
 ## CI
 
-GitHub Actions: `.github/workflows/android-apk.yml` — на push собирает debug APK как artifact.
+GitHub Actions: `.github/workflows/android-apk.yml` — на push в `apps/mobile/` собирает debug APK.
 
 ## Release APK (подпись)
 
