@@ -78,45 +78,20 @@ export async function ensureSchema(): Promise<void> {
 
 function seedMemoryIfNeeded() {
   if (memory) return;
-  const demoResults = getDemoResults();
-  const planDays = buildEightWeekPlan(
-    demoResults.map((r) => ({
-      foxName: r.foxName,
-      valueUgMl: r.valueUgMl,
-      isFloorValue: r.isFloorValue,
-      zone: r.zone,
-    })),
-  );
   memory = {
     clientId: "demo-client",
-    reportId: "demo-report",
-    planId: "demo-plan",
+    reportId: "",
+    planId: "",
     threadId: "demo-thread",
-    results: demoResults,
-    planDays,
+    results: [],
+    planDays: [],
     messages: [
-      {
-        id: "reminder",
-        role: "system",
-        messageType: "daily_reminder",
-        content: "✦ НАПОМИНАНИЕ · Неделя 1, день 3\n\nДоброе утро! Сегодня можно: индейка, брокколи, гречка. Избегайте молочных продуктов — они в красной зоне.",
-        readAt: null,
-        createdAt: new Date().toISOString(),
-      },
       {
         id: "welcome",
         role: "assistant",
         messageType: "chat",
         content:
-          "Здравствуйте! Я ваш бот FoodFox. Задайте вопрос о плане или продуктах из вашего отчёта.",
-        readAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "user-q",
-        role: "user",
-        messageType: "chat",
-        content: "Можно ли сыр на этой неделе?",
+          "Здравствуйте! Загрузите PDF-отчёт FOX на вкладке «Отчёт» — после разбора смогу ответить по вашим зонам и плану питания.",
         readAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),
       },
@@ -125,37 +100,30 @@ function seedMemoryIfNeeded() {
   };
 }
 
+function loadFoxCatalogNames(): string[] {
+  const catalogPath = join(process.cwd(), "../../packages/database/seeds/fox-catalog-ru.json");
+  const data = JSON.parse(readFileSync(catalogPath, "utf-8")) as { names: string[] };
+  return data.names;
+}
+
 async function seedPostgresIfEmpty(p: Pool) {
   const { rows } = await p.query("SELECT COUNT(*)::int AS c FROM food_items");
   if (rows[0].c > 0) return;
 
   await p.query(`
     INSERT INTO food_categories (slug, name_ru, sort_order) VALUES
-      ('vegetables', 'Овощи', 1),
-      ('meat', 'Мясо', 2),
-      ('grains', 'Зерновые', 3)
+      ('fox', 'FOX антигены', 1)
     ON CONFLICT DO NOTHING
   `);
 
-  const demoProducts = [
-    ["Брокколи", "vegetables"],
-    ["Индейка", "meat"],
-    ["Гречка", "grains"],
-    ["Кабачок", "vegetables"],
-    ["Куриная грудка", "meat"],
-    ["Пшеница", "grains"],
-    ["Молоко", "meat"],
-    ["Яйцо куриное", "meat"],
-    ["Миндаль", "grains"],
-    ["Помидор", "vegetables"],
-  ];
-
-  for (const [name, catSlug] of demoProducts) {
+  const catalogNames = loadFoxCatalogNames();
+  for (const name of catalogNames) {
     await p.query(
       `INSERT INTO food_items (category_id, fox_name)
-       SELECT id, $1 FROM food_categories WHERE slug = $2
-       ON CONFLICT DO NOTHING`,
-      [name, catSlug],
+       SELECT fc.id, $1 FROM food_categories fc
+       WHERE fc.slug = 'fox'
+         AND NOT EXISTS (SELECT 1 FROM food_items fi WHERE lower(fi.fox_name) = lower($1))`,
+      [name],
     );
   }
 
@@ -171,28 +139,6 @@ async function seedPostgresIfEmpty(p: Pool) {
      '["Замаринуйте грудку", "Запекайте 35 мин при 180°C"]'::jsonb,
      '["40 мин", "ужин"]'::jsonb, true)
   `);
-}
-
-function getDemoResults(): TestResultRow[] {
-  const items: Array<[string, number | null, boolean, Zone]> = [
-    ["Брокколи", null, true, "green"],
-    ["Индейка", null, true, "green"],
-    ["Гречка", null, true, "green"],
-    ["Кабачок", null, true, "green"],
-    ["Куриная грудка", null, true, "green"],
-    ["Помидор", 12.5, false, "yellow"],
-    ["Миндаль", 24.0, false, "red"],
-    ["Пшеница", 45.2, false, "red"],
-    ["Молоко", 38.1, false, "red"],
-    ["Яйцо куриное", 22.0, false, "red"],
-  ];
-  return items.map(([foxName, valueUgMl, isFloorValue, zone], i) => ({
-    id: `demo-${i}`,
-    foxName,
-    valueUgMl,
-    isFloorValue,
-    zone,
-  }));
 }
 
 function getDemoRecipes(): RecipeRow[] {
@@ -248,14 +194,13 @@ export async function saveReportFromPdf(
   pdfText: string,
 ): Promise<{ reportId: string; results: TestResultRow[]; planId: string }> {
   await ensureSchema();
-  let parsed: ParsedResult[] = parseFoxPdfText(pdfText);
+  const parsed: ParsedResult[] = parseFoxPdfText(pdfText);
   if (parsed.length < 5) {
-    parsed = getDemoResults().map((r) => ({
-      foxName: r.foxName,
-      valueUgMl: r.valueUgMl,
-      isFloorValue: r.isFloorValue,
-      zone: r.zone,
-    }));
+    const hint =
+      pdfText.trim().length < 50
+        ? "Не удалось извлечь текст из PDF. Убедитесь, что это отчёт FOX Food Xplorer."
+        : `Распознано только ${parsed.length} антигенов из ~286. Проверьте, что PDF не повреждён.`;
+    throw new Error(hint);
   }
 
   const p = getPool();
@@ -336,9 +281,6 @@ export async function getResultsForClient(clientId: string): Promise<TestResultR
   await ensureSchema();
   const p = getPool();
   if (!p) {
-    if (memory!.results.length === 0) {
-      await saveReportFromPdf(clientId, "");
-    }
     return memory!.results;
   }
 

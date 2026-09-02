@@ -35,6 +35,14 @@ export async function POST(req: NextRequest) {
   await addChatMessage(clientId, "user", message);
 
   const ctx = await getActivePlanContext(clientId);
+  if (!ctx || ctx.green.length === 0) {
+    const reply =
+      "Сначала загрузите PDF-отчёт FOX на вкладке «Отчёт». После разбора я смогу ответить по вашим зонам IgG и плану питания.";
+    await addChatMessage(clientId, "assistant", reply);
+    const messages = await getChatMessages(clientId);
+    return NextResponse.json({ messages });
+  }
+
   const chatCtx = {
     displayName: "клиент",
     weekNumber: ctx?.weekNumber ?? 1,
