@@ -3,7 +3,9 @@
 import { withBasePath } from "@/lib/base-path";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { ZoneDot, ZoneTabs } from "@/components/ZoneTabs";
+import { LoadMoreSentinel } from "@/components/LoadMoreSentinel";
 import { formatValue } from "@/lib/plan-engine";
+import { useIncrementalList } from "@/lib/list-pagination";
 import type { Zone } from "@/lib/fox-parser";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -58,17 +60,20 @@ function ResultsContent() {
     });
   }, [results, zone, query]);
 
-  const total = counts.green + counts.yellow + counts.red;
+  const { visibleItems, hasMore, loadMore, total: filteredTotal, visibleCount } =
+    useIncrementalList(filtered);
+
+  const antigenTotal = counts.green + counts.yellow + counts.red;
 
   return (
     <>
-      {justUploaded && total > 0 && (
+      {justUploaded && antigenTotal > 0 && (
         <div className="fox-card space-y-3 border border-fox-primary/20 bg-fox-primary-soft px-4 py-4">
           <p className="text-[16px] font-semibold text-fox-primary-dark">
             {isDemo ? "✅ Демо-отчёт загружен" : "✅ Отчёт FOX разобран"}
           </p>
           <p className="text-[14px] leading-relaxed text-fox-text">
-            {uploadCounts.green + uploadCounts.yellow + uploadCounts.red || total} антигенов · 🟢{" "}
+            {uploadCounts.green + uploadCounts.yellow + uploadCounts.red || antigenTotal} антигенов · 🟢{" "}
             {uploadCounts.green || counts.green} · 🟡 {uploadCounts.yellow || counts.yellow} · 🔴{" "}
             {uploadCounts.red || counts.red}
           </p>
@@ -120,27 +125,35 @@ function ResultsContent() {
           )}
         </div>
       ) : (
-        <ul className="flex flex-col gap-2">
-          {filtered.map((item) => (
-            <li key={item.id} className="fox-card px-4 py-3.5">
-              <div className="flex items-center gap-3">
-                <ZoneDot zone={item.zone} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[15px] font-medium text-fox-text">{item.foxName}</p>
-                  <p className="text-[13px] text-fox-muted">
-                    {formatValue(item.valueUgMl, item.isFloorValue)}
-                  </p>
+        <>
+          {filteredTotal > 10 && (
+            <p className="text-[13px] text-fox-muted">
+              Показано {visibleCount} из {filteredTotal}
+            </p>
+          )}
+          <ul className="flex flex-col gap-2">
+            {visibleItems.map((item) => (
+              <li key={item.id} className="fox-card px-4 py-3.5">
+                <div className="flex items-center gap-3">
+                  <ZoneDot zone={item.zone} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[15px] font-medium text-fox-text">{item.foxName}</p>
+                    <p className="text-[13px] text-fox-muted">
+                      {formatValue(item.valueUgMl, item.isFloorValue)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <Link
-                href={`/chat?q=${encodeURIComponent(`Можно ли ${item.foxName}?`)}`}
-                className="mt-2 inline-block text-[13px] font-semibold text-fox-primary"
-              >
-                Спросить бота →
-              </Link>
-            </li>
-          ))}
-        </ul>
+                <Link
+                  href={`/chat?q=${encodeURIComponent(`Можно ли ${item.foxName}?`)}`}
+                  className="mt-2 inline-block text-[13px] font-semibold text-fox-primary"
+                >
+                  Спросить бота →
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <LoadMoreSentinel hasMore={hasMore} onLoadMore={loadMore} />
+        </>
       )}
     </>
   );

@@ -2,7 +2,9 @@ import "package:flutter/material.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
+import "package:foodfox/widgets/list_pagination.dart";
 import "package:foodfox/widgets/page_header.dart";
+import "package:foodfox/widgets/paginated_string_section.dart";
 
 class PlanScreen extends StatefulWidget {
   const PlanScreen({super.key, required this.api});
@@ -63,7 +65,7 @@ class _PlanScreenState extends State<PlanScreen> {
       children: [
         const PageHeader(
           title: "План питания",
-          subtitle: "8 недель по вашему отчёту FOX",
+          subtitle: "8 недель: 4 элиминация → 2 стабилизация → 2 расширение",
         ),
         Expanded(
           child: _loading
@@ -83,6 +85,49 @@ class _PlanScreenState extends State<PlanScreen> {
                       : ListView(
                           padding: const EdgeInsets.all(16),
                           children: [
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: foxCardDecoration,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Структура 8 недель",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  for (final block in planProtocol)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 6),
+                                      child: RichText(
+                                        text: TextSpan(
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            color: FoxColors.text,
+                                            height: 1.35,
+                                          ),
+                                          children: [
+                                            TextSpan(
+                                              text: "Нед. ${block.weeks} ",
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                color: FoxColors.primary,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: "${block.phase} — ${block.detail}",
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
                             Text(
                               "Старт: ${_plan!.startedAt}",
                               style: const TextStyle(color: FoxColors.muted),
@@ -96,7 +141,7 @@ class _PlanScreenState extends State<PlanScreen> {
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 8),
                                     child: ChoiceChip(
-                                      label: Text("Нед. ${w.weekNumber}"),
+                                      label: Text("Нед. ${w.weekNumber} · ${w.phase}"),
                                       selected: active,
                                       onSelected: (_) =>
                                           setState(() => _selectedWeek = w.weekNumber),
@@ -120,14 +165,32 @@ class _PlanScreenState extends State<PlanScreen> {
                                           fontSize: 16,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        "Можно: ${summary.allowed.take(8).join(", ")}",
+                                      const SizedBox(height: 12),
+                                      const Text(
+                                        "МОЖНО",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: FoxColors.green,
+                                          letterSpacing: 0.5,
+                                        ),
                                       ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        "Исключить: ${summary.forbidden.take(6).join(", ")}",
-                                        style: const TextStyle(color: FoxColors.red),
+                                      const SizedBox(height: 4),
+                                      PaginatedStringSection(items: summary.allowed),
+                                      const SizedBox(height: 12),
+                                      const Text(
+                                        "ИСКЛЮЧИТЬ",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: FoxColors.red,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      PaginatedStringSection(
+                                        items: summary.forbidden,
+                                        textColor: FoxColors.text,
                                       ),
                                     ],
                                   ),

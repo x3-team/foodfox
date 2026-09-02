@@ -131,7 +131,7 @@ String formatValue(double? value, bool isFloor) {
 String getWeekPhase(int weekNumber) {
   if (weekNumber <= 4) return "Элиминация";
   if (weekNumber <= 6) return "Стабилизация";
-  return "Жёлтая зона";
+  return "Расширение";
 }
 
 class UserProfile {

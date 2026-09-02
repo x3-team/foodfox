@@ -16,9 +16,28 @@ const WEEK_PHASES: Record<number, string> = {
   4: "Элиминация",
   5: "Стабилизация",
   6: "Стабилизация",
-  7: "Жёлтая зона",
-  8: "Жёлтая зона",
+  7: "Расширение",
+  8: "Расширение",
 };
+
+/** Human-readable 8-week protocol (4 + 2 + 2). */
+export const PLAN_PROTOCOL = [
+  {
+    weeks: "1–4",
+    phase: "Элиминация",
+    detail: "Строго убираем красную зону, питаемся из зелёной",
+  },
+  {
+    weeks: "5–6",
+    phase: "Стабилизация",
+    detail: "Закрепляем режим, постепенно расширяем меню",
+  },
+  {
+    weeks: "7–8",
+    phase: "Расширение",
+    detail: "Контролируемое добавление жёлтой зоны по ротации",
+  },
+] as const;
 
 export function getWeekPhase(weekNumber: number): string {
   return WEEK_PHASES[weekNumber] ?? "План";

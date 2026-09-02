@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { PaginatedStringList } from "@/components/PaginatedStringList";
+import { PLAN_PROTOCOL } from "@/lib/plan-engine";
 
 interface PlanDay {
   date: string;
@@ -89,7 +91,7 @@ export default function PlanPageClient() {
     <AppShell>
       <PageHeader
         title="План питания"
-        subtitle="8 недель по вашему отчёту FOX — элиминация, стабилизация, расширение"
+        subtitle="8 недель: 4 элиминация → 2 стабилизация → 2 расширение"
       />
 
       <main className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6 pt-4">
@@ -111,6 +113,18 @@ export default function PlanPageClient() {
 
         {!loading && plan && (
           <>
+            <div className="fox-card space-y-2 px-4 py-3">
+              <p className="text-[13px] font-semibold text-fox-text">Структура 8 недель</p>
+              {PLAN_PROTOCOL.map((block) => (
+                <div key={block.weeks} className="flex gap-2 text-[13px] leading-snug">
+                  <span className="shrink-0 font-semibold text-fox-primary">Нед. {block.weeks}</span>
+                  <span className="text-fox-text">
+                    {block.phase} — {block.detail}
+                  </span>
+                </div>
+              ))}
+            </div>
+
             <div className="fox-card px-4 py-3">
               <p className="text-[13px] text-fox-muted">
                 Старт: <span className="font-medium text-fox-text">{plan.startedAt}</span>
@@ -160,19 +174,13 @@ export default function PlanPageClient() {
                   <p className="text-[12px] font-medium uppercase tracking-wide text-fox-green">
                     Можно
                   </p>
-                  <p className="mt-1 text-[14px] leading-relaxed text-fox-text">
-                    {summaryDay.allowed.slice(0, 12).join(", ")}
-                    {summaryDay.allowed.length > 12 && "…"}
-                  </p>
+                  <PaginatedStringList items={summaryDay.allowed} className="mt-1" />
                 </div>
                 <div>
                   <p className="text-[12px] font-medium uppercase tracking-wide text-fox-red">
                     Исключить
                   </p>
-                  <p className="mt-1 text-[14px] leading-relaxed text-fox-text">
-                    {summaryDay.forbidden.slice(0, 10).join(", ")}
-                    {summaryDay.forbidden.length > 10 && "…"}
-                  </p>
+                  <PaginatedStringList items={summaryDay.forbidden} className="mt-1" />
                 </div>
                 {summaryDay.rotation.length > 0 && (
                   <div>
@@ -224,15 +232,15 @@ export default function PlanPageClient() {
                       <span className="text-fox-muted">{open ? "▲" : "▼"}</span>
                     </button>
                     {open && (
-                      <div className="space-y-2 border-t border-fox-border px-4 py-3 text-[13px]">
-                        <p>
+                      <div className="space-y-3 border-t border-fox-border px-4 py-3 text-[13px]">
+                        <div>
                           <span className="font-medium text-fox-green">Можно: </span>
-                          {day.allowed.join(", ") || "—"}
-                        </p>
-                        <p>
+                          <PaginatedStringList items={day.allowed} />
+                        </div>
+                        <div>
                           <span className="font-medium text-fox-red">Нельзя: </span>
-                          {day.forbidden.join(", ") || "—"}
-                        </p>
+                          <PaginatedStringList items={day.forbidden} />
+                        </div>
                         {day.botMessage && (
                           <p className="text-fox-muted">{day.botMessage}</p>
                         )}
