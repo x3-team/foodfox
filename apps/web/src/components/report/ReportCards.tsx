@@ -75,41 +75,38 @@ export function ReportSummary({ counts, onSelectZone }: ReportSummaryProps) {
 
 interface TopTriggersProps {
   items: ResultItem[];
-  max: number;
 }
 
-export function TopTriggers({ items, max }: TopTriggersProps) {
+export function TopTriggers({ items }: TopTriggersProps) {
   if (items.length === 0) return null;
 
   return (
     <section className="fox-card px-5 py-4">
-      <div className="mb-3 flex items-baseline justify-between gap-2">
+      <div className="mb-1 flex items-baseline justify-between gap-2">
         <h2 className="text-[15px] font-semibold text-fox-text">Главные триггеры</h2>
         <span className="text-[12px] text-fox-muted">µg/ml IgG</span>
       </div>
-      <ul className="space-y-2.5">
-        {items.map((item) => {
-          const fraction = intensityFraction(item.valueUgMl, max);
-          return (
-            <li key={item.id}>
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="min-w-0 flex-1 truncate text-[14px] text-fox-text" title={item.foxName}>
-                  {item.foxName}
-                </span>
-                <span className="shrink-0 text-[13px] font-semibold tabular-nums text-fox-red">
-                  {item.valueUgMl?.toFixed(1)}
-                </span>
-              </div>
-              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-red-100">
-                <div
-                  className="h-full rounded-full bg-fox-red transition-[width] duration-500"
-                  style={{ width: `${fraction * 100}%` }}
-                />
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      <p className="mb-3 text-[12px] leading-snug text-fox-muted">
+        Самые высокие реакции — их убираем первыми
+      </p>
+      <ol className="divide-y divide-fox-border/60">
+        {items.map((item, index) => (
+          <li key={item.id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-50 text-[12px] font-bold text-fox-red">
+              {index + 1}
+            </span>
+            <span
+              className="min-w-0 flex-1 truncate text-[14px] text-fox-text"
+              title={item.foxName}
+            >
+              {item.foxName}
+            </span>
+            <span className="shrink-0 rounded-lg bg-red-50 px-2 py-1 text-[12px] font-semibold tabular-nums text-fox-red">
+              {item.valueUgMl?.toFixed(1)}
+            </span>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
@@ -159,7 +156,7 @@ interface ResultRowProps {
 }
 
 export function ResultRow({ item, max }: ResultRowProps) {
-  const fraction = intensityFraction(item.valueUgMl, max);
+  const fraction = intensityFraction(item.valueUgMl, item.zone, max);
   const hex = ZONE_HEX[item.zone];
 
   return (

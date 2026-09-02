@@ -23,13 +23,22 @@ String zoneHint(Zone zone) => switch (zone) {
 
 int percentOf(int value, int total) => total <= 0 ? 0 : ((value / total) * 100).round();
 
-double intensityFraction(double? value, double max) {
-  if (value == null || max <= 0) return 0.06;
-  return (value / max).clamp(0.06, 1.0);
+/// Bar length is relative to the zone's own range so items stay comparable
+/// against their neighbours instead of every red item rendering as a full bar.
+double intensityFraction(double? value, Zone zone, double max) {
+  if (value == null) return 0.08;
+
+  final double fraction = switch (zone) {
+    Zone.green => value / 10,
+    Zone.yellow => (value - 10) / 10,
+    Zone.red => (value - 20) / (max - 20 < 1 ? 1 : max - 20),
+  };
+
+  return fraction.clamp(0.08, 1.0);
 }
 
 double maxResultValue(List<ResultItem> results) {
-  var max = 20.0;
+  var max = 21.0;
   for (final r in results) {
     if ((r.valueUgMl ?? 0) > max) max = r.valueUgMl!;
   }
@@ -170,10 +179,9 @@ class ReportSummary extends StatelessWidget {
 }
 
 class TopTriggers extends StatelessWidget {
-  const TopTriggers({super.key, required this.items, required this.max});
+  const TopTriggers({super.key, required this.items});
 
   final List<ResultItem> items;
-  final double max;
 
   @override
   Widget build(BuildContext context) {
@@ -185,9 +193,9 @@ class TopTriggers extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text(
                 "Главные триггеры",
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: FoxColors.text),
@@ -195,42 +203,58 @@ class TopTriggers extends StatelessWidget {
               Text("µg/ml IgG", style: TextStyle(fontSize: 12, color: FoxColors.muted)),
             ],
           ),
-          const SizedBox(height: 12),
-          ...items.map((item) {
-            final fraction = intensityFraction(item.valueUgMl, max);
+          const SizedBox(height: 4),
+          const Text(
+            "Самые высокие реакции — их убираем первыми",
+            style: TextStyle(fontSize: 12, color: FoxColors.muted, height: 1.3),
+          ),
+          const SizedBox(height: 10),
+          ...items.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.foxName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 14, color: FoxColors.text),
-                        ),
+                  Container(
+                    width: 24,
+                    height: 24,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFEF2F2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      "${index + 1}",
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: FoxColors.red,
                       ),
-                      Text(
-                        item.valueUgMl!.toStringAsFixed(1),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: FoxColors.red,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    child: LinearProgressIndicator(
-                      value: fraction,
-                      minHeight: 6,
-                      backgroundColor: const Color(0xFFFEE2E2),
-                      valueColor: const AlwaysStoppedAnimation(FoxColors.red),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      item.foxName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 14, color: FoxColors.text),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      item.valueUgMl!.toStringAsFixed(1),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: FoxColors.red,
+                      ),
                     ),
                   ),
                 ],
@@ -324,7 +348,7 @@ class ResultRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fraction = intensityFraction(item.valueUgMl, max);
+    final fraction = intensityFraction(item.valueUgMl, item.zone, max);
     final color = zoneColor(item.zone);
 
     return Container(

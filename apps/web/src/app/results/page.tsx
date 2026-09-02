@@ -110,7 +110,7 @@ function ResultsContent() {
 
       <ReportActions />
 
-      <TopTriggers items={triggers} max={scaleMax} />
+      <TopTriggers items={triggers} />
 
       <section className="space-y-3">
         <ZoneSegments active={zone} counts={counts} onChange={setZone} />

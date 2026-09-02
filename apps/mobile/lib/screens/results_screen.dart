@@ -195,7 +195,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                         ],
                       ),
                     const SizedBox(height: 12),
-                    TopTriggers(items: topTriggers(_results), max: scaleMax),
+                    TopTriggers(items: topTriggers(_results)),
                     const SizedBox(height: 12),
                     ZoneSegments(
                       active: _zone,

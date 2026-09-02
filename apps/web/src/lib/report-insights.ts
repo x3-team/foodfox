@@ -51,14 +51,29 @@ export function topTriggers(results: ResultItem[], limit = 5): ResultItem[] {
     .slice(0, limit);
 }
 
-/** Scale for the intensity bar; red zone starts at 20 µg/ml. */
-export function intensityFraction(value: number | null, max: number): number {
-  if (value === null || max <= 0) return 0.06;
-  return Math.min(Math.max(value / max, 0.06), 1);
+/**
+ * Bar length is relative to the zone's own range (green 0–10, yellow 10–20,
+ * red 20–max) so items stay comparable against their neighbours instead of
+ * every red item rendering as a full bar.
+ */
+export function intensityFraction(value: number | null, zone: Zone, max: number): number {
+  if (value === null) return 0.08;
+
+  let fraction: number;
+  if (zone === "green") {
+    fraction = value / 10;
+  } else if (zone === "yellow") {
+    fraction = (value - 10) / 10;
+  } else {
+    const span = Math.max(max - 20, 1);
+    fraction = (value - 20) / span;
+  }
+
+  return Math.min(Math.max(fraction, 0.08), 1);
 }
 
 export function maxValue(results: ResultItem[]): number {
-  return results.reduce((m, r) => Math.max(m, r.valueUgMl ?? 0), 20);
+  return results.reduce((m, r) => Math.max(m, r.valueUgMl ?? 0), 21);
 }
 
 export function summaryHeadline(counts: Record<Zone, number>): string {
