@@ -428,7 +428,7 @@ export async function ensureTodayReminder(clientId: string): Promise<void> {
   }
 
   const existing = await p.query(
-    `SELECT id FROM chat_messages cm
+    `SELECT cm.id FROM chat_messages cm
      JOIN chat_threads ct ON ct.id = cm.thread_id
      WHERE ct.client_id = $1 AND cm.message_type = 'daily_reminder'
        AND cm.created_at::date = CURRENT_DATE`,
