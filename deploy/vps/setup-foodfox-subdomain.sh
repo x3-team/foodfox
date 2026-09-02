@@ -69,9 +69,13 @@ set -a
 # shellcheck disable=SC1091
 source .env
 set +a
+unset NEXT_PUBLIC_BASE_PATH
+export NEXT_PUBLIC_BASE_PATH=
 npm ci --include=dev
+rm -rf .next
 npm run build
-pm2 restart foodfox --update-env
+pm2 delete foodfox 2>/dev/null || true
+pm2 start npm --name foodfox -- start
 pm2 save
 
 echo "==> SSL (certbot)"
