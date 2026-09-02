@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:foodfox/theme/fox_theme.dart";
+import "package:foodfox/widgets/fox_logo.dart";
 
 class PageHeader extends StatelessWidget {
   const PageHeader({super.key, required this.title, this.subtitle});
@@ -21,15 +22,7 @@ class PageHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: FoxColors.primarySoft,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.eco, color: FoxColors.primary, size: 24),
-          ),
+          const FoxLogo(size: 40),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

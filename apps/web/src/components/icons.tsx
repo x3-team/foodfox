@@ -82,17 +82,25 @@ export function IconFile(props: IconProps) {
   );
 }
 
+/** Fox head from the FoodFox Figma mockups (🦊 mark), redrawn as flat vector. */
 export function FoxLogo(props: IconProps) {
   return (
     <svg viewBox="0 0 32 32" fill="none" {...props}>
-      <circle cx="16" cy="16" r="15" fill="#E8F5E9" />
+      <path d="M4.2 2.2 13.4 6.2 7.2 12.4Z" fill="#ED7B1F" />
+      <path d="M27.8 2.2 18.6 6.2 24.8 12.4Z" fill="#ED7B1F" />
+      <path d="M6.3 5.2 11.2 7.4 8.4 10.2Z" fill="#55555F" />
+      <path d="M25.7 5.2 20.8 7.4 23.6 10.2Z" fill="#55555F" />
       <path
-        d="M10 14c0-3.3 2.7-6 6-6s6 2.7 6 6c0 2.5-1.5 4.6-3.6 5.5L16 24l-2.4-4.5C11.5 18.6 10 16.5 10 14z"
-        fill="#256029"
+        d="M6.2 14.8C6.2 10.2 10.6 6.6 16 6.6s9.8 3.6 9.8 8.2c0 2.9-1.2 5.5-3.2 7.3L16 28l-6.6-5.9c-2-1.8-3.2-4.4-3.2-7.3Z"
+        fill="#ED7B1F"
       />
-      <circle cx="13" cy="14" r="1.2" fill="#FAFAF7" />
-      <circle cx="19" cy="14" r="1.2" fill="#FAFAF7" />
-      <path d="M14 17.5c.8.6 2.2.6 3 0" stroke="#FAFAF7" strokeWidth="1" strokeLinecap="round" />
+      <path
+        d="M16 26.4c-2.2-1.6-3.6-3.2-3.6-4.6 0-1.2 1.6-2 3.6-2s3.6.8 3.6 2c0 1.4-1.4 3-3.6 4.6Z"
+        fill="#FFF1E0"
+      />
+      <ellipse cx="11.9" cy="15.4" rx="1.65" ry="1.85" fill="#2B2118" />
+      <ellipse cx="20.1" cy="15.4" rx="1.65" ry="1.85" fill="#2B2118" />
+      <path d="M16 23.3c-1-.7-1.6-1.4-1.6-2a1.6 1.6 0 0 1 3.2 0c0 .6-.6 1.3-1.6 2Z" fill="#2B2118" />
     </svg>
   );
 }
