@@ -56,8 +56,15 @@ export async function POST(req: NextRequest) {
 
   let reply: string;
   const heli = createHeliClient();
-  if (heli) {
-    try {
+  if (!heli) {
+    reply =
+      "AI-чат не настроен на сервере. Администратору нужно добавить HELI_API_KEY (getheli.ru) в Render → Environment.";
+    await addChatMessage(clientId, "assistant", reply);
+    const messages = await getChatMessages(clientId);
+    return NextResponse.json({ messages });
+  }
+
+  try {
       const history = (await getChatMessages(clientId))
         .filter((m) => m.messageType === "chat")
         .slice(-10)
@@ -72,10 +79,7 @@ export async function POST(req: NextRequest) {
         message,
       );
       reply = response.choices[0]?.message?.content ?? fallbackBotReply(message, chatCtx);
-    } catch {
-      reply = fallbackBotReply(message, chatCtx);
-    }
-  } else {
+  } catch {
     reply = fallbackBotReply(message, chatCtx);
   }
 
