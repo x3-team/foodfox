@@ -16,7 +16,8 @@ import {
   buildSystemPrompt,
   chatWithHeli,
   createHeliClient,
-  fallbackBotReply,
+  heliErrorNotice,
+  offlineChatNotice,
   parseRequestedWeek,
 } from "@/lib/heli";
 
@@ -85,7 +86,7 @@ export async function POST(req: NextRequest) {
 
     const history = (await getChatMessages(clientId))
       .filter((m) => m.messageType === "chat")
-      .slice(-8)
+      .slice(-12)
       .map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
@@ -96,8 +97,7 @@ export async function POST(req: NextRequest) {
     let reply: string;
     const heli = createHeliClient();
     if (!heli) {
-      reply =
-        "AI-чат не настроен на сервере. Администратору нужно добавить FOX_HELI_API_KEY (getheli.ru) в переменные окружения.";
+      reply = offlineChatNotice();
       await addChatMessage(clientId, "assistant", reply);
       const messages = await getChatMessages(clientId);
       return NextResponse.json({ messages });
@@ -106,16 +106,17 @@ export async function POST(req: NextRequest) {
     try {
       const response = await chatWithHeli(
         heli,
-        buildSystemPrompt(chatCtx),
+        buildSystemPrompt(chatCtx, message),
         history,
         message,
       );
-      reply =
-        response.choices[0]?.message?.content?.trim() ??
-        fallbackBotReply(message, chatCtx);
+      reply = response.choices[0]?.message?.content?.trim() ?? "";
+      if (!reply) {
+        reply = heliErrorNotice();
+      }
     } catch (err) {
       console.error("Heli chat error:", err);
-      reply = fallbackBotReply(message, chatCtx);
+      reply = heliErrorNotice();
     }
 
     await addChatMessage(clientId, "assistant", reply);

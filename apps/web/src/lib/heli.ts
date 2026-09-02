@@ -19,7 +19,6 @@ export interface ClientChatContext {
   todayAllowed: string[];
   todayForbidden: string[];
   todayBotMessage?: string;
-  /** When user asks about a specific week (may differ from current). */
   focusWeek?: number;
   focusWeekPhase?: string;
   focusWeekAllowed?: string[];
@@ -43,38 +42,79 @@ export function parseRequestedWeek(message: string, fallback: number): number {
   return fallback;
 }
 
-export function buildSystemPrompt(ctx: ClientChatContext): string {
+function zoneLabel(zone: "green" | "yellow" | "red"): string {
+  if (zone === "green") return "зелёная";
+  if (zone === "yellow") return "жёлтая";
+  return "красная";
+}
+
+/** Match product names from FOX lists mentioned in the user's message. */
+export function findMentionedProducts(
+  message: string,
+  ctx: ClientChatContext,
+): { name: string; zone: "green" | "yellow" | "red" }[] {
+  const q = message.toLowerCase();
+  const all = [
+    ...ctx.redProducts.map((name) => ({ name, zone: "red" as const })),
+    ...ctx.yellowProducts.map((name) => ({ name, zone: "yellow" as const })),
+    ...ctx.greenProducts.map((name) => ({ name, zone: "green" as const })),
+  ];
+  const hits: { name: string; zone: "green" | "yellow" | "red" }[] = [];
+  for (const item of all) {
+    const token = item.name.toLowerCase();
+    if (token.length >= 3 && q.includes(token)) {
+      hits.push(item);
+    }
+  }
+  const seen = new Set<string>();
+  return hits.filter((h) => {
+    const key = h.name.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export function buildSystemPrompt(ctx: ClientChatContext, userMessage?: string): string {
   const focusWeek = ctx.focusWeek ?? ctx.weekNumber;
   const focusPhase = ctx.focusWeekPhase ?? "Элиминация";
   const focusAllowed = ctx.focusWeekAllowed ?? ctx.todayAllowed;
   const focusForbidden = ctx.focusWeekForbidden ?? ctx.todayForbidden;
+  const mentioned = userMessage ? findMentionedProducts(userMessage, ctx) : [];
 
-  return `Ты — бот-нутрициолог FoodFox, помощник после теста FOX Food Xplorer.
+  const productHints =
+    mentioned.length > 0
+      ? mentioned
+          .map((p) => `- ${p.name}: ${zoneLabel(p.zone)} зона в отчёте FOX`)
+          .join("\n")
+      : "— явных совпадений с названиями из отчёта не найдено; ищи по смыслу в списках ниже";
 
-ПРАВИЛА:
-- IgG ≠ диагноз. Рекомендации информационные, не заменяют врача.
-- Красная зона — временная элиминация 4–6 недель, не пожизненный запрет.
-- Отвечай ТОЛЬКО на основе списков продуктов клиента ниже. Не выдумывай продукты.
-- Не повторяй один и тот же шаблонный ответ. Каждый ответ — конкретный, с продуктами из данных.
-- Если спрашивают про неделю N — отвечай про неделю N (фаза, что можно/нельзя), не про «сегодня».
-- Тон: спокойный, поддерживающий, на «вы». Кратко, 3–6 предложений.
+  return `Ты — бот-нутрициолог FoodFox. Клиент сдал IgG-тест FOX Food Xplorer, у тебя есть его персональные данные и 8-недельный план.
 
-ФАЗЫ ПЛАНА (8 недель):
-- Недели 1–4: Элиминация — только зелёные + ротация жёлтых, красные исключены
-- Недели 5–6: Стабилизация — зелёные + часть жёлтых, большинство красных исключены
-- Недели 7–8: Жёлтая зона — постепенное расширение, часть красных ещё исключена
+Как отвечать (важно):
+- Общайся естественно, как живой нутрициолог в чате: сначала прямой ответ на вопрос, потом при необходимости детали.
+- Опирайся на списки продуктов и план клиента — не выдумывай продукты и зоны.
+- Не начинай каждый ответ одинаковой фразой и не перечисляй весь план, если спросили про одно.
+- Длину ответа подбирай под вопрос: на «можно гречку?» — коротко; на «что есть на 6 неделе?» — развёрнуто.
+- IgG — не диагноз; красная зона — временная элиминация, не пожизненный запрет.
+- Тон: спокойный, поддерживающий, на «вы». Можно мягко мотивировать.
 
-КЛИЕНТ: ${ctx.displayName ?? "клиент"}
-ТЕКУЩАЯ НЕДЕЛЯ ПЛАНА: ${ctx.weekNumber} из 8
+Клиент: ${ctx.displayName ?? "клиент"}
+Сейчас неделя ${ctx.weekNumber} из 8.
+${ctx.focusWeek !== ctx.weekNumber ? `В вопросе речь о неделе ${focusWeek} — отвечай про неё.` : ""}
 
-ОТВЕЧАЙ ПРО НЕДЕЛЮ ${focusWeek} (${focusPhase}):
-- Можно: ${focusAllowed.slice(0, 15).join(", ") || "продукты зелёной зоны"}
-- Исключить: ${focusForbidden.slice(0, 15).join(", ") || "красная зона"}
+Неделя ${focusWeek} · ${focusPhase}:
+Разрешено на этой неделе: ${focusAllowed.slice(0, 20).join(", ") || "см. зелёную зону"}
+Исключено: ${focusForbidden.slice(0, 20).join(", ") || "см. красную зону"}
+${ctx.todayBotMessage && focusWeek === ctx.weekNumber ? `Подсказка на сегодня: ${ctx.todayBotMessage}` : ""}
 
-ЗЕЛЁНЫЕ (${ctx.greenProducts.length}): ${ctx.greenProducts.slice(0, 40).join(", ")}${ctx.greenProducts.length > 40 ? "…" : ""}
-КРАСНЫЕ (${ctx.redProducts.length}): ${ctx.redProducts.slice(0, 25).join(", ")}${ctx.redProducts.length > 25 ? "…" : ""}
-ЖЁЛТЫЕ (${ctx.yellowProducts.length}): ${ctx.yellowProducts.slice(0, 15).join(", ")}${ctx.yellowProducts.length > 15 ? "…" : ""}
-${ctx.todayBotMessage ? `\nСЕГОДНЯ: ${ctx.todayBotMessage}` : ""}`;
+Продукты из вопроса (если есть):
+${productHints}
+
+Справочно — зоны из отчёта FOX:
+Зелёные (${ctx.greenProducts.length}): ${ctx.greenProducts.slice(0, 50).join(", ")}${ctx.greenProducts.length > 50 ? "…" : ""}
+Красные (${ctx.redProducts.length}): ${ctx.redProducts.slice(0, 30).join(", ")}${ctx.redProducts.length > 30 ? "…" : ""}
+Жёлтые (${ctx.yellowProducts.length}): ${ctx.yellowProducts.slice(0, 20).join(", ")}${ctx.yellowProducts.length > 20 ? "…" : ""}`;
 }
 
 export async function chatWithHeli(
@@ -91,39 +131,17 @@ export async function chatWithHeli(
       ...history,
       { role: "user", content: userMessage },
     ],
-    temperature: 0.35,
-    frequency_penalty: 0.3,
+    temperature: 0.72,
+    max_tokens: 700,
+    presence_penalty: 0.15,
   });
 }
 
-export function fallbackBotReply(
-  userMessage: string,
-  ctx: ClientChatContext,
-): string {
-  const q = userMessage.toLowerCase();
-  const week = ctx.focusWeek ?? ctx.weekNumber;
-  const phase = ctx.focusWeekPhase ?? "план";
-  const allowed = ctx.focusWeekAllowed ?? ctx.todayAllowed;
-  const forbidden = ctx.focusWeekForbidden ?? ctx.todayForbidden;
+/** Only when Heli is unavailable — minimal, not a fake «smart» reply. */
+export function offlineChatNotice(): string {
+  return "Сейчас AI-чат недоступен. Попробуйте через минуту или посмотрите план на вкладке «План».";
+}
 
-  if (/недел|week/.test(q)) {
-    return (
-      `Неделя ${week} · ${phase}. ` +
-      `Можно: ${allowed.slice(0, 8).join(", ") || "зелёная зона"}. ` +
-      `Исключите: ${forbidden.slice(0, 6).join(", ") || "красную зону"}. ` +
-      `Спросите про конкретный продукт — проверю по вашему отчёту FOX.`
-    );
-  }
-
-  if (/орех|миндал|фундук|грец/.test(q)) {
-    const inRed = ctx.redProducts.some((p) => /орех|миндал|фундук|грец/i.test(p));
-    if (inRed) {
-      return "Орехи в вашей красной зоне — пока исключите на 4–6 недель элиминации. После этого обсудим с нутрициологом.";
-    }
-    return "Орехи у вас не в красной зоне — можно включать по плану с учётом ротации жёлтых продуктов.";
-  }
-  if (/молок|сыр|творог|кефир/.test(q)) {
-    return "Молочные продукты часто требуют отдельного разбора (Bos d 4/5/8). Следуйте плану элиминации и уточните у нутрициолога при необходимости.";
-  }
-  return `Сегодня (неделя ${ctx.weekNumber}): можно ${allowed.slice(0, 4).join(", ") || "продукты из зелёной зоны"}. Исключите ${forbidden.slice(0, 4).join(", ") || "красную зону"}. Задайте конкретный продукт — подскажу точнее.`;
+export function heliErrorNotice(): string {
+  return "Не получилось связаться с AI. Повторите вопрос — обычно помогает со второй попытки.";
 }
