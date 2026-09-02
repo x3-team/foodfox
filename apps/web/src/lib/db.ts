@@ -688,12 +688,15 @@ export async function getPlanWeekSummary(
 /** On-open daily reminder — free, no cron */
 export async function ensureTodayReminder(clientId: string): Promise<void> {
   const ctx = await getActivePlanContext(clientId);
-  if (!ctx?.todayPlan?.botMessage) return;
+  if (!ctx?.todayPlan) return;
 
   const p = getPool();
   const today = new Date().toISOString().slice(0, 10);
-  const content = ctx.todayPlan.botMessage;
-  const header = `☀️ Напоминание · Неделя ${ctx.weekNumber}, ${today}`;
+  const phase = getWeekPhase(ctx.weekNumber);
+  const content =
+    `Вы на ${ctx.weekNumber}-й неделе плана (${phase}). ` +
+    `Спросите про любой продукт или блюдо — отвечу по вашему отчёту FOX.`;
+  const header = `☀️ Напоминание · ${today}`;
 
   if (!p) {
     const exists = memory!.messages.some(
