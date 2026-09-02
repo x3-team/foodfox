@@ -2,19 +2,23 @@
 
 **Файл:** [Fox приложение](https://www.figma.com/design/DSXq09GRmYROMmX9SIrWlm/Fox-приложение)
 
-## Актуальные макеты → страница **MVP v2** (v3 captures)
+## Текущее содержимое файла
 
-Pixel-perfect захваты из работающего Next.js приложения (`generate_figma_design`).
-
-**Прямая ссылка на страницу v2:**  
-https://www.figma.com/design/DSXq09GRmYROMmX9SIrWlm/Fox-приложение?node-id=9-2
+В файле сейчас одна страница — **MVP Screens** (`0:1`), первый черновик v1:
 
 | Экран | Node ID | Route |
 |-------|---------|-------|
-| 01 Upload v3 | `22:2` | `/upload` |
-| 02 Results v3 | `25:2` | `/results` |
-| 03 Chat v3 | `26:2` | `/chat` |
-| 04 Recipes v3 | `27:2` | `/recipes` |
+| 01 Upload | `1:2` | `/upload` |
+| 02 Results | `1:28` | `/results` |
+| 03 Recipes | `1:69` | `/recipes` |
+| 04 Chat | `1:103` | `/chat` |
+
+Логотип в шапках макетов — текстовый слой с эмодзи 🦊; в коде он перерисован
+вектором, см. [DESIGN-REFERENCES.md](DESIGN-REFERENCES.md#логотип).
+
+> Страницы **MVP v2** с pixel-perfect захватами (`9:2`, `22:2`, `25:2`, `26:2`, `27:2`)
+> в файле больше нет — код ушёл вперёд макетов. Перед синхронизацией сверяйтесь
+> с реальной структурой через `get_metadata`.
 
 ### Как обновить макеты из кода
 
