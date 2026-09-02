@@ -1,11 +1,11 @@
+import com.android.build.gradle.LibraryExtension
+
 allprojects {
     repositories {
         google()
         mavenCentral()
     }
 }
-
-import com.android.build.gradle.LibraryExtension
 
 val newBuildDir: Directory =
     rootProject.layout.buildDirectory
