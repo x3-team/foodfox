@@ -1,5 +1,6 @@
 "use client";
 
+import { withBasePath } from "@/lib/base-path";
 import { useEffect, useRef, useState } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { ChatBubble } from "@/components/ChatBubble";
@@ -19,10 +20,10 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const loadMessages = () => {
-    fetch("/api/chat/messages")
+    fetch(withBasePath("/api/chat/messages"))
       .then((r) => r.json())
       .then((d) => setMessages(d.messages ?? []));
-    fetch("/api/chat/unread", { method: "PATCH" }).catch(() => {});
+    fetch(withBasePath("/api/chat/unread"), { method: "PATCH" }).catch(() => {});
   };
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function ChatPage() {
       { id: `tmp-${Date.now()}`, role: "user", messageType: "chat", content: text },
     ]);
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch(withBasePath("/api/chat"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text }),

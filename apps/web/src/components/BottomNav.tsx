@@ -1,5 +1,6 @@
 "use client";
 
+import { withBasePath } from "@/lib/base-path";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,7 +18,7 @@ export function BottomNav() {
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
-    fetch("/api/chat/unread")
+    fetch(withBasePath("/api/chat/unread"))
       .then((r) => r.json())
       .then((d) => setUnread(d.count ?? 0))
       .catch(() => {});

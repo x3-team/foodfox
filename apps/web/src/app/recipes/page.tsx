@@ -1,5 +1,6 @@
 "use client";
 
+import { withBasePath } from "@/lib/base-path";
 import { useEffect, useState } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { getWeekPhase } from "@/lib/plan-engine";
@@ -16,7 +17,7 @@ export default function RecipesPage() {
   const [weekNumber, setWeekNumber] = useState(1);
 
   useEffect(() => {
-    fetch("/api/recipes")
+    fetch(withBasePath("/api/recipes"))
       .then((r) => r.json())
       .then((d) => {
         setRecipes(d.recipes ?? []);

@@ -1,5 +1,6 @@
 "use client";
 
+import { withBasePath } from "@/lib/base-path";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell, PageHeader } from "@/components/AppShell";
@@ -22,7 +23,7 @@ export default function UploadPage() {
       const form = new FormData();
       form.append("file", file);
       try {
-        const res = await fetch("/api/reports/upload", { method: "POST", body: form });
+        const res = await fetch(withBasePath("/api/reports/upload"), { method: "POST", body: form });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Ошибка загрузки");
         router.push("/results");

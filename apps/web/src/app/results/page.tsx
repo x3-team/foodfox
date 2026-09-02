@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { withBasePath } from "@/lib/base-path";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { ZoneDot, ZoneTabs } from "@/components/ZoneTabs";
 import { formatValue } from "@/lib/plan-engine";
 import type { Zone } from "@/lib/fox-parser";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface ResultItem {
   id: string;
@@ -27,7 +29,7 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/results")
+    fetch(withBasePath("/api/results"))
       .then((r) => r.json())
       .then((d) => {
         setResults(d.results ?? []);
@@ -56,9 +58,9 @@ export default function ResultsPage() {
         ) : filtered.length === 0 ? (
           <div className="fox-card px-4 py-8 text-center">
             <p className="text-[15px] text-fox-muted">Пока нет данных по этой зоне.</p>
-            <a href="/upload" className="mt-2 inline-block text-[15px] font-semibold text-fox-primary">
+            <Link href="/upload" className="mt-2 inline-block text-[15px] font-semibold text-fox-primary">
               Загрузить отчёт →
-            </a>
+            </Link>
           </div>
         ) : (
           <ul className="flex flex-col gap-2">
