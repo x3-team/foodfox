@@ -768,7 +768,6 @@ export async function addChatMessage(
   messageType: ChatMessageRow["messageType"] = "chat",
 ): Promise<ChatMessageRow> {
   await ensureSchema();
-  const ctx = await getActivePlanContext(clientId);
   const p = getPool();
 
   if (!p) {
@@ -784,8 +783,9 @@ export async function addChatMessage(
     return msg;
   }
 
-  const threadId = ctx?.threadId;
-  if (!threadId) throw new Error("No chat thread");
+  const ctx = await getActivePlanContext(clientId);
+  const threadId =
+    ctx?.threadId ?? (await ensureChatThread(p, clientId, ctx?.planId ?? null));
 
   const { rows } = await p.query(
     `INSERT INTO chat_messages (thread_id, role, message_type, content)
