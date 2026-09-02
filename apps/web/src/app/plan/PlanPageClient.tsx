@@ -183,11 +183,6 @@ export default function PlanPageClient() {
                     previewCount={4}
                   />
                 )}
-                {summaryDay.botMessage && (
-                  <p className="line-clamp-3 rounded-xl bg-fox-primary-soft px-3 py-2.5 text-[13px] leading-relaxed text-fox-primary-dark">
-                    {summaryDay.botMessage}
-                  </p>
-                )}
               </div>
             )}
 
@@ -227,7 +222,6 @@ export default function PlanPageClient() {
                         allowed={day.allowed}
                         forbidden={day.forbidden}
                         rotation={day.rotation}
-                        botMessage={day.botMessage}
                       />
                     )}
                   </div>

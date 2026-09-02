@@ -61,11 +61,10 @@ class _CompactProductChipsState extends State<CompactProductChips> {
       );
     }
 
-    final preview = widget.items.take(3).join(", ");
-    final hidden = widget.items.length - widget.items.take(3).length;
     final colors = _colors();
     final shown = widget.items.take(_visible).toList();
     final hasMore = _visible < widget.items.length;
+    final countLabel = _productCountLabel(widget.items.length);
 
     return Container(
       decoration: BoxDecoration(
@@ -97,10 +96,8 @@ class _CompactProductChipsState extends State<CompactProductChips> {
                         if (!_open) ...[
                           const SizedBox(height: 4),
                           Text(
-                            hidden > 0 ? "$preview · +$hidden" : preview,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13, color: FoxColors.text),
+                            "$countLabel · нажмите, чтобы раскрыть",
+                            style: const TextStyle(fontSize: 13, color: FoxColors.muted),
                           ),
                         ],
                       ],
@@ -149,7 +146,8 @@ class _CompactProductChipsState extends State<CompactProductChips> {
                               ),
                               child: Text(
                                 item,
-                                style: TextStyle(fontSize: 12, color: colors.$2),
+                                style: TextStyle(fontSize: 12, color: colors.$2, height: 1.3),
+                                softWrap: true,
                               ),
                             ),
                           ),
@@ -184,13 +182,11 @@ class CompactDayDetails extends StatelessWidget {
     required this.allowed,
     required this.forbidden,
     this.rotation = const [],
-    this.botMessage,
   });
 
   final List<String> allowed;
   final List<String> forbidden;
   final List<String> rotation;
-  final String? botMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -208,16 +204,15 @@ class CompactDayDetails extends StatelessWidget {
           const SizedBox(height: 8),
           CompactProductChips(items: rotation, label: "Ротация", tone: ChipTone.yellow, previewCount: 4),
         ],
-        if (botMessage != null && botMessage!.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Text(
-            botMessage!,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12, color: FoxColors.muted, height: 1.35),
-          ),
-        ],
       ],
     );
   }
+}
+
+String _productCountLabel(int n) {
+  final mod10 = n % 10;
+  final mod100 = n % 100;
+  if (mod10 == 1 && mod100 != 11) return "$n продукт";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "$n продукта";
+  return "$n продуктов";
 }

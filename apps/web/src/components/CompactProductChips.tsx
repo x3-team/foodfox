@@ -11,13 +11,19 @@ const TONE_STYLES: Record<ChipTone, string> = {
   yellow: "bg-amber-50 text-amber-900 ring-amber-200/80",
 };
 
+function productCountLabel(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return `${n} продукт`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return `${n} продукта`;
+  return `${n} продуктов`;
+}
+
 interface CompactProductChipsProps {
   items: string[];
   tone: ChipTone;
   label: string;
-  /** Chips shown before «+N» when expanded */
   previewCount?: number;
-  /** Hide list body until user taps (good for long red lists) */
   collapsedByDefault?: boolean;
 }
 
@@ -48,26 +54,20 @@ export function CompactProductChips({
     );
   }
 
-  const preview = items.slice(0, Math.min(3, items.length));
-  const hidden = items.length - preview.length;
-
   return (
     <div className="rounded-xl ring-1 ring-fox-border/80">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left"
+        className="flex w-full items-center gap-2 px-3 py-2.5 text-left"
       >
         <div className="min-w-0 flex-1">
           <p className="text-[12px] font-semibold uppercase tracking-wide text-fox-muted">
             {label}
           </p>
           {!open && (
-            <p className="mt-1 truncate text-[13px] text-fox-text">
-              {preview.join(", ")}
-              {hidden > 0 && (
-                <span className="text-fox-muted"> · +{hidden}</span>
-              )}
+            <p className="mt-1 text-[13px] text-fox-muted">
+              {productCountLabel(items.length)} · нажмите, чтобы раскрыть
             </p>
           )}
         </div>
@@ -81,11 +81,11 @@ export function CompactProductChips({
 
       {open && (
         <div className="border-t border-fox-border/80 px-3 pb-3 pt-2">
-          <div className="flex max-h-28 flex-wrap gap-1.5 overflow-y-auto">
+          <div className="flex max-h-36 flex-wrap gap-1.5 overflow-y-auto overscroll-contain">
             {visibleItems.map((item) => (
               <span
                 key={item}
-                className={`inline-block max-w-full truncate rounded-lg px-2 py-1 text-[12px] font-medium ring-1 ${TONE_STYLES[tone]}`}
+                className={`inline-block max-w-full whitespace-normal break-words rounded-lg px-2 py-1 text-[12px] font-medium leading-snug ring-1 ${TONE_STYLES[tone]}`}
                 title={item}
               >
                 {item}
@@ -111,16 +111,9 @@ interface CompactDayDetailsProps {
   allowed: string[];
   forbidden: string[];
   rotation: string[];
-  botMessage?: string;
 }
 
-/** Compact blocks for an expanded plan day — no vertical «portyanki». */
-export function CompactDayDetails({
-  allowed,
-  forbidden,
-  rotation,
-  botMessage,
-}: CompactDayDetailsProps) {
+export function CompactDayDetails({ allowed, forbidden, rotation }: CompactDayDetailsProps) {
   return (
     <div className="space-y-2 border-t border-fox-border px-4 py-3">
       <CompactProductChips items={allowed} tone="green" label="Можно" previewCount={6} />
@@ -133,9 +126,6 @@ export function CompactDayDetails({
       />
       {rotation.length > 0 && (
         <CompactProductChips items={rotation} tone="yellow" label="Ротация" previewCount={4} />
-      )}
-      {botMessage && (
-        <p className="line-clamp-2 px-0.5 text-[12px] leading-snug text-fox-muted">{botMessage}</p>
       )}
     </div>
   );
