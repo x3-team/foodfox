@@ -20,7 +20,8 @@
 | Слой | Технология |
 |------|------------|
 | Web UI + API | Next.js 14 (`apps/web`) |
-| БД | PostgreSQL 16 (Render) / in-memory для локальной разработки |
+| **Android** | **Flutter** (`apps/mobile`) → APK |
+| БД | PostgreSQL 16 (VPS / Render) |
 | LLM | [getheli.ru](https://getheli.ru) (OpenAI-compatible) |
 | Push | **In-app on-open** — напоминание при открытии чата |
 
@@ -53,11 +54,20 @@ psql $DATABASE_URL -f packages/database/schema.sql
 ```
 foodfox/
 ├── apps/web/              # Next.js MVP
+├── apps/mobile/           # Flutter Android app
 ├── packages/database/     # PostgreSQL schema
 ├── packages/llm/          # Heli client (reference)
 ├── docs/
 └── render.yaml
 ```
+
+## Android APK
+
+```bash
+cd apps/mobile && flutter build apk --debug
+```
+
+Подробнее: [apps/mobile/README.md](apps/mobile/README.md). CI собирает APK в GitHub Actions (artifact `foodfox-android-debug-apk`).
 
 ## Документация
 
