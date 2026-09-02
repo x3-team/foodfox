@@ -3,7 +3,7 @@
 Стек **только на вашем VPS**:
 - **Next.js** — PM2, порт `3030`
 - **Postgres 16** — Docker на `127.0.0.1:5433` (бесплатно, данные на диске VPS)
-- **Nginx + Let's Encrypt** — ваш тестовый домен или подпуть на существующем домене
+- **Nginx + Let's Encrypt** — поддомен `foodfox.yuri.guru`
 - **Heli** — только API-ключ (getheli.ru), без подписки на инфraструктуру
 
 Render и Supabase **не нужны**.
@@ -33,14 +33,6 @@ sudo bash deploy/vps/setup-foodfox-subdomain.sh
 sudo htpasswd /etc/nginx/.htpasswd-foodfox demo
 sudo systemctl reload nginx
 ```
-
-### Альтернатива: подпуть yuri.guru/demofox
-
-```bash
-sudo bash deploy/vps/setup-demofox-subpath.sh
-```
-
-Требует `NEXT_PUBLIC_BASE_PATH=/demofox` в `.env`.
 
 ## Быстрый старт (отдельный домен)
 
