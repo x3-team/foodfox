@@ -13,6 +13,7 @@ interface Profile {
   parsedCount: number;
   planStartedAt: string | null;
   currentWeek: number;
+  hasPdf?: boolean;
 }
 
 export default function AccountPage() {
@@ -82,6 +83,20 @@ export default function AccountPage() {
                     План с {profile.planStartedAt ?? "—"}, сейчас неделя{" "}
                     <strong className="text-fox-text">{profile.currentWeek}</strong> из 8
                   </li>
+                  {profile.hasPdf ? (
+                    <li>
+                      <a
+                        href={withBasePath("/api/reports/pdf")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-fox-primary underline"
+                      >
+                        Скачать оригинал PDF FOX
+                      </a>
+                    </li>
+                  ) : (
+                    <li className="text-[13px]">PDF сохранится при следующей загрузке отчёта</li>
+                  )}
                 </ul>
               ) : (
                 <p className="text-[14px] leading-relaxed text-fox-muted">

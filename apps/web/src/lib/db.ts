@@ -5,6 +5,8 @@ import { parseFoxPdfText, type ParsedResult, type Zone } from "./fox-parser";
 import type { PlanDay } from "./plan-engine";
 import { buildEightWeekPlan, getWeekPhase } from "./plan-engine";
 import { hashPassword, verifyPassword, type SessionData } from "./auth";
+import { analyzeRecipe } from "./recipe-match";
+import { saveReportPdf } from "./report-storage";
 
 export interface TestResultRow {
   id: string;
@@ -20,6 +22,10 @@ export interface RecipeRow {
   description: string | null;
   steps: string[];
   tags: string[];
+  suitable?: boolean;
+  allGreen?: boolean;
+  warnings?: string[];
+  ingredients?: { name: string; zone: string }[];
 }
 
 export interface ChatMessageRow {
@@ -80,7 +86,33 @@ export async function ensureSchema(): Promise<void> {
     // schema may already exist
   }
   await seedPostgresIfEmpty(p);
+  await ensureExtraRecipes(p);
   schemaReady = true;
+}
+
+async function ensureExtraRecipes(p: Pool) {
+  const extras = [
+    {
+      title: "Салат с лососем и шпинатом",
+      description: "Омега-3 и зелень",
+      steps: ["Запеките лосось", "Смешайте со шпинатом", "Заправьте маслом"],
+      tags: ["30 мин", "обед"],
+    },
+    {
+      title: "Рис с индейкой",
+      description: "Сытный обед",
+      steps: ["Отварите рис", "Обжарьте индейку", "Подавайте вместе"],
+      tags: ["35 мин", "обед"],
+    },
+  ];
+  for (const r of extras) {
+    await p.query(
+      `INSERT INTO recipes (title, description, steps, tags, published)
+       SELECT $1, $2, $3::jsonb, $4::jsonb, true
+       WHERE NOT EXISTS (SELECT 1 FROM recipes WHERE title = $1)`,
+      [r.title, r.description, JSON.stringify(r.steps), JSON.stringify(r.tags)],
+    );
+  }
 }
 
 function seedMemoryIfNeeded() {
@@ -144,7 +176,13 @@ async function seedPostgresIfEmpty(p: Pool) {
      '["25 мин", "ужин"]'::jsonb, true),
     ('Запечённая куриная грудка', 'Белковый ужин',
      '["Замаринуйте грудку", "Запекайте 35 мин при 180°C"]'::jsonb,
-     '["40 мин", "ужин"]'::jsonb, true)
+     '["40 мин", "ужин"]'::jsonb, true),
+    ('Салат с лососем и шпинатом', 'Омега-3 и зелень',
+     '["Запеките лосось", "Смешайте со шпинатом", "Заправьте маслом"]'::jsonb,
+     '["30 мин", "обед"]'::jsonb, true),
+    ('Рис с индейкой', 'Сытный обед',
+     '["Отварите рис", "Обжарьте индейку", "Подавайте вместе"]'::jsonb,
+     '["35 мин", "обед"]'::jsonb, true)
   `);
 }
 
@@ -305,6 +343,8 @@ export async function getClientProfile(clientId: string) {
       parsedCount: memory!.results.length,
       planStartedAt: memory!.planDays[0]?.date ?? null,
       currentWeek: memory!.planDays.find((d) => d.date === today)?.weekNumber ?? 1,
+      hasPdf: false,
+      reportId: memory!.reportId || null,
     };
   }
 
@@ -315,7 +355,11 @@ export async function getClientProfile(clientId: string) {
             np.started_at,
             (SELECT pd.week_number FROM plan_days pd
              JOIN nutrition_plans np2 ON np2.id = pd.plan_id
-             WHERE np2.client_id = c.id AND np2.status = 'active' AND pd.date = $2 LIMIT 1) AS current_week
+             WHERE np2.client_id = c.id AND np2.status = 'active' AND pd.date = $2 LIMIT 1) AS current_week,
+            (SELECT r.storage_key FROM reports r WHERE r.client_id = c.id
+             ORDER BY r.created_at DESC LIMIT 1) AS storage_key,
+            (SELECT r.id FROM reports r WHERE r.client_id = c.id
+             ORDER BY r.created_at DESC LIMIT 1) AS report_id
      FROM clients c
      JOIN users u ON u.id = c.user_id
      LEFT JOIN nutrition_plans np ON np.client_id = c.id AND np.status = 'active'
@@ -334,6 +378,8 @@ export async function getClientProfile(clientId: string) {
       ? new Date(row.started_at).toISOString().slice(0, 10)
       : null,
     currentWeek: (row.current_week as number) ?? 1,
+    hasPdf: Boolean(row.storage_key),
+    reportId: row.report_id as string | null,
   };
 }
 
@@ -420,6 +466,7 @@ export interface PlanDayDto {
 export async function saveReportFromPdf(
   clientId: string,
   pdfText: string,
+  pdfBuffer?: Buffer,
 ): Promise<{ reportId: string; results: TestResultRow[]; planId: string }> {
   await ensureSchema();
   const parsed: ParsedResult[] = parseFoxPdfText(pdfText);
@@ -430,7 +477,7 @@ export async function saveReportFromPdf(
         : `Распознано только ${parsed.length} антигенов из ~286. Проверьте, что PDF не повреждён.`;
     throw new Error(hint);
   }
-  return saveReportFromParsed(clientId, parsed);
+  return saveReportFromParsed(clientId, parsed, pdfBuffer);
 }
 
 export async function loadDemoReport(
@@ -451,6 +498,7 @@ export async function loadDemoReport(
 export async function saveReportFromParsed(
   clientId: string,
   parsed: ParsedResult[],
+  pdfBuffer?: Buffer,
 ): Promise<{ reportId: string; results: TestResultRow[]; planId: string }> {
   if (parsed.length < 5) {
     throw new Error(`Недостаточно данных отчёта (${parsed.length} антигенов)`);
@@ -479,6 +527,11 @@ export async function saveReportFromParsed(
     [clientId, parsed.length >= 50 ? 0.9 : 0.6],
   );
   const reportId = report.rows[0].id;
+
+  if (pdfBuffer && pdfBuffer.length > 0) {
+    const storageKey = await saveReportPdf(clientId, reportId, pdfBuffer);
+    await p.query(`UPDATE reports SET storage_key = $1 WHERE id = $2`, [storageKey, reportId]);
+  }
 
   for (const r of parsed) {
     let foodItem = await p.query(
@@ -574,6 +627,50 @@ export async function getResultsForClient(clientId: string): Promise<TestResultR
     isFloorValue: row.is_floor_value,
     zone: row.zone,
   }));
+}
+
+export async function getRecipesForClient(clientId: string): Promise<RecipeRow[]> {
+  await ensureSchema();
+  const recipes = await getRecipes();
+  const results = await getResultsForClient(clientId);
+
+  if (results.length === 0) {
+    return recipes.map((r) => ({ ...r, suitable: true, allGreen: true, warnings: [] }));
+  }
+
+  const zones = {
+    green: results.filter((r) => r.zone === "green").map((r) => r.foxName),
+    yellow: results.filter((r) => r.zone === "yellow").map((r) => r.foxName),
+    red: results.filter((r) => r.zone === "red").map((r) => r.foxName),
+  };
+
+  const scored = recipes.map((recipe) => {
+    const match = analyzeRecipe(recipe.title, zones);
+    return {
+      ...recipe,
+      suitable: match.suitable,
+      allGreen: match.allGreen,
+      warnings: match.warnings,
+      ingredients: match.ingredients.map((i) => ({ name: i.name, zone: i.zone })),
+    };
+  });
+
+  return scored.sort((a, b) => {
+    if (a.suitable !== b.suitable) return a.suitable ? -1 : 1;
+    if (a.allGreen !== b.allGreen) return a.allGreen ? -1 : 1;
+    return a.title.localeCompare(b.title, "ru");
+  });
+}
+
+export async function getLatestReportId(clientId: string): Promise<string | null> {
+  await ensureSchema();
+  const p = getPool();
+  if (!p) return memory!.reportId || null;
+  const { rows } = await p.query(
+    `SELECT id FROM reports WHERE client_id = $1 ORDER BY created_at DESC LIMIT 1`,
+    [clientId],
+  );
+  return rows[0]?.id ?? null;
 }
 
 export async function getRecipes(): Promise<RecipeRow[]> {

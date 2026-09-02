@@ -122,14 +122,22 @@ function ResultsContent() {
       ) : (
         <ul className="flex flex-col gap-2">
           {filtered.map((item) => (
-            <li key={item.id} className="fox-card flex items-center gap-3 px-4 py-3.5">
-              <ZoneDot zone={item.zone} />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[15px] font-medium text-fox-text">{item.foxName}</p>
-                <p className="text-[13px] text-fox-muted">
-                  {formatValue(item.valueUgMl, item.isFloorValue)}
-                </p>
+            <li key={item.id} className="fox-card px-4 py-3.5">
+              <div className="flex items-center gap-3">
+                <ZoneDot zone={item.zone} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[15px] font-medium text-fox-text">{item.foxName}</p>
+                  <p className="text-[13px] text-fox-muted">
+                    {formatValue(item.valueUgMl, item.isFloorValue)}
+                  </p>
+                </div>
               </div>
+              <Link
+                href={`/chat?q=${encodeURIComponent(`Можно ли ${item.foxName}?`)}`}
+                className="mt-2 inline-block text-[13px] font-semibold text-fox-primary"
+              >
+                Спросить бота →
+              </Link>
             </li>
           ))}
         </ul>

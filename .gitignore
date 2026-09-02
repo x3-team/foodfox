@@ -1,3 +1,4 @@
 .flutter-sdk/
 *.iml
 .DS_Store
+data/reports/

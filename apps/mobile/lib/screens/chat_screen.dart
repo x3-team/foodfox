@@ -6,9 +6,10 @@ import "package:foodfox/widgets/chat_bubble.dart";
 import "package:foodfox/widgets/page_header.dart";
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.api});
+  const ChatScreen({super.key, required this.api, this.initialMessage});
 
   final FoodFoxApi api;
+  final String? initialMessage;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -25,7 +26,24 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
+    _load().then((_) => _maybeSendInitial());
+  }
+
+  @override
+  void didUpdateWidget(covariant ChatScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialMessage != null &&
+        widget.initialMessage != oldWidget.initialMessage) {
+      _controller.text = widget.initialMessage!;
+      _send();
+    }
+  }
+
+  void _maybeSendInitial() {
+    final text = widget.initialMessage?.trim();
+    if (text == null || text.isEmpty || _sending) return;
+    _controller.text = text;
+    _send();
   }
 
   @override

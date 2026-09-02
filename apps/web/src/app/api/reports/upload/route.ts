@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     const clientId = await getAuthClientId();
-    const { reportId, results, planId } = await saveReportFromPdf(clientId, text);
+    const { reportId, results, planId } = await saveReportFromPdf(clientId, text, buffer);
     const counts = countZones(
       results.map((r) => ({
         foxName: r.foxName,

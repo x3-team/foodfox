@@ -59,6 +59,9 @@ class RecipeItem {
     required this.title,
     required this.description,
     required this.tags,
+    this.suitable = true,
+    this.allGreen = false,
+    this.warnings = const [],
   });
 
   factory RecipeItem.fromJson(Map<String, dynamic> json) {
@@ -67,6 +70,9 @@ class RecipeItem {
       title: json["title"] as String,
       description: json["description"] as String?,
       tags: (json["tags"] as List<dynamic>? ?? []).cast<String>(),
+      suitable: json["suitable"] as bool? ?? true,
+      allGreen: json["allGreen"] as bool? ?? false,
+      warnings: (json["warnings"] as List<dynamic>? ?? []).cast<String>(),
     );
   }
 
@@ -74,6 +80,9 @@ class RecipeItem {
   final String title;
   final String? description;
   final List<String> tags;
+  final bool suitable;
+  final bool allGreen;
+  final List<String> warnings;
 }
 
 class ChatMessage {

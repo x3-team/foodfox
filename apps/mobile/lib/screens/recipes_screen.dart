@@ -18,6 +18,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
   String? _error;
   List<RecipeItem> _recipes = [];
   int _weekNumber = 1;
+  int _suitableCount = 0;
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
       setState(() {
         _recipes = data.recipes;
         _weekNumber = data.weekNumber;
+        _suitableCount = data.suitableCount;
         _loading = false;
       });
     } catch (e) {
@@ -74,9 +76,22 @@ class _RecipesScreenState extends State<RecipesScreen> {
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                        itemCount: _recipes.length,
+                        itemCount: _recipes.length + 1,
                         itemBuilder: (context, index) {
-                          final recipe = _recipes[index];
+                          if (index == 0) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                "$_suitableCount из ${_recipes.length} блюд подходят вам",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: FoxColors.primary,
+                                ),
+                              ),
+                            );
+                          }
+                          final recipe = _recipes[index - 1];
                           return Container(
                             margin: const EdgeInsets.only(bottom: 16),
                             decoration: foxCardDecoration,
@@ -131,11 +146,17 @@ class _RecipesScreenState extends State<RecipesScreen> {
                                       ],
                                       const SizedBox(height: 8),
                                       Text(
-                                        "${recipe.tags.isNotEmpty ? recipe.tags.first : "—"} · без красной зоны",
-                                        style: const TextStyle(
+                                        recipe.allGreen
+                                            ? "100% зелёная зона"
+                                            : recipe.suitable
+                                                ? "Подходит с учётом ротации"
+                                                : "Есть красная зона",
+                                        style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w500,
-                                          color: FoxColors.primary,
+                                          color: recipe.suitable
+                                              ? FoxColors.primary
+                                              : FoxColors.red,
                                         ),
                                       ),
                                     ],

@@ -21,6 +21,8 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
   var _checkingAuth = true;
   int _tab = 0;
   int _resultsReload = 0;
+  String? _chatInitialMessage;
+  int _chatSeed = 0;
 
   @override
   void initState() {
@@ -66,6 +68,14 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
     });
   }
 
+  void _askBot(String question) {
+    setState(() {
+      _chatInitialMessage = question;
+      _chatSeed++;
+      _tab = 4;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_checkingAuth) {
@@ -88,10 +98,14 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
 
     final screens = [
       UploadScreen(api: _api, onUploaded: _onUploaded),
-      ResultsScreen(api: _api, reloadToken: _resultsReload),
+      ResultsScreen(api: _api, reloadToken: _resultsReload, onAskBot: _askBot),
       PlanScreen(api: _api),
       RecipesScreen(api: _api),
-      ChatScreen(api: _api),
+      ChatScreen(
+        key: ValueKey("chat-$_chatSeed"),
+        api: _api,
+        initialMessage: _chatInitialMessage,
+      ),
     ];
 
     return MaterialApp(

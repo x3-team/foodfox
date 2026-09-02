@@ -106,13 +106,17 @@ class FoodFoxApi {
     return (results: results, counts: counts);
   }
 
-  Future<({List<RecipeItem> recipes, int weekNumber})> fetchRecipes() async {
+  Future<({List<RecipeItem> recipes, int weekNumber, int suitableCount})> fetchRecipes() async {
     final response = await _client.get(_uri("/api/recipes"), headers: _headers);
     final data = await _decode(response);
     final recipes = (data["recipes"] as List<dynamic>)
         .map((e) => RecipeItem.fromJson(e as Map<String, dynamic>))
         .toList();
-    return (recipes: recipes, weekNumber: data["weekNumber"] as int? ?? 1);
+    return (
+      recipes: recipes,
+      weekNumber: data["weekNumber"] as int? ?? 1,
+      suitableCount: data["suitableCount"] as int? ?? recipes.length,
+    );
   }
 
   Future<List<ChatMessage>> fetchMessages() async {

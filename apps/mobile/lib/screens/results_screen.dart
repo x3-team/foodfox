@@ -6,10 +6,16 @@ import "package:foodfox/widgets/page_header.dart";
 import "package:foodfox/widgets/zone_tabs.dart";
 
 class ResultsScreen extends StatefulWidget {
-  const ResultsScreen({super.key, required this.api, this.reloadToken = 0});
+  const ResultsScreen({
+    super.key,
+    required this.api,
+    this.reloadToken = 0,
+    this.onAskBot,
+  });
 
   final FoodFoxApi api;
   final int reloadToken;
+  final void Function(String question)? onAskBot;
 
   @override
   State<ResultsScreen> createState() => _ResultsScreenState();
@@ -110,27 +116,47 @@ class _ResultsScreenState extends State<ResultsScreen> {
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       decoration: foxCardDecoration,
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ZoneDot(zone: item.zone),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              item.foxName,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: FoxColors.text,
+                          Row(
+                            children: [
+                              ZoneDot(zone: item.zone),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  item.foxName,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: FoxColors.text,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                formatValue(item.valueUgMl, item.isFloorValue),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: FoxColors.muted,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (widget.onAskBot != null) ...[
+                            const SizedBox(height: 8),
+                            GestureDetector(
+                              onTap: () =>
+                                  widget.onAskBot!("Можно ли ${item.foxName}?"),
+                              child: const Text(
+                                "Спросить бота →",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: FoxColors.primary,
+                                ),
                               ),
                             ),
-                          ),
-                          Text(
-                            formatValue(item.valueUgMl, item.isFloorValue),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: FoxColors.muted,
-                            ),
-                          ),
+                          ],
                         ],
                       ),
                     ),
