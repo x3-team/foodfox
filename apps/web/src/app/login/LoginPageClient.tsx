@@ -134,6 +134,11 @@ export default function LoginPageClient() {
       <p className="mt-6 text-center text-[12px] leading-relaxed text-fox-muted">
         IgG-тест носит информационный характер и не заменяет консультацию врача.
       </p>
+
+      <div className="mt-4 rounded-xl border border-fox-border bg-fox-surface px-4 py-3 text-[12px] leading-relaxed text-fox-muted">
+        <span className="font-medium text-fox-text">Демо-презентация:</span>{" "}
+        demo@foodfox.local / DemoFox2026!
+      </div>
     </div>
   );
 }

@@ -6,6 +6,21 @@ import { useRouter } from "next/navigation";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { IconFile } from "@/components/icons";
 
+function goResults(
+  router: ReturnType<typeof useRouter>,
+  counts: { green: number; yellow: number; red: number },
+  demo = false,
+) {
+  const q = new URLSearchParams({
+    uploaded: "1",
+    green: String(counts.green),
+    yellow: String(counts.yellow),
+    red: String(counts.red),
+    ...(demo ? { demo: "1" } : {}),
+  });
+  router.push(`/results?${q.toString()}`);
+}
+
 export default function UploadPage() {
   const router = useRouter();
   const [dragging, setDragging] = useState(false);
@@ -26,7 +41,7 @@ export default function UploadPage() {
         const res = await fetch(withBasePath("/api/reports/upload"), { method: "POST", body: form });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Ошибка загрузки");
-        router.push("/results");
+        goResults(router, data.counts ?? { green: 0, yellow: 0, red: 0 });
       } catch (e) {
         setError(e instanceof Error ? e.message : "Ошибка загрузки");
       } finally {
@@ -35,6 +50,21 @@ export default function UploadPage() {
     },
     [router],
   );
+
+  const loadDemo = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(withBasePath("/api/demo/load-sample"), { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Ошибка демо");
+      goResults(router, data.counts ?? { green: 0, yellow: 0, red: 0 }, true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Ошибка демо");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -105,6 +135,18 @@ export default function UploadPage() {
         >
           {loading ? "Разбираем отчёт…" : "Загрузить отчёт"}
         </button>
+
+        <button
+          type="button"
+          disabled={loading}
+          onClick={loadDemo}
+          className="w-full rounded-xl border border-fox-primary/30 bg-fox-primary-soft py-3.5 text-[15px] font-semibold text-fox-primary transition hover:bg-fox-primary/10 disabled:opacity-50"
+        >
+          Загрузить демо-отчёт (285 антигенов)
+        </button>
+        <p className="text-center text-[12px] leading-relaxed text-fox-muted">
+          Для презентации: мгновенно создаст план и чат без PDF
+        </p>
       </main>
     </AppShell>
   );

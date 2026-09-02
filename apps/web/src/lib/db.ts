@@ -430,6 +430,31 @@ export async function saveReportFromPdf(
         : `Распознано только ${parsed.length} антигенов из ~286. Проверьте, что PDF не повреждён.`;
     throw new Error(hint);
   }
+  return saveReportFromParsed(clientId, parsed);
+}
+
+export async function loadDemoReport(
+  clientId: string,
+): Promise<{ reportId: string; results: TestResultRow[]; planId: string }> {
+  await ensureSchema();
+  const seedPath = join(process.cwd(), "../../packages/database/seeds/fox-demo-report.json");
+  const raw = JSON.parse(readFileSync(seedPath, "utf-8")) as ParsedResult[];
+  const parsed = raw.filter(
+    (r) => r.foxName && r.zone && !/зеленый \/ красный/i.test(r.foxName),
+  );
+  if (parsed.length < 50) {
+    throw new Error("Демо-отчёт недоступен");
+  }
+  return saveReportFromParsed(clientId, parsed);
+}
+
+export async function saveReportFromParsed(
+  clientId: string,
+  parsed: ParsedResult[],
+): Promise<{ reportId: string; results: TestResultRow[]; planId: string }> {
+  if (parsed.length < 5) {
+    throw new Error(`Недостаточно данных отчёта (${parsed.length} антигенов)`);
+  }
 
   const p = getPool();
   if (!p) {
