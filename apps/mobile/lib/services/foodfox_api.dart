@@ -88,12 +88,17 @@ class FoodFoxApi {
     );
   }
 
-  Future<PlanData?> fetchPlan() async {
+  Future<({PlanData? plan, int currentWeek})> fetchPlan() async {
     final response = await _client.get(_uri("/api/plan"), headers: _headers);
     final data = await _decode(response);
     final planJson = data["plan"];
-    if (planJson == null) return null;
-    return PlanData.fromJson(planJson as Map<String, dynamic>);
+    if (planJson == null) {
+      return (plan: null, currentWeek: data["currentWeek"] as int? ?? 1);
+    }
+    return (
+      plan: PlanData.fromJson(planJson as Map<String, dynamic>),
+      currentWeek: data["currentWeek"] as int? ?? 1,
+    );
   }
 
   Future<({List<ResultItem> results, ZoneCounts counts})> fetchResults() async {

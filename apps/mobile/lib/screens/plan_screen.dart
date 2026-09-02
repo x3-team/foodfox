@@ -5,6 +5,7 @@ import "package:foodfox/theme/fox_theme.dart";
 import "package:foodfox/widgets/list_pagination.dart";
 import "package:foodfox/widgets/page_header.dart";
 import "package:foodfox/widgets/paginated_string_section.dart";
+import "package:foodfox/widgets/week_selector.dart";
 
 class PlanScreen extends StatefulWidget {
   const PlanScreen({super.key, required this.api});
@@ -19,6 +20,7 @@ class _PlanScreenState extends State<PlanScreen> {
   PlanData? _plan;
   var _loading = true;
   var _selectedWeek = 1;
+  var _currentWeek = 1;
   String? _error;
 
   @override
@@ -33,11 +35,12 @@ class _PlanScreenState extends State<PlanScreen> {
       _error = null;
     });
     try {
-      final plan = await widget.api.fetchPlan();
+      final data = await widget.api.fetchPlan();
       setState(() {
-        _plan = plan;
-        if (plan != null && plan.weeks.isNotEmpty) {
-          _selectedWeek = plan.weeks.first.weekNumber;
+        _plan = data.plan;
+        _currentWeek = data.currentWeek;
+        if (data.plan != null && data.plan!.weeks.isNotEmpty) {
+          _selectedWeek = data.currentWeek.clamp(1, 8);
         }
       });
     } catch (e) {
@@ -59,6 +62,7 @@ class _PlanScreenState extends State<PlanScreen> {
       }
     }
     final summary = week?.days.isNotEmpty == true ? week!.days.first : null;
+    final banner = phaseBannerText(_currentWeek, _selectedWeek);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -129,27 +133,33 @@ class _PlanScreenState extends State<PlanScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              "Старт: ${_plan!.startedAt}",
+                              "Старт: ${_plan!.startedAt} · Сейчас неделя $_currentWeek из 8",
                               style: const TextStyle(color: FoxColors.muted),
                             ),
                             const SizedBox(height: 12),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: _plan!.weeks.map((w) {
-                                  final active = w.weekNumber == _selectedWeek;
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: ChoiceChip(
-                                      label: Text("Нед. ${w.weekNumber} · ${w.phase}"),
-                                      selected: active,
-                                      onSelected: (_) =>
-                                          setState(() => _selectedWeek = w.weekNumber),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
+                            WeekSelector(
+                              currentWeek: _currentWeek,
+                              selectedWeek: _selectedWeek,
+                              onSelect: (w) => setState(() => _selectedWeek = w),
                             ),
+                            if (banner != null)
+                              Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: FoxColors.primarySoft,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  banner,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: FoxColors.primaryDark,
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ),
                             if (summary != null) ...[
                               const SizedBox(height: 16),
                               Card(

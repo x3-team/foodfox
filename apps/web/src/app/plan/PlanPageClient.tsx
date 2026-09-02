@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { PaginatedStringList } from "@/components/PaginatedStringList";
+import { PhaseBanner, WeekSelector } from "@/components/WeekSelector";
 import { PLAN_PROTOCOL } from "@/lib/plan-engine";
 
 interface PlanDay {
@@ -131,39 +132,26 @@ export default function PlanPageClient() {
                 {" · "}
                 Сейчас неделя{" "}
                 <span className="font-semibold text-fox-primary">{currentWeek}</span> из 8
+                {currentWeek > 4 && (
+                  <>
+                    {" · "}
+                    <span className="font-medium text-fox-text">{weekData?.phase}</span>
+                  </>
+                )}
               </p>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {plan.weeks.map((w) => {
-                const active = w.weekNumber === selectedWeek;
-                const isCurrent = w.weekNumber === currentWeek;
-                return (
-                  <button
-                    key={w.weekNumber}
-                    type="button"
-                    onClick={() => setSelectedWeek(w.weekNumber)}
-                    className={`shrink-0 rounded-xl px-3 py-2 text-left transition ${
-                      active
-                        ? "bg-fox-primary text-white shadow-card"
-                        : "bg-fox-surface text-fox-text ring-1 ring-fox-border"
-                    }`}
-                  >
-                    <span className="block text-[13px] font-semibold">
-                      Нед. {w.weekNumber}
-                      {isCurrent && !active && (
-                        <span className="ml-1 text-[10px] text-fox-primary">•</span>
-                      )}
-                    </span>
-                    <span
-                      className={`block text-[11px] ${active ? "text-white/85" : "text-fox-muted"}`}
-                    >
-                      {w.phase}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            <WeekSelector
+              currentWeek={currentWeek}
+              selectedWeek={selectedWeek}
+              onSelect={setSelectedWeek}
+            />
+
+            <PhaseBanner
+              currentWeek={currentWeek}
+              selectedWeek={selectedWeek}
+              phase={weekData?.phase ?? ""}
+            />
 
             {summaryDay && (
               <div className="fox-card space-y-3 px-4 py-4">
