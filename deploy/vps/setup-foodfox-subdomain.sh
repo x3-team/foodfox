@@ -37,20 +37,55 @@ echo "==> Nginx site ($DOMAIN)"
 sed "s/foodfox.yuri.guru/$DOMAIN/g" "$APP_ROOT/deploy/vps/nginx-foodfox-subdomain.conf" > "$NGINX_SITE"
 ln -sf "$NGINX_SITE" "/etc/nginx/sites-enabled/$DOMAIN"
 
-echo "==> Remove /demofox subpath from yuri.guru (if present)"
+echo "==> Remove /demofox proxy from yuri.guru (if present)"
 YURI_SITE="/etc/nginx/sites-enabled/yuri.guru"
-if [[ -f "$YURI_SITE" ]] && grep -q "# FoodFox /demofox" "$YURI_SITE"; then
-  awk '
-    /^# FoodFox \/demofox/ { skip=1; next }
-    skip && /^[[:space:]]*location = \/demofox/ { next }
-    skip && /^[[:space:]]*return 301/ { next }
-    skip && /^[[:space:]]*}/ && !/proxy/ { skip=0; next }
-    skip && /location \/demofox\// { inblock=1; next }
-    inblock && /^[[:space:]]*}/ { inblock=0; next }
-    inblock { next }
-    { print }
-  ' "$YURI_SITE" > "${YURI_SITE}.tmp" && mv "${YURI_SITE}.tmp" "$YURI_SITE"
-  echo "Removed /demofox snippet from yuri.guru"
+if [[ -f "$YURI_SITE" ]]; then
+  python3 - <<'PY'
+import re
+from pathlib import Path
+
+path = Path("/etc/nginx/sites-enabled/yuri.guru")
+text = path.read_text()
+
+# Drop any previously inserted demofox proxy snippet (comments + location blocks)
+text = re.sub(
+    r"\n# Nginx snippet for FoodFox demo at https://yuri\.guru/demofox.*?"
+    r"(?=\n\s*location / \{)",
+    "\n",
+    text,
+    flags=re.S,
+)
+text = re.sub(
+    r"\n# FoodFox /demofox.*?(?=\n\s*location / \{)",
+    "\n",
+    text,
+    flags=re.S,
+)
+text = re.sub(
+    r"\n\s*location = /demofox \{[^}]+\}\n",
+    "\n",
+    text,
+)
+text = re.sub(
+    r"\n\s*location /demofox/ \{[^}]+\}\n",
+    "\n",
+    text,
+    flags=re.S,
+)
+
+redirect_marker = "# FoodFox redirect /demofox -> subdomain"
+if redirect_marker not in text:
+    redirect = Path("/var/www/foodfox/deploy/vps/nginx-yuri-demofox-redirect.conf").read_text()
+    text = re.sub(
+        r"(\n\s*# Основная конфигурация\n\s*location / \{)",
+        f"\n    {redirect_marker}\n{redirect}\n\\1",
+        text,
+        count=1,
+    )
+
+path.write_text(text)
+print("yuri.guru nginx cleaned + redirect added")
+PY
 fi
 
 nginx -t
