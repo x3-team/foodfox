@@ -11,7 +11,7 @@ set -euo pipefail
 REPO="${REPO:-https://github.com/x3-team/foodfox.git}"
 BRANCH="${BRANCH:-cursor/mvp-web-prototype-5e5b}"
 APP_ROOT="${APP_ROOT:-/var/www/foodfox}"
-PORT="${PORT:-3010}"
+PORT="${PORT:-3030}"
 
 echo "==> FoodFox VPS setup"
 echo "    APP_ROOT=$APP_ROOT  PORT=$PORT  BRANCH=$BRANCH"
@@ -59,10 +59,15 @@ npm ci --include=dev
 npm run build
 
 echo "==> PM2"
+cd "$APP_ROOT/apps/web"
+set -a
+# shellcheck disable=SC1091
+source .env
+set +a
 if pm2 describe foodfox >/dev/null 2>&1; then
   pm2 restart foodfox --update-env
 else
-  pm2 start npm --name foodfox -- start
+  pm2 start npm --name foodfox --update-env -- start
 fi
 pm2 save
 
