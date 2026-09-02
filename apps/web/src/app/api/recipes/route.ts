@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getActivePlanContext, getOrCreateDemoClient, getRecipes } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const clientId = await getOrCreateDemoClient();
   const ctx = await getActivePlanContext(clientId);

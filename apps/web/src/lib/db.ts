@@ -46,12 +46,19 @@ let pool: Pool | null = null;
 let memory: MemoryStore | null = null;
 let schemaReady = false;
 
+function shouldUseDbSsl(connectionString: string): boolean {
+  if (process.env.DATABASE_SSL === "true") return true;
+  if (process.env.DATABASE_SSL === "false") return false;
+  return !/localhost|127\.0\.0\.1/.test(connectionString);
+}
+
 function getPool(): Pool | null {
   if (!process.env.DATABASE_URL) return null;
   if (!pool) {
+    const connectionString = process.env.DATABASE_URL;
     pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
+      connectionString,
+      ssl: shouldUseDbSsl(connectionString) ? { rejectUnauthorized: false } : undefined,
     });
   }
   return pool;
