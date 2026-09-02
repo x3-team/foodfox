@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
   const heli = createHeliClient();
   if (!heli) {
     reply =
-      "AI-чат не настроен на сервере. Администратору нужно добавить HELI_API_KEY (getheli.ru) в Render → Environment.";
+      "AI-чат не настроен на сервере. Администратору нужно добавить FOX_HELI_API_KEY (getheli.ru) в переменные окружения.";
     await addChatMessage(clientId, "assistant", reply);
     const messages = await getChatMessages(clientId);
     return NextResponse.json({ messages });

@@ -23,7 +23,7 @@ Supabase: [Dashboard → foodfox → Settings → Database](https://supabase.com
 
 После сохранения `/api/health` вернёт `"database": "postgres"`.
 
-### 2. `HELI_API_KEY` (обязательно для AI-чата)
+### 2. `FOX_HELI_API_KEY` (обязательно для AI-чата)
 
 - Ключ: [getheli.ru](https://getheli.ru) → «Получить ключ»
 - `HELI_BASE_URL` уже задан: `https://getheli.ru/v1`
@@ -44,7 +44,7 @@ Supabase: [Dashboard → foodfox → Settings → Database](https://supabase.com
 ```bash
 cd apps/web
 export DATABASE_URL="postgresql://..."
-export HELI_API_KEY="sk-..."
+export FOX_HELI_API_KEY="sk-..."
 export HELI_BASE_URL="https://getheli.ru/v1"
 npm run dev
 ```

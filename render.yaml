@@ -24,7 +24,7 @@ services:
         fromDatabase:
           name: foodfox-db
           property: connectionString
-      - key: HELI_API_KEY
+      - key: FOX_HELI_API_KEY
         sync: false
       - key: HELI_BASE_URL
         sync: false

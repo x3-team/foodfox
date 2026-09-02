@@ -2,7 +2,7 @@
  * Heli (getheli.ru) — OpenAI-compatible LLM gateway
  *
  * Env:
- *   HELI_API_KEY
+ *   FOX_HELI_API_KEY
  *   HELI_BASE_URL   — https://getheli.ru/v1 (OpenAI-compatible)
  *   HELI_CHAT_MODEL — default: gpt-4o-mini
  */
@@ -10,11 +10,11 @@
 import OpenAI from 'openai';
 
 export function createHeliClient() {
-  const apiKey = process.env.HELI_API_KEY;
+  const apiKey = process.env.FOX_HELI_API_KEY;
   const baseURL = process.env.HELI_BASE_URL;
 
   if (!apiKey || !baseURL) {
-    throw new Error('HELI_API_KEY and HELI_BASE_URL must be set');
+    throw new Error('FOX_HELI_API_KEY and HELI_BASE_URL must be set');
   }
 
   return new OpenAI({ apiKey, baseURL });

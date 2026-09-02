@@ -3,7 +3,7 @@
 # Prerequisites: Node 20+, git, docker, docker compose, pm2, nginx, certbot
 #
 #   export DOMAIN=demo.example.com
-#   export HELI_API_KEY=sk-...
+#   export FOX_HELI_API_KEY=sk-...
 #   bash deploy/vps/setup.sh
 
 set -euo pipefail
@@ -40,12 +40,17 @@ docker compose -f deploy/vps/docker-compose.yml up -d
 ENV_FILE="$APP_ROOT/apps/web/.env"
 if [[ ! -f "$ENV_FILE" ]]; then
   cp deploy/vps/.env.example "$ENV_FILE"
-  echo "Created $ENV_FILE — edit POSTGRES password / HELI_API_KEY if needed"
+  echo "Created $ENV_FILE — edit POSTGRES password / FOX_HELI_API_KEY if needed"
 fi
 
-# Inject HELI key if passed
-if [[ -n "${HELI_API_KEY:-}" ]]; then
-  grep -q '^HELI_API_KEY=' "$ENV_FILE" && sed -i "s|^HELI_API_KEY=.*|HELI_API_KEY=$HELI_API_KEY|" "$ENV_FILE" || echo "HELI_API_KEY=$HELI_API_KEY" >> "$ENV_FILE"
+# Inject Heli key if passed
+if [[ -n "${FOX_HELI_API_KEY:-}" ]]; then
+  grep -q '^FOX_HELI_API_KEY=' "$ENV_FILE" && sed -i "s|^FOX_HELI_API_KEY=.*|FOX_HELI_API_KEY=$FOX_HELI_API_KEY|" "$ENV_FILE" || echo "FOX_HELI_API_KEY=$FOX_HELI_API_KEY" >> "$ENV_FILE"
+fi
+
+# Remove legacy env name
+if grep -q '^HELI_API_KEY=' "$ENV_FILE" 2>/dev/null; then
+  sed -i '/^HELI_API_KEY=/d' "$ENV_FILE"
 fi
 
 set -a

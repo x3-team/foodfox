@@ -46,7 +46,7 @@ sudo bash deploy/vps/setup-demofox-subpath.sh
 
 ```bash
 export DOMAIN=demo.your-domain.ru
-export HELI_API_KEY=sk-...
+export FOX_HELI_API_KEY=sk-...
 git clone -b cursor/mvp-web-prototype-5e5b https://github.com/x3-team/foodfox.git /var/www/foodfox
 cd /var/www/foodfox
 # Для корня домена уберите NEXT_PUBLIC_BASE_PATH из apps/web/.env
@@ -65,7 +65,7 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGb40yeKa1EJNG0R2c82jGMJaJdB/2XQskJEZDya/b7H
 
 ## Что прислать, когда будете готовы
 
-1. **`HELI_API_KEY`** — для AI-чата
+1. **`FOX_HELI_API_KEY`** — для AI-чата
 2. Логин/пароль для демо (или сгенерирует setup-скрипт)
 
 ## Порты

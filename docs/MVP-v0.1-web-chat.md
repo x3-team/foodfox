@@ -79,7 +79,7 @@ Heli — прокси ко **всем моделям** через **OpenAI-compa
 import OpenAI from 'openai';
 
 export const heli = new OpenAI({
-  apiKey: process.env.HELI_API_KEY!,
+  apiKey: process.env.FOX_HELI_API_KEY!,
   baseURL: process.env.HELI_BASE_URL!, // из личного кабинета getheli.ru, обычно .../v1
 });
 
@@ -97,7 +97,7 @@ const response = await heli.chat.completions.create({
 ### Env vars
 
 ```env
-HELI_API_KEY=sk-...                    # ключ из личного кабинета getheli.ru
+FOX_HELI_API_KEY=sk-...                    # ключ из личного кабинета getheli.ru
 HELI_BASE_URL=https://getheli.ru/v1    # адрес API (OpenAI-compatible), см. ниже
 HELI_CHAT_MODEL=gpt-4o-mini             # любая модель из каталога Heli
 ```
@@ -110,14 +110,14 @@ Heli — прокси с OpenAI-совместимым протоколом: в 
 
 | Переменная | Значение |
 |------------|----------|
-| `HELI_API_KEY` | Ваш ключ после «Получить ключ» на [getheli.ru](https://getheli.ru) |
+| `FOX_HELI_API_KEY` | Ваш ключ после «Получить ключ» на [getheli.ru](https://getheli.ru) |
 | `HELI_BASE_URL` | **`https://getheli.ru/v1`** (проверено: endpoint `/v1/models` отвечает 401 без ключа — значит живой) |
 
 Пример проверки ключа:
 
 ```bash
 curl https://getheli.ru/v1/models \
-  -H "Authorization: Bearer ВАШ_HELI_API_KEY"
+  -H "Authorization: Bearer ВАШ_FOX_HELI_API_KEY"
 ```
 
 ### Выбор модели
@@ -193,7 +193,7 @@ services:
         fromDatabase:
           name: foodfox-db
           property: connectionString
-      - key: HELI_API_KEY
+      - key: FOX_HELI_API_KEY
         sync: false
       - key: HELI_BASE_URL
         sync: false
@@ -235,6 +235,6 @@ services:
 
 ## Что нужно от вас сейчас
 
-1. **HELI_BASE_URL** и **HELI_API_KEY** из личного кабинета getheli.ru
+1. **HELI_BASE_URL** и **FOX_HELI_API_KEY** из личного кабинета getheli.ru
 2. **S3/R2** bucket (или временно парсим без хранения — только in-memory для POC)
 3. Подтверждение: **cron утром** или **reminder при открытии чата** для v0.1 (cron можно отложить)

@@ -4,7 +4,7 @@
 import OpenAI from "openai";
 
 export function createHeliClient() {
-  const apiKey = process.env.HELI_API_KEY;
+  const apiKey = process.env.FOX_HELI_API_KEY;
   const baseURL = process.env.HELI_BASE_URL;
   if (!apiKey || !baseURL) return null;
   return new OpenAI({ apiKey, baseURL });
