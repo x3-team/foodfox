@@ -42,6 +42,25 @@ export function IconChat(props: IconProps) {
   );
 }
 
+export function IconPlan(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" {...props}>
+      <rect x="4" y="5" width="16" height="16" rx="2" strokeLinejoin="round" />
+      <path d="M8 3v4M16 3v4M4 10h16" strokeLinecap="round" />
+      <path d="M8 14h3M8 18h5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconUser(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" {...props}>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function IconSend(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>

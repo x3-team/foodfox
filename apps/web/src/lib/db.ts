@@ -1,10 +1,10 @@
 import { Pool } from "pg";
 import { readFileSync } from "fs";
 import { join } from "path";
-import type { ParsedResult, Zone } from "./fox-parser";
+import { parseFoxPdfText, type ParsedResult, type Zone } from "./fox-parser";
 import type { PlanDay } from "./plan-engine";
 import { buildEightWeekPlan, getWeekPhase } from "./plan-engine";
-import { parseFoxPdfText } from "./fox-parser";
+import { hashPassword, verifyPassword, type SessionData } from "./auth";
 
 export interface TestResultRow {
   id: string;
@@ -196,6 +196,227 @@ export async function getOrCreateDemoClient(): Promise<string> {
   return client.rows[0].id;
 }
 
+export async function registerUser(
+  email: string,
+  password: string,
+  displayName: string,
+): Promise<SessionData> {
+  await ensureSchema();
+  const p = getPool();
+  if (!p) throw new Error("Database required for registration");
+
+  const normalized = email.trim().toLowerCase();
+  const existing = await p.query("SELECT id FROM users WHERE email = $1", [normalized]);
+  if (existing.rows[0]) throw new Error("Email уже зарегистрирован");
+
+  const user = await p.query(
+    `INSERT INTO users (email, password_hash, role) VALUES ($1, $2, 'client') RETURNING id`,
+    [normalized, hashPassword(password)],
+  );
+  const client = await p.query(
+    `INSERT INTO clients (user_id, display_name) VALUES ($1, $2) RETURNING id`,
+    [user.rows[0].id, displayName.trim() || "Клиент"],
+  );
+  const clientId = client.rows[0].id;
+
+  await ensureChatThread(p, clientId, null);
+  await seedWelcomeMessage(p, clientId);
+
+  return {
+    userId: user.rows[0].id,
+    clientId,
+    email: normalized,
+    displayName: displayName.trim() || "Клиент",
+  };
+}
+
+async function ensureChatThread(
+  p: Pool,
+  clientId: string,
+  planId: string | null,
+): Promise<string> {
+  const { rows } = await p.query(
+    `INSERT INTO chat_threads (client_id, plan_id) VALUES ($1, $2)
+     ON CONFLICT (client_id) DO UPDATE SET
+       plan_id = COALESCE(EXCLUDED.plan_id, chat_threads.plan_id)
+     RETURNING id`,
+    [clientId, planId],
+  );
+  return rows[0].id as string;
+}
+
+async function seedWelcomeMessage(p: Pool, clientId: string): Promise<void> {
+  const { rows } = await p.query(
+    `SELECT cm.id FROM chat_messages cm
+     JOIN chat_threads ct ON ct.id = cm.thread_id
+     WHERE ct.client_id = $1 LIMIT 1`,
+    [clientId],
+  );
+  if (rows[0]) return;
+
+  const threadId = await ensureChatThread(p, clientId, null);
+  await p.query(
+    `INSERT INTO chat_messages (thread_id, role, message_type, content, read_at)
+     VALUES ($1, 'assistant', 'chat', $2, now())`,
+    [
+      threadId,
+      "Здравствуйте! Загрузите PDF-отчёт FOX на вкладке «Отчёт» — после разбора создам 8-недельный план и смогу ответить по вашим зонам IgG.",
+    ],
+  );
+}
+
+export async function loginUser(
+  email: string,
+  password: string,
+): Promise<SessionData | null> {
+  await ensureSchema();
+  const p = getPool();
+  if (!p) return null;
+
+  const normalized = email.trim().toLowerCase();
+  const { rows } = await p.query(
+    `SELECT u.id, u.password_hash, c.id AS client_id, c.display_name
+     FROM users u
+     JOIN clients c ON c.user_id = u.id
+     WHERE u.email = $1 LIMIT 1`,
+    [normalized],
+  );
+  const row = rows[0];
+  if (!row?.password_hash || !verifyPassword(password, row.password_hash)) return null;
+
+  return {
+    userId: row.id,
+    clientId: row.client_id,
+    email: normalized,
+    displayName: row.display_name ?? "Клиент",
+  };
+}
+
+export async function getClientProfile(clientId: string) {
+  await ensureSchema();
+  const p = getPool();
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (!p) {
+    return {
+      email: "demo@local",
+      displayName: "Демо",
+      hasReport: memory!.results.length > 0,
+      parsedCount: memory!.results.length,
+      planStartedAt: memory!.planDays[0]?.date ?? null,
+      currentWeek: memory!.planDays.find((d) => d.date === today)?.weekNumber ?? 1,
+    };
+  }
+
+  const { rows } = await p.query(
+    `SELECT u.email, c.display_name,
+            (SELECT COUNT(*)::int FROM test_results tr
+             JOIN reports r ON r.id = tr.report_id WHERE r.client_id = c.id) AS parsed_count,
+            np.started_at,
+            (SELECT pd.week_number FROM plan_days pd
+             JOIN nutrition_plans np2 ON np2.id = pd.plan_id
+             WHERE np2.client_id = c.id AND np2.status = 'active' AND pd.date = $2 LIMIT 1) AS current_week
+     FROM clients c
+     JOIN users u ON u.id = c.user_id
+     LEFT JOIN nutrition_plans np ON np.client_id = c.id AND np.status = 'active'
+     WHERE c.id = $1`,
+    [clientId, today],
+  );
+  const row = rows[0];
+  if (!row) throw new Error("Client not found");
+
+  return {
+    email: row.email,
+    displayName: row.display_name ?? "Клиент",
+    hasReport: (row.parsed_count as number) > 0,
+    parsedCount: row.parsed_count as number,
+    planStartedAt: row.started_at
+      ? new Date(row.started_at).toISOString().slice(0, 10)
+      : null,
+    currentWeek: (row.current_week as number) ?? 1,
+  };
+}
+
+export async function getFullPlan(clientId: string) {
+  await ensureSchema();
+  const p = getPool();
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (!p) {
+    if (!memory!.planDays.length) return null;
+    const weeks = new Map<number, PlanDay[]>();
+    for (const d of memory!.planDays) {
+      weeks.set(d.weekNumber, [...(weeks.get(d.weekNumber) ?? []), d]);
+    }
+    return {
+      planId: memory!.planId,
+      startedAt: memory!.planDays[0]?.date ?? null,
+      weeks: Array.from(weeks.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([weekNumber, days]) => ({
+          weekNumber,
+          phase: getWeekPhase(weekNumber),
+          days: days.map((d) => ({
+            ...d,
+            isToday: d.date === today,
+          })),
+        })),
+    };
+  }
+
+  const plan = await p.query(
+    `SELECT id, started_at FROM nutrition_plans
+     WHERE client_id = $1 AND status = 'active'
+     ORDER BY created_at DESC LIMIT 1`,
+    [clientId],
+  );
+  if (!plan.rows[0]) return null;
+
+  const planId = plan.rows[0].id;
+  const { rows } = await p.query(
+    `SELECT date, week_number, allowed, forbidden, rotation, bot_message
+     FROM plan_days WHERE plan_id = $1 ORDER BY date`,
+    [planId],
+  );
+
+  const weeks = new Map<number, PlanDayDto[]>();
+  for (const row of rows) {
+    const wn = row.week_number as number;
+    const day: PlanDayDto = {
+      date: new Date(row.date).toISOString().slice(0, 10),
+      weekNumber: wn,
+      allowed: row.allowed ?? [],
+      forbidden: row.forbidden ?? [],
+      rotation: row.rotation ?? [],
+      botMessage: row.bot_message ?? "",
+      isToday: new Date(row.date).toISOString().slice(0, 10) === today,
+    };
+    weeks.set(wn, [...(weeks.get(wn) ?? []), day]);
+  }
+
+  return {
+    planId,
+    startedAt: new Date(plan.rows[0].started_at).toISOString().slice(0, 10),
+    weeks: Array.from(weeks.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([weekNumber, days]) => ({
+        weekNumber,
+        phase: getWeekPhase(weekNumber),
+        days,
+      })),
+  };
+}
+
+export interface PlanDayDto {
+  date: string;
+  weekNumber: number;
+  allowed: string[];
+  forbidden: string[];
+  rotation: string[];
+  botMessage: string;
+  isToday: boolean;
+}
+
 export async function saveReportFromPdf(
   clientId: string,
   pdfText: string,
@@ -256,11 +477,18 @@ export async function saveReportFromPdf(
   }
 
   const plan = await p.query(
+    `UPDATE nutrition_plans SET status = 'completed'
+     WHERE client_id = $1 AND status = 'active'`,
+    [clientId],
+  );
+  void plan;
+
+  const newPlan = await p.query(
     `INSERT INTO nutrition_plans (client_id, report_id, started_at, status)
      VALUES ($1, $2, CURRENT_DATE, 'active') RETURNING id`,
     [clientId, reportId],
   );
-  const planId = plan.rows[0].id;
+  const planId = newPlan.rows[0].id;
   const planDays = buildEightWeekPlan(parsed);
 
   for (const day of planDays) {
@@ -279,6 +507,20 @@ export async function saveReportFromPdf(
       ],
     );
   }
+
+  const threadId = await ensureChatThread(p, clientId, planId);
+  const greenCount = parsed.filter((r) => r.zone === "green").length;
+  const redCount = parsed.filter((r) => r.zone === "red").length;
+  await p.query(
+    `INSERT INTO chat_messages (thread_id, role, message_type, content)
+     VALUES ($1, 'assistant', 'plan_update', $2)`,
+    [
+      threadId,
+      `✅ Отчёт FOX разобран: ${parsed.length} антигенов (🟢 ${greenCount}, 🔴 ${redCount}). ` +
+        `Создан 8-недельный план на 56 дней. Неделя 1 — элиминация. ` +
+        `Откройте вкладку «План» или спросите меня про продукты и недели.`,
+    ],
+  );
 
   const results = await getResultsForClient(clientId);
   return { reportId, results, planId };
@@ -493,6 +735,8 @@ export async function getChatMessages(clientId: string): Promise<ChatMessageRow[
   await ensureTodayReminder(clientId);
 
   const p = getPool();
+  if (p) await seedWelcomeMessage(p, clientId);
+
   if (!p) {
     return [...memory!.messages].sort(
       (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),

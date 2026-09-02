@@ -124,3 +124,113 @@ String getWeekPhase(int weekNumber) {
   if (weekNumber <= 6) return "Стабилизация";
   return "Жёлтая зона";
 }
+
+class UserProfile {
+  UserProfile({required this.email, required this.displayName});
+
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      email: json["email"] as String,
+      displayName: json["displayName"] as String? ?? "Клиент",
+    );
+  }
+
+  final String email;
+  final String displayName;
+}
+
+class ClientProfile {
+  ClientProfile({
+    required this.hasReport,
+    required this.parsedCount,
+    required this.currentWeek,
+    this.planStartedAt,
+  });
+
+  factory ClientProfile.fromJson(Map<String, dynamic> json) {
+    return ClientProfile(
+      hasReport: json["hasReport"] as bool? ?? false,
+      parsedCount: json["parsedCount"] as int? ?? 0,
+      currentWeek: json["currentWeek"] as int? ?? 1,
+      planStartedAt: json["planStartedAt"] as String?,
+    );
+  }
+
+  final bool hasReport;
+  final int parsedCount;
+  final int currentWeek;
+  final String? planStartedAt;
+}
+
+class PlanDayItem {
+  PlanDayItem({
+    required this.date,
+    required this.weekNumber,
+    required this.allowed,
+    required this.forbidden,
+    required this.isToday,
+    this.botMessage,
+  });
+
+  factory PlanDayItem.fromJson(Map<String, dynamic> json) {
+    return PlanDayItem(
+      date: json["date"] as String,
+      weekNumber: json["weekNumber"] as int,
+      allowed: (json["allowed"] as List<dynamic>? ?? []).cast<String>(),
+      forbidden: (json["forbidden"] as List<dynamic>? ?? []).cast<String>(),
+      isToday: json["isToday"] as bool? ?? false,
+      botMessage: json["botMessage"] as String?,
+    );
+  }
+
+  final String date;
+  final int weekNumber;
+  final List<String> allowed;
+  final List<String> forbidden;
+  final bool isToday;
+  final String? botMessage;
+}
+
+class PlanWeekItem {
+  PlanWeekItem({
+    required this.weekNumber,
+    required this.phase,
+    required this.days,
+  });
+
+  factory PlanWeekItem.fromJson(Map<String, dynamic> json) {
+    return PlanWeekItem(
+      weekNumber: json["weekNumber"] as int,
+      phase: json["phase"] as String? ?? "",
+      days: (json["days"] as List<dynamic>)
+          .map((e) => PlanDayItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  final int weekNumber;
+  final String phase;
+  final List<PlanDayItem> days;
+}
+
+class PlanData {
+  PlanData({
+    required this.planId,
+    required this.startedAt,
+    required this.weeks,
+  });
+
+  factory PlanData.fromJson(Map<String, dynamic> json) {
+    return PlanData(
+      planId: json["planId"] as String,
+      startedAt: json["startedAt"] as String,
+      weeks: (json["weeks"] as List<dynamic>)
+          .map((e) => PlanWeekItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  final String planId;
+  final String startedAt;
+  final List<PlanWeekItem> weeks;
+}

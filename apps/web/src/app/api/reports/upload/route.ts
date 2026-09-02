@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFParse } from "pdf-parse";
+import { getAuthClientId, handleAuthError } from "@/lib/api-auth";
+import { getResultsForClient, saveReportFromPdf } from "@/lib/db";
 import { countZones } from "@/lib/fox-parser";
-import { getOrCreateDemoClient, getResultsForClient, saveReportFromPdf } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
       text = "";
     }
 
-    const clientId = await getOrCreateDemoClient();
+    const clientId = await getAuthClientId();
     const { reportId, results, planId } = await saveReportFromPdf(clientId, text);
     const counts = countZones(
       results.map((r) => ({
@@ -41,6 +42,8 @@ export async function POST(req: NextRequest) {
       results: await getResultsForClient(clientId),
     });
   } catch (e) {
+    const auth = handleAuthError(e);
+    if (auth) return auth;
     console.error(e);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Ошибка парсинга" },

@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import ChatPageClient from "./ChatPageClient";
+import LoginPageClient from "./LoginPageClient";
 
-export default function ChatPage() {
+export default function LoginPage() {
   return (
     <Suspense fallback={<div className="p-8 text-center text-fox-muted">Загрузка…</div>}>
-      <ChatPageClient />
+      <LoginPageClient />
     </Suspense>
   );
 }
