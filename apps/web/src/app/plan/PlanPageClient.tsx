@@ -142,6 +142,10 @@ export default function PlanPageClient() {
             </div>
 
             <WeekSelector
+              weeks={plan.weeks.map((w) => ({
+                weekNumber: w.weekNumber,
+                phase: w.phase,
+              }))}
               currentWeek={currentWeek}
               selectedWeek={selectedWeek}
               onSelect={setSelectedWeek}

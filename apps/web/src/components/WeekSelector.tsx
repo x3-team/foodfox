@@ -1,60 +1,73 @@
 "use client";
 
-import { PLAN_WEEK_GROUPS, getWeekStatus } from "@/lib/plan-weeks";
+import { useEffect, useRef } from "react";
+import { getWeekStatus } from "@/lib/plan-weeks";
+import { getWeekPhase } from "@/lib/plan-engine";
+
+export interface PlanWeekTab {
+  weekNumber: number;
+  phase: string;
+}
 
 interface WeekSelectorProps {
+  weeks: PlanWeekTab[];
   currentWeek: number;
   selectedWeek: number;
   onSelect: (week: number) => void;
 }
 
-export function WeekSelector({ currentWeek, selectedWeek, onSelect }: WeekSelectorProps) {
-  return (
-    <div className="space-y-3">
-      {PLAN_WEEK_GROUPS.map((group) => (
-        <div key={group.phase} className="space-y-1.5">
-          <p className="px-0.5 text-[12px] font-semibold uppercase tracking-wide text-fox-muted">
-            {group.phase} · нед. {group.weeks[0]}–{group.weeks[group.weeks.length - 1]}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {group.weeks.map((weekNumber) => {
-              const active = weekNumber === selectedWeek;
-              const status = getWeekStatus(weekNumber, currentWeek);
-              const isCurrent = status === "current";
+/** Horizontal week pills: ~4 visible + peek of the 5th (scroll for 6–8). */
+export function WeekSelector({ weeks, currentWeek, selectedWeek, onSelect }: WeekSelectorProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-              return (
-                <button
-                  key={weekNumber}
-                  type="button"
-                  onClick={() => onSelect(weekNumber)}
-                  className={`min-w-[4.5rem] rounded-xl px-3 py-2 text-left transition ${
-                    active
-                      ? "bg-fox-primary text-white shadow-card"
-                      : status === "past"
-                        ? "bg-fox-surface/80 text-fox-muted ring-1 ring-fox-border"
-                        : "bg-fox-surface text-fox-text ring-1 ring-fox-border"
-                  } ${isCurrent && !active ? "ring-2 ring-fox-primary/50" : ""}`}
-                >
-                  <span className="block text-[13px] font-semibold">
-                    {status === "past" && !active ? "✓ " : ""}
-                    Нед. {weekNumber}
-                    {isCurrent && !active && (
-                      <span className="ml-1 text-[10px] text-fox-primary">•</span>
-                    )}
-                  </span>
-                  <span
-                    className={`block text-[11px] ${
-                      active ? "text-white/85" : "text-fox-muted"
-                    }`}
-                  >
-                    {isCurrent ? "сейчас" : status === "past" ? "пройдена" : "далее"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const active = el.querySelector<HTMLElement>(`[data-week="${selectedWeek}"]`);
+    active?.scrollIntoView({ behavior: "smooth", inline: "nearest", block: "nearest" });
+  }, [selectedWeek]);
+
+  return (
+    <div className="relative -mx-1">
+      <div
+        ref={scrollRef}
+        className="flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth pb-1 pl-0.5 pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {weeks.map((w) => {
+          const active = w.weekNumber === selectedWeek;
+          const isCurrent = w.weekNumber === currentWeek;
+          const status = getWeekStatus(w.weekNumber, currentWeek);
+          const phase = w.phase || getWeekPhase(w.weekNumber);
+
+          return (
+            <button
+              key={w.weekNumber}
+              type="button"
+              data-week={w.weekNumber}
+              onClick={() => onSelect(w.weekNumber)}
+              className={`shrink-0 snap-start rounded-xl px-3 py-2.5 text-left transition [flex:0_0_calc((100%-1.5rem)/4.15)] ${
+                active
+                  ? "bg-fox-primary text-white shadow-card"
+                  : "bg-fox-surface text-fox-text ring-1 ring-fox-border"
+              } ${isCurrent && !active ? "ring-2 ring-fox-primary/45" : ""}`}
+            >
+              <span className="block text-[13px] font-semibold">
+                {status === "past" && !active ? "✓ " : ""}
+                Нед. {w.weekNumber}
+              </span>
+              <span
+                className={`block text-[11px] leading-tight ${active ? "text-white/85" : "text-fox-muted"}`}
+              >
+                {phase}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <div
+        className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-fox-bg via-fox-bg/80 to-transparent"
+        aria-hidden
+      />
     </div>
   );
 }
@@ -71,8 +84,7 @@ export function PhaseBanner({ currentWeek, selectedWeek, phase }: PhaseBannerPro
   if (currentWeek === 5) {
     return (
       <div className="fox-card border border-fox-primary/20 bg-fox-primary-soft px-4 py-3 text-[14px] leading-relaxed text-fox-primary-dark">
-        🎉 Элиминация завершена — началась <strong>стабилизация</strong> (нед. 5–6). Меню
-        постепенно расширяется, красная зона по-прежнему исключена.
+        🎉 Элиминация завершена — началась <strong>стабилизация</strong> (нед. 5–6).
       </div>
     );
   }
@@ -80,8 +92,7 @@ export function PhaseBanner({ currentWeek, selectedWeek, phase }: PhaseBannerPro
   if (currentWeek === 7) {
     return (
       <div className="fox-card border border-fox-yellow/30 bg-amber-50 px-4 py-3 text-[14px] leading-relaxed text-fox-text">
-        Финальная фаза — <strong>расширение</strong> (нед. 7–8). Жёлтая зона добавляется по
-        ротации, бот подскажет что можно сегодня.
+        Финальная фаза — <strong>расширение</strong> (нед. 7–8).
       </div>
     );
   }
@@ -89,7 +100,7 @@ export function PhaseBanner({ currentWeek, selectedWeek, phase }: PhaseBannerPro
   if (currentWeek === 8) {
     return (
       <div className="fox-card border border-fox-primary/20 bg-fox-primary-soft px-4 py-3 text-[14px] leading-relaxed text-fox-primary-dark">
-        Последняя неделя плана. После неё можно обсудить с нутрициologом следующие шаги в чате.
+        Последняя неделя плана.
       </div>
     );
   }
@@ -97,8 +108,7 @@ export function PhaseBanner({ currentWeek, selectedWeek, phase }: PhaseBannerPro
   if (currentWeek <= 4 && phase === "Элиминация") {
     return (
       <p className="px-0.5 text-[13px] text-fox-muted">
-        Сейчас элиминация — нед. {currentWeek} из 4. Дальше автоматически откроются нед. 5–8 с
-        новыми фазами в этих же плашках.
+        Листайте плашки вправо — всего 8 недель (→ стабилизация и расширение).
       </p>
     );
   }

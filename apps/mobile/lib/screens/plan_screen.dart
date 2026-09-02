@@ -138,6 +138,7 @@ class _PlanScreenState extends State<PlanScreen> {
                             ),
                             const SizedBox(height: 12),
                             WeekSelector(
+                              weeks: _plan!.weeks,
                               currentWeek: _currentWeek,
                               selectedWeek: _selectedWeek,
                               onSelect: (w) => setState(() => _selectedWeek = w),

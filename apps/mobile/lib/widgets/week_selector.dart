@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
+import "package:foodfox/models/models.dart";
 import "package:foodfox/theme/fox_theme.dart";
-import "package:foodfox/widgets/list_pagination.dart";
 
 enum WeekStatus { past, current, future }
 
@@ -13,73 +13,104 @@ WeekStatus weekStatus(int week, int currentWeek) {
 class WeekSelector extends StatelessWidget {
   const WeekSelector({
     super.key,
+    required this.weeks,
     required this.currentWeek,
     required this.selectedWeek,
     required this.onSelect,
   });
 
+  final List<PlanWeekItem> weeks;
   final int currentWeek;
   final int selectedWeek;
   final ValueChanged<int> onSelect;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final pillWidth = MediaQuery.sizeOf(context).width * 0.26;
+
+    return Stack(
       children: [
-        for (final group in planProtocol) ...[
-          Text(
-            "${group.phase} · нед. ${group.weeks}",
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: FoxColors.muted,
-              letterSpacing: 0.3,
+        SizedBox(
+          height: 58,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.only(right: 20),
+            itemCount: weeks.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final w = weeks[index];
+              final active = w.weekNumber == selectedWeek;
+              final status = weekStatus(w.weekNumber, currentWeek);
+              final isCurrent = status == WeekStatus.current;
+
+              return SizedBox(
+                width: pillWidth,
+                child: Material(
+                  color: active ? FoxColors.primary : FoxColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: isCurrent && !active ? FoxColors.primary : FoxColors.border,
+                      width: isCurrent && !active ? 1.5 : 1,
+                    ),
+                  ),
+                  child: InkWell(
+                    onTap: () => onSelect(w.weekNumber),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "${status == WeekStatus.past && !active ? "✓ " : ""}Нед. ${w.weekNumber}",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: active ? Colors.white : FoxColors.text,
+                            ),
+                          ),
+                          Text(
+                            w.phase,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: active ? Colors.white.withValues(alpha: 0.85) : FoxColors.muted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        Positioned(
+          right: 0,
+          top: 0,
+          bottom: 0,
+          child: IgnorePointer(
+            child: Container(
+              width: 24,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    FoxColors.bg.withValues(alpha: 0),
+                    FoxColors.bg,
+                  ],
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _weeksForGroup(group.weeks).map((weekNumber) {
-              final active = weekNumber == selectedWeek;
-              final status = weekStatus(weekNumber, currentWeek);
-              final label = switch (status) {
-                WeekStatus.past => "пройдена",
-                WeekStatus.current => "сейчас",
-                WeekStatus.future => "далее",
-              };
-
-              return FilterChip(
-                label: Text(
-                  "${status == WeekStatus.past && !active ? "✓ " : ""}Нед. $weekNumber · $label",
-                ),
-                selected: active,
-                onSelected: (_) => onSelect(weekNumber),
-                selectedColor: FoxColors.primary,
-                checkmarkColor: Colors.white,
-                labelStyle: TextStyle(
-                  color: active ? Colors.white : FoxColors.text,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
-                side: status == WeekStatus.current && !active
-                    ? const BorderSide(color: FoxColors.primary, width: 1.5)
-                    : BorderSide(color: FoxColors.border),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 12),
-        ],
+        ),
       ],
     );
-  }
-
-  List<int> _weeksForGroup(String range) {
-    final parts = range.split("–");
-    final start = int.parse(parts[0]);
-    final end = int.parse(parts[1]);
-    return [for (var w = start; w <= end; w++) w];
   }
 }
 
@@ -89,13 +120,13 @@ String? phaseBannerText(int currentWeek, int selectedWeek) {
     return "Элиминация завершена — началась стабилизация (нед. 5–6).";
   }
   if (currentWeek == 7) {
-    return "Финальная фаза — расширение (нед. 7–8), жёлтая зона по ротации.";
+    return "Финальная фаза — расширение (нед. 7–8).";
   }
   if (currentWeek == 8) {
     return "Последняя неделя плана.";
   }
   if (currentWeek <= 4) {
-    return "Сейчас элиминация — нед. $currentWeek из 4. Дальше откроются нед. 5–8.";
+    return "Листайте плашки вправо — всего 8 недель.";
   }
   return null;
 }
