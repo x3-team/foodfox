@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# FoodFox at https://foodfox.yuri.guru — subdomain + basic auth
+#
+# Prerequisites:
+#   DNS A record: foodfox.yuri.guru → VPS IP
+#
+# Run ON the VPS as root:
+#   export FOODFOX_AUTH_USER=demo
+#   export FOODFOX_AUTH_PASS='your-secret-password'
+#   bash /var/www/foodfox/deploy/vps/setup-foodfox-subdomain.sh
+
+set -euo pipefail
+
+APP_ROOT="${APP_ROOT:-/var/www/foodfox}"
+PORT="${PORT:-3030}"
+DOMAIN="${DOMAIN:-foodfox.yuri.guru}"
+NGINX_SITE="/etc/nginx/sites-available/$DOMAIN"
+HTPASSWD="/etc/nginx/.htpasswd-foodfox"
+AUTH_USER="${FOODFOX_AUTH_USER:-demo}"
+AUTH_PASS="${FOODFOX_AUTH_PASS:-}"
+CERTBOT_EMAIL="${CERTBOT_EMAIL:-admin@yuri.guru}"
+
+if [[ -z "$AUTH_PASS" ]]; then
+  AUTH_PASS="$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | head -c 14)"
+  echo "Generated FOODFOX_AUTH_PASS=$AUTH_PASS"
+fi
+
+echo "==> htpasswd ($HTPASSWD)"
+if ! command -v htpasswd >/dev/null; then
+  apt-get update -qq && apt-get install -y apache2-utils
+fi
+htpasswd -bc "$HTPASSWD" "$AUTH_USER" "$AUTH_PASS"
+chmod 640 "$HTPASSWD"
+chown root:www-data "$HTPASSWD" 2>/dev/null || chown root:root "$HTPASSWD"
+
+echo "==> Nginx site ($DOMAIN)"
+sed "s/foodfox.yuri.guru/$DOMAIN/g" "$APP_ROOT/deploy/vps/nginx-foodfox-subdomain.conf" > "$NGINX_SITE"
+ln -sf "$NGINX_SITE" "/etc/nginx/sites-enabled/$DOMAIN"
+
+echo "==> Remove /demofox subpath from yuri.guru (if present)"
+YURI_SITE="/etc/nginx/sites-enabled/yuri.guru"
+if [[ -f "$YURI_SITE" ]] && grep -q "# FoodFox /demofox" "$YURI_SITE"; then
+  awk '
+    /^# FoodFox \/demofox/ { skip=1; next }
+    skip && /^[[:space:]]*location = \/demofox/ { next }
+    skip && /^[[:space:]]*return 301/ { next }
+    skip && /^[[:space:]]*}/ && !/proxy/ { skip=0; next }
+    skip && /location \/demofox\// { inblock=1; next }
+    inblock && /^[[:space:]]*}/ { inblock=0; next }
+    inblock { next }
+    { print }
+  ' "$YURI_SITE" > "${YURI_SITE}.tmp" && mv "${YURI_SITE}.tmp" "$YURI_SITE"
+  echo "Removed /demofox snippet from yuri.guru"
+fi
+
+nginx -t
+systemctl reload nginx
+
+echo "==> App env (no basePath — root of subdomain)"
+ENV_FILE="$APP_ROOT/apps/web/.env"
+touch "$ENV_FILE"
+if grep -q '^NEXT_PUBLIC_BASE_PATH=' "$ENV_FILE"; then
+  sed -i '/^NEXT_PUBLIC_BASE_PATH=/d' "$ENV_FILE"
+fi
+
+echo "==> Rebuild & restart"
+cd "$APP_ROOT/apps/web"
+set -a
+# shellcheck disable=SC1091
+source .env
+set +a
+npm ci --include=dev
+npm run build
+pm2 restart foodfox --update-env
+pm2 save
+
+echo "==> SSL (certbot)"
+if command -v certbot >/dev/null; then
+  if certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$CERTBOT_EMAIL" --redirect 2>&1; then
+    echo "SSL certificate installed"
+  else
+    echo "WARN: certbot failed — add DNS A record for $DOMAIN and re-run:"
+    echo "  certbot --nginx -d $DOMAIN"
+  fi
+  nginx -t && systemctl reload nginx
+fi
+
+echo ""
+echo "Done: https://$DOMAIN/upload"
+echo "Login: $AUTH_USER / $AUTH_PASS"
+echo "Health: curl -s -u $AUTH_USER:$AUTH_PASS https://$DOMAIN/api/health"

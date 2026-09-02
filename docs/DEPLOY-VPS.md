@@ -8,28 +8,39 @@
 
 Render и Supabase **не нужны**.
 
-## Демо на yuri.guru/demofox (закрыто паролем)
+## Демо на foodfox.yuri.guru (закрыто паролем)
 
-На том же VPS, рядом с основным сайтом yuri.guru:
+Рекомендуемый вариант — отдельный поддомен на том же VPS:
+
+1. **DNS:** A-запись `foodfox.yuri.guru` → IP VPS (`212.67.13.64`)
+2. На сервере:
 
 ```bash
 cd /var/www/foodfox
 git pull
-export DEMOFOX_AUTH_USER=demo
-export DEMOFOX_AUTH_PASS='ваш-секретный-пароль'
-sudo bash deploy/vps/setup-demofox-subpath.sh
+export FOODFOX_AUTH_USER=demo
+export FOODFOX_AUTH_PASS='ваш-секретный-пароль'
+sudo bash deploy/vps/setup-foodfox-subdomain.sh
 ```
 
-- URL: **https://yuri.guru/demofox/upload**
-- Доступ: nginx **Basic Auth** (логин/пароль только для клиента)
-- Приложение слушает `127.0.0.1:3030`, снаружи виден только подпуть `/demofox`
+- URL: **https://foodfox.yuri.guru/upload**
+- Доступ: nginx **Basic Auth**
+- Приложение на `127.0.0.1:3030`, снаружи только через поддомен
 
 Сменить пароль:
 
 ```bash
-sudo htpasswd /etc/nginx/.htpasswd-demofox demo
+sudo htpasswd /etc/nginx/.htpasswd-foodfox demo
 sudo systemctl reload nginx
 ```
+
+### Альтернатива: подпуть yuri.guru/demofox
+
+```bash
+sudo bash deploy/vps/setup-demofox-subpath.sh
+```
+
+Требует `NEXT_PUBLIC_BASE_PATH=/demofox` в `.env`.
 
 ## Быстрый старт (отдельный домен)
 
