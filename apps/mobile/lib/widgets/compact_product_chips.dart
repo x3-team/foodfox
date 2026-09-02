@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:foodfox/theme/fox_theme.dart";
 import "package:foodfox/widgets/list_pagination.dart";
+import "package:foodfox/widgets/paginated_string_section.dart";
 
 enum ChipTone { green, red, yellow }
 

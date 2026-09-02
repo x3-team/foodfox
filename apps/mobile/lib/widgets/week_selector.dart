@@ -36,7 +36,7 @@ class WeekSelector extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.only(right: 20),
             itemCount: weeks.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            separatorBuilder: (context, index) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
               final w = weeks[index];
               final active = w.weekNumber == selectedWeek;

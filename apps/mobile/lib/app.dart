@@ -98,7 +98,12 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
 
     final screens = [
       UploadScreen(api: _api, onUploaded: _onUploaded),
-      ResultsScreen(api: _api, reloadToken: _resultsReload, onAskBot: _askBot),
+      ResultsScreen(
+        api: _api,
+        reloadToken: _resultsReload,
+        onAskBot: _askBot,
+        onOpenPlan: () => setState(() => _tab = 2),
+      ),
       PlanScreen(api: _api),
       RecipesScreen(api: _api),
       ChatScreen(
