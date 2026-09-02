@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { PaginatedStringList } from "@/components/PaginatedStringList";
+import { CompactDayDetails, CompactProductChips } from "@/components/CompactProductChips";
 import { PhaseBanner, WeekSelector } from "@/components/WeekSelector";
 import { PLAN_PROTOCOL } from "@/lib/plan-engine";
 
@@ -158,30 +158,29 @@ export default function PlanPageClient() {
                 <h2 className="text-[16px] font-semibold text-fox-text">
                   Неделя {selectedWeek}: {weekData?.phase}
                 </h2>
-                <div>
-                  <p className="text-[12px] font-medium uppercase tracking-wide text-fox-green">
-                    Можно
-                  </p>
-                  <PaginatedStringList items={summaryDay.allowed} className="mt-1" />
-                </div>
-                <div>
-                  <p className="text-[12px] font-medium uppercase tracking-wide text-fox-red">
-                    Исключить
-                  </p>
-                  <PaginatedStringList items={summaryDay.forbidden} className="mt-1" />
-                </div>
+                <CompactProductChips
+                  items={summaryDay.allowed}
+                  tone="green"
+                  label="Можно"
+                  previewCount={8}
+                />
+                <CompactProductChips
+                  items={summaryDay.forbidden}
+                  tone="red"
+                  label="Исключить"
+                  previewCount={8}
+                  collapsedByDefault={summaryDay.forbidden.length > 8}
+                />
                 {summaryDay.rotation.length > 0 && (
-                  <div>
-                    <p className="text-[12px] font-medium uppercase tracking-wide text-fox-yellow">
-                      Ротация жёлтой зоны
-                    </p>
-                    <p className="mt-1 text-[14px] text-fox-text">
-                      {summaryDay.rotation.join(", ")}
-                    </p>
-                  </div>
+                  <CompactProductChips
+                    items={summaryDay.rotation}
+                    tone="yellow"
+                    label="Ротация жёлтой зоны"
+                    previewCount={4}
+                  />
                 )}
                 {summaryDay.botMessage && (
-                  <p className="rounded-xl bg-fox-primary-soft px-3 py-2.5 text-[13px] leading-relaxed text-fox-primary-dark">
+                  <p className="line-clamp-3 rounded-xl bg-fox-primary-soft px-3 py-2.5 text-[13px] leading-relaxed text-fox-primary-dark">
                     {summaryDay.botMessage}
                   </p>
                 )}
@@ -220,19 +219,12 @@ export default function PlanPageClient() {
                       <span className="text-fox-muted">{open ? "▲" : "▼"}</span>
                     </button>
                     {open && (
-                      <div className="space-y-3 border-t border-fox-border px-4 py-3 text-[13px]">
-                        <div>
-                          <span className="font-medium text-fox-green">Можно: </span>
-                          <PaginatedStringList items={day.allowed} />
-                        </div>
-                        <div>
-                          <span className="font-medium text-fox-red">Нельзя: </span>
-                          <PaginatedStringList items={day.forbidden} />
-                        </div>
-                        {day.botMessage && (
-                          <p className="text-fox-muted">{day.botMessage}</p>
-                        )}
-                      </div>
+                      <CompactDayDetails
+                        allowed={day.allowed}
+                        forbidden={day.forbidden}
+                        rotation={day.rotation}
+                        botMessage={day.botMessage}
+                      />
                     )}
                   </div>
                 );

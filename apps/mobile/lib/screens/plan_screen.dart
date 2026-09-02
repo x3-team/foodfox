@@ -2,9 +2,9 @@ import "package:flutter/material.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
+import "package:foodfox/widgets/compact_product_chips.dart";
 import "package:foodfox/widgets/list_pagination.dart";
 import "package:foodfox/widgets/page_header.dart";
-import "package:foodfox/widgets/paginated_string_section.dart";
 import "package:foodfox/widgets/week_selector.dart";
 
 class PlanScreen extends StatefulWidget {
@@ -176,31 +176,19 @@ class _PlanScreenState extends State<PlanScreen> {
                                         ),
                                       ),
                                       const SizedBox(height: 12),
-                                      const Text(
-                                        "МОЖНО",
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: FoxColors.green,
-                                          letterSpacing: 0.5,
-                                        ),
+                                      CompactProductChips(
+                                        items: summary.allowed,
+                                        label: "Можно",
+                                        tone: ChipTone.green,
+                                        previewCount: 8,
                                       ),
-                                      const SizedBox(height: 4),
-                                      PaginatedStringSection(items: summary.allowed),
-                                      const SizedBox(height: 12),
-                                      const Text(
-                                        "ИСКЛЮЧИТЬ",
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: FoxColors.red,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      PaginatedStringSection(
+                                      const SizedBox(height: 8),
+                                      CompactProductChips(
                                         items: summary.forbidden,
-                                        textColor: FoxColors.text,
+                                        label: "Исключить",
+                                        tone: ChipTone.red,
+                                        previewCount: 8,
+                                        collapsedByDefault: summary.forbidden.length > 8,
                                       ),
                                     ],
                                   ),
