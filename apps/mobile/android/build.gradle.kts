@@ -5,6 +5,8 @@ allprojects {
     }
 }
 
+import com.android.build.gradle.LibraryExtension
+
 val newBuildDir: Directory =
     rootProject.layout.buildDirectory
         .dir("../../build")
@@ -17,6 +19,11 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
+}
+subprojects {
+    afterEvaluate {
+        extensions.findByType(LibraryExtension::class.java)?.compileSdk = 36
+    }
 }
 
 tasks.register<Delete>("clean") {
