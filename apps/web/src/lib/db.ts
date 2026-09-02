@@ -3,7 +3,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import type { ParsedResult, Zone } from "./fox-parser";
 import type { PlanDay } from "./plan-engine";
-import { buildEightWeekPlan } from "./plan-engine";
+import { buildEightWeekPlan, getWeekPhase } from "./plan-engine";
 import { parseFoxPdfText } from "./fox-parser";
 
 export interface TestResultRow {
@@ -395,6 +395,51 @@ export async function getActivePlanContext(clientId: string) {
     red: results.filter((r) => r.zone === "red").map((r) => r.foxName),
     planId,
     threadId,
+  };
+}
+
+/** Sample plan day for a given week (for chat context). */
+export async function getPlanWeekSummary(
+  planId: string,
+  weekNumber: number,
+): Promise<{
+  weekNumber: number;
+  phase: string;
+  allowed: string[];
+  forbidden: string[];
+  botMessage: string;
+} | null> {
+  await ensureSchema();
+  const p = getPool();
+
+  if (!p) {
+    const day =
+      memory!.planDays.find((d) => d.weekNumber === weekNumber) ??
+      memory!.planDays[0];
+    if (!day) return null;
+    return {
+      weekNumber: day.weekNumber,
+      phase: getWeekPhase(day.weekNumber),
+      allowed: day.allowed,
+      forbidden: day.forbidden,
+      botMessage: day.botMessage,
+    };
+  }
+
+  const { rows } = await p.query(
+    `SELECT week_number, allowed, forbidden, bot_message FROM plan_days
+     WHERE plan_id = $1 AND week_number = $2
+     ORDER BY date ASC LIMIT 1`,
+    [planId, weekNumber],
+  );
+  if (!rows[0]) return null;
+  const row = rows[0];
+  return {
+    weekNumber: row.week_number,
+    phase: getWeekPhase(row.week_number),
+    allowed: row.allowed ?? [],
+    forbidden: row.forbidden ?? [],
+    botMessage: row.bot_message ?? "",
   };
 }
 
