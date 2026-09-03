@@ -2,29 +2,39 @@ import "package:flutter/material.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
+import "package:foodfox/utils/lazy_tab_loader.dart";
+import "package:foodfox/widgets/network_error_panel.dart";
 import "package:foodfox/widgets/page_header.dart";
 import "package:foodfox/widgets/recipe_card_media.dart";
 
 class RecipesScreen extends StatefulWidget {
-  const RecipesScreen({super.key, required this.api});
+  const RecipesScreen({super.key, required this.api, this.isActive = true});
 
   final FoodFoxApi api;
+  final bool isActive;
 
   @override
   State<RecipesScreen> createState() => _RecipesScreenState();
 }
 
 class _RecipesScreenState extends State<RecipesScreen> {
-  bool _loading = true;
-  String? _error;
+  bool _loading = false;
+  Object? _error;
   List<RecipeItem> _recipes = [];
   int _weekNumber = 1;
   int _suitableCount = 0;
+  late final LazyTabLoader _loader = LazyTabLoader(onLoad: _load);
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _loader.sync(active: widget.isActive);
+  }
+
+  @override
+  void didUpdateWidget(covariant RecipesScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _loader.sync(active: widget.isActive);
   }
 
   Future<void> _load() async {
@@ -44,7 +54,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = e;
         _loading = false;
       });
     }
@@ -69,9 +79,9 @@ class _RecipesScreenState extends State<RecipesScreen> {
                 : _error != null
                     ? ListView(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Text(_error!, style: const TextStyle(color: FoxColors.red)),
+                          NetworkErrorPanel(
+                            error: _error!,
+                            onRetry: () => _loader.sync(active: true, force: true),
                           ),
                         ],
                       )

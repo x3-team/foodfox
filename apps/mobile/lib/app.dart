@@ -100,15 +100,17 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
       UploadScreen(api: _api, onUploaded: _onUploaded),
       ResultsScreen(
         api: _api,
+        isActive: _tab == 1,
         reloadToken: _resultsReload,
         onAskBot: _askBot,
         onOpenPlan: () => setState(() => _tab = 2),
       ),
-      PlanScreen(api: _api),
-      RecipesScreen(api: _api),
+      PlanScreen(api: _api, isActive: _tab == 2),
+      RecipesScreen(api: _api, isActive: _tab == 3),
       ChatScreen(
         key: ValueKey("chat-$_chatSeed"),
         api: _api,
+        isActive: _tab == 4,
         initialMessage: _chatInitialMessage,
       ),
     ];

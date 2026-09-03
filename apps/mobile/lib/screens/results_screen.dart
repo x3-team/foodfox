@@ -2,6 +2,8 @@ import "package:flutter/material.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
+import "package:foodfox/utils/lazy_tab_loader.dart";
+import "package:foodfox/widgets/network_error_panel.dart";
 import "package:foodfox/widgets/page_header.dart";
 import "package:foodfox/widgets/report_cards.dart";
 import "package:foodfox/widgets/scrollable_panel.dart";
@@ -10,12 +12,14 @@ class ResultsScreen extends StatefulWidget {
   const ResultsScreen({
     super.key,
     required this.api,
+    this.isActive = true,
     this.reloadToken = 0,
     this.onAskBot,
     this.onOpenPlan,
   });
 
   final FoodFoxApi api;
+  final bool isActive;
   final int reloadToken;
   final void Function(String question)? onAskBot;
   final VoidCallback? onOpenPlan;
@@ -26,17 +30,18 @@ class ResultsScreen extends StatefulWidget {
 
 class _ResultsScreenState extends State<ResultsScreen> {
   Zone _zone = Zone.green;
-  var _loading = true;
-  String? _error;
+  var _loading = false;
+  Object? _error;
   List<ResultItem> _results = [];
   ZoneCounts _counts = ZoneCounts(green: 0, yellow: 0, red: 0);
   final _searchController = TextEditingController();
   var _query = "";
+  late final LazyTabLoader _loader = LazyTabLoader(onLoad: _load);
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _loader.sync(active: widget.isActive, reloadToken: widget.reloadToken);
   }
 
   @override
@@ -48,7 +53,11 @@ class _ResultsScreenState extends State<ResultsScreen> {
   @override
   void didUpdateWidget(covariant ResultsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.reloadToken != widget.reloadToken) _load();
+    _loader.sync(
+      active: widget.isActive,
+      reloadToken: widget.reloadToken,
+      force: oldWidget.reloadToken != widget.reloadToken,
+    );
   }
 
   Future<void> _load() async {
@@ -67,7 +76,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = e;
         _loading = false;
       });
     }
@@ -126,7 +135,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     ),
                   )
                 else if (_error != null)
-                  Text(_error!, style: const TextStyle(color: FoxColors.red))
+                  NetworkErrorPanel(
+                    error: _error!,
+                    onRetry: () => _loader.sync(active: true, force: true),
+                  )
                 else if (total == 0)
                   Container(
                     padding: const EdgeInsets.all(28),

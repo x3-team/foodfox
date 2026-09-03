@@ -4,13 +4,16 @@ import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
 import "package:foodfox/widgets/compact_product_chips.dart";
 import "package:foodfox/widgets/list_pagination.dart";
+import "package:foodfox/utils/lazy_tab_loader.dart";
+import "package:foodfox/widgets/network_error_panel.dart";
 import "package:foodfox/widgets/page_header.dart";
 import "package:foodfox/widgets/week_selector.dart";
 
 class PlanScreen extends StatefulWidget {
-  const PlanScreen({super.key, required this.api});
+  const PlanScreen({super.key, required this.api, this.isActive = true});
 
   final FoodFoxApi api;
+  final bool isActive;
 
   @override
   State<PlanScreen> createState() => _PlanScreenState();
@@ -18,15 +21,22 @@ class PlanScreen extends StatefulWidget {
 
 class _PlanScreenState extends State<PlanScreen> {
   PlanData? _plan;
-  var _loading = true;
+  var _loading = false;
   var _selectedWeek = 1;
   var _currentWeek = 1;
-  String? _error;
+  Object? _error;
+  late final LazyTabLoader _loader = LazyTabLoader(onLoad: _load);
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _loader.sync(active: widget.isActive);
+  }
+
+  @override
+  void didUpdateWidget(covariant PlanScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _loader.sync(active: widget.isActive);
   }
 
   Future<void> _load() async {
@@ -44,7 +54,7 @@ class _PlanScreenState extends State<PlanScreen> {
         }
       });
     } catch (e) {
-      setState(() => _error = e.toString());
+      setState(() => _error = e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -75,7 +85,7 @@ class _PlanScreenState extends State<PlanScreen> {
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : _error != null
-                  ? Center(child: Text(_error!))
+                  ? NetworkErrorPanel(error: _error!, onRetry: () => _loader.sync(active: true, force: true))
                   : _plan == null
                       ? const Center(
                           child: Padding(

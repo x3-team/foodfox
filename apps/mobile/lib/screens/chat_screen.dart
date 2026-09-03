@@ -2,13 +2,21 @@ import "package:flutter/material.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
+import "package:foodfox/utils/lazy_tab_loader.dart";
 import "package:foodfox/widgets/chat_bubble.dart";
+import "package:foodfox/widgets/network_error_panel.dart";
 import "package:foodfox/widgets/page_header.dart";
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.api, this.initialMessage});
+  const ChatScreen({
+    super.key,
+    required this.api,
+    this.isActive = true,
+    this.initialMessage,
+  });
 
   final FoodFoxApi api;
+  final bool isActive;
   final String? initialMessage;
 
   @override
@@ -18,20 +26,22 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
-  bool _loading = true;
+  bool _loading = false;
   bool _sending = false;
-  String? _error;
+  Object? _error;
   List<ChatMessage> _messages = [];
+  late final LazyTabLoader _loader = LazyTabLoader(onLoad: _loadOnce);
 
   @override
   void initState() {
     super.initState();
-    _load().then((_) => _maybeSendInitial());
+    _loader.sync(active: widget.isActive || widget.initialMessage != null);
   }
 
   @override
   void didUpdateWidget(covariant ChatScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _loader.sync(active: widget.isActive || widget.initialMessage != null);
     if (widget.initialMessage != null &&
         widget.initialMessage != oldWidget.initialMessage) {
       _controller.text = widget.initialMessage!;
@@ -39,7 +49,12 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _maybeSendInitial() {
+  Future<void> _loadOnce() async {
+    await _load();
+    await _maybeSendInitial();
+  }
+
+  Future<void> _maybeSendInitial() async {
     final text = widget.initialMessage?.trim();
     if (text == null || text.isEmpty || _sending) return;
     _controller.text = text;
@@ -70,7 +85,7 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = e;
         _loading = false;
       });
     }
@@ -130,11 +145,9 @@ class _ChatScreenState extends State<ChatScreen> {
           child: _loading
               ? const Center(child: CircularProgressIndicator(color: FoxColors.primary))
               : _error != null
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Text(_error!, style: const TextStyle(color: FoxColors.red)),
-                      ),
+                  ? NetworkErrorPanel(
+                      error: _error!,
+                      onRetry: () => _loader.sync(active: true, force: true),
                     )
                   : ListView.builder(
                       controller: _scrollController,
