@@ -231,35 +231,27 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  if (filtered.isEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: foxCardDecoration,
-                      child: Text(
-                        _query.isEmpty
-                            ? "Нет продуктов в этой зоне"
-                            : "Ничего не найдено по «$_query»",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: FoxColors.muted),
-                      ),
-                    )
-                  else
-                    ScrollablePanel(
-                      itemCount: filtered.length,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(4),
-                        physics: filtered.length > listVisibleRows
-                            ? const ClampingScrollPhysics()
-                            : const NeverScrollableScrollPhysics(),
-                        shrinkWrap: filtered.length <= listVisibleRows,
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) => ResultRow(
-                          item: filtered[index],
-                          max: scaleMax,
-                          onAskBot: widget.onAskBot,
-                        ),
-                      ),
-                    ),
+                  ScrollablePanel(
+                    itemCount: filtered.length,
+                    emptyMessage: _query.isEmpty
+                        ? "Нет продуктов в этой зоне"
+                        : "Ничего не найдено по «$_query»",
+                    child: filtered.isEmpty
+                        ? const SizedBox.shrink()
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(4),
+                            physics: filtered.length > listVisibleRows
+                                ? const ClampingScrollPhysics()
+                                : const NeverScrollableScrollPhysics(),
+                            shrinkWrap: filtered.length <= listVisibleRows,
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) => ResultRow(
+                              item: filtered[index],
+                              max: scaleMax,
+                              onAskBot: widget.onAskBot,
+                            ),
+                          ),
+                  ),
                 ],
               ],
             ),

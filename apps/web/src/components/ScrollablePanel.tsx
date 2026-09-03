@@ -12,17 +12,20 @@ interface ScrollablePanelProps {
   itemCount: number;
   maxHeightPx?: number;
   children: ReactNode;
+  emptyMessage?: string;
   className?: string;
 }
 
-/** Fixed-height panel — ~10 rows visible, scroll inside for the rest. */
+/** Fixed-height panel — ~7 rows visible; height stays stable while searching. */
 export function ScrollablePanel({
   itemCount,
   maxHeightPx = scrollListMaxHeightPx(),
   children,
+  emptyMessage,
   className = "",
 }: ScrollablePanelProps) {
   const scrollable = itemCount > LIST_VISIBLE_ROWS;
+  const isEmpty = itemCount === 0;
 
   return (
     <div className={`relative ${className}`}>
@@ -40,10 +43,14 @@ export function ScrollablePanel({
         <div
           className={`overflow-y-auto overscroll-contain px-1 py-1 ${
             scrollable ? "[scrollbar-width:thin]" : ""
-          }`}
-          style={{ maxHeight: scrollable ? maxHeightPx : undefined }}
+          } ${isEmpty ? "flex items-center justify-center" : ""}`}
+          style={{ height: maxHeightPx, maxHeight: maxHeightPx }}
         >
-          {children}
+          {isEmpty ? (
+            <p className="px-6 py-8 text-center text-[15px] text-fox-muted">{emptyMessage}</p>
+          ) : (
+            children
+          )}
         </div>
         {scrollable && (
           <div

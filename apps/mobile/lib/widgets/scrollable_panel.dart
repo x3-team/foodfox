@@ -3,7 +3,7 @@ import "dart:math" show max, min;
 import "package:flutter/material.dart";
 import "package:foodfox/theme/fox_theme.dart";
 
-const listVisibleRows = 10;
+const listVisibleRows = 7;
 const listRowHeight = 68.0;
 const listRowGap = 8.0;
 
@@ -13,21 +13,24 @@ double scrollListViewportHeight(BuildContext context, {int visibleRows = listVis
   return min(target, max(320.0, maxFromScreen));
 }
 
-/// ~10 rows on screen; the rest scroll inside this box.
+/// ~7 rows on screen; fixed height so search empty state does not jump layout.
 class ScrollablePanel extends StatelessWidget {
   const ScrollablePanel({
     super.key,
     required this.itemCount,
     required this.child,
+    this.emptyMessage,
   });
 
   final int itemCount;
   final Widget child;
+  final String? emptyMessage;
 
   @override
   Widget build(BuildContext context) {
     final scrollable = itemCount > listVisibleRows;
     final height = scrollListViewportHeight(context);
+    final isEmpty = itemCount == 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -43,8 +46,7 @@ class ScrollablePanel extends StatelessWidget {
         Stack(
           children: [
             Container(
-              height: scrollable ? height : null,
-              constraints: scrollable ? null : const BoxConstraints(),
+              height: height,
               decoration: BoxDecoration(
                 color: FoxColors.surface.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(16),
@@ -52,13 +54,24 @@ class ScrollablePanel extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: scrollable
-                    ? Scrollbar(
-                        thumbVisibility: true,
-                        radius: const Radius.circular(8),
-                        child: child,
+                child: isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                          child: Text(
+                            emptyMessage ?? "Нет элементов",
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 15, color: FoxColors.muted),
+                          ),
+                        ),
                       )
-                    : child,
+                    : scrollable
+                        ? Scrollbar(
+                            thumbVisibility: true,
+                            radius: const Radius.circular(8),
+                            child: child,
+                          )
+                        : child,
               ),
             ),
             if (scrollable)

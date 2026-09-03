@@ -126,21 +126,20 @@ function ResultsContent() {
           className="w-full rounded-xl border border-fox-border bg-fox-surface px-4 py-3 text-[15px] outline-none transition focus:border-fox-primary focus:ring-2 focus:ring-fox-primary/15"
         />
 
-        {filtered.length === 0 ? (
-          <div className="fox-card px-4 py-8 text-center">
-            <p className="text-[15px] text-fox-muted">
-              {query ? `Ничего не найдено по «${query}»` : "Нет продуктов в этой зоне"}
-            </p>
-          </div>
-        ) : (
-          <ScrollablePanel itemCount={filtered.length}>
+        <ScrollablePanel
+          itemCount={filtered.length}
+          emptyMessage={
+            query ? `Ничего не найдено по «${query}»` : "Нет продуктов в этой зоне"
+          }
+        >
+          {filtered.length > 0 && (
             <ul className="flex flex-col gap-2 p-1">
               {filtered.map((item) => (
                 <ResultRow key={item.id} item={item} max={scaleMax} />
               ))}
             </ul>
-          </ScrollablePanel>
-        )}
+          )}
+        </ScrollablePanel>
       </section>
     </>
   );
