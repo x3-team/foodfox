@@ -3,7 +3,7 @@
 import { withBasePath } from "@/lib/base-path";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { CompactDayDetails, CompactProductChips } from "@/components/CompactProductChips";
 import { PhaseBanner, WeekSelector } from "@/components/WeekSelector";
@@ -48,12 +48,20 @@ export default function PlanPageClient() {
   const searchParams = useSearchParams();
   const initialWeek = parseInt(searchParams.get("week") ?? "0", 10);
 
-  const [plan, setPlan] = useState<PlanData | null>(null);
+  const [planMeta, setPlanMeta] = useState<Pick<PlanData, "planId" | "startedAt"> | null>(null);
+  const [weekTabs, setWeekTabs] = useState<Pick<PlanWeek, "weekNumber" | "phase">[]>([]);
+  const [loadedWeeks, setLoadedWeeks] = useState<Record<number, PlanWeek>>({});
   const [currentWeek, setCurrentWeek] = useState(1);
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [weekLoading, setWeekLoading] = useState(false);
   const [hasReport, setHasReport] = useState(false);
+  const loadedWeeksRef = useRef<Record<number, PlanWeek>>({});
+
+  useEffect(() => {
+    loadedWeeksRef.current = loadedWeeks;
+  }, [loadedWeeks]);
 
   useEffect(() => {
     fetch(withBasePath("/api/plan"))
@@ -66,7 +74,16 @@ export default function PlanPageClient() {
       })
       .then((d) => {
         if (!d) return;
-        setPlan(d.plan);
+        if (d.plan) {
+          setPlanMeta({ planId: d.plan.planId, startedAt: d.plan.startedAt });
+          const firstWeek = d.plan.weeks?.[0] as PlanWeek | undefined;
+          if (firstWeek) {
+            setLoadedWeeks((prev) => ({ ...prev, [firstWeek.weekNumber]: firstWeek }));
+          }
+        } else {
+          setPlanMeta(null);
+        }
+        setWeekTabs(d.weekTabs ?? []);
         setCurrentWeek(d.currentWeek ?? 1);
         setHasReport(d.hasReport);
         const week =
@@ -76,10 +93,26 @@ export default function PlanPageClient() {
       .finally(() => setLoading(false));
   }, [router, initialWeek]);
 
-  const weekData = useMemo(
-    () => plan?.weeks.find((w) => w.weekNumber === selectedWeek),
-    [plan, selectedWeek],
-  );
+  useEffect(() => {
+    if (loading || !hasReport) return;
+    if (loadedWeeksRef.current[selectedWeek]) return;
+    setWeekLoading(true);
+    fetch(withBasePath(`/api/plan?week=${selectedWeek}`))
+      .then((r) => r.json())
+      .then((d) => {
+        const week = d.plan?.weeks?.[0] as PlanWeek | undefined;
+        if (week) {
+          setLoadedWeeks((prev) => ({ ...prev, [week.weekNumber]: week }));
+        }
+      })
+      .finally(() => setWeekLoading(false));
+  }, [loading, hasReport, selectedWeek]);
+
+  const weekData = loadedWeeks[selectedWeek];
+
+  const selectorWeeks = weekTabs.length
+    ? weekTabs.map((tab) => loadedWeeks[tab.weekNumber] ?? { ...tab, days: [] })
+    : Object.values(loadedWeeks);
 
   const summaryDay = weekData?.days[0];
 
@@ -112,7 +145,7 @@ export default function PlanPageClient() {
           </div>
         )}
 
-        {!loading && plan && (
+        {!loading && planMeta && (
           <>
             <div className="fox-card space-y-2 px-4 py-3">
               <p className="text-[13px] font-semibold text-fox-text">Персональный план на 8 недель</p>
@@ -128,7 +161,7 @@ export default function PlanPageClient() {
 
             <div className="fox-card px-4 py-3">
               <p className="text-[13px] text-fox-muted">
-                Старт: <span className="font-medium text-fox-text">{plan.startedAt}</span>
+                Старт: <span className="font-medium text-fox-text">{planMeta.startedAt}</span>
                 {" · "}
                 Сейчас неделя{" "}
                 <span className="font-semibold text-fox-primary">{currentWeek}</span> из 8
@@ -142,10 +175,7 @@ export default function PlanPageClient() {
             </div>
 
             <WeekSelector
-              weeks={plan.weeks.map((w) => ({
-                weekNumber: w.weekNumber,
-                phase: w.phase,
-              }))}
+              weeks={selectorWeeks}
               currentWeek={currentWeek}
               selectedWeek={selectedWeek}
               onSelect={setSelectedWeek}
@@ -157,7 +187,11 @@ export default function PlanPageClient() {
               phase={weekData?.phase ?? ""}
             />
 
-            {summaryDay && (
+            {weekLoading && (
+              <p className="py-4 text-center text-[14px] text-fox-muted">Загрузка недели…</p>
+            )}
+
+            {summaryDay && !weekLoading && (
               <div className="fox-card space-y-3 px-4 py-4">
                 <h2 className="text-[16px] font-semibold text-fox-text">
                   Неделя {selectedWeek}: {weekData?.phase}
@@ -190,7 +224,7 @@ export default function PlanPageClient() {
               <h3 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-fox-muted">
                 Дни недели
               </h3>
-              {weekData?.days.map((day) => {
+              {weekLoading ? null : weekData?.days.map((day) => {
                 const open = expandedDay === day.date;
                 return (
                   <div

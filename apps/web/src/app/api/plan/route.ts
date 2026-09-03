@@ -1,21 +1,39 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAuthClientId, handleAuthError } from "@/lib/api-auth";
-import { getClientProfile, getFullPlan } from "@/lib/db";
+import { getPlanOverview, getPlanWeek } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const clientId = await getAuthClientId();
-    const [plan, profile] = await Promise.all([
-      getFullPlan(clientId),
-      getClientProfile(clientId),
-    ]);
+    const overview = await getPlanOverview(clientId);
+    if (!overview) {
+      return NextResponse.json({
+        plan: null,
+        currentWeek: 1,
+        hasReport: false,
+        weekTabs: [],
+      });
+    }
+
+    const weekParam = req.nextUrl.searchParams.get("week");
+    const weekNumber = weekParam
+      ? parseInt(weekParam, 10)
+      : overview.currentWeek;
+    const week = await getPlanWeek(clientId, weekNumber);
 
     return NextResponse.json({
-      plan,
-      currentWeek: profile.currentWeek,
-      hasReport: profile.hasReport,
+      plan: week
+        ? {
+            planId: overview.planId,
+            startedAt: overview.startedAt,
+            weeks: [week],
+          }
+        : null,
+      weekTabs: overview.weekTabs,
+      currentWeek: overview.currentWeek,
+      hasReport: overview.hasReport,
     });
   } catch (e) {
     const auth = handleAuthError(e);

@@ -4,6 +4,7 @@ import "dart:io";
 
 import "package:foodfox/config/api_config.dart";
 import "package:foodfox/models/models.dart";
+import "package:foodfox/utils/api_cache.dart";
 import "package:foodfox/utils/network_errors.dart";
 import "package:http/http.dart" as http;
 
@@ -11,6 +12,7 @@ class FoodFoxApi {
   FoodFoxApi({http.Client? client}) : _client = client ?? http.Client();
 
   final http.Client _client;
+  final ApiCache _cache = ApiCache();
   String? _sessionCookie;
 
   Map<String, String> get _headers {
@@ -73,7 +75,12 @@ class FoodFoxApi {
 
   void setSessionCookie(String value) => _sessionCookie = value;
 
-  void logout() => _sessionCookie = null;
+  void logout() {
+    _sessionCookie = null;
+    _cache.clear();
+  }
+
+  void invalidateDataCache() => _cache.clear();
 
   Future<UserProfile> login(String email, String password) async {
     return _withRetry(() async {
@@ -120,23 +127,55 @@ class FoodFoxApi {
     });
   }
 
-  Future<({PlanData? plan, int currentWeek})> fetchPlan() async {
-    return _withRetry(() async {
-      final response = await _client.get(_uri("/api/plan"), headers: _headers);
+  Future<({
+    PlanData? plan,
+    List<PlanWeekItem> weekTabs,
+    int currentWeek,
+  })> fetchPlan({int? week, bool force = false}) async {
+    final cacheKey = "plan:${week ?? "current"}";
+    if (!force) {
+      final cached = _cache.get<
+          ({
+            PlanData? plan,
+            List<PlanWeekItem> weekTabs,
+            int currentWeek,
+          })>(cacheKey);
+      if (cached != null) return cached;
+    }
+
+    final result = await _withRetry(() async {
+      final path = week == null ? "/api/plan" : "/api/plan?week=$week";
+      final response = await _client.get(_uri(path), headers: _headers);
       final data = await _decode(response);
       final planJson = data["plan"];
+      final weekTabs = (data["weekTabs"] as List<dynamic>? ?? [])
+          .map((e) => PlanWeekItem.fromJson(e as Map<String, dynamic>))
+          .toList();
+      final currentWeek = data["currentWeek"] as int? ?? 1;
       if (planJson == null) {
-        return (plan: null, currentWeek: data["currentWeek"] as int? ?? 1);
+        return (plan: null, weekTabs: weekTabs, currentWeek: currentWeek);
       }
       return (
         plan: PlanData.fromJson(planJson as Map<String, dynamic>),
-        currentWeek: data["currentWeek"] as int? ?? 1,
+        weekTabs: weekTabs,
+        currentWeek: currentWeek,
       );
     });
+
+    _cache.set(cacheKey, result, ttl: const Duration(minutes: 10));
+    return result;
   }
 
-  Future<({List<ResultItem> results, ZoneCounts counts})> fetchResults() async {
-    return _withRetry(() async {
+  Future<({List<ResultItem> results, ZoneCounts counts})> fetchResults({
+    bool force = false,
+  }) async {
+    if (!force) {
+      final cached =
+          _cache.get<({List<ResultItem> results, ZoneCounts counts})>("results");
+      if (cached != null) return cached;
+    }
+
+    final result = await _withRetry(() async {
       final response = await _client.get(_uri("/api/results"), headers: _headers);
       final data = await _decode(response);
       final results = (data["results"] as List<dynamic>)
@@ -145,10 +184,23 @@ class FoodFoxApi {
       final counts = ZoneCounts.fromJson(data["counts"] as Map<String, dynamic>);
       return (results: results, counts: counts);
     });
+
+    _cache.set("results", result, ttl: const Duration(minutes: 10));
+    return result;
   }
 
-  Future<({List<RecipeItem> recipes, int weekNumber, int suitableCount})> fetchRecipes() async {
-    return _withRetry(() async {
+  Future<({List<RecipeItem> recipes, int weekNumber, int suitableCount})> fetchRecipes({
+    bool force = false,
+  }) async {
+    if (!force) {
+      final cached = _cache.get<
+          ({List<RecipeItem> recipes, int weekNumber, int suitableCount})>(
+        "recipes",
+      );
+      if (cached != null) return cached;
+    }
+
+    final result = await _withRetry(() async {
       final response = await _client.get(_uri("/api/recipes"), headers: _headers);
       final data = await _decode(response);
       final recipes = (data["recipes"] as List<dynamic>)
@@ -160,10 +212,18 @@ class FoodFoxApi {
         suitableCount: data["suitableCount"] as int? ?? recipes.length,
       );
     });
+
+    _cache.set("recipes", result, ttl: const Duration(minutes: 10));
+    return result;
   }
 
-  Future<List<ChatMessage>> fetchMessages() async {
-    return _withRetry(() async {
+  Future<List<ChatMessage>> fetchMessages({bool force = false}) async {
+    if (!force) {
+      final cached = _cache.get<List<ChatMessage>>("chat");
+      if (cached != null) return cached;
+    }
+
+    final result = await _withRetry(() async {
       final response =
           await _client.get(_uri("/api/chat/messages"), headers: _headers);
       final data = await _decode(response);
@@ -171,6 +231,9 @@ class FoodFoxApi {
           .map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
           .toList();
     });
+
+    _cache.set("chat", result, ttl: const Duration(minutes: 2));
+    return result;
   }
 
   Future<void> markChatRead() async {
@@ -188,9 +251,11 @@ class FoodFoxApi {
           body: jsonEncode({"message": message}),
         );
         final data = await _decode(response);
-        return (data["messages"] as List<dynamic>)
+        final messages = (data["messages"] as List<dynamic>)
             .map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
             .toList();
+        _cache.set("chat", messages, ttl: const Duration(minutes: 2));
+        return messages;
       },
       attempts: 2,
       timeout: const Duration(seconds: 90),
@@ -207,6 +272,7 @@ class FoodFoxApi {
       final streamed = await _client.send(request);
       final response = await http.Response.fromStream(streamed);
       await _decode(response);
+      invalidateDataCache();
     });
   }
 

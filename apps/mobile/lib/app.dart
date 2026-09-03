@@ -23,6 +23,7 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
   int _resultsReload = 0;
   String? _chatInitialMessage;
   int _chatSeed = 0;
+  final _visitedTabs = <int>{0};
 
   @override
   void initState() {
@@ -64,6 +65,7 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
   void _onUploaded() {
     setState(() {
       _resultsReload++;
+      _visitedTabs.add(1);
       _tab = 1;
     });
   }
@@ -72,8 +74,31 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
     setState(() {
       _chatInitialMessage = question;
       _chatSeed++;
+      _visitedTabs.add(4);
       _tab = 4;
     });
+  }
+
+  void _openPlanTab() {
+    setState(() {
+      _visitedTabs.add(2);
+      _tab = 2;
+    });
+  }
+
+  void _selectTab(int index) {
+    setState(() {
+      _tab = index;
+      _visitedTabs.add(index);
+    });
+  }
+
+  Widget _tabLayer(int index, Widget child) {
+    if (!_visitedTabs.contains(index)) return const SizedBox.shrink();
+    return Offstage(
+      offstage: _tab != index,
+      child: RepaintBoundary(child: child),
+    );
   }
 
   @override
@@ -96,25 +121,6 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
       );
     }
 
-    final screens = [
-      UploadScreen(api: _api, onUploaded: _onUploaded),
-      ResultsScreen(
-        api: _api,
-        isActive: _tab == 1,
-        reloadToken: _resultsReload,
-        onAskBot: _askBot,
-        onOpenPlan: () => setState(() => _tab = 2),
-      ),
-      PlanScreen(api: _api, isActive: _tab == 2),
-      RecipesScreen(api: _api, isActive: _tab == 3),
-      ChatScreen(
-        key: ValueKey("chat-$_chatSeed"),
-        api: _api,
-        isActive: _tab == 4,
-        initialMessage: _chatInitialMessage,
-      ),
-    ];
-
     return MaterialApp(
       title: "FoodFox",
       debugShowCheckedModeBanner: false,
@@ -123,11 +129,45 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
         backgroundColor: FoxColors.bg,
         body: SafeArea(
           bottom: false,
-          child: IndexedStack(index: _tab, children: screens),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              _tabLayer(
+                0,
+                UploadScreen(api: _api, onUploaded: _onUploaded),
+              ),
+              _tabLayer(
+                1,
+                ResultsScreen(
+                  key: const ValueKey("results"),
+                  api: _api,
+                  reloadToken: _resultsReload,
+                  onAskBot: _askBot,
+                  onOpenPlan: _openPlanTab,
+                ),
+              ),
+              _tabLayer(
+                2,
+                PlanScreen(key: const ValueKey("plan"), api: _api),
+              ),
+              _tabLayer(
+                3,
+                RecipesScreen(key: const ValueKey("recipes"), api: _api),
+              ),
+              _tabLayer(
+                4,
+                ChatScreen(
+                  key: ValueKey("chat-$_chatSeed"),
+                  api: _api,
+                  initialMessage: _chatInitialMessage,
+                ),
+              ),
+            ],
+          ),
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _tab,
-          onDestinationSelected: (i) => setState(() => _tab = i),
+          onDestinationSelected: _selectTab,
           backgroundColor: FoxColors.surface,
           indicatorColor: FoxColors.primarySoft,
           destinations: const [

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   addChatMessage,
   getActivePlanContext,
+  getChatHistory,
   getChatMessages,
   getClientProfile,
   getPlanWeekSummary,
@@ -85,9 +86,7 @@ export async function POST(req: NextRequest) {
       focusWeekForbidden: weekPlan?.forbidden,
     };
 
-    const history = (await getChatMessages(clientId))
-      .filter((m) => m.messageType === "chat")
-      .slice(-12)
+    const history = (await getChatHistory(clientId))
       .map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,

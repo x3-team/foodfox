@@ -211,7 +211,7 @@ class PlanWeekItem {
     return PlanWeekItem(
       weekNumber: json["weekNumber"] as int,
       phase: json["phase"] as String? ?? "",
-      days: (json["days"] as List<dynamic>)
+      days: (json["days"] as List<dynamic>? ?? [])
           .map((e) => PlanDayItem.fromJson(e as Map<String, dynamic>))
           .toList(),
     );

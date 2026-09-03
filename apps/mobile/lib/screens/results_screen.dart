@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
@@ -12,14 +14,12 @@ class ResultsScreen extends StatefulWidget {
   const ResultsScreen({
     super.key,
     required this.api,
-    this.isActive = true,
     this.reloadToken = 0,
     this.onAskBot,
     this.onOpenPlan,
   });
 
   final FoodFoxApi api;
-  final bool isActive;
   final int reloadToken;
   final void Function(String question)? onAskBot;
   final VoidCallback? onOpenPlan;
@@ -36,16 +36,29 @@ class _ResultsScreenState extends State<ResultsScreen> {
   ZoneCounts _counts = ZoneCounts(green: 0, yellow: 0, red: 0);
   final _searchController = TextEditingController();
   var _query = "";
-  late final LazyTabLoader _loader = LazyTabLoader(onLoad: _load);
+  Timer? _searchDebounce;
+  late final LazyTabLoader _loader = LazyTabLoader(onLoad: () => _load());
 
   @override
   void initState() {
     super.initState();
-    _loader.sync(active: widget.isActive, reloadToken: widget.reloadToken);
+    _loader.sync(active: true, reloadToken: widget.reloadToken);
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 200), () {
+      if (!mounted) return;
+      final next = _searchController.text;
+      if (next == _query) return;
+      setState(() => _query = next);
+    });
   }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -53,20 +66,18 @@ class _ResultsScreenState extends State<ResultsScreen> {
   @override
   void didUpdateWidget(covariant ResultsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _loader.sync(
-      active: widget.isActive,
-      reloadToken: widget.reloadToken,
-      force: oldWidget.reloadToken != widget.reloadToken,
-    );
+    if (oldWidget.reloadToken != widget.reloadToken) {
+      _load(force: true);
+    }
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool force = false}) async {
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      final data = await widget.api.fetchResults();
+      final data = await widget.api.fetchResults(force: force);
       if (!mounted) return;
       setState(() {
         _results = data.results;
@@ -159,7 +170,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     ),
                   )
                 else ...[
-                  ReportSummary(counts: _counts, onSelectZone: _onZoneChanged),
+                  RepaintBoundary(
+                    child: ReportSummary(counts: _counts, onSelectZone: _onZoneChanged),
+                  ),
                   const SizedBox(height: 12),
                   if (widget.onOpenPlan != null || widget.onAskBot != null)
                     Row(

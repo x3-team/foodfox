@@ -476,6 +476,102 @@ export async function getFullPlan(clientId: string) {
   };
 }
 
+/** Lightweight plan header + week tabs (no day payloads). */
+export async function getPlanOverview(clientId: string) {
+  await ensureSchema();
+  const p = getPool();
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (!p) {
+    if (!memory!.planDays.length) return null;
+    const currentWeek =
+      memory!.planDays.find((d) => d.date === today)?.weekNumber ?? 1;
+    return {
+      planId: memory!.planId,
+      startedAt: memory!.planDays[0]?.date ?? null,
+      currentWeek,
+      hasReport: memory!.results.length > 0,
+      weekTabs: Array.from({ length: 8 }, (_, i) => ({
+        weekNumber: i + 1,
+        phase: getWeekPhase(i + 1),
+      })),
+    };
+  }
+
+  const plan = await p.query(
+    `SELECT np.id, np.started_at,
+            (SELECT pd.week_number FROM plan_days pd
+             WHERE pd.plan_id = np.id AND pd.date = $2 LIMIT 1) AS current_week
+     FROM nutrition_plans np
+     WHERE np.client_id = $1 AND np.status = 'active'
+     ORDER BY np.created_at DESC LIMIT 1`,
+    [clientId, today],
+  );
+  if (!plan.rows[0]) return null;
+
+  const reportId = await resolveActiveReportId(p, clientId);
+  return {
+    planId: plan.rows[0].id as string,
+    startedAt: new Date(plan.rows[0].started_at).toISOString().slice(0, 10),
+    currentWeek: (plan.rows[0].current_week as number) ?? 1,
+    hasReport: Boolean(reportId),
+    weekTabs: Array.from({ length: 8 }, (_, i) => ({
+      weekNumber: i + 1,
+      phase: getWeekPhase(i + 1),
+    })),
+  };
+}
+
+/** One plan week — ~4 KB instead of full 56-day payload. */
+export async function getPlanWeek(clientId: string, weekNumber: number) {
+  await ensureSchema();
+  const p = getPool();
+  const today = new Date().toISOString().slice(0, 10);
+  const wn = Math.min(8, Math.max(1, weekNumber));
+
+  if (!p) {
+    const days = memory!.planDays.filter((d) => d.weekNumber === wn);
+    if (!days.length) return null;
+    return {
+      weekNumber: wn,
+      phase: getWeekPhase(wn),
+      days: days.map((d) => ({
+        ...d,
+        isToday: d.date === today,
+      })),
+    };
+  }
+
+  const plan = await p.query(
+    `SELECT id FROM nutrition_plans
+     WHERE client_id = $1 AND status = 'active'
+     ORDER BY created_at DESC LIMIT 1`,
+    [clientId],
+  );
+  if (!plan.rows[0]) return null;
+
+  const { rows } = await p.query(
+    `SELECT date, week_number, allowed, forbidden, rotation, bot_message
+     FROM plan_days WHERE plan_id = $1 AND week_number = $2 ORDER BY date`,
+    [plan.rows[0].id, wn],
+  );
+  if (!rows.length) return null;
+
+  return {
+    weekNumber: wn,
+    phase: getWeekPhase(wn),
+    days: rows.map((row) => ({
+      date: new Date(row.date).toISOString().slice(0, 10),
+      weekNumber: row.week_number as number,
+      allowed: row.allowed ?? [],
+      forbidden: row.forbidden ?? [],
+      rotation: row.rotation ?? [],
+      botMessage: row.bot_message ?? "",
+      isToday: new Date(row.date).toISOString().slice(0, 10) === today,
+    })),
+  };
+}
+
 export interface PlanDayDto {
   date: string;
   weekNumber: number;
@@ -654,10 +750,13 @@ export async function getResultsForClient(clientId: string): Promise<TestResultR
   }));
 }
 
-export async function getRecipesForClient(clientId: string): Promise<RecipeRow[]> {
+export async function getRecipesForClient(
+  clientId: string,
+  preloadedResults?: TestResultRow[],
+): Promise<RecipeRow[]> {
   await ensureSchema();
   const recipes = await getRecipes();
-  const results = await getResultsForClient(clientId);
+  const results = preloadedResults ?? (await getResultsForClient(clientId));
 
   if (results.length === 0) {
     return recipes.map((r) => ({ ...r, suitable: true, allGreen: true, warnings: [] }));
@@ -685,6 +784,69 @@ export async function getRecipesForClient(clientId: string): Promise<RecipeRow[]
     if (a.allGreen !== b.allGreen) return a.allGreen ? -1 : 1;
     return a.title.localeCompare(b.title, "ru");
   });
+}
+
+/** Recipes page: one results fetch, light week lookup. */
+export async function getRecipesPageData(clientId: string) {
+  await ensureSchema();
+  const p = getPool();
+  const results = await getResultsForClient(clientId);
+  const recipes = await getRecipesForClient(clientId, results);
+
+  let weekNumber = 1;
+  if (p) {
+    const today = new Date().toISOString().slice(0, 10);
+    const { rows } = await p.query(
+      `SELECT pd.week_number FROM plan_days pd
+       JOIN nutrition_plans np ON np.id = pd.plan_id
+       WHERE np.client_id = $1 AND np.status = 'active' AND pd.date = $2
+       LIMIT 1`,
+      [clientId, today],
+    );
+    weekNumber = (rows[0]?.week_number as number) ?? 1;
+  } else if (memory!.planDays.length) {
+    const today = new Date().toISOString().slice(0, 10);
+    weekNumber =
+      memory!.planDays.find((d) => d.date === today)?.weekNumber ?? 1;
+  }
+
+  return {
+    recipes,
+    weekNumber,
+    suitableCount: recipes.filter((r) => r.suitable).length,
+    totalCount: recipes.length,
+  };
+}
+
+export async function getChatHistory(
+  clientId: string,
+  limit = 12,
+): Promise<ChatMessageRow[]> {
+  await ensureSchema();
+  const p = getPool();
+  if (!p) {
+    return memory!.messages
+      .filter((m) => m.messageType === "chat")
+      .slice(-limit);
+  }
+
+  const { rows } = await p.query(
+    `SELECT cm.id, cm.role, cm.message_type, cm.content, cm.read_at, cm.created_at
+     FROM chat_messages cm
+     JOIN chat_threads ct ON ct.id = cm.thread_id
+     WHERE ct.client_id = $1 AND cm.message_type = 'chat'
+     ORDER BY cm.created_at DESC
+     LIMIT $2`,
+    [clientId, limit],
+  );
+  return rows.reverse().map((row) => ({
+    id: row.id,
+    role: row.role,
+    messageType: row.message_type,
+    content: row.content,
+    readAt: row.read_at,
+    createdAt: row.created_at,
+  }));
 }
 
 export async function getLatestReportId(clientId: string): Promise<string | null> {

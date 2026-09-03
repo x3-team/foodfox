@@ -8,10 +8,9 @@ import "package:foodfox/widgets/page_header.dart";
 import "package:foodfox/widgets/recipe_card_media.dart";
 
 class RecipesScreen extends StatefulWidget {
-  const RecipesScreen({super.key, required this.api, this.isActive = true});
+  const RecipesScreen({super.key, required this.api});
 
   final FoodFoxApi api;
-  final bool isActive;
 
   @override
   State<RecipesScreen> createState() => _RecipesScreenState();
@@ -28,13 +27,7 @@ class _RecipesScreenState extends State<RecipesScreen> {
   @override
   void initState() {
     super.initState();
-    _loader.sync(active: widget.isActive);
-  }
-
-  @override
-  void didUpdateWidget(covariant RecipesScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _loader.sync(active: widget.isActive);
+    _loader.sync(active: true);
   }
 
   Future<void> _load() async {

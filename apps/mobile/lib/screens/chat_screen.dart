@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
@@ -12,12 +14,10 @@ class ChatScreen extends StatefulWidget {
   const ChatScreen({
     super.key,
     required this.api,
-    this.isActive = true,
     this.initialMessage,
   });
 
   final FoodFoxApi api;
-  final bool isActive;
   final String? initialMessage;
 
   @override
@@ -36,13 +36,12 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _loader.sync(active: widget.isActive || widget.initialMessage != null);
+    _loader.sync(active: true);
   }
 
   @override
   void didUpdateWidget(covariant ChatScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _loader.sync(active: widget.isActive || widget.initialMessage != null);
     if (widget.initialMessage != null &&
         widget.initialMessage != oldWidget.initialMessage) {
       _controller.text = widget.initialMessage!;
@@ -76,7 +75,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
     try {
       final messages = await widget.api.fetchMessages();
-      await widget.api.markChatRead();
+      unawaited(widget.api.markChatRead());
       if (!mounted) return;
       setState(() {
         _messages = messages;

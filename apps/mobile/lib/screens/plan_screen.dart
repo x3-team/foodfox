@@ -10,18 +10,20 @@ import "package:foodfox/widgets/page_header.dart";
 import "package:foodfox/widgets/week_selector.dart";
 
 class PlanScreen extends StatefulWidget {
-  const PlanScreen({super.key, required this.api, this.isActive = true});
+  const PlanScreen({super.key, required this.api});
 
   final FoodFoxApi api;
-  final bool isActive;
 
   @override
   State<PlanScreen> createState() => _PlanScreenState();
 }
 
 class _PlanScreenState extends State<PlanScreen> {
-  PlanData? _plan;
+  PlanData? _planMeta;
+  List<PlanWeekItem> _weekTabs = [];
+  final Map<int, PlanWeekItem> _loadedWeeks = {};
   var _loading = false;
+  var _weekLoading = false;
   var _selectedWeek = 1;
   var _currentWeek = 1;
   Object? _error;
@@ -30,13 +32,7 @@ class _PlanScreenState extends State<PlanScreen> {
   @override
   void initState() {
     super.initState();
-    _loader.sync(active: widget.isActive);
-  }
-
-  @override
-  void didUpdateWidget(covariant PlanScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _loader.sync(active: widget.isActive);
+    _loader.sync(active: true);
   }
 
   Future<void> _load() async {
@@ -46,31 +42,67 @@ class _PlanScreenState extends State<PlanScreen> {
     });
     try {
       final data = await widget.api.fetchPlan();
+      if (!mounted) return;
       setState(() {
-        _plan = data.plan;
+        _planMeta = data.plan;
+        _weekTabs = data.weekTabs;
         _currentWeek = data.currentWeek;
+        _selectedWeek = data.currentWeek.clamp(1, 8);
+        _loadedWeeks.clear();
         if (data.plan != null && data.plan!.weeks.isNotEmpty) {
-          _selectedWeek = data.currentWeek.clamp(1, 8);
+          final w = data.plan!.weeks.first;
+          _loadedWeeks[w.weekNumber] = w;
         }
       });
     } catch (e) {
-      setState(() => _error = e);
+      if (mounted) setState(() => _error = e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
+  Future<void> _selectWeek(int week) async {
+    if (_selectedWeek == week && _loadedWeeks.containsKey(week)) return;
+    setState(() => _selectedWeek = week);
+
+    if (_loadedWeeks.containsKey(week)) return;
+
+    setState(() => _weekLoading = true);
+    try {
+      final data = await widget.api.fetchPlan(week: week);
+      if (!mounted) return;
+      final loaded = data.plan?.weeks.firstOrNull;
+      if (loaded != null) {
+        setState(() => _loadedWeeks[week] = loaded);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceFirst("Exception: ", ""))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _weekLoading = false);
+    }
+  }
+
+  List<PlanWeekItem> get _selectorWeeks {
+    if (_weekTabs.isNotEmpty) {
+      return _weekTabs.map((tab) {
+        return _loadedWeeks[tab.weekNumber] ??
+            PlanWeekItem(
+              weekNumber: tab.weekNumber,
+              phase: tab.phase,
+              days: const [],
+            );
+      }).toList();
+    }
+    return _loadedWeeks.values.toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    PlanWeekItem? week;
-    if (_plan != null) {
-      for (final w in _plan!.weeks) {
-        if (w.weekNumber == _selectedWeek) {
-          week = w;
-          break;
-        }
-      }
-    }
+    final week = _loadedWeeks[_selectedWeek];
     final summary = week?.days.isNotEmpty == true ? week!.days.first : null;
     final banner = phaseBannerText(_currentWeek, _selectedWeek);
 
@@ -85,8 +117,11 @@ class _PlanScreenState extends State<PlanScreen> {
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : _error != null
-                  ? NetworkErrorPanel(error: _error!, onRetry: () => _loader.sync(active: true, force: true))
-                  : _plan == null
+                  ? NetworkErrorPanel(
+                      error: _error!,
+                      onRetry: () => _loader.sync(active: true, force: true),
+                    )
+                  : _planMeta == null
                       ? const Center(
                           child: Padding(
                             padding: EdgeInsets.all(24),
@@ -143,15 +178,15 @@ class _PlanScreenState extends State<PlanScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              "Старт: ${_plan!.startedAt} · Сейчас неделя $_currentWeek из 8",
+                              "Старт: ${_planMeta!.startedAt} · Сейчас неделя $_currentWeek из 8",
                               style: const TextStyle(color: FoxColors.muted),
                             ),
                             const SizedBox(height: 12),
                             WeekSelector(
-                              weeks: _plan!.weeks,
+                              weeks: _selectorWeeks,
                               currentWeek: _currentWeek,
                               selectedWeek: _selectedWeek,
-                              onSelect: (w) => setState(() => _selectedWeek = w),
+                              onSelect: _selectWeek,
                             ),
                             if (banner != null)
                               Container(
@@ -171,7 +206,12 @@ class _PlanScreenState extends State<PlanScreen> {
                                   ),
                                 ),
                               ),
-                            if (summary != null) ...[
+                            if (_weekLoading)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 24),
+                                child: Center(child: CircularProgressIndicator()),
+                              )
+                            else if (summary != null) ...[
                               const SizedBox(height: 16),
                               Card(
                                 child: Padding(
@@ -212,4 +252,8 @@ class _PlanScreenState extends State<PlanScreen> {
       ],
     );
   }
+}
+
+extension _FirstOrNull<E> on List<E> {
+  E? get firstOrNull => isEmpty ? null : first;
 }
