@@ -330,6 +330,22 @@ export async function loginUser(
   };
 }
 
+/** Latest active plan's report, or the most recent upload if no active plan. */
+async function resolveActiveReportId(p: Pool, clientId: string): Promise<string | null> {
+  const { rows } = await p.query(
+    `SELECT COALESCE(
+       (SELECT np.report_id FROM nutrition_plans np
+        WHERE np.client_id = $1 AND np.status = 'active'
+        ORDER BY np.created_at DESC LIMIT 1),
+       (SELECT r.id FROM reports r
+        WHERE r.client_id = $1
+        ORDER BY r.created_at DESC LIMIT 1)
+     ) AS report_id`,
+    [clientId],
+  );
+  return (rows[0]?.report_id as string | undefined) ?? null;
+}
+
 export async function getClientProfile(clientId: string) {
   await ensureSchema();
   const p = getPool();
@@ -351,7 +367,14 @@ export async function getClientProfile(clientId: string) {
   const { rows } = await p.query(
     `SELECT u.email, c.display_name,
             (SELECT COUNT(*)::int FROM test_results tr
-             JOIN reports r ON r.id = tr.report_id WHERE r.client_id = c.id) AS parsed_count,
+             WHERE tr.report_id = COALESCE(
+               (SELECT np.report_id FROM nutrition_plans np
+                WHERE np.client_id = c.id AND np.status = 'active'
+                ORDER BY np.created_at DESC LIMIT 1),
+               (SELECT r.id FROM reports r
+                WHERE r.client_id = c.id
+                ORDER BY r.created_at DESC LIMIT 1)
+             )) AS parsed_count,
             np.started_at,
             (SELECT pd.week_number FROM plan_days pd
              JOIN nutrition_plans np2 ON np2.id = pd.plan_id
@@ -611,14 +634,16 @@ export async function getResultsForClient(clientId: string): Promise<TestResultR
     return memory!.results;
   }
 
+  const reportId = await resolveActiveReportId(p, clientId);
+  if (!reportId) return [];
+
   const { rows } = await p.query(
     `SELECT tr.id, fi.fox_name, tr.value_ug_ml, tr.is_floor_value, tr.zone
      FROM test_results tr
-     JOIN reports r ON r.id = tr.report_id
      JOIN food_items fi ON fi.id = tr.food_item_id
-     WHERE r.client_id = $1
+     WHERE tr.report_id = $1
      ORDER BY tr.zone, fi.fox_name`,
-    [clientId],
+    [reportId],
   );
   return rows.map((row) => ({
     id: row.id,

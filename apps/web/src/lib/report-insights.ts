@@ -43,10 +43,18 @@ export function percentOf(value: number, total: number): number {
   return Math.round((value / total) * 100);
 }
 
-/** Highest-IgG red items — the products driving the elimination plan. */
+/** Highest-IgG red items — deduped by name, one row per product. */
 export function topTriggers(results: ResultItem[], limit = 5): ResultItem[] {
-  return results
-    .filter((r) => r.zone === "red" && r.valueUgMl !== null)
+  const byName = new Map<string, ResultItem>();
+  for (const r of results) {
+    if (r.zone !== "red" || r.valueUgMl === null) continue;
+    const key = r.foxName.toLowerCase();
+    const prev = byName.get(key);
+    if (!prev || (prev.valueUgMl ?? 0) < r.valueUgMl) {
+      byName.set(key, r);
+    }
+  }
+  return [...byName.values()]
     .sort((a, b) => (b.valueUgMl ?? 0) - (a.valueUgMl ?? 0))
     .slice(0, limit);
 }

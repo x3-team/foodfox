@@ -46,7 +46,16 @@ double maxResultValue(List<ResultItem> results) {
 }
 
 List<ResultItem> topTriggers(List<ResultItem> results, {int limit = 5}) {
-  final red = results.where((r) => r.zone == Zone.red && r.valueUgMl != null).toList()
+  final byName = <String, ResultItem>{};
+  for (final r in results) {
+    if (r.zone != Zone.red || r.valueUgMl == null) continue;
+    final key = r.foxName.toLowerCase();
+    final prev = byName[key];
+    if (prev == null || (prev.valueUgMl ?? 0) < r.valueUgMl!) {
+      byName[key] = r;
+    }
+  }
+  final red = byName.values.toList()
     ..sort((a, b) => (b.valueUgMl ?? 0).compareTo(a.valueUgMl ?? 0));
   return red.take(limit).toList();
 }
