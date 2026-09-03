@@ -1,0 +1,75 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [cursor/mvp-web-prototype-5e5b, main]
+    paths:
+      - "apps/mobile/**"
+      - "VERSION"
+      - "scripts/bump-version.sh"
+      - ".github/workflows/android-apk.yml"
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bump build number
+        run: bash ../../scripts/bump-version.sh build
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android licenses
+        run: yes | flutter doctor --android-licenses || true
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Configure demo signing
+        run: cp android/key.properties.example android/key.properties
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Read version
+        id: version
+        working-directory: .
+        run: |
+          SEMVER=$(tr -d '[:space:]' < VERSION)
+          BUILD=$(grep '^version:' apps/mobile/pubspec.yaml | sed -E 's/.*\+([0-9]+).*/\1/')
+          echo "label=${SEMVER} (${BUILD})" >> "$GITHUB_OUTPUT"
+          echo "semver=${SEMVER}" >> "$GITHUB_OUTPUT"
+          echo "build=${BUILD}" >> "$GITHUB_OUTPUT"
+
+      - name: Build debug APK
+        run: |
+          flutter build apk --debug \
+            --build-name=${{ steps.version.outputs.semver }} \
+            --build-number=${{ steps.version.outputs.build }} \
+            --dart-define=FOX_API_BASE=https://foodfox.yuri.guru \
+            --dart-define=FOX_BASIC_USER=demo \
+            --dart-define=FOX_BASIC_PASS=FoodFox2026!
+
+      - name: Rename APK with version
+        run: |
+          cp build/app/outputs/flutter-apk/app-debug.apk \
+            "build/app/outputs/flutter-apk/foodfox-${{ steps.version.outputs.label }}-debug.apk"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: foodfox-android-${{ steps.version.outputs.label }}-debug
+          path: apps/mobile/build/app/outputs/flutter-apk/foodfox-*-debug.apk
+          retention-days: 30

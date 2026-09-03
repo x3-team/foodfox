@@ -1,0 +1,42 @@
+# FoodFox MVP v0.1 — Render Blueprint
+# https://render.com/docs/blueprint-spec
+
+databases:
+  - name: foodfox-db
+    databaseName: foodfox
+    user: foodfox
+    plan: basic-256mb
+    region: frankfurt
+
+services:
+  - type: web
+    name: foodfox-web
+    runtime: node
+    region: frankfurt
+    plan: starter
+    buildCommand: cd apps/web && npm ci --include=dev && npm run build
+    startCommand: cd apps/web && npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: foodfox-db
+          property: connectionString
+      - key: FOX_HELI_API_KEY
+        sync: false
+      - key: HELI_BASE_URL
+        sync: false
+      - key: HELI_CHAT_MODEL
+        value: gpt-4o-mini
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+
+  # v0.1: on-open reminders in chat — cron disabled (free)

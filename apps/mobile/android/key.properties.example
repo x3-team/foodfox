@@ -1,0 +1,4 @@
+storePassword=FoodFoxDemo2026
+keyPassword=FoodFoxDemo2026
+keyAlias=foodfox
+storeFile=app/foodfox-demo.jks
