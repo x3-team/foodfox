@@ -2,7 +2,7 @@
 
 import { withBasePath } from "@/lib/base-path";
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { LoadMoreSentinel } from "@/components/LoadMoreSentinel";
+import { ScrollablePanel } from "@/components/ScrollablePanel";
 import {
   ReportActions,
   ReportSummary,
@@ -10,7 +10,6 @@ import {
   TopTriggers,
   ZoneSegments,
 } from "@/components/report/ReportCards";
-import { useIncrementalList } from "@/lib/list-pagination";
 import { maxValue, topTriggers, ZONE_META, type ResultItem } from "@/lib/report-insights";
 import type { Zone } from "@/lib/fox-parser";
 import Link from "next/link";
@@ -66,9 +65,6 @@ function ResultsContent() {
     });
     return sortForZone(inZone, zone);
   }, [results, zone, query]);
-
-  const { visibleItems, hasMore, loadMore, total: filteredTotal, visibleCount } =
-    useIncrementalList(filtered);
 
   if (loading) {
     return (
@@ -137,19 +133,13 @@ function ResultsContent() {
             </p>
           </div>
         ) : (
-          <>
-            {filteredTotal > 10 && (
-              <p className="px-0.5 text-[12px] text-fox-muted">
-                Показано {visibleCount} из {filteredTotal}
-              </p>
-            )}
-            <ul className="flex flex-col gap-2">
-              {visibleItems.map((item) => (
+          <ScrollablePanel itemCount={filtered.length}>
+            <ul className="flex flex-col gap-2 p-1">
+              {filtered.map((item) => (
                 <ResultRow key={item.id} item={item} max={scaleMax} />
               ))}
             </ul>
-            <LoadMoreSentinel hasMore={hasMore} onLoadMore={loadMore} />
-          </>
+          </ScrollablePanel>
         )}
       </section>
     </>

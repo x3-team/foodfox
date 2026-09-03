@@ -2,10 +2,9 @@ import "package:flutter/material.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
-import "package:foodfox/widgets/list_pagination.dart";
 import "package:foodfox/widgets/page_header.dart";
-import "package:foodfox/widgets/paginated_string_section.dart";
 import "package:foodfox/widgets/report_cards.dart";
+import "package:foodfox/widgets/scrollable_panel.dart";
 
 class ResultsScreen extends StatefulWidget {
   const ResultsScreen({
@@ -31,7 +30,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
   String? _error;
   List<ResultItem> _results = [];
   ZoneCounts _counts = ZoneCounts(green: 0, yellow: 0, red: 0);
-  var _visibleCount = listInitialCount;
   final _searchController = TextEditingController();
   var _query = "";
 
@@ -64,7 +62,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
       setState(() {
         _results = data.results;
         _counts = data.counts;
-        _visibleCount = listInitialCount;
         _loading = false;
       });
     } catch (e) {
@@ -77,10 +74,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   }
 
   void _onZoneChanged(Zone zone) {
-    setState(() {
-      _zone = zone;
-      _visibleCount = listInitialCount;
-    });
+    setState(() => _zone = zone);
   }
 
   List<ResultItem> _filteredForZone() {
@@ -103,8 +97,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
   Widget build(BuildContext context) {
     final total = _counts.green + _counts.yellow + _counts.red;
     final filtered = _filteredForZone();
-    final visible = filtered.take(_visibleCount).toList();
-    final hasMore = _visibleCount < filtered.length;
     final scaleMax = maxResultValue(_results);
 
     return Column(
@@ -118,177 +110,158 @@ class _ResultsScreenState extends State<ResultsScreen> {
           child: RefreshIndicator(
             onRefresh: _load,
             color: FoxColors.primary,
-            child: IncrementalScrollLoader(
-              itemCount: filtered.length,
-              onLoadMore: () {
-                if (!hasMore) return;
-                setState(() => _visibleCount = bumpVisibleCount(_visibleCount, filtered.length));
-              },
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                children: [
-                  if (_loading)
-                    ...List.generate(
-                      4,
-                      (i) => Container(
-                        height: i == 0 ? 200 : 64,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: FoxColors.border.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              children: [
+                if (_loading)
+                  ...List.generate(
+                    4,
+                    (i) => Container(
+                      height: i == 0 ? 200 : 64,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: FoxColors.border.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                    )
-                  else if (_error != null)
-                    Text(_error!, style: const TextStyle(color: FoxColors.red))
-                  else if (total == 0)
-                    Container(
-                      padding: const EdgeInsets.all(28),
-                      decoration: foxCardDecoration,
-                      child: const Column(
-                        children: [
-                          Text(
-                            "Отчёт пока не загружен",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            "Загрузите PDF FOX на вкладке «Отчёт» — разберём 286 антигенов по зонам.",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: FoxColors.muted, height: 1.4),
-                          ),
-                        ],
-                      ),
-                    )
-                  else ...[
-                    ReportSummary(counts: _counts, onSelectZone: _onZoneChanged),
-                    const SizedBox(height: 12),
-                    if (widget.onOpenPlan != null || widget.onAskBot != null)
-                      Row(
-                        children: [
-                          if (widget.onOpenPlan != null)
-                            Expanded(
-                              child: FilledButton(
-                                onPressed: widget.onOpenPlan,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: FoxColors.primary,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                ),
-                                child: const Text("Открыть план"),
-                              ),
-                            ),
-                          if (widget.onOpenPlan != null && widget.onAskBot != null)
-                            const SizedBox(width: 8),
-                          if (widget.onAskBot != null)
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () =>
-                                    widget.onAskBot!("Что мне важно знать по моему отчёту?"),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: FoxColors.primary,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  side: const BorderSide(color: FoxColors.border),
-                                ),
-                                child: const Text("Спросить бота"),
-                              ),
-                            ),
-                        ],
-                      ),
-                    const SizedBox(height: 12),
-                    TopTriggers(items: topTriggers(_results)),
-                    const SizedBox(height: 12),
-                    ZoneSegments(
-                      active: _zone,
-                      counts: _counts,
-                      onChanged: _onZoneChanged,
                     ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  )
+                else if (_error != null)
+                  Text(_error!, style: const TextStyle(color: FoxColors.red))
+                else if (total == 0)
+                  Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: foxCardDecoration,
+                    child: const Column(
                       children: [
                         Text(
-                          zoneFullLabel(_zone),
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: FoxColors.text,
-                          ),
+                          "Отчёт пока не загружен",
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),
+                        SizedBox(height: 8),
                         Text(
-                          zoneHint(_zone),
-                          style: const TextStyle(fontSize: 12, color: FoxColors.muted),
+                          "Загрузите PDF FOX на вкладке «Отчёт» — разберём 286 антигенов по зонам.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: FoxColors.muted, height: 1.4),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _searchController,
-                      onChanged: (v) => setState(() {
-                        _query = v;
-                        _visibleCount = listInitialCount;
-                      }),
-                      decoration: InputDecoration(
-                        hintText: "Поиск продукта…",
-                        prefixIcon: const Icon(Icons.search, size: 20, color: FoxColors.muted),
-                        filled: true,
-                        fillColor: FoxColors.surface,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: FoxColors.border),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: FoxColors.border),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: FoxColors.primary),
+                  )
+                else ...[
+                  ReportSummary(counts: _counts, onSelectZone: _onZoneChanged),
+                  const SizedBox(height: 12),
+                  if (widget.onOpenPlan != null || widget.onAskBot != null)
+                    Row(
+                      children: [
+                        if (widget.onOpenPlan != null)
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: widget.onOpenPlan,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: FoxColors.primary,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                              child: const Text("Открыть план"),
+                            ),
+                          ),
+                        if (widget.onOpenPlan != null && widget.onAskBot != null)
+                          const SizedBox(width: 8),
+                        if (widget.onAskBot != null)
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () =>
+                                  widget.onAskBot!("Что мне важно знать по моему отчёту?"),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: FoxColors.primary,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                side: const BorderSide(color: FoxColors.border),
+                              ),
+                              child: const Text("Спросить бота"),
+                            ),
+                          ),
+                      ],
+                    ),
+                  const SizedBox(height: 12),
+                  TopTriggers(items: topTriggers(_results)),
+                  const SizedBox(height: 12),
+                  ZoneSegments(
+                    active: _zone,
+                    counts: _counts,
+                    onChanged: _onZoneChanged,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        zoneFullLabel(_zone),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: FoxColors.text,
                         ),
                       ),
+                      Text(
+                        zoneHint(_zone),
+                        style: const TextStyle(fontSize: 12, color: FoxColors.muted),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _searchController,
+                    onChanged: (v) => setState(() => _query = v),
+                    decoration: InputDecoration(
+                      hintText: "Поиск продукта…",
+                      prefixIcon: const Icon(Icons.search, size: 20, color: FoxColors.muted),
+                      filled: true,
+                      fillColor: FoxColors.surface,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: FoxColors.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: FoxColors.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: FoxColors.primary),
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    if (filtered.isEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: foxCardDecoration,
-                        child: Text(
-                          _query.isEmpty
-                              ? "Нет продуктов в этой зоне"
-                              : "Ничего не найдено по «$_query»",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: FoxColors.muted),
-                        ),
-                      )
-                    else ...[
-                      if (filtered.length > listInitialCount)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            "Показано ${visible.length} из ${filtered.length}",
-                            style: const TextStyle(fontSize: 12, color: FoxColors.muted),
-                          ),
-                        ),
-                      ...visible.map(
-                        (item) => ResultRow(
-                          item: item,
+                  ),
+                  const SizedBox(height: 12),
+                  if (filtered.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: foxCardDecoration,
+                      child: Text(
+                        _query.isEmpty
+                            ? "Нет продуктов в этой зоне"
+                            : "Ничего не найдено по «$_query»",
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: FoxColors.muted),
+                      ),
+                    )
+                  else
+                    ScrollablePanel(
+                      itemCount: filtered.length,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(4),
+                        physics: filtered.length > listVisibleRows
+                            ? const ClampingScrollPhysics()
+                            : const NeverScrollableScrollPhysics(),
+                        shrinkWrap: filtered.length <= listVisibleRows,
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) => ResultRow(
+                          item: filtered[index],
                           max: scaleMax,
                           onAskBot: widget.onAskBot,
                         ),
                       ),
-                      if (hasMore)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                          child: Text(
-                            "Прокрутите вниз — подгрузим ещё",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 13, color: FoxColors.muted),
-                          ),
-                        ),
-                    ],
-                  ],
+                    ),
                 ],
-              ),
+              ],
             ),
           ),
         ),
