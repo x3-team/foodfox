@@ -35,6 +35,20 @@ const config: Config = {
       maxWidth: {
         phone: "430px",
       },
+      keyframes: {
+        slideUp: {
+          from: { opacity: "0", transform: "translateY(12px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        gentleSpin: {
+          "0%, 100%": { transform: "rotate(-6deg)" },
+          "50%": { transform: "rotate(6deg)" },
+        },
+      },
+      animation: {
+        slideUp: "slideUp 0.35s ease-out",
+        gentleSpin: "gentleSpin 2.4s linear infinite",
+      },
     },
   },
   plugins: [],

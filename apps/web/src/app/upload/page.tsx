@@ -5,6 +5,8 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { IconFile } from "@/components/icons";
+import { ReportProcessingOverlay } from "@/components/ReportProcessingOverlay";
+import { useReportProcessing } from "@/lib/use-report-processing";
 
 function goResults(
   router: ReturnType<typeof useRouter>,
@@ -26,6 +28,7 @@ export default function UploadPage() {
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { processing, startProcessing, finishProcessing, failProcessing } = useReportProcessing();
 
   const uploadFile = useCallback(
     async (file: File) => {
@@ -35,31 +38,37 @@ export default function UploadPage() {
       }
       setLoading(true);
       setError(null);
+      startProcessing({ fileName: file.name });
       const form = new FormData();
       form.append("file", file);
       try {
         const res = await fetch(withBasePath("/api/reports/upload"), { method: "POST", body: form });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Ошибка загрузки");
+        await finishProcessing();
         goResults(router, data.counts ?? { green: 0, yellow: 0, red: 0 });
       } catch (e) {
+        failProcessing();
         setError(e instanceof Error ? e.message : "Ошибка загрузки");
       } finally {
         setLoading(false);
       }
     },
-    [router],
+    [router, startProcessing, finishProcessing, failProcessing],
   );
 
   const loadDemo = async () => {
     setLoading(true);
     setError(null);
+    startProcessing({ demo: true, fileName: "Демо FOX · 285 антигенов" });
     try {
       const res = await fetch(withBasePath("/api/demo/load-sample"), { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Ошибка демо");
+      await finishProcessing();
       goResults(router, data.counts ?? { green: 0, yellow: 0, red: 0 }, true);
     } catch (e) {
+      failProcessing();
       setError(e instanceof Error ? e.message : "Ошибка демо");
     } finally {
       setLoading(false);
@@ -75,6 +84,14 @@ export default function UploadPage() {
 
   return (
     <AppShell>
+      {processing.open && (
+        <ReportProcessingOverlay
+          steps={processing.steps}
+          activeIndex={processing.activeIndex}
+          fileName={processing.fileName}
+          done={processing.done}
+        />
+      )}
       <PageHeader
         title="Загрузка отчёта"
         subtitle="Загрузите PDF FOX Food Xplorer — мы разберём 286 антигенов"
@@ -92,7 +109,7 @@ export default function UploadPage() {
             dragging
               ? "border-fox-primary bg-fox-primary-soft"
               : "border-fox-primary-muted hover:border-fox-primary"
-          }`}
+          } ${loading ? "pointer-events-none opacity-60" : ""}`}
         >
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-fox-primary-soft text-fox-primary">
             <IconFile className="h-8 w-8" />
@@ -108,6 +125,7 @@ export default function UploadPage() {
             type="file"
             accept="application/pdf,.pdf"
             className="hidden"
+            disabled={loading}
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) uploadFile(file);
@@ -133,7 +151,7 @@ export default function UploadPage() {
           onClick={() => document.getElementById("pdf-input")?.click()}
           className="fox-btn-primary w-full"
         >
-          {loading ? "Разбираем отчёт…" : "Загрузить отчёт"}
+          {loading ? "Обрабатываем…" : "Загрузить отчёт"}
         </button>
 
         <button

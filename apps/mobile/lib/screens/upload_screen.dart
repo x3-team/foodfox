@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
 import "package:foodfox/widgets/page_header.dart";
+import "package:foodfox/widgets/report_processing_overlay.dart";
 import "package:file_picker/file_picker.dart";
 
 class UploadScreen extends StatefulWidget {
@@ -30,21 +31,23 @@ class _UploadScreenState extends State<UploadScreen> {
       setState(() => _error = "Не удалось прочитать файл");
       return;
     }
+
+    final fileName = file.name.isNotEmpty ? file.name : "report.pdf";
+    if (!mounted) return;
     setState(() {
       _loading = true;
       _error = null;
     });
-    try {
-      await widget.api.uploadPdf(
-        file.bytes!,
-        file.name.isNotEmpty ? file.name : "report.pdf",
-      );
-      widget.onUploaded();
-    } catch (e) {
-      setState(() => _error = e.toString().replaceFirst("Exception: ", ""));
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+
+    final ok = await showReportProcessing(
+      context: context,
+      fileName: fileName,
+      work: () => widget.api.uploadPdf(file.bytes!, fileName),
+    );
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+    if (ok) widget.onUploaded();
   }
 
   @override
@@ -152,7 +155,7 @@ class _UploadScreenState extends State<UploadScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: Text(_loading ? "Разбираем отчёт…" : "Загрузить отчёт"),
+                child: Text(_loading ? "Обрабатываем…" : "Загрузить отчёт"),
               ),
             ],
           ),
