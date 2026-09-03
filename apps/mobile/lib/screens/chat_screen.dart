@@ -9,7 +9,6 @@ import "package:foodfox/utils/network_errors.dart";
 import "package:foodfox/widgets/chat_bubble.dart";
 import "package:foodfox/widgets/network_error_panel.dart";
 import "package:foodfox/widgets/page_header.dart";
-import "package:foodfox/widgets/voice_input_button.dart";
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({
@@ -30,7 +29,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final _scrollController = ScrollController();
   bool _loading = false;
   bool _sending = false;
-  bool _voiceListening = false;
   Object? _error;
   List<ChatMessage> _messages = [];
   late final LazyTabLoader _loader = LazyTabLoader(onLoad: _loadOnce);
@@ -140,11 +138,6 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  Future<void> _sendVoice(String text) async {
-    _controller.text = text;
-    await _send();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -165,24 +158,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   : ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                      itemCount: _messages.length + (_sending ? 1 : 0) + (_voiceListening ? 1 : 0),
+                      itemCount: _messages.length + (_sending ? 1 : 0),
                       itemBuilder: (context, index) {
-                        if (_voiceListening && index == _messages.length) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
-                            child: Center(
-                              child: Text(
-                                "🎤 Слушаю…",
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: FoxColors.red,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                        if (_sending && index == _messages.length + (_voiceListening ? 1 : 0)) {
+                        if (_sending && index == _messages.length) {
                           return const Padding(
                             padding: EdgeInsets.symmetric(vertical: 12),
                             child: Center(
@@ -219,7 +197,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       minLines: 1,
                       maxLines: 4,
                       decoration: InputDecoration(
-                        hintText: _voiceListening ? "Говорите…" : "Напишите или скажите сообщение…",
+                        hintText: "Напишите сообщение…",
                         filled: true,
                         fillColor: FoxColors.bg,
                         border: OutlineInputBorder(
@@ -241,14 +219,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       onSubmitted: (_) => _send(),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  VoiceInputButton(
-                    disabled: _sending,
-                    onTranscript: _sendVoice,
-                    onListeningChanged: (listening) {
-                      setState(() => _voiceListening = listening);
-                    },
                   ),
                   const SizedBox(width: 8),
                   Material(
