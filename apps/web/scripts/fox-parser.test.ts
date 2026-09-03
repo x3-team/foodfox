@@ -89,4 +89,16 @@ test("parses split Radicchio name across lines", () => {
   assert.ok(r.find((x) => x.foxName.includes("Лук-порей")));
 });
 
+test("filters lab metadata and category index lines", () => {
+  const text = `
+    АНАЛИЗ ВЫПОЛНЕН 01.01.2025
+    МОЛОКО И ЯЙЦО 17
+    Пахта, Коровье молоко, Сыр
+    Пахта 45,01 мкг/мл
+  `;
+  const r = parseFoxPdfText(text);
+  assert.equal(r.length, 1);
+  assert.equal(r[0].foxName, "Пахта");
+});
+
 console.log("\nAll parser tests passed.");

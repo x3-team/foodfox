@@ -8,6 +8,8 @@
     "start": "next start --hostname 0.0.0.0 --port ${PORT:-3000}",
     "lint": "next lint",
     "parser:test": "npx tsx scripts/fox-parser.test.ts",
+    "parser:fixtures": "npx tsx scripts/parser-fixtures.test.ts",
+    "parser:fixture:gen": "npx tsx scripts/generate-parser-fixture.ts",
     "parser:run": "npx tsx scripts/run-fox-parser.ts",
     "parser:catalog": "npx tsx scripts/generate-fox-catalog-ru.ts",
     "figma:capture": "npx tsx scripts/figma-capture-one.ts"

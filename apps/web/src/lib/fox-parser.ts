@@ -50,6 +50,10 @@ const MOLECULAR_SUBLINE_RE =
 const SECTION_HEADER_RE =
   /^(?:молоко и яйц(?:о|а)|рыба и морепродукты|мясо|овощи|специи|зерновые и семена|орехи|бобовые(?: культуры)?|фрукты|съедобные грибы|новые продукты|кофе и чай|другие|молоко и яйца|молекулярный антиген)$/i;
 
+/** Category banner with antigen count, e.g. «МОЛОКО И ЯЙЦО 17» */
+const CATEGORY_INDEX_RE =
+  /^(?:молоко и яйц(?:о|а)|рыба и морепродукты|мясо|овощи|специи|зерновые и семена|орехи|бобовые(?: культуры)?|фрукты|съедобные грибы|новые продукты|кофе и чай|другие)\s+\d+$/i;
+
 function normalizeName(raw: string): string {
   return raw
     .replace(/\s+/g, " ")
@@ -66,6 +70,22 @@ function isNarrativeLine(line: string): boolean {
   );
 }
 
+function isCategoryIndexLine(line: string): boolean {
+  const t = line.trim();
+  if (CATEGORY_INDEX_RE.test(t)) return true;
+  // Comma-separated product list without concentration (summary/index page)
+  if (!/мкг\/мл/i.test(t) && t.includes(",")) {
+    const parts = t.split(",").map((p) => p.trim()).filter(Boolean);
+    if (
+      parts.length >= 3 &&
+      parts.every((p) => /^[A-Za-zА-Яа-я(][\w\s\-–—()]*/.test(p))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function isMetadataField(name: string): boolean {
   return (
     /:$/.test(name) ||
@@ -79,6 +99,8 @@ function isMetadataField(name: string): boolean {
     /лечащий врач/i.test(name) ||
     /дополнительная информация/i.test(name) ||
     /лабораторный отчет/i.test(name) ||
+    /анализ выполнен/i.test(name) ||
+    /^\d{2}\.\d{2}\.\d{4}/.test(name) ||
     /^\*?\s*молекулярный антиген/i.test(name) ||
     /^--\s*\d+\s+of\s+\d+/i.test(name) ||
     /^833177605/i.test(name) ||
@@ -94,6 +116,7 @@ function isControlRow(name: string): boolean {
 function isSectionHeader(line: string): boolean {
   const t = line.trim();
   if (SECTION_HEADER_RE.test(t)) return true;
+  if (isCategoryIndexLine(t)) return true;
   // ALL-CAPS category banners from PDF export
   if (/^[А-ЯA-Z][А-ЯA-Z\s]{4,}$/.test(t) && !/\d/.test(t)) return true;
   return false;
@@ -244,7 +267,7 @@ export function parseFoxPdfText(text: string): ParsedResult[] {
   const lines = text.split(/\r?\n/);
   for (const rawLine of lines) {
     const line = rawLine.trim();
-    if (!line || isNarrativeLine(line)) {
+    if (!line || isNarrativeLine(line) || isMetadataField(line)) {
       pendingName = null;
       partialName = null;
       deferredValue = null;

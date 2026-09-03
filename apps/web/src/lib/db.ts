@@ -1,7 +1,11 @@
 import { Pool } from "pg";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { parseFoxPdfText, type ParsedResult, type Zone } from "./fox-parser";
+import { type ParsedResult, type Zone } from "./fox-parser";
+import {
+  parseAndNormalize,
+  type ParseQualityReport,
+} from "./fox-parse-quality";
 import type { PlanDay } from "./plan-engine";
 import { buildEightWeekPlan, getWeekPhase } from "./plan-engine";
 import { hashPassword, verifyPassword, type SessionData } from "./auth";
@@ -623,9 +627,14 @@ export async function saveReportFromPdf(
   clientId: string,
   pdfText: string,
   pdfBuffer?: Buffer,
-): Promise<{ reportId: string; results: TestResultRow[]; planId: string }> {
+): Promise<{
+  reportId: string;
+  results: TestResultRow[];
+  planId: string;
+  parseQuality: ParseQualityReport;
+}> {
   await ensureSchema();
-  const parsed: ParsedResult[] = parseFoxPdfText(pdfText);
+  const { results: parsed, quality } = parseAndNormalize(pdfText);
   if (parsed.length < 5) {
     const hint =
       pdfText.trim().length < 50
@@ -633,7 +642,8 @@ export async function saveReportFromPdf(
         : `Распознано только ${parsed.length} антигенов из ~286. Проверьте, что PDF не повреждён.`;
     throw new Error(hint);
   }
-  return saveReportFromParsed(clientId, parsed, pdfBuffer);
+  const saved = await saveReportFromParsed(clientId, parsed, pdfBuffer);
+  return { ...saved, parseQuality: quality };
 }
 
 export async function loadDemoReport(

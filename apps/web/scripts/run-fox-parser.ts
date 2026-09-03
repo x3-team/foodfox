@@ -3,6 +3,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 import { PDFParse } from "pdf-parse";
 import { parseFoxPdfText, countZones, validateParseResults } from "../src/lib/fox-parser";
+import { assessParseQuality, normalizeParsedResults } from "../src/lib/fox-parse-quality";
 import { FOX_CATALOG_SIZE } from "../../../packages/database/seeds/fox-catalog-en";
 
 const CATALOG_RU = resolve(process.cwd(), "../../packages/database/seeds/fox-catalog-ru.json");
@@ -16,7 +17,7 @@ async function main() {
   const { text } = await parser.getText();
   await parser.destroy();
 
-  const results = parseFoxPdfText(text);
+  const results = normalizeParsedResults(parseFoxPdfText(text));
   const counts = countZones(results);
 
   const catalogRu = JSON.parse(
@@ -24,6 +25,7 @@ async function main() {
   ) as { count: number; verifiedInPdf: number; names: string[] };
 
   const validation = validateParseResults(results, catalogRu.names);
+  const quality = assessParseQuality(results, text, validation);
 
   console.log("PDF:", path);
   console.log("Text length:", text.length);
@@ -45,6 +47,11 @@ async function main() {
 
   const coverage = ((results.length / catalogRu.verifiedInPdf) * 100).toFixed(1);
   console.log(`\nCoverage vs PDF verified (${catalogRu.verifiedInPdf}): ${coverage}%`);
+  console.log(`Parse confidence: ${quality.confidence}`);
+  if (quality.warnings.length > 0) {
+    console.log("\n--- Warnings ---");
+    quality.warnings.forEach((w) => console.log("  ⚠", w));
+  }
 
   console.log("\n--- Green (first 6) ---");
   for (const r of results.filter((x) => x.zone === "green").slice(0, 6)) {

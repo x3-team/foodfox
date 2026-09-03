@@ -24,7 +24,11 @@ export async function POST(req: NextRequest) {
     }
 
     const clientId = await getAuthClientId();
-    const { reportId, results, planId } = await saveReportFromPdf(clientId, text, buffer);
+    const { reportId, results, planId, parseQuality } = await saveReportFromPdf(
+      clientId,
+      text,
+      buffer,
+    );
     const counts = countZones(
       results.map((r) => ({
         foxName: r.foxName,
@@ -39,6 +43,13 @@ export async function POST(req: NextRequest) {
       planId,
       parsedCount: results.length,
       counts,
+      parseQuality: {
+        confidence: parseQuality.confidence,
+        coverageVsHeader: parseQuality.coverageVsHeader,
+        coverageVsCatalog: parseQuality.coverageVsCatalog,
+        verifiedInPdf: parseQuality.verifiedInPdf,
+        warnings: parseQuality.warnings,
+      },
       results: await getResultsForClient(clientId),
     });
   } catch (e) {
