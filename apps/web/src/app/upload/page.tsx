@@ -162,9 +162,6 @@ export default function UploadPage() {
         >
           Загрузить демо-отчёт (285 антигенов)
         </button>
-        <p className="text-center text-[12px] leading-relaxed text-fox-muted">
-          Для презентации: мгновенно создаст план и чат без PDF
-        </p>
       </main>
     </AppShell>
   );
