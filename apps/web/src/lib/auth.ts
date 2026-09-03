@@ -2,13 +2,18 @@ import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 
 export const SESSION_COOKIE = "fox_session";
-const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
+export const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 24 * 30;
+const SESSION_MAX_AGE = ACCESS_TOKEN_MAX_AGE;
+export const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 90;
+
+export type UserRole = "client" | "admin" | "nutritionist";
 
 export interface SessionData {
   userId: string;
   clientId: string;
   email: string;
   displayName: string;
+  role: UserRole;
 }
 
 export class AuthError extends Error {
@@ -18,12 +23,30 @@ export class AuthError extends Error {
   }
 }
 
+const DEV_SECRET = "foodfox-dev-session-change-in-production";
+
 function secret(): string {
   return (
     process.env.SESSION_SECRET ??
     process.env.FOX_SESSION_SECRET ??
-    "foodfox-dev-session-change-in-production"
+    DEV_SECRET
   );
+}
+
+/** Fail fast in production if secrets or DB are misconfigured. */
+export function assertProductionConfig(): void {
+  if (process.env.NODE_ENV !== "production") return;
+  const s = secret();
+  if (!s || s === DEV_SECRET) {
+    throw new Error("SESSION_SECRET must be set in production");
+  }
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL must be set in production");
+  }
+}
+
+export function issueAccessToken(session: SessionData): string {
+  return encodeSession(session);
 }
 
 export function hashPassword(password: string): string {

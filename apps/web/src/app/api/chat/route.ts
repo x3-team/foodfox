@@ -5,6 +5,7 @@ import {
   getChatHistory,
   getChatMessages,
   getClientProfile,
+  getDbPool,
   getPlanWeekSummary,
   markMessagesRead,
 } from "@/lib/db";
@@ -13,6 +14,7 @@ import {
   getAuthSession,
   handleAuthError,
 } from "@/lib/api-auth";
+import { recordLlmRequest, trackEvent } from "@/lib/analytics";
 import {
   buildSystemPrompt,
   chatWithHeli,
@@ -93,9 +95,14 @@ export async function POST(req: NextRequest) {
       }));
 
     await addChatMessage(clientId, "user", message);
+    trackEvent(getDbPool(), clientId, "chat_sent", {
+      messageLength: message.length,
+      weekNumber: ctx.weekNumber,
+    });
 
     let reply: string;
     const heli = createHeliClient();
+    const model = process.env.HELI_CHAT_MODEL ?? "gpt-4o-mini";
     if (!heli) {
       reply = offlineChatNotice();
       await addChatMessage(clientId, "assistant", reply);
@@ -104,13 +111,22 @@ export async function POST(req: NextRequest) {
     }
 
     try {
+      const t0 = Date.now();
       const response = await chatWithHeli(
         heli,
         buildSystemPrompt(chatCtx, message),
         history,
         message,
+        model,
       );
       reply = response.choices[0]?.message?.content?.trim() ?? "";
+      void recordLlmRequest(getDbPool(), clientId, {
+        model,
+        tokensIn: response.usage?.prompt_tokens,
+        tokensOut: response.usage?.completion_tokens,
+        latencyMs: Date.now() - t0,
+        threadId: ctx.threadId ?? null,
+      });
       if (!reply) {
         reply = heliErrorNotice();
       }

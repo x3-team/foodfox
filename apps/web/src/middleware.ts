@@ -6,7 +6,17 @@ const PROTECTED = ["/upload", "/results", "/plan", "/recipes", "/chat", "/accoun
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(SESSION_COOKIE)?.value;
-  const session = token ? await decodeSession(token) : null;
+  let session = token ? await decodeSession(token) : null;
+  if (!session) {
+    const bearer = request.headers.get("authorization");
+    if (bearer?.startsWith("Bearer ")) {
+      session = await decodeSession(bearer.slice(7).trim());
+    }
+    const foxToken = request.headers.get("x-fox-token");
+    if (!session && foxToken) {
+      session = await decodeSession(foxToken.trim());
+    }
+  }
 
   if (pathname.startsWith("/login")) {
     if (session) {
@@ -15,7 +25,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith("/api/auth") || pathname === "/api/health") {
+  if (
+    pathname.startsWith("/api/auth/login") ||
+    pathname.startsWith("/api/auth/register") ||
+    pathname.startsWith("/api/auth/refresh") ||
+    pathname === "/api/health"
+  ) {
+    return NextResponse.next();
+  }
+
+  if (pathname.startsWith("/api/auth")) {
     return NextResponse.next();
   }
 

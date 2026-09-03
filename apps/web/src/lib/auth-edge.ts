@@ -1,10 +1,13 @@
 export const SESSION_COOKIE = "fox_session";
 
+export type UserRole = "client" | "admin" | "nutritionist";
+
 export interface SessionData {
   userId: string;
   clientId: string;
   email: string;
   displayName: string;
+  role: UserRole;
 }
 
 function getSecret(): string {

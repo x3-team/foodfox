@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { buildAuthResponse } from "@/lib/auth-request";
 import { setSessionCookie } from "@/lib/auth";
-import { loginUser } from "@/lib/db";
+import { createRefreshToken, getDbPool, loginUser } from "@/lib/db";
+import { trackEvent } from "@/lib/analytics";
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,13 +23,10 @@ export async function POST(req: NextRequest) {
     }
 
     setSessionCookie(session);
+    const refreshToken = await createRefreshToken(session.userId);
+    trackEvent(getDbPool(), session.clientId, "user_logged_in", {});
 
-    return NextResponse.json({
-      user: {
-        email: session.email,
-        displayName: session.displayName,
-      },
-    });
+    return NextResponse.json(buildAuthResponse(session, refreshToken));
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Ошибка входа" }, { status: 500 });

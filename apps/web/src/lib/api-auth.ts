@@ -1,14 +1,18 @@
-import { NextResponse } from "next/server";
-import { AuthError, requireClientId, requireSession } from "./auth";
+import { NextRequest, NextResponse } from "next/server";
+import { AuthError } from "./auth";
+import { resolveSessionFromRequest } from "./auth-request";
 
 export { AuthError };
 
-export async function getAuthClientId(): Promise<string> {
-  return requireClientId();
+export async function getAuthSession(req?: NextRequest) {
+  const session = await resolveSessionFromRequest(req);
+  if (!session) throw new AuthError();
+  return session;
 }
 
-export async function getAuthSession() {
-  return requireSession();
+export async function getAuthClientId(req?: NextRequest): Promise<string> {
+  const session = await getAuthSession(req);
+  return session.clientId;
 }
 
 export function unauthorizedResponse(): NextResponse {

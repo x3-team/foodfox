@@ -13,6 +13,8 @@ class FoodFoxApi {
 
   final http.Client _client;
   final ApiCache _cache = ApiCache();
+  String? _accessToken;
+  String? _refreshToken;
   String? _sessionCookie;
 
   Map<String, String> get _headers {
@@ -23,7 +25,9 @@ class FoodFoxApi {
       "Authorization": "Basic $credentials",
       "Accept": "application/json",
     };
-    if (_sessionCookie != null) {
+    if (_accessToken != null) {
+      headers["X-Fox-Token"] = _accessToken!;
+    } else if (_sessionCookie != null) {
       headers["Cookie"] = "fox_session=$_sessionCookie";
     }
     return headers;
@@ -61,6 +65,13 @@ class FoodFoxApi {
     if (match != null) _sessionCookie = match.group(1);
   }
 
+  void _captureTokens(Map<String, dynamic> data) {
+    final access = data["accessToken"] as String?;
+    final refresh = data["refreshToken"] as String?;
+    if (access != null && access.isNotEmpty) _accessToken = access;
+    if (refresh != null && refresh.isNotEmpty) _refreshToken = refresh;
+  }
+
   Future<Map<String, dynamic>> _decode(http.Response response) async {
     _captureSession(response);
     final body = response.body.isEmpty ? "{}" : response.body;
@@ -68,14 +79,17 @@ class FoodFoxApi {
     if (response.statusCode >= 400) {
       throw Exception(data["error"] as String? ?? "HTTP ${response.statusCode}");
     }
+    _captureTokens(data);
     return data;
   }
 
-  bool get isLoggedIn => _sessionCookie != null;
+  bool get isLoggedIn => _accessToken != null || _sessionCookie != null;
 
-  void setSessionCookie(String value) => _sessionCookie = value;
+  void setAccessToken(String value) => _accessToken = value;
 
   void logout() {
+    _accessToken = null;
+    _refreshToken = null;
     _sessionCookie = null;
     _cache.clear();
   }

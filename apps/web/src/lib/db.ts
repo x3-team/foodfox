@@ -1,4 +1,5 @@
-import { Pool } from "pg";
+import { Pool, type PoolClient } from "pg";
+import { createHash, randomBytes } from "crypto";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { type ParsedResult, type Zone } from "./fox-parser";
@@ -8,7 +9,14 @@ import {
 } from "./fox-parse-quality";
 import type { PlanDay } from "./plan-engine";
 import { buildEightWeekPlan, getWeekPhase } from "./plan-engine";
-import { hashPassword, verifyPassword, type SessionData } from "./auth";
+import {
+  assertProductionConfig,
+  hashPassword,
+  REFRESH_TOKEN_MAX_AGE,
+  verifyPassword,
+  type SessionData,
+  type UserRole,
+} from "./auth";
 import { analyzeRecipe } from "./recipe-match";
 import { saveReportPdf } from "./report-storage";
 import {
@@ -16,6 +24,8 @@ import {
   getCatalogRecipesForMemory,
   type RecipeStep,
 } from "./recipes-catalog";
+import { getDbClient, runWithClientContext } from "./db-context";
+import { trackEvent } from "./analytics";
 
 export interface TestResultRow {
   id: string;
@@ -127,20 +137,56 @@ function getPool(): Pool | null {
   return pool;
 }
 
-export async function ensureSchema(): Promise<void> {
-  if (schemaReady) return;
+function requirePool(): Pool {
   const p = getPool();
   if (!p) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("DATABASE_URL is required in production");
+    }
+    throw new Error("Database required");
+  }
+  return p;
+}
+
+/** Pool or active RLS transaction client. */
+function db(): Pool | PoolClient {
+  return getDbClient() ?? requirePool();
+}
+
+async function clientScope<T>(clientId: string, fn: () => Promise<T>): Promise<T> {
+  const p = getPool();
+  if (!p) return fn();
+  return runWithClientContext(p, clientId, fn);
+}
+
+export async function ensureSchema(): Promise<void> {
+  if (schemaReady) return;
+  assertProductionConfig();
+  const p = getPool();
+  if (!p) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("DATABASE_URL is required in production");
+    }
     seedMemoryIfNeeded();
     schemaReady = true;
     return;
   }
   const schemaPath = join(process.cwd(), "../../packages/database/schema.sql");
+  const migrationPath = join(
+    process.cwd(),
+    "../../packages/database/migrations/002_auth_telemetry_rls.sql",
+  );
   try {
     const sql = readFileSync(schemaPath, "utf-8");
     await p.query(sql);
   } catch {
     // schema may already exist
+  }
+  try {
+    const migration = readFileSync(migrationPath, "utf-8");
+    await p.query(migration);
+  } catch {
+    // migration may already be applied
   }
   await seedPostgresIfEmpty(p);
   await syncRecipesCatalog(p);
@@ -279,10 +325,10 @@ export async function registerUser(
   email: string,
   password: string,
   displayName: string,
+  opts?: { consent?: boolean },
 ): Promise<SessionData> {
   await ensureSchema();
-  const p = getPool();
-  if (!p) throw new Error("Database required for registration");
+  const p = requirePool();
 
   const normalized = email.trim().toLowerCase();
   const existing = await p.query("SELECT id FROM users WHERE email = $1", [normalized]);
@@ -293,8 +339,13 @@ export async function registerUser(
     [normalized, hashPassword(password)],
   );
   const client = await p.query(
-    `INSERT INTO clients (user_id, display_name) VALUES ($1, $2) RETURNING id`,
-    [user.rows[0].id, displayName.trim() || "Клиент"],
+    `INSERT INTO clients (user_id, display_name, privacy_consent_at)
+     VALUES ($1, $2, $3) RETURNING id`,
+    [
+      user.rows[0].id,
+      displayName.trim() || "Клиент",
+      opts?.consent ? new Date().toISOString() : null,
+    ],
   );
   const clientId = client.rows[0].id;
 
@@ -306,15 +357,16 @@ export async function registerUser(
     clientId,
     email: normalized,
     displayName: displayName.trim() || "Клиент",
+    role: "client",
   };
 }
 
 async function ensureChatThread(
-  p: Pool,
+  conn: Pool | PoolClient,
   clientId: string,
   planId: string | null,
 ): Promise<string> {
-  const { rows } = await p.query(
+  const { rows } = await conn.query(
     `INSERT INTO chat_threads (client_id, plan_id) VALUES ($1, $2)
      ON CONFLICT (client_id) DO UPDATE SET
        plan_id = COALESCE(EXCLUDED.plan_id, chat_threads.plan_id)
@@ -349,12 +401,11 @@ export async function loginUser(
   password: string,
 ): Promise<SessionData | null> {
   await ensureSchema();
-  const p = getPool();
-  if (!p) return null;
+  const p = requirePool();
 
   const normalized = email.trim().toLowerCase();
   const { rows } = await p.query(
-    `SELECT u.id, u.password_hash, c.id AS client_id, c.display_name
+    `SELECT u.id, u.password_hash, u.role, c.id AS client_id, c.display_name
      FROM users u
      JOIN clients c ON c.user_id = u.id
      WHERE u.email = $1 LIMIT 1`,
@@ -368,12 +419,16 @@ export async function loginUser(
     clientId: row.client_id,
     email: normalized,
     displayName: row.display_name ?? "Клиент",
+    role: (row.role as UserRole) ?? "client",
   };
 }
 
 /** Latest active plan's report, or the most recent upload if no active plan. */
-async function resolveActiveReportId(p: Pool, clientId: string): Promise<string | null> {
-  const { rows } = await p.query(
+async function resolveActiveReportId(
+  conn: Pool | PoolClient,
+  clientId: string,
+): Promise<string | null> {
+  const { rows } = await conn.query(
     `SELECT COALESCE(
        (SELECT np.report_id FROM nutrition_plans np
         WHERE np.client_id = $1 AND np.status = 'active'
@@ -687,87 +742,98 @@ export async function saveReportFromParsed(
     };
   }
 
-  const report = await p.query(
-    `INSERT INTO reports (client_id, status, parse_confidence)
-     VALUES ($1, 'ready', $2) RETURNING id`,
-    [clientId, parsed.length >= 50 ? 0.9 : 0.6],
-  );
-  const reportId = report.rows[0].id;
-
-  if (pdfBuffer && pdfBuffer.length > 0) {
-    const storageKey = await saveReportPdf(clientId, reportId, pdfBuffer);
-    await p.query(`UPDATE reports SET storage_key = $1 WHERE id = $2`, [storageKey, reportId]);
-  }
-
-  for (const r of parsed) {
-    let foodItem = await p.query(
-      "SELECT id FROM food_items WHERE lower(fox_name) = lower($1) LIMIT 1",
-      [r.foxName],
+  return clientScope(clientId, async () => {
+    const dbx = db();
+    const report = await dbx.query(
+      `INSERT INTO reports (client_id, status, parse_confidence)
+       VALUES ($1, 'ready', $2) RETURNING id`,
+      [clientId, parsed.length >= 50 ? 0.9 : 0.6],
     );
-    if (!foodItem.rows[0]) {
-      foodItem = await p.query(
-        "INSERT INTO food_items (fox_name) VALUES ($1) RETURNING id",
+    const reportId = report.rows[0].id;
+
+    if (pdfBuffer && pdfBuffer.length > 0) {
+      const storageKey = await saveReportPdf(clientId, reportId, pdfBuffer);
+      await dbx.query(`UPDATE reports SET storage_key = $1 WHERE id = $2`, [
+        storageKey,
+        reportId,
+      ]);
+    }
+
+    for (const r of parsed) {
+      let foodItem = await dbx.query(
+        "SELECT id FROM food_items WHERE lower(fox_name) = lower($1) LIMIT 1",
         [r.foxName],
       );
+      if (!foodItem.rows[0]) {
+        foodItem = await dbx.query(
+          "INSERT INTO food_items (fox_name) VALUES ($1) RETURNING id",
+          [r.foxName],
+        );
+      }
+      await dbx.query(
+        `INSERT INTO test_results (report_id, food_item_id, value_ug_ml, is_floor_value, zone)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (report_id, food_item_id) DO UPDATE SET
+           value_ug_ml = EXCLUDED.value_ug_ml,
+           zone = EXCLUDED.zone`,
+        [reportId, foodItem.rows[0].id, r.valueUgMl, r.isFloorValue, r.zone],
+      );
     }
-    await p.query(
-      `INSERT INTO test_results (report_id, food_item_id, value_ug_ml, is_floor_value, zone)
-       VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (report_id, food_item_id) DO UPDATE SET
-         value_ug_ml = EXCLUDED.value_ug_ml,
-         zone = EXCLUDED.zone`,
-      [reportId, foodItem.rows[0].id, r.valueUgMl, r.isFloorValue, r.zone],
+
+    await dbx.query(
+      `UPDATE nutrition_plans SET status = 'completed'
+       WHERE client_id = $1 AND status = 'active'`,
+      [clientId],
     );
-  }
 
-  const plan = await p.query(
-    `UPDATE nutrition_plans SET status = 'completed'
-     WHERE client_id = $1 AND status = 'active'`,
-    [clientId],
-  );
-  void plan;
+    const newPlan = await dbx.query(
+      `INSERT INTO nutrition_plans (client_id, report_id, started_at, status)
+       VALUES ($1, $2, CURRENT_DATE, 'active') RETURNING id`,
+      [clientId, reportId],
+    );
+    const planId = newPlan.rows[0].id;
+    const planDays = buildEightWeekPlan(parsed);
 
-  const newPlan = await p.query(
-    `INSERT INTO nutrition_plans (client_id, report_id, started_at, status)
-     VALUES ($1, $2, CURRENT_DATE, 'active') RETURNING id`,
-    [clientId, reportId],
-  );
-  const planId = newPlan.rows[0].id;
-  const planDays = buildEightWeekPlan(parsed);
+    for (const day of planDays) {
+      await dbx.query(
+        `INSERT INTO plan_days (plan_id, date, week_number, allowed, forbidden, rotation, bot_message)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (plan_id, date) DO NOTHING`,
+        [
+          planId,
+          day.date,
+          day.weekNumber,
+          JSON.stringify(day.allowed),
+          JSON.stringify(day.forbidden),
+          JSON.stringify(day.rotation),
+          day.botMessage,
+        ],
+      );
+    }
 
-  for (const day of planDays) {
-    await p.query(
-      `INSERT INTO plan_days (plan_id, date, week_number, allowed, forbidden, rotation, bot_message)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       ON CONFLICT (plan_id, date) DO NOTHING`,
+    const threadId = await ensureChatThread(dbx, clientId, planId);
+    const greenCount = parsed.filter((r) => r.zone === "green").length;
+    const redCount = parsed.filter((r) => r.zone === "red").length;
+    await dbx.query(
+      `INSERT INTO chat_messages (thread_id, role, message_type, content)
+       VALUES ($1, 'assistant', 'plan_update', $2)`,
       [
-        planId,
-        day.date,
-        day.weekNumber,
-        JSON.stringify(day.allowed),
-        JSON.stringify(day.forbidden),
-        JSON.stringify(day.rotation),
-        day.botMessage,
+        threadId,
+        `✅ Отчёт FOX разобран: ${parsed.length} антигенов (🟢 ${greenCount}, 🔴 ${redCount}). ` +
+          `Создан 8-недельный план на 56 дней. Неделя 1 — элиминация. ` +
+          `Откройте вкладку «План» или спросите меня про продукты и недели.`,
       ],
     );
-  }
 
-  const threadId = await ensureChatThread(p, clientId, planId);
-  const greenCount = parsed.filter((r) => r.zone === "green").length;
-  const redCount = parsed.filter((r) => r.zone === "red").length;
-  await p.query(
-    `INSERT INTO chat_messages (thread_id, role, message_type, content)
-     VALUES ($1, 'assistant', 'plan_update', $2)`,
-    [
-      threadId,
-      `✅ Отчёт FOX разобран: ${parsed.length} антигенов (🟢 ${greenCount}, 🔴 ${redCount}). ` +
-        `Создан 8-недельный план на 56 дней. Неделя 1 — элиминация. ` +
-        `Откройте вкладку «План» или спросите меня про продукты и недели.`,
-    ],
-  );
+    trackEvent(requirePool(), clientId, "report_uploaded", {
+      antigenCount: parsed.length,
+      greenCount,
+      redCount,
+    });
 
-  const results = await getResultsForClient(clientId);
-  return { reportId, results, planId };
+    const results = await getResultsForClient(clientId);
+    return { reportId, results, planId };
+  });
 }
 
 export async function getResultsForClient(clientId: string): Promise<TestResultRow[]> {
@@ -777,24 +843,27 @@ export async function getResultsForClient(clientId: string): Promise<TestResultR
     return memory!.results;
   }
 
-  const reportId = await resolveActiveReportId(p, clientId);
-  if (!reportId) return [];
+  return clientScope(clientId, async () => {
+    const dbx = db();
+    const reportId = await resolveActiveReportId(dbx, clientId);
+    if (!reportId) return [];
 
-  const { rows } = await p.query(
-    `SELECT tr.id, fi.fox_name, tr.value_ug_ml, tr.is_floor_value, tr.zone
-     FROM test_results tr
-     JOIN food_items fi ON fi.id = tr.food_item_id
-     WHERE tr.report_id = $1
-     ORDER BY tr.zone, fi.fox_name`,
-    [reportId],
-  );
-  return rows.map((row) => ({
-    id: row.id,
-    foxName: row.fox_name,
-    valueUgMl: row.value_ug_ml ? parseFloat(row.value_ug_ml) : null,
-    isFloorValue: row.is_floor_value,
-    zone: row.zone,
-  }));
+    const { rows } = await dbx.query(
+      `SELECT tr.id, fi.fox_name, tr.value_ug_ml, tr.is_floor_value, tr.zone
+       FROM test_results tr
+       JOIN food_items fi ON fi.id = tr.food_item_id
+       WHERE tr.report_id = $1
+       ORDER BY tr.zone, fi.fox_name`,
+      [reportId],
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      foxName: row.fox_name,
+      valueUgMl: row.value_ug_ml ? parseFloat(row.value_ug_ml) : null,
+      isFloorValue: row.is_floor_value,
+      zone: row.zone,
+    }));
+  });
 }
 
 export async function getRecipesForClient(
@@ -1198,4 +1267,70 @@ export async function getUnreadCount(clientId: string): Promise<number> {
 
 export function hasDatabase(): boolean {
   return Boolean(process.env.DATABASE_URL);
+}
+
+/** For telemetry helpers outside clientScope. */
+export function getDbPool(): Pool | null {
+  return getPool();
+}
+
+function hashRefreshToken(raw: string): string {
+  return createHash("sha256").update(raw).digest("hex");
+}
+
+export async function createRefreshToken(userId: string): Promise<string> {
+  const p = requirePool();
+  const raw = randomBytes(32).toString("base64url");
+  const tokenHash = hashRefreshToken(raw);
+  const expiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE * 1000);
+  await p.query(
+    `INSERT INTO refresh_tokens (user_id, token_hash, expires_at)
+     VALUES ($1, $2, $3)`,
+    [userId, tokenHash, expiresAt.toISOString()],
+  );
+  return raw;
+}
+
+export async function revokeRefreshToken(raw: string): Promise<void> {
+  const p = getPool();
+  if (!p || !raw) return;
+  await p.query(
+    `UPDATE refresh_tokens SET revoked_at = now()
+     WHERE token_hash = $1 AND revoked_at IS NULL`,
+    [hashRefreshToken(raw)],
+  );
+}
+
+export async function refreshSessionFromToken(
+  raw: string,
+): Promise<SessionData | null> {
+  await ensureSchema();
+  const p = requirePool();
+  const tokenHash = hashRefreshToken(raw);
+  const { rows } = await p.query(
+    `SELECT rt.user_id, u.email, u.role, c.id AS client_id, c.display_name
+     FROM refresh_tokens rt
+     JOIN users u ON u.id = rt.user_id
+     JOIN clients c ON c.user_id = u.id
+     WHERE rt.token_hash = $1
+       AND rt.revoked_at IS NULL
+       AND rt.expires_at > now()
+     LIMIT 1`,
+    [tokenHash],
+  );
+  const row = rows[0];
+  if (!row) return null;
+
+  await p.query(
+    `UPDATE refresh_tokens SET revoked_at = now() WHERE token_hash = $1`,
+    [tokenHash],
+  );
+
+  return {
+    userId: row.user_id,
+    clientId: row.client_id,
+    email: row.email,
+    displayName: row.display_name ?? "Клиент",
+    role: (row.role as UserRole) ?? "client",
+  };
 }
