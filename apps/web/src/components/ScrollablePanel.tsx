@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 /** Approximate row height (card + gap) for viewport sizing. */
 export const LIST_ROW_HEIGHT_PX = 68;
-export const LIST_VISIBLE_ROWS = 10;
+export const LIST_VISIBLE_ROWS = 7;
 
 export function scrollListMaxHeightPx(visibleRows = LIST_VISIBLE_ROWS): number {
   return visibleRows * LIST_ROW_HEIGHT_PX + (visibleRows - 1) * 8;

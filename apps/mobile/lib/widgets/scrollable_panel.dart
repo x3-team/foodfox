@@ -1,4 +1,4 @@
-import "dart:math" show max;
+import "dart:math" show max, min;
 
 import "package:flutter/material.dart";
 import "package:foodfox/theme/fox_theme.dart";
@@ -10,7 +10,7 @@ const listRowGap = 8.0;
 double scrollListViewportHeight(BuildContext context, {int visibleRows = listVisibleRows}) {
   final target = visibleRows * listRowHeight + (visibleRows - 1) * listRowGap;
   final maxFromScreen = MediaQuery.sizeOf(context).height * 0.42;
-  return target.clamp(320.0, max(maxFromScreen, 320.0));
+  return min(target, max(320.0, maxFromScreen));
 }
 
 /// ~10 rows on screen; the rest scroll inside this box.
