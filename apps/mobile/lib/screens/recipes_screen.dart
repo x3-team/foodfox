@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:foodfox/models/models.dart";
+import "package:foodfox/screens/recipe_detail_screen.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
 import "package:foodfox/utils/lazy_tab_loader.dart";
@@ -53,6 +54,14 @@ class _RecipesScreenState extends State<RecipesScreen> {
     }
   }
 
+  void _openRecipe(RecipeItem recipe) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => RecipeDetailScreen(recipe: recipe),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -96,45 +105,65 @@ class _RecipesScreenState extends State<RecipesScreen> {
                             );
                           }
                           final recipe = _recipes[index - 1];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: foxCardDecoration,
-                            clipBehavior: Clip.antiAlias,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                RecipeCardMedia(
-                                  badge: recipeZoneBadge(recipe),
-                                  title: recipe.title,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        recipe.title,
-                                        style: const TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w600,
-                                          color: FoxColors.text,
-                                        ),
-                                      ),
-                                      if (recipe.description != null) ...[
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          recipe.description!,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: FoxColors.muted,
-                                            height: 1.45,
+                          final preview = recipe.lead ?? recipe.description;
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => _openRecipe(recipe),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: foxCardDecoration,
+                                clipBehavior: Clip.antiAlias,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    RecipeCardMedia(
+                                      badge: recipeZoneBadge(recipe),
+                                      title: recipe.title,
+                                      photoUrl: recipe.photoUrl,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            recipe.title,
+                                            style: const TextStyle(
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.w600,
+                                              color: FoxColors.text,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
+                                          if (preview != null && preview.isNotEmpty) ...[
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              preview,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: FoxColors.muted,
+                                                height: 1.45,
+                                              ),
+                                            ),
+                                          ],
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            "${recipe.tags.take(2).join(" · ")} · Читать рецепт →",
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: FoxColors.primary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           );
                         },

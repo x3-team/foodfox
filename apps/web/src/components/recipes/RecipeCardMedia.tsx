@@ -30,6 +30,13 @@ export function recipeZoneBadge(recipe: {
   return "unsuitable";
 }
 
+export function recipeZoneBadgeMeta(recipe: {
+  allGreen?: boolean;
+  suitable?: boolean;
+}): { label: string; className: string } {
+  return BADGE[recipeZoneBadge(recipe)];
+}
+
 export function RecipeCardMedia({ badge, photoUrl, title }: RecipeCardMediaProps) {
   const { label, className } = BADGE[badge];
 

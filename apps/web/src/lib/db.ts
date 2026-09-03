@@ -7,6 +7,11 @@ import { buildEightWeekPlan, getWeekPhase } from "./plan-engine";
 import { hashPassword, verifyPassword, type SessionData } from "./auth";
 import { analyzeRecipe } from "./recipe-match";
 import { saveReportPdf } from "./report-storage";
+import {
+  RECIPES_CATALOG,
+  getCatalogRecipesForMemory,
+  type RecipeStep,
+} from "./recipes-catalog";
 
 export interface TestResultRow {
   id: string;
@@ -20,12 +25,60 @@ export interface RecipeRow {
   id: string;
   title: string;
   description: string | null;
-  steps: string[];
+  lead?: string | null;
+  steps: RecipeStep[];
   tags: string[];
+  photoUrl?: string | null;
+  prepTime?: string | null;
+  cookTime?: string | null;
+  servings?: number | null;
+  tips?: string[];
+  ingredientsList?: { name: string; amount: string }[];
   suitable?: boolean;
   allGreen?: boolean;
   warnings?: string[];
   ingredients?: { name: string; zone: string }[];
+}
+
+function parseRecipeSteps(raw: unknown): RecipeStep[] {
+  if (!Array.isArray(raw) || raw.length === 0) return [];
+  if (typeof raw[0] === "string") {
+    return (raw as string[]).map((body, i) => ({
+      title: `Шаг ${i + 1}`,
+      body,
+    }));
+  }
+  return raw as RecipeStep[];
+}
+
+function mapRecipeRow(row: {
+  id: string;
+  title: string;
+  description: string | null;
+  steps: unknown;
+  tags: unknown;
+  photo_url?: string | null;
+  lead?: string | null;
+  prep_time?: string | null;
+  cook_time?: string | null;
+  servings?: number | null;
+  tips?: unknown;
+  ingredients_list?: unknown;
+}): RecipeRow {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    lead: row.lead ?? null,
+    steps: parseRecipeSteps(row.steps),
+    tags: (row.tags as string[]) ?? [],
+    photoUrl: row.photo_url ?? null,
+    prepTime: row.prep_time ?? null,
+    cookTime: row.cook_time ?? null,
+    servings: row.servings ?? null,
+    tips: (row.tips as string[]) ?? [],
+    ingredientsList: (row.ingredients_list as { name: string; amount: string }[]) ?? [],
+  };
 }
 
 export interface ChatMessageRow {
@@ -86,31 +139,52 @@ export async function ensureSchema(): Promise<void> {
     // schema may already exist
   }
   await seedPostgresIfEmpty(p);
-  await ensureExtraRecipes(p);
+  await syncRecipesCatalog(p);
   schemaReady = true;
 }
 
-async function ensureExtraRecipes(p: Pool) {
-  const extras = [
-    {
-      title: "Салат с лососем и шпинатом",
-      description: "Омега-3 и зелень",
-      steps: ["Запеките лосось", "Смешайте со шпинатом", "Заправьте маслом"],
-      tags: ["30 мин", "обед"],
-    },
-    {
-      title: "Рис с индейкой",
-      description: "Сытный обед",
-      steps: ["Отварите рис", "Обжарьте индейку", "Подавайте вместе"],
-      tags: ["35 мин", "обед"],
-    },
-  ];
-  for (const r of extras) {
+async function syncRecipesCatalog(p: Pool) {
+  await p.query(`
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS lead TEXT;
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS prep_time TEXT;
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS cook_time TEXT;
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS servings INT;
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS tips JSONB NOT NULL DEFAULT '[]';
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS ingredients_list JSONB NOT NULL DEFAULT '[]';
+    CREATE UNIQUE INDEX IF NOT EXISTS recipes_title_unique ON recipes (title);
+  `);
+
+  for (const entry of RECIPES_CATALOG) {
     await p.query(
-      `INSERT INTO recipes (title, description, steps, tags, published)
-       SELECT $1, $2, $3::jsonb, $4::jsonb, true
-       WHERE NOT EXISTS (SELECT 1 FROM recipes WHERE title = $1)`,
-      [r.title, r.description, JSON.stringify(r.steps), JSON.stringify(r.tags)],
+      `INSERT INTO recipes (
+         title, description, lead, steps, tags, photo_url,
+         prep_time, cook_time, servings, tips, ingredients_list, published
+       ) VALUES ($1, $2, $3, $4::jsonb, $5::jsonb, $6, $7, $8, $9, $10::jsonb, $11::jsonb, true)
+       ON CONFLICT (title) DO UPDATE SET
+         description = EXCLUDED.description,
+         lead = EXCLUDED.lead,
+         steps = EXCLUDED.steps,
+         tags = EXCLUDED.tags,
+         photo_url = EXCLUDED.photo_url,
+         prep_time = EXCLUDED.prep_time,
+         cook_time = EXCLUDED.cook_time,
+         servings = EXCLUDED.servings,
+         tips = EXCLUDED.tips,
+         ingredients_list = EXCLUDED.ingredients_list,
+         updated_at = now()`,
+      [
+        entry.title,
+        entry.description,
+        entry.lead,
+        JSON.stringify(entry.steps),
+        JSON.stringify(entry.tags),
+        entry.photoUrl,
+        entry.prepTime,
+        entry.cookTime,
+        entry.servings,
+        JSON.stringify(entry.tips),
+        JSON.stringify(entry.ingredients),
+      ],
     );
   }
 }
@@ -135,7 +209,7 @@ function seedMemoryIfNeeded() {
         createdAt: new Date().toISOString(),
       },
     ],
-    recipes: getDemoRecipes(),
+    recipes: getCatalogRecipesForMemory(),
   };
 }
 
@@ -168,48 +242,11 @@ async function seedPostgresIfEmpty(p: Pool) {
 
   await p.query(`
     INSERT INTO recipes (title, description, steps, tags, published) VALUES
-    ('Салат с индейкой и брокколи', 'Лёгкий обед из зелёных продуктов',
-     '["Нарежьте индейку и брокколи", "Смешайте, заправьте оливковым маслом"]'::jsonb,
-     '["15 мин", "обед"]'::jsonb, true),
-    ('Гречка с кабачком', 'Простое блюдо на ужин',
-     '["Отварите гречку", "Обжарьте кабачок", "Подавайте вместе"]'::jsonb,
-     '["25 мин", "ужин"]'::jsonb, true),
-    ('Запечённая куриная грудка', 'Белковый ужин',
-     '["Замаринуйте грудку", "Запекайте 35 мин при 180°C"]'::jsonb,
-     '["40 мин", "ужин"]'::jsonb, true),
-    ('Салат с лососем и шпинатом', 'Омега-3 и зелень',
-     '["Запеките лосось", "Смешайте со шпинатом", "Заправьте маслом"]'::jsonb,
-     '["30 мин", "обед"]'::jsonb, true),
-    ('Рис с индейкой', 'Сытный обед',
-     '["Отварите рис", "Обжарьте индейку", "Подавайте вместе"]'::jsonb,
-     '["35 мин", "обед"]'::jsonb, true)
+    ('Салат с индейкой и брокколи', 'placeholder', '[]'::jsonb, '[]'::jsonb, true),
+    ('Гречка с кабачком', 'placeholder', '[]'::jsonb, '[]'::jsonb, true),
+    ('Запечённая куриная грудка', 'placeholder', '[]'::jsonb, '[]'::jsonb, true)
+    ON CONFLICT DO NOTHING
   `);
-}
-
-function getDemoRecipes(): RecipeRow[] {
-  return [
-    {
-      id: "r1",
-      title: "Салат с индейкой и брокколи",
-      description: "Лёгкий обед из зелёных продуктов",
-      steps: ["Нарежьте индейку и брокколи", "Смешайте, заправьте маслом"],
-      tags: ["15 мин", "обед"],
-    },
-    {
-      id: "r2",
-      title: "Гречка с кабачком",
-      description: "Простое блюдо на ужин",
-      steps: ["Отварите гречку", "Обжарьте кабачок"],
-      tags: ["25 мин", "ужин"],
-    },
-    {
-      id: "r3",
-      title: "Запечённая куриная грудка",
-      description: "Белковый ужин",
-      steps: ["Замаринуйте грудку", "Запекайте 35 мин при 180°C"],
-      tags: ["40 мин", "ужин"],
-    },
-  ];
 }
 
 export async function getOrCreateDemoClient(): Promise<string> {
@@ -866,15 +903,11 @@ export async function getRecipes(): Promise<RecipeRow[]> {
   if (!p) return memory!.recipes;
 
   const { rows } = await p.query(
-    `SELECT id, title, description, steps, tags FROM recipes WHERE published = true ORDER BY title`,
+    `SELECT id, title, description, lead, steps, tags, photo_url,
+            prep_time, cook_time, servings, tips, ingredients_list
+     FROM recipes WHERE published = true ORDER BY title`,
   );
-  return rows.map((row) => ({
-    id: row.id,
-    title: row.title,
-    description: row.description,
-    steps: row.steps ?? [],
-    tags: row.tags ?? [],
-  }));
+  return rows.map((row) => mapRecipeRow(row));
 }
 
 export async function getActivePlanContext(clientId: string) {

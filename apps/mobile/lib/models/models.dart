@@ -53,23 +53,101 @@ class ZoneCounts {
   }
 }
 
+class RecipeStep {
+  RecipeStep({
+    required this.title,
+    required this.body,
+    this.imageUrl,
+  });
+
+  factory RecipeStep.fromJson(dynamic json, {int index = 0}) {
+    if (json is String) {
+      return RecipeStep(title: "Шаг ${index + 1}", body: json);
+    }
+    final map = json as Map<String, dynamic>;
+    return RecipeStep(
+      title: map["title"] as String? ?? "Шаг ${index + 1}",
+      body: map["body"] as String? ?? "",
+      imageUrl: map["imageUrl"] as String?,
+    );
+  }
+
+  final String title;
+  final String body;
+  final String? imageUrl;
+}
+
+class RecipeIngredient {
+  RecipeIngredient({required this.name, required this.amount});
+
+  factory RecipeIngredient.fromJson(Map<String, dynamic> json) {
+    return RecipeIngredient(
+      name: json["name"] as String,
+      amount: json["amount"] as String? ?? "",
+    );
+  }
+
+  final String name;
+  final String amount;
+}
+
+class RecipeZoneIngredient {
+  RecipeZoneIngredient({required this.name, required this.zone});
+
+  factory RecipeZoneIngredient.fromJson(Map<String, dynamic> json) {
+    return RecipeZoneIngredient(
+      name: json["name"] as String,
+      zone: json["zone"] as String? ?? "green",
+    );
+  }
+
+  final String name;
+  final String zone;
+}
+
 class RecipeItem {
   RecipeItem({
     required this.id,
     required this.title,
     required this.description,
     required this.tags,
+    this.lead,
+    this.photoUrl,
+    this.prepTime,
+    this.cookTime,
+    this.servings,
+    this.steps = const [],
+    this.tips = const [],
+    this.ingredientsList = const [],
+    this.ingredients = const [],
     this.suitable = true,
     this.allGreen = false,
     this.warnings = const [],
   });
 
   factory RecipeItem.fromJson(Map<String, dynamic> json) {
+    final rawSteps = json["steps"] as List<dynamic>? ?? [];
     return RecipeItem(
       id: json["id"] as String,
       title: json["title"] as String,
       description: json["description"] as String?,
+      lead: json["lead"] as String?,
+      photoUrl: json["photoUrl"] as String?,
+      prepTime: json["prepTime"] as String?,
+      cookTime: json["cookTime"] as String?,
+      servings: json["servings"] as int?,
       tags: (json["tags"] as List<dynamic>? ?? []).cast<String>(),
+      steps: [
+        for (var i = 0; i < rawSteps.length; i++)
+          RecipeStep.fromJson(rawSteps[i], index: i),
+      ],
+      tips: (json["tips"] as List<dynamic>? ?? []).cast<String>(),
+      ingredientsList: (json["ingredientsList"] as List<dynamic>? ?? [])
+          .map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      ingredients: (json["ingredients"] as List<dynamic>? ?? [])
+          .map((e) => RecipeZoneIngredient.fromJson(e as Map<String, dynamic>))
+          .toList(),
       suitable: json["suitable"] as bool? ?? true,
       allGreen: json["allGreen"] as bool? ?? false,
       warnings: (json["warnings"] as List<dynamic>? ?? []).cast<String>(),
@@ -79,7 +157,16 @@ class RecipeItem {
   final String id;
   final String title;
   final String? description;
+  final String? lead;
+  final String? photoUrl;
+  final String? prepTime;
+  final String? cookTime;
+  final int? servings;
   final List<String> tags;
+  final List<RecipeStep> steps;
+  final List<String> tips;
+  final List<RecipeIngredient> ingredientsList;
+  final List<RecipeZoneIngredient> ingredients;
   final bool suitable;
   final bool allGreen;
   final List<String> warnings;
