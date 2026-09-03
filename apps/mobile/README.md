@@ -17,6 +17,7 @@
 # Flutter 3.x + Android SDK
 cd apps/mobile
 flutter pub get
+cp android/key.properties.example android/key.properties
 flutter build apk --debug \
   --dart-define=FOX_API_BASE=https://foodfox.yuri.guru \
   --dart-define=FOX_BASIC_USER=demo \
@@ -26,6 +27,8 @@ flutter build apk --debug \
 APK: `build/app/outputs/flutter-apk/app-debug.apk`
 
 Установка на телефон: скопировать APK → «Разрешить из неизвестных источников» → установить.
+
+**Обновление:** CI подписывает APK общим demo-keystore. Если раньше стояла сборка с другой подписью, Android покажет «конфликтует с другим пакетом» — удалите FoodFox и установите заново. Дальнейшие APK из GitHub Actions будут обновляться без удаления.
 
 ## Версия
 
