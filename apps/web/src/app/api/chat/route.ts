@@ -46,6 +46,7 @@ export async function PATCH() {
 }
 
 export async function POST(req: NextRequest) {
+  let clientId: string | null = null;
   try {
     const { message } = await req.json();
     if (!message || typeof message !== "string") {
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     }
 
     const session = await getAuthSession();
-    const clientId = session.clientId;
+    clientId = session.clientId;
     const profile = await getClientProfile(clientId);
     const ctx = await getActivePlanContext(clientId);
 
@@ -126,6 +127,17 @@ export async function POST(req: NextRequest) {
     const auth = handleAuthError(e);
     if (auth) return auth;
     console.error(e);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    if (clientId) {
+      try {
+        const messages = await getChatMessages(clientId);
+        return NextResponse.json({ messages });
+      } catch (inner) {
+        console.error("chat recovery failed:", inner);
+      }
+    }
+    return NextResponse.json(
+      { error: "Не удалось отправить сообщение. Попробуйте ещё раз." },
+      { status: 500 },
+    );
   }
 }

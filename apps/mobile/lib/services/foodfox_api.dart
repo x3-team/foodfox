@@ -1,4 +1,5 @@
 import "dart:convert";
+import "dart:async";
 import "dart:io";
 
 import "package:foodfox/config/api_config.dart";
@@ -28,14 +29,20 @@ class FoodFoxApi {
 
   Uri _uri(String path) => Uri.parse("${ApiConfig.baseUrl}$path");
 
-  Future<T> _withRetry<T>(Future<T> Function() request, {int attempts = 3}) async {
+  Future<T> _withRetry<T>(
+    Future<T> Function() request, {
+    int attempts = 3,
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
     Object? lastError;
     for (var attempt = 1; attempt <= attempts; attempt++) {
       try {
-        return await request();
+        return await request().timeout(timeout);
       } on SocketException catch (e) {
         lastError = e;
       } on http.ClientException catch (e) {
+        lastError = e;
+      } on TimeoutException catch (e) {
         lastError = e;
       }
       if (attempt < attempts) {
@@ -173,17 +180,21 @@ class FoodFoxApi {
   }
 
   Future<List<ChatMessage>> sendChat(String message) async {
-    return _withRetry(() async {
-      final response = await _client.post(
-        _uri("/api/chat"),
-        headers: {..._headers, "Content-Type": "application/json"},
-        body: jsonEncode({"message": message}),
-      );
-      final data = await _decode(response);
-      return (data["messages"] as List<dynamic>)
-          .map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
-          .toList();
-    });
+    return _withRetry(
+      () async {
+        final response = await _client.post(
+          _uri("/api/chat"),
+          headers: {..._headers, "Content-Type": "application/json"},
+          body: jsonEncode({"message": message}),
+        );
+        final data = await _decode(response);
+        return (data["messages"] as List<dynamic>)
+            .map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
+            .toList();
+      },
+      attempts: 2,
+      timeout: const Duration(seconds: 90),
+    );
   }
 
   Future<void> uploadPdf(List<int> bytes, String filename) async {

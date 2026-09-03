@@ -3,6 +3,7 @@ import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
 import "package:foodfox/utils/lazy_tab_loader.dart";
+import "package:foodfox/utils/network_errors.dart";
 import "package:foodfox/widgets/chat_bubble.dart";
 import "package:foodfox/widgets/network_error_panel.dart";
 import "package:foodfox/widgets/page_header.dart";
@@ -114,10 +115,16 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _sending = false);
+      try {
+        final messages = await widget.api.fetchMessages();
+        if (!mounted) return;
+        setState(() => _messages = messages);
+        _scrollToBottom();
+        if (messages.isNotEmpty && !messages.last.isUser) return;
+      } catch (_) {}
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text(formatNetworkError(e))),
       );
-      _load();
     }
   }
 
@@ -152,8 +159,20 @@ class _ChatScreenState extends State<ChatScreen> {
                   : ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                      itemCount: _messages.length,
+                      itemCount: _messages.length + (_sending ? 1 : 0),
                       itemBuilder: (context, index) {
+                        if (_sending && index == _messages.length) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          );
+                        }
                         final msg = _messages[index];
                         return ChatBubble(
                           isUser: msg.isUser,
