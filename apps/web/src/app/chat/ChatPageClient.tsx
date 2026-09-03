@@ -1,11 +1,12 @@
 "use client";
 
 import { withBasePath } from "@/lib/base-path";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { ChatBubble } from "@/components/ChatBubble";
-import { IconSend } from "@/components/icons";
+import { IconMic, IconSend } from "@/components/icons";
+import { useSpeechInput } from "@/hooks/useSpeechInput";
 
 interface Message {
   id: string;
@@ -27,6 +28,7 @@ export default function ChatPageClient() {
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const autoSent = useRef(false);
+  const sendMessageRef = useRef<(text: string) => Promise<void>>(async () => {});
 
   const loadMessages = () => {
     fetch(withBasePath("/api/chat/messages"))
@@ -57,6 +59,18 @@ export default function ChatPageClient() {
       setSending(false);
     }
   };
+
+  sendMessageRef.current = sendMessage;
+
+  const onVoiceFinal = useCallback((text: string) => {
+    void sendMessageRef.current(text);
+  }, []);
+
+  const speech = useSpeechInput(onVoiceFinal);
+
+  useEffect(() => {
+    if (speech.interim) setInput(speech.interim);
+  }, [speech.interim]);
 
   useEffect(() => {
     loadMessages();
@@ -107,9 +121,31 @@ export default function ChatPageClient() {
           </div>
         )}
 
+        {speech.listening && (
+          <p className="text-center text-[13px] font-medium text-fox-red">🎤 Слушаю…</p>
+        )}
+        {speech.error && (
+          <p className="text-center text-[13px] text-fox-red">{speech.error}</p>
+        )}
+
         <div ref={bottomRef} />
       </main>
       <div className="flex items-end gap-2 bg-fox-surface px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-nav">
+        {speech.supported && (
+          <button
+            type="button"
+            onClick={speech.toggle}
+            disabled={sending}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition disabled:opacity-40 ${
+              speech.listening
+                ? "bg-fox-red/15 text-fox-red ring-2 ring-fox-red/40"
+                : "bg-fox-bg text-fox-primary ring-1 ring-fox-border hover:bg-fox-primary-soft"
+            }`}
+            aria-label={speech.listening ? "Остановить запись" : "Голосовое сообщение"}
+          >
+            <IconMic className="h-5 w-5" />
+          </button>
+        )}
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -120,7 +156,7 @@ export default function ChatPageClient() {
             }
           }}
           rows={1}
-          placeholder="Напишите сообщение…"
+          placeholder={speech.listening ? "Говорите…" : "Напишите или скажите сообщение…"}
           className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl bg-fox-bg px-4 py-3 text-[15px] leading-relaxed text-fox-text outline-none ring-1 ring-fox-border focus:ring-2 focus:ring-fox-primary/30"
         />
         <button
@@ -136,3 +172,4 @@ export default function ChatPageClient() {
     </AppShell>
   );
 }
+
