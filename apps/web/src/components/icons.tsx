@@ -1,8 +1,7 @@
-import type { ImgHTMLAttributes } from "react";
-import type { SVGProps } from "react";
+import type { HTMLAttributes, SVGProps } from "react";
 
 type IconProps = SVGProps<SVGSVGElement>;
-type LogoProps = ImgHTMLAttributes<HTMLImageElement>;
+type LogoProps = HTMLAttributes<HTMLSpanElement>;
 
 export function IconUpload(props: IconProps) {
   return (
@@ -84,16 +83,16 @@ export function IconFile(props: IconProps) {
   );
 }
 
-/** Fox mark from Figma MVP Screens header (node `1:4`, exported PNG). */
-export function FoxLogo({ className, ...props }: LogoProps) {
+/** Fox mark from Figma MVP Screens header (node `1:4`, 🦊). */
+export function FoxLogo({ className = "", style, ...props }: LogoProps) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/fox-logo.png"
-      alt=""
+    <span
       aria-hidden
-      className={className}
+      className={`inline-block select-none leading-none ${className}`}
+      style={{ fontSize: "inherit", lineHeight: 1, ...style }}
       {...props}
-    />
+    >
+      🦊
+    </span>
   );
 }

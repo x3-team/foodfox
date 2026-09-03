@@ -50,7 +50,7 @@ export default function LoginPageClient() {
   return (
     <div className="mx-auto flex min-h-[100dvh] w-full max-w-phone flex-col bg-fox-bg px-5 pb-8 pt-16">
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
-        <FoxLogo className="h-12 w-12" aria-hidden />
+        <FoxLogo className="text-5xl" aria-hidden />
         <h1 className="text-[26px] font-semibold tracking-tight text-fox-text">FoodFox</h1>
         <p className="max-w-[280px] text-[14px] leading-relaxed text-fox-muted">
           Личный кабинет после теста FOX — план питания и бот-нутрициолог

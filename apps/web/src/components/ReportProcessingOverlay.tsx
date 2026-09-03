@@ -56,7 +56,10 @@ export function ReportProcessingOverlay({
       <div className="fox-card w-full max-w-phone animate-[slideUp_0.35s_ease-out] px-5 py-6 shadow-lg">
         <div className="mb-5 flex items-center gap-3">
           <div className="relative">
-            <FoxLogo className={`h-11 w-11 ${done ? "" : "animate-[gentleSpin_2.4s_linear_infinite]"}`} />
+            <FoxLogo
+              className={`text-4xl ${done ? "" : "animate-[gentleSpin_2.4s_linear_infinite]"}`}
+              aria-hidden
+            />
           </div>
           <div className="min-w-0 flex-1">
             <h2 id="report-processing-title" className="text-[17px] font-semibold text-fox-text">
