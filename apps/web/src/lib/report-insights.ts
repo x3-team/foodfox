@@ -54,7 +54,7 @@ export function topTriggers(results: ResultItem[], limit = 5): ResultItem[] {
       byName.set(key, r);
     }
   }
-  return [...byName.values()]
+  return Array.from(byName.values())
     .sort((a, b) => (b.valueUgMl ?? 0) - (a.valueUgMl ?? 0))
     .slice(0, limit);
 }
