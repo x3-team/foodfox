@@ -96,7 +96,7 @@ class _PlanScreenState extends State<PlanScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    "Структура 8 недель",
+                                    "Персональный план на 8 недель",
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13,

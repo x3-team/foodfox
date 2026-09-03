@@ -115,7 +115,7 @@ export default function PlanPageClient() {
         {!loading && plan && (
           <>
             <div className="fox-card space-y-2 px-4 py-3">
-              <p className="text-[13px] font-semibold text-fox-text">Структура 8 недель</p>
+              <p className="text-[13px] font-semibold text-fox-text">Персональный план на 8 недель</p>
               {PLAN_PROTOCOL.map((block) => (
                 <div key={block.weeks} className="flex gap-2 text-[13px] leading-snug">
                   <span className="shrink-0 font-semibold text-fox-primary">Нед. {block.weeks}</span>
