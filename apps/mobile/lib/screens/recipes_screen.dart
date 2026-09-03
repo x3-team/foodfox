@@ -3,6 +3,7 @@ import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_theme.dart";
 import "package:foodfox/widgets/page_header.dart";
+import "package:foodfox/widgets/recipe_card_media.dart";
 
 class RecipesScreen extends StatefulWidget {
   const RecipesScreen({super.key, required this.api});
@@ -99,26 +100,9 @@ class _RecipesScreenState extends State<RecipesScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                Container(
-                                  height: 128,
-                                  alignment: Alignment.center,
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        FoxColors.primarySoft,
-                                        FoxColors.primaryMuted,
-                                      ],
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    "ФОТО БЛЮДА",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: 1,
-                                      color: FoxColors.primary,
-                                    ),
-                                  ),
+                                RecipeCardMedia(
+                                  badge: recipeZoneBadge(recipe),
+                                  title: recipe.title,
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.all(16),
@@ -144,21 +128,6 @@ class _RecipesScreenState extends State<RecipesScreen> {
                                           ),
                                         ),
                                       ],
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        recipe.allGreen
-                                            ? "100% зелёная зона"
-                                            : recipe.suitable
-                                                ? "Подходит с учётом ротации"
-                                                : "Есть красная зона",
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                          color: recipe.suitable
-                                              ? FoxColors.primary
-                                              : FoxColors.red,
-                                        ),
-                                      ),
                                     ],
                                   ),
                                 ),

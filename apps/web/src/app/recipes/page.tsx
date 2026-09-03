@@ -3,6 +3,7 @@
 import { withBasePath } from "@/lib/base-path";
 import { useEffect, useState } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { RecipeCardMedia, recipeZoneBadge } from "@/components/recipes/RecipeCardMedia";
 import { getWeekPhase } from "@/lib/plan-engine";
 
 interface Recipe {
@@ -11,6 +12,7 @@ interface Recipe {
   description: string | null;
   steps: string[];
   tags: string[];
+  photoUrl?: string | null;
   suitable?: boolean;
   allGreen?: boolean;
   warnings?: string[];
@@ -66,21 +68,11 @@ export default function RecipesPage() {
                 onClick={() => setOpenId(open ? null : recipe.id)}
                 className="flex w-full flex-col text-left"
               >
-                <div className="flex h-28 items-center justify-center bg-gradient-to-br from-fox-primary-soft to-fox-primary-muted/40">
-                  {recipe.allGreen ? (
-                    <span className="rounded-full bg-fox-primary px-3 py-1 text-[12px] font-semibold text-white">
-                      100% зелёная зона
-                    </span>
-                  ) : recipe.suitable ? (
-                    <span className="rounded-full bg-fox-yellow/20 px-3 py-1 text-[12px] font-semibold text-fox-yellow">
-                      Подходит с учётом ротации
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-red-100 px-3 py-1 text-[12px] font-semibold text-fox-red">
-                      Есть красная зона
-                    </span>
-                  )}
-                </div>
+                <RecipeCardMedia
+                  badge={recipeZoneBadge(recipe)}
+                  photoUrl={recipe.photoUrl}
+                  title={recipe.title}
+                />
                 <div className="space-y-1.5 px-4 py-4">
                   <h2 className="text-[17px] font-semibold leading-snug text-fox-text">
                     {recipe.title}
