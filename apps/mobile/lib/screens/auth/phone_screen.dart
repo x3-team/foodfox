@@ -101,26 +101,35 @@ class _PhoneScreenState extends State<PhoneScreen> {
                       onChanged: (v) => setState(() => _consent = v),
                     ),
                     const SizedBox(height: 18),
-                    FoxButton(
-                      label: "Получить код",
-                      loading: widget.busy,
-                      onPressed: _complete && _consent && !widget.busy
-                          ? () => widget.onSubmit("7$_digits")
-                          : null,
-                    ),
-                    if (_blockedReason != null) ...[
-                      const SizedBox(height: 10),
-                      Center(
-                        child: Text(
-                          _blockedReason!,
-                          style: FoxType.captionS.copyWith(
-                            color: FoxTokens.textSecondary,
-                          ),
-                        ),
-                      ),
-                    ],
                   ]),
                 ),
+              ),
+            ),
+            // Pinned above the keypad: on short screens the scroll area
+            // shrinks, and a call to action hidden below the fold reads as a
+            // button that does nothing.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FoxButton(
+                    label: "Получить код",
+                    loading: widget.busy,
+                    onPressed: _complete && _consent && !widget.busy
+                        ? () => widget.onSubmit("7$_digits")
+                        : null,
+                  ),
+                  if (_blockedReason != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      _blockedReason!,
+                      style: FoxType.captionS.copyWith(
+                        color: FoxTokens.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             FoxNumpad(onDigit: _push, onBackspace: _pop),
