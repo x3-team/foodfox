@@ -16,6 +16,9 @@ abstract final class FoxTokens {
   // Text & icon
   static const textPrimary = Color(0xFF0B0C08);
   static const textSecondary = Color(0xFF5C5E57);
+
+  /// For placeholders and unfilled input slots — must never read as a value.
+  static const textPlaceholder = Color(0xFFB3B5AC);
   static const textInverted = Color(0xFFF8F9F6);
   static const textInvertedSecondary = Color(0xFFA8AAA3);
 

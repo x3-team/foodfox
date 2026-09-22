@@ -1,3 +1,5 @@
+import "dart:math" as math;
+
 import "package:flutter/material.dart";
 
 import "package:foodfox/theme/fox_motion.dart";
@@ -18,27 +20,43 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  static const _total = Duration(milliseconds: 2050);
+  // 3.8 s total. Long enough to read the ring being drawn zone by zone, with a
+  // real hold on the finished logo before the screen opens up.
+  static const _total = Duration(milliseconds: 3800);
 
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: _total);
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: _total,
+  );
 
-  // Timeline in normalised progress (0 … 1) over 2050 ms.
+  // Seed dot breathes in first, then hands over to the ring.
+  late final Animation<double> _seed = CurvedAnimation(
+    parent: _c,
+    curve: const Interval(0.0, 0.08, curve: FoxMotion.easeOut),
+  );
+
+  // 300 → 1800 ms: arcs sweep round. easeInOutCubic keeps the start and the
+  // finish gentle instead of snapping into place.
   late final Animation<double> _ring = CurvedAnimation(
     parent: _c,
-    curve: const Interval(0.0, 0.39, curve: FoxMotion.easeOut),
+    curve: const Interval(0.08, 0.47, curve: Curves.easeInOutCubic),
   );
+
+  // 1250 → 2200 ms: wordmark resolves while the last arc is still drawing.
   late final Animation<double> _logo = CurvedAnimation(
     parent: _c,
-    curve: const Interval(0.20, 0.54, curve: FoxMotion.easeOut),
+    curve: const Interval(0.33, 0.58, curve: FoxMotion.easeOut),
   );
+
   late final Animation<double> _glow = CurvedAnimation(
     parent: _c,
-    curve: const Interval(0.10, 0.54, curve: FoxMotion.easeOut),
+    curve: const Interval(0.10, 0.62, curve: FoxMotion.easeOut),
   );
+
+  // 2850 → 3800 ms: hold ends, the ring opens past the screen edge.
   late final Animation<double> _burst = CurvedAnimation(
     parent: _c,
-    curve: const Interval(0.76, 1.0, curve: FoxMotion.easeInOut),
+    curve: const Interval(0.75, 1.0, curve: Curves.easeInOutCubic),
   );
 
   @override
@@ -79,37 +97,56 @@ class _SplashScreenState extends State<SplashScreen>
         animation: _c,
         builder: (context, _) {
           final burst = _burst.value;
-          // 160 px ring grows to 1500 px while fading out.
-          final ringSize = 160 + burst * 1340;
-          final ringOpacity = 1 - burst;
-          final logoScale = 0.94 + 0.06 * _logo.value - burst * 0.35;
+          final ringDraw = _ring.value;
+          // The seed dot grows into the ring, so the two never appear at once.
+          final seedOpacity = (1 - ringDraw * 6).clamp(0.0, 1.0);
+          // 168 px ring opens to 1500 px while fading out.
+          final ringSize = 168 + burst * 1332;
+          final logoScale = 0.94 + 0.06 * _logo.value - burst * 0.34;
+          // Glow breathes gently once the ring is complete.
+          final breathe = 1 + 0.03 * math.sin(_c.value * math.pi * 3);
 
           return Stack(
             alignment: Alignment.center,
             children: [
               Opacity(
                 opacity: (_glow.value * (1 - burst)).clamp(0.0, 1.0),
-                child: Container(
-                  width: 440,
-                  height: 440,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [Color(0x3AE7F551), Color(0x00E7F551)],
+                child: Transform.scale(
+                  scale: breathe,
+                  child: Container(
+                    width: 460,
+                    height: 460,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [Color(0x3AE7F551), Color(0x00E7F551)],
+                      ),
                     ),
                   ),
                 ),
               ),
+              if (seedOpacity > 0)
+                Opacity(
+                  opacity: seedOpacity,
+                  child: Container(
+                    width: 12 * _seed.value,
+                    height: 12 * _seed.value,
+                    decoration: const BoxDecoration(
+                      color: FoxTokens.accentLime,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
               Opacity(
-                opacity: ringOpacity.clamp(0.0, 1.0),
+                opacity: (1 - burst).clamp(0.0, 1.0),
                 child: SizedBox(
                   width: ringSize,
                   height: ringSize,
                   child: CustomPaint(
                     painter: FoxRingPainter(
                       segments: segments,
-                      progress: _ring.value,
-                      strokeWidth: 8 + burst * 30,
+                      progress: ringDraw,
+                      strokeWidth: 9 + burst * 28,
                     ),
                   ),
                 ),

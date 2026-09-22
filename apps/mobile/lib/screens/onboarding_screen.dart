@@ -33,6 +33,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
     final photoHeight = media.size.height * 0.68;
+    // The portrait's face sits in the top 42 % of the screen; copy starts
+    // below that line so it can never cover her.
+    final faceSafeHeight = media.size.height * 0.42;
 
     return Scaffold(
       backgroundColor: FoxTokens.bgGreen,
@@ -45,6 +48,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               animation: _kb,
               builder: (context, child) => Transform.scale(
                 scale: 1 + 0.06 * _kb.value,
+                // Pin the top edge so the push never drags the face downwards.
+                alignment: Alignment.topCenter,
                 child: child,
               ),
               child: Image.asset(
@@ -62,11 +67,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                stops: [0.0, 0.42, 0.72, 1.0],
+                stops: [0.0, 0.30, 0.56, 0.82, 1.0],
                 colors: [
-                  Color(0x8C21251D),
+                  Color(0x7A21251D),
                   Color(0x0021251D),
-                  Color(0xC721251D),
+                  Color(0x6621251D),
+                  Color(0xE621251D),
                   FoxTokens.bgGreen,
                 ],
               ),
@@ -75,76 +81,89 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           Positioned(
             left: 24,
             top: media.padding.top + 12,
-            child: const FoxFadeSlide(
-              offset: 10,
-              child: _Wordmark(),
-            ),
+            child: const FoxFadeSlide(offset: 10, child: _Wordmark()),
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(24, 0, 24, media.padding.bottom + 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: foxStagger(
-                  [
-                    Row(
-                      children: [
-                        const FoxZoneDot(color: FoxTokens.accentLime, size: 7),
-                        const SizedBox(width: 8),
-                        Text(
-                          "IgG-тест FOX · сопровождение после сдачи",
-                          style: FoxType.captionS.copyWith(
+          // Reserve the face zone, then let the copy own everything below it.
+          // If the text ever outgrows that space it scrolls instead of
+          // climbing over the portrait.
+          Column(
+            children: [
+              SizedBox(height: faceSafeHeight),
+              Expanded(
+                child: SingleChildScrollView(
+                  reverse: true,
+                  padding: EdgeInsets.fromLTRB(
+                    24,
+                    0,
+                    24,
+                    media.padding.bottom + 24,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: foxStagger([
+                      Row(
+                        children: [
+                          const FoxZoneDot(
                             color: FoxTokens.accentLime,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.4,
+                            size: 7,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "IgG-тест FOX · сопровождение после сдачи",
+                            style: FoxType.captionS.copyWith(
+                              color: FoxTokens.accentLime,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        "Персональный план питания по вашему тесту FOX",
+                        style: FoxType.h2.copyWith(
+                          color: FoxTokens.textInverted,
+                          fontSize: 38,
+                          height: 42 / 38,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        "Загрузите PDF-отчёт — распознаем 285 антигенов "
+                        "и соберём протокол на 4–6 месяцев",
+                        style: FoxType.bodyS.copyWith(
+                          color: FoxTokens.textInvertedSecondary,
+                          height: 23 / 16,
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      const _Stats(),
+                      const SizedBox(height: 30),
+                      FoxButton(
+                        label: "Войти по номеру телефона",
+                        kind: FoxButtonKind.accent,
+                        trailingIcon: Icons.arrow_forward_rounded,
+                        onPressed: widget.onStart,
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          "IgG — не диагноз аллергии. Результаты "
+                          "интерпретируются со специалистом.",
+                          textAlign: TextAlign.center,
+                          style: FoxType.captionS.copyWith(
+                            color: FoxTokens.textInvertedSecondary,
+                            height: 16 / 12,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      "Персональный план питания по вашему тесту FOX",
-                      style: FoxType.h2.copyWith(
-                        color: FoxTokens.textInverted,
-                        fontSize: 38,
-                        height: 42 / 38,
                       ),
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      "Загрузите PDF-отчёт — распознаем 285 антигенов "
-                      "и соберём протокол на 4–6 месяцев",
-                      style: FoxType.bodyS.copyWith(
-                        color: FoxTokens.textInvertedSecondary,
-                        height: 23 / 16,
-                      ),
-                    ),
-                    const SizedBox(height: 22),
-                    const _Stats(),
-                    const SizedBox(height: 30),
-                    FoxButton(
-                      label: "Войти по номеру телефона",
-                      kind: FoxButtonKind.accent,
-                      trailingIcon: Icons.arrow_forward_rounded,
-                      onPressed: widget.onStart,
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      "IgG — не диагноз аллергии. Результаты интерпретируются "
-                      "со специалистом.",
-                      textAlign: TextAlign.center,
-                      style: FoxType.captionS.copyWith(
-                        color: FoxTokens.textInvertedSecondary,
-                        height: 16 / 12,
-                      ),
-                    ),
-                  ],
-                  start: const Duration(milliseconds: 120),
+                    ], start: const Duration(milliseconds: 120)),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -157,32 +176,32 @@ class _Wordmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "FOX",
-            style: FoxType.h4.copyWith(
-              color: FoxTokens.textInverted,
-              fontSize: 26,
-              height: 1,
-              letterSpacing: 1,
-              fontWeight: FontWeight.w800,
-              fontVariations: const [FontVariation("wght", 800)],
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            "FOOD XPLORER",
-            style: FoxType.captionS.copyWith(
-              color: FoxTokens.textInvertedSecondary,
-              fontSize: 9,
-              letterSpacing: 1.6,
-              fontWeight: FontWeight.w500,
-              fontVariations: const [FontVariation("wght", 500)],
-            ),
-          ),
-        ],
-      );
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        "FOX",
+        style: FoxType.h4.copyWith(
+          color: FoxTokens.textInverted,
+          fontSize: 26,
+          height: 1,
+          letterSpacing: 1,
+          fontWeight: FontWeight.w800,
+          fontVariations: const [FontVariation("wght", 800)],
+        ),
+      ),
+      const SizedBox(height: 2),
+      Text(
+        "FOOD XPLORER",
+        style: FoxType.captionS.copyWith(
+          color: FoxTokens.textInvertedSecondary,
+          fontSize: 9,
+          letterSpacing: 1.6,
+          fontWeight: FontWeight.w500,
+          fontVariations: const [FontVariation("wght", 500)],
+        ),
+      ),
+    ],
+  );
 }
 
 class _Stats extends StatelessWidget {
@@ -190,40 +209,41 @@ class _Stats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        children: [
-          for (final item in const [
-            ("285", "продуктов"),
-            ("3", "зоны"),
-            ("4", "шага"),
-          ]) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-                borderRadius: BorderRadius.circular(FoxTokens.radiusChip),
+    children: [
+      for (final item in const [
+        ("285", "продуктов"),
+        ("3", "зоны"),
+        ("4", "шага"),
+      ]) ...[
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            borderRadius: BorderRadius.circular(FoxTokens.radiusChip),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                item.$1,
+                style: FoxType.label.copyWith(
+                  color: FoxTokens.accentLime,
+                  fontSize: 15,
+                ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    item.$1,
-                    style: FoxType.label.copyWith(
-                      color: FoxTokens.accentLime,
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    item.$2,
-                    style: FoxType.caption
-                        .copyWith(color: FoxTokens.textInvertedSecondary),
-                  ),
-                ],
+              const SizedBox(width: 6),
+              Text(
+                item.$2,
+                style: FoxType.caption.copyWith(
+                  color: FoxTokens.textInvertedSecondary,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-          ],
-        ],
-      );
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+      ],
+    ],
+  );
 }
