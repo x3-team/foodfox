@@ -30,6 +30,13 @@ android {
                 storeFile = rootProject.file(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
             }
+            // AGP drops JAR signing once minSdk >= 24, but several OEM package
+            // installers still read the v1 manifest and reject the APK with
+            // "problem parsing the package" without it. Sideloaded builds sign
+            // with every scheme so they install everywhere.
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
         }
     }
 
