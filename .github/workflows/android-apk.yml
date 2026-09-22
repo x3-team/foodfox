@@ -53,9 +53,9 @@ jobs:
           echo "semver=${SEMVER}" >> "$GITHUB_OUTPUT"
           echo "build=${BUILD}" >> "$GITHUB_OUTPUT"
 
-      - name: Build debug APK
+      - name: Build release APK
         run: |
-          flutter build apk --debug \
+          flutter build apk --release \
             --build-name=${{ steps.version.outputs.semver }} \
             --build-number=${{ steps.version.outputs.build }} \
             --dart-define=FOX_API_BASE=https://foodfox.yuri.guru \
@@ -64,12 +64,12 @@ jobs:
 
       - name: Rename APK with version
         run: |
-          cp build/app/outputs/flutter-apk/app-debug.apk \
-            "build/app/outputs/flutter-apk/foodfox-${{ steps.version.outputs.label }}-debug.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk \
+            "build/app/outputs/flutter-apk/foodfox-${{ steps.version.outputs.label }}-release.apk"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: foodfox-android-${{ steps.version.outputs.label }}-debug
-          path: apps/mobile/build/app/outputs/flutter-apk/foodfox-*-debug.apk
+          name: foodfox-android-${{ steps.version.outputs.label }}-release
+          path: apps/mobile/build/app/outputs/flutter-apk/foodfox-*-release.apk
           retention-days: 30
