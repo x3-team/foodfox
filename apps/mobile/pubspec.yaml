@@ -13,6 +13,9 @@ dependencies:
   http: ^1.2.2
   file_picker: ^8.1.4
   provider: ^6.1.2
+  shared_preferences: ^2.3.3
+  local_auth: ^2.3.0
+  crypto: ^3.0.6
 
 dev_dependencies:
   flutter_test:
@@ -23,6 +26,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/fox_logo.png
+    - assets/images/onboarding_hero.jpg
+    - assets/recipes/
   fonts:
     - family: Manrope
       fonts:

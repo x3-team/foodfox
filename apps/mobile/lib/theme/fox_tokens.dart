@@ -1,5 +1,3 @@
-import "dart:ui" show FontVariation;
-
 import "package:flutter/material.dart";
 
 /// Design tokens mirroring the approved FOX design system in Figma

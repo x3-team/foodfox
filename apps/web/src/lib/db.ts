@@ -26,6 +26,13 @@ import {
 } from "./recipes-catalog";
 import { getDbClient, runWithClientContext } from "./db-context";
 import { trackEvent } from "./analytics";
+import {
+  demoCodeFor,
+  generateOtp,
+  hashOtp,
+  OTP_MAX_ATTEMPTS,
+  OTP_RESEND_MS,
+} from "./otp";
 
 export interface TestResultRow {
   id: string;
@@ -172,21 +179,22 @@ export async function ensureSchema(): Promise<void> {
     return;
   }
   const schemaPath = join(process.cwd(), "../../packages/database/schema.sql");
-  const migrationPath = join(
-    process.cwd(),
-    "../../packages/database/migrations/002_auth_telemetry_rls.sql",
-  );
   try {
     const sql = readFileSync(schemaPath, "utf-8");
     await p.query(sql);
   } catch {
     // schema may already exist
   }
-  try {
-    const migration = readFileSync(migrationPath, "utf-8");
-    await p.query(migration);
-  } catch {
-    // migration may already be applied
+  for (const name of ["002_auth_telemetry_rls.sql", "003_phone_auth.sql"]) {
+    try {
+      const sql = readFileSync(
+        join(process.cwd(), "../../packages/database/migrations", name),
+        "utf-8",
+      );
+      await p.query(sql);
+    } catch {
+      // migration may already be applied
+    }
   }
   await seedPostgresIfEmpty(p);
   await syncRecipesCatalog(p);
@@ -319,6 +327,123 @@ export async function getOrCreateDemoClient(): Promise<string> {
     [user.rows[0].id, "Демо клиент"],
   );
   return client.rows[0].id;
+}
+
+/** Issue a one-time code for a phone number. Returns the delivery metadata. */
+export async function requestPhoneOtp(phone: string): Promise<{
+  resendAfterMs: number;
+  demoCode: string | null;
+}> {
+  await ensureSchema();
+  const p = requirePool();
+
+  const recent = await p.query(
+    `SELECT created_at FROM otp_codes
+     WHERE phone = $1 AND consumed_at IS NULL
+     ORDER BY created_at DESC LIMIT 1`,
+    [phone],
+  );
+  const last = recent.rows[0]?.created_at as Date | undefined;
+  if (last) {
+    const elapsed = Date.now() - new Date(last).getTime();
+    if (elapsed < OTP_RESEND_MS) {
+      throw new Error(
+        `Повторная отправка через ${Math.ceil((OTP_RESEND_MS - elapsed) / 1000)} с`,
+      );
+    }
+  }
+
+  const demo = demoCodeFor(phone);
+  const code = demo ?? generateOtp();
+  await p.query(
+    `INSERT INTO otp_codes (phone, code_hash, expires_at)
+     VALUES ($1, $2, now() + interval '5 minutes')`,
+    [phone, hashOtp(phone, code)],
+  );
+
+  if (!demo) {
+    // SMS gateway is wired in deployment; the code is never logged in prod.
+    if (process.env.NODE_ENV !== "production") {
+      console.info(`[otp] ${phone} → ${code}`);
+    }
+  }
+
+  trackEvent(p, null, "user_logged_in", { stage: "otp_requested" });
+  return { resendAfterMs: OTP_RESEND_MS, demoCode: demo };
+}
+
+/** Verify a code and return the session, creating the client on first login. */
+export async function verifyPhoneOtp(
+  phone: string,
+  code: string,
+): Promise<SessionData | null> {
+  await ensureSchema();
+  const p = requirePool();
+
+  const { rows } = await p.query(
+    `SELECT id, code_hash, attempts FROM otp_codes
+     WHERE phone = $1 AND consumed_at IS NULL AND expires_at > now()
+     ORDER BY created_at DESC LIMIT 1`,
+    [phone],
+  );
+  const row = rows[0];
+  if (!row) return null;
+
+  if ((row.attempts as number) >= OTP_MAX_ATTEMPTS) {
+    await p.query(`UPDATE otp_codes SET consumed_at = now() WHERE id = $1`, [row.id]);
+    throw new Error("Слишком много попыток. Запросите новый код");
+  }
+
+  if (row.code_hash !== hashOtp(phone, code)) {
+    await p.query(
+      `UPDATE otp_codes SET attempts = attempts + 1 WHERE id = $1`,
+      [row.id],
+    );
+    return null;
+  }
+
+  await p.query(`UPDATE otp_codes SET consumed_at = now() WHERE id = $1`, [row.id]);
+
+  const existing = await p.query(
+    `SELECT u.id, u.role, c.id AS client_id, c.display_name, u.email
+     FROM users u JOIN clients c ON c.user_id = u.id
+     WHERE u.phone = $1 LIMIT 1`,
+    [phone],
+  );
+  if (existing.rows[0]) {
+    const u = existing.rows[0];
+    trackEvent(p, u.client_id as string, "user_logged_in", { method: "phone" });
+    return {
+      userId: u.id,
+      clientId: u.client_id,
+      email: u.email ?? `${phone}@phone.foodfox`,
+      displayName: u.display_name ?? "Клиент",
+      role: (u.role as UserRole) ?? "client",
+    };
+  }
+
+  const user = await p.query(
+    `INSERT INTO users (phone, email, role) VALUES ($1, $2, 'client') RETURNING id`,
+    [phone, `${phone}@phone.foodfox`],
+  );
+  const client = await p.query(
+    `INSERT INTO clients (user_id, display_name, privacy_consent_at)
+     VALUES ($1, $2, now()) RETURNING id`,
+    [user.rows[0].id, "Клиент"],
+  );
+  const clientId = client.rows[0].id as string;
+
+  await ensureChatThread(p, clientId, null);
+  await seedWelcomeMessage(p, clientId);
+  trackEvent(p, clientId, "user_registered", { method: "phone" });
+
+  return {
+    userId: user.rows[0].id,
+    clientId,
+    email: `${phone}@phone.foodfox`,
+    displayName: "Клиент",
+    role: "client",
+  };
 }
 
 export async function registerUser(

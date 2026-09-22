@@ -85,7 +85,63 @@ class FoodFoxApi {
 
   bool get isLoggedIn => _accessToken != null || _sessionCookie != null;
 
+  String? get accessToken => _accessToken;
+  String? get refreshTokenValue => _refreshToken;
+
   void setAccessToken(String value) => _accessToken = value;
+
+  void restoreSession({String? accessToken, String? refreshToken}) {
+    if (accessToken != null && accessToken.isNotEmpty) {
+      _accessToken = accessToken;
+    }
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      _refreshToken = refreshToken;
+    }
+  }
+
+  /// Ask the backend to send a one-time code to [phone].
+  Future<void> requestOtp(String phone) async {
+    await _withRetry(() async {
+      final response = await _client.post(
+        _uri("/api/auth/otp/request"),
+        headers: {..._headers, "Content-Type": "application/json"},
+        body: jsonEncode({"phone": phone}),
+      );
+      await _decode(response);
+    });
+  }
+
+  /// Exchange the code for a session; creates the account on first login.
+  Future<UserProfile> verifyOtp(String phone, String code) async {
+    return _withRetry(() async {
+      final response = await _client.post(
+        _uri("/api/auth/otp/verify"),
+        headers: {..._headers, "Content-Type": "application/json"},
+        body: jsonEncode({"phone": phone, "code": code}),
+      );
+      final data = await _decode(response);
+      return UserProfile.fromJson(data["user"] as Map<String, dynamic>);
+    });
+  }
+
+  /// Swap an expired access token using the stored refresh token.
+  Future<bool> refreshSession() async {
+    final token = _refreshToken;
+    if (token == null || token.isEmpty) return false;
+    try {
+      final response = await _client.post(
+        _uri("/api/auth/refresh"),
+        headers: {..._headers, "Content-Type": "application/json"},
+        body: jsonEncode({"refreshToken": token}),
+      );
+      if (response.statusCode >= 400) return false;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      _captureTokens(data);
+      return _accessToken != null;
+    } catch (_) {
+      return false;
+    }
+  }
 
   void logout() {
     _accessToken = null;

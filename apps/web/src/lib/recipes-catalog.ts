@@ -29,8 +29,7 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
     description: "Лёгкий белковый обед из зелёной зоны",
     lead:
       "Сочный салат с нежной индейкой и хрустящей брокколи — идеален на этапе элиминации: много белка, мало возни, продукты из вашей зелёной зоны FOX. Заправка на оливковом масле не перебивает вкус, а лимон добавляет свежести.",
-    photoUrl:
-      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80",
+    photoUrl: "/recipes/turkey-broccoli.jpg",
     prepTime: "15 мин",
     cookTime: "12 мин",
     servings: 2,
@@ -48,8 +47,6 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
         title: "Подготовьте индейку",
         body:
           "Нарежьте филе индейки тонкими полосками или кубиками. Посолите, поперчите и оставьте на 5 минут при комнатной темпераатуре — так мясо получится сочнее.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80",
       },
       {
         title: "Обжарьте индейку",
@@ -60,15 +57,11 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
         title: "Приготовьте брокколи",
         body:
           "Разделите брокколи на небольшие соцветия. Отварите 3–4 минуты в подсоленной воде или приготовьте на пару — она должна остаться слегка хрустящей, не мягкой.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1459411621454-7b03977f4bfc?auto=format&fit=crop&w=800&q=80",
       },
       {
         title: "Соберите салат",
         body:
           "Смешайте индейку и брокколи в миске. Добавьте оставшееся масло, лимонный сок, аккуратно перемешайте. Подавайте сразу, пока брокколи ярко-зелёная.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
       },
     ],
     tips: [
@@ -81,8 +74,7 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
     description: "Сытный ужин без глютена",
     lead:
       "Классическое сочетание для элиминационной фазы: гречка даёт медленные углеводы и сытость, а тушёный кабачок — мягкость и клетчатку. Блюдо готовится в одной сковороде, подходит для будних вечеров.",
-    photoUrl:
-      "https://images.unsplash.com/photo-1516684669130-de1f38d0c8d8?auto=format&fit=crop&w=1200&q=80",
+    photoUrl: "/recipes/buckwheat-zucchini.jpg",
     prepTime: "10 мин",
     cookTime: "25 мин",
     servings: 2,
@@ -100,8 +92,6 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
         title: "Отварите гречку",
         body:
           "Промойте гречку до прозрачной воды. Залейте 240 мл воды, доведите до кипения, убавьте огонь и готовьте под крышкой 15 минут. Снимите с огня и дайте настояться 5 минут.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80",
       },
       {
         title: "Нарежьте кабачок",
@@ -112,8 +102,6 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
         title: "Прогрейте кабачок",
         body:
           "На сковороде разогрейте масло, добавьте измельчённый чеснок. Обжаривайте кабачок 6–8 минут на среднем огне до лёгкой золотистости, периодически переворачивая.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1625944525533-473f72606c9f?auto=format&fit=crop&w=800&q=80",
       },
       {
         title: "Подавайте",
@@ -131,8 +119,7 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
     description: "Белковый ужин с минимумом ингредиентов",
     lead:
       "Запечённая грудка — база элиминационного меню: чистый белок, нейтральный вкус, легко комбинируется с овощами из зелёной зоны. Маринade из оливкового масла и лимона делает мясо ароматным без лишних аллергенов.",
-    photoUrl:
-      "https://images.unsplash.com/photo-1598103442097-257641585a09?auto=format&fit=crop&w=1200&q=80",
+    photoUrl: "/recipes/baked-chicken.jpg",
     prepTime: "10 мин",
     cookTime: "35 мин",
     servings: 2,
@@ -155,15 +142,11 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
         title: "Замаринуйте",
         body:
           "Натрите грудки маринадом со всех сторон. Оставьте на 10–15 минут. Для более насыщенного вкуса можно мариновать до 2 часов в холодильнике.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1604503468506-a8da456d774d?auto=format&fit=crop&w=800&q=80",
       },
       {
         title: "Запекайте",
         body:
           "Разогрейте духовку до 180 °C. Выложите грудки на противень, застеленный пергаментом. Запекайте 25–30 минут до внутренней температуры 74 °C или до прозрачного сока.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1598103442097-257641585a09?auto=format&fit=crop&w=800&q=80",
       },
       {
         title: "Дайте отдохнуть",
@@ -181,8 +164,7 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
     description: "Омега-3 и зелень для обеда",
     lead:
       "Лосось и шпинат — мощная пара для восстановления: жирные кислоты и железо, плюс лёгкость салата. Рыбу можно запечь или lightly обжарить — главное, не переварить, чтобы она осталась нежной.",
-    photoUrl:
-      "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1200&q=80",
+    photoUrl: "/recipes/salmon-spinach.jpg",
     prepTime: "12 мин",
     cookTime: "15 мин",
     servings: 2,
@@ -200,8 +182,6 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
         title: "Приготовьте лосось",
         body:
           "Посолите филе, сбрызните маслом. Запекайте 12–14 минут при 190 °C или обжаривайте по 3–4 минуты с каждой стороны на среднем огне до готовности.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80",
       },
       {
         title: "Подготовьте зелень",
@@ -212,8 +192,6 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
         title: "Разделите рыбу",
         body:
           "Готовый лосось разделите на крупные куски вилкой — так сохранится текстура. Сбрызните лимонным соком.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80",
       },
       {
         title: "Соберите блюдо",
@@ -231,8 +209,7 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
     description: "Сбалансированный обед на каждый день",
     lead:
       "Рис с индейкой — сытная тарелка, которая хорошо подходит для фазы стабилизации: белок, сложные углеводы и мало жира. Специи можно подбирать по своей зелёной зоне — базовый рецепт остаётся простым и понятным.",
-    photoUrl:
-      "https://images.unsplash.com/photo-1603133872877-684f608fbace?auto=format&fit=crop&w=1200&q=80",
+    photoUrl: "/recipes/rice-turkey.jpg",
     prepTime: "10 мин",
     cookTime: "35 мин",
     servings: 2,
@@ -250,8 +227,6 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
         title: "Отварите рис",
         body:
           "Промойте рис. Залейте 300 мл воды, доведите до кипения, убавьте огонь и готовьте под крышкой 15–18 минут до мягкости. Дайте постоять 5 минут.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1536304997881-4746bfe2730b?auto=format&fit=crop&w=800&q=80",
       },
       {
         title: "Нарежьте индейку и морковь",
@@ -262,8 +237,6 @@ export const RECIPES_CATALOG: RecipeCatalogEntry[] = [
         title: "Обжарьте индейку с овощами",
         body:
           "На сковороде разогрейте масло, обжаривайте индейку 5–6 минут. Добавьте морковь, готовьте ещё 4–5 минут до мягкости моркови и золотистой индейки.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80",
       },
       {
         title: "Подавайте",

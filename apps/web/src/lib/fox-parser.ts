@@ -37,14 +37,44 @@ export function countZones(results: ParsedResult[]): ZoneCounts {
   );
 }
 
-/** One product + value pair from FOX PDF (supports two-column lines) */
-const FOX_ENTRY_RE =
-  /(.+?)\s+(?:≤|<\s*)?(\d+(?:[.,]\d+)?)\s*мкг\/мл/gi;
+/**
+ * Concentration unit as printed by FOX exports. Different PDF generators emit
+ * the Cyrillic form, the Latin micro sign, or the Greek mu, so all are accepted.
+ */
+const UNIT = "(?:мкг\\/мл|[µμu]g\\/ml)";
+const NUM = "(\\d+(?:[.,]\\d+)?)";
+const LTE = "(?:≤|<|&lt;)\\s*";
 
-const VALUE_ONLY_RE =
-  /^(?:≤|<)\s*(\d+(?:[.,]\d+)?)\s*мкг\/мл\.?\s*$|^(\d+(?:[.,]\d+)?)\s*мкг\/мл\.?\s*$/i;
-const MOLECULAR_SUBLINE_RE =
-  /^\([^)]+\)\s+(?:≤|<\s*)?(\d+(?:[.,]\d+)?)\s*мкг\/мл/i;
+/** One product + value pair from FOX PDF (supports two-column lines) */
+const FOX_ENTRY_RE = new RegExp(`(.+?)\\s+(?:${LTE})?${NUM}\\s*${UNIT}`, "gi");
+
+const VALUE_ONLY_RE = new RegExp(
+  `^(?:${LTE})${NUM}\\s*${UNIT}\\.?\\s*$|^${NUM}\\s*${UNIT}\\.?\\s*$`,
+  "i",
+);
+const MOLECULAR_SUBLINE_RE = new RegExp(
+  `^\\([^)]+\\)\\s+(?:${LTE})?${NUM}\\s*${UNIT}`,
+  "i",
+);
+const HAS_UNIT_RE = new RegExp(UNIT, "i");
+const FLOOR_MARK_RE = /≤|<|&lt;/;
+
+/**
+ * PDF text extraction leaves non-breaking spaces, soft hyphens and mixed
+ * micro signs behind. Normalising once up front keeps every downstream regex
+ * simple and makes the parser independent of the exporting tool.
+ */
+export function normalizePdfText(text: string): string {
+  return text
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u00A0\u2007\u202F\u2009\u200A]/g, " ")
+    .replace(/[\u00AD\u200B\u200C\u200D\uFEFF]/g, "")
+    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, "-")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\u03BC/g, "\u00B5")
+    .replace(/[ \t]+/g, " ");
+}
 
 /** Section / table headers in RU FOX reports — not food rows */
 const SECTION_HEADER_RE =
@@ -74,7 +104,7 @@ function isCategoryIndexLine(line: string): boolean {
   const t = line.trim();
   if (CATEGORY_INDEX_RE.test(t)) return true;
   // Comma-separated product list without concentration (summary/index page)
-  if (!/мкг\/мл/i.test(t) && t.includes(",")) {
+  if (!HAS_UNIT_RE.test(t) && t.includes(",")) {
     const parts = t.split(",").map((p) => p.trim()).filter(Boolean);
     if (
       parts.length >= 3 &&
@@ -103,8 +133,9 @@ function isMetadataField(name: string): boolean {
     /^\d{2}\.\d{2}\.\d{4}/.test(name) ||
     /^\*?\s*молекулярный антиген/i.test(name) ||
     /^--\s*\d+\s+of\s+\d+/i.test(name) ||
-    /^833177605/i.test(name) ||
-    /^80aee345$/i.test(name) ||
+    // Bare identifiers printed near the QR code: long digit runs and hex tokens.
+    /^\d[\d\s-]{5,}$/.test(name) ||
+    /^[0-9a-f]{6,}$/i.test(name.replace(/\s/g, "")) ||
     /^\.+$/.test(name)
   );
 }
@@ -167,7 +198,7 @@ function pushResult(
 }
 
 function isNameOnlyLine(line: string): boolean {
-  if (/мкг\/мл/i.test(line)) return false;
+  if (HAS_UNIT_RE.test(line)) return false;
   if (isNarrativeLine(line)) return false;
   if (isSectionHeader(line)) return false;
   if (isMetadataField(line)) return false;
@@ -180,7 +211,7 @@ function parseValueOnlyLine(line: string): { value: string; isFloor: boolean } |
   const m = line.match(VALUE_ONLY_RE);
   if (!m) return null;
   const value = m[1] ?? m[2];
-  const isFloor = line.includes("≤") || line.includes("<");
+  const isFloor = FLOOR_MARK_RE.test(line);
   return { value, isFloor };
 }
 
@@ -209,7 +240,7 @@ function parseCombinedLine(
         seen,
         `${pendingName.replace(/,\s*$/, "")} ${commaJoin[1].trim()}`,
         commaJoin[2],
-        commaJoin[0].includes("≤") || commaJoin[0].includes("<"),
+        FLOOR_MARK_RE.test(commaJoin[0]),
       );
       pendingName = null;
       line = line.slice(commaJoin.index! + commaJoin[0].length).trim();
@@ -219,10 +250,10 @@ function parseCombinedLine(
 
   // Trailing floor value for split product name on previous lines (Radicchio)
   if (partialName && hasUnclosedParen(partialName)) {
-    const trailing = line.match(/(?:≤|<)\s*(\d+(?:[.,]\d+)?)\s*мкг\/мл\s*$/i);
+    const trailing = line.match(new RegExp(`(?:${LTE})${NUM}\\s*${UNIT}\\s*$`, "i"));
     if (trailing) {
       deferredValue = { value: trailing[1], isFloor: true };
-      line = line.replace(/(?:≤|<)\s*(\d+(?:[.,]\d+)?)\s*мкг\/мл\s*$/i, "").trim();
+      line = line.replace(new RegExp(`(?:${LTE})${NUM}\\s*${UNIT}\\s*$`, "i"), "").trim();
     }
   }
 
@@ -230,7 +261,7 @@ function parseCombinedLine(
   if (pendingName) {
     const sub = line.match(MOLECULAR_SUBLINE_RE);
     if (sub) {
-      pushResult(results, seen, pendingName, sub[1], line.includes("≤") || line.includes("<"));
+      pushResult(results, seen, pendingName, sub[1], FLOOR_MARK_RE.test(line));
       pendingName = null;
       line = line.replace(MOLECULAR_SUBLINE_RE, "").trim();
       if (!line) return { pendingName, partialName, deferredValue };
@@ -242,7 +273,7 @@ function parseCombinedLine(
   let match: RegExpExecArray | null;
   while ((match = FOX_ENTRY_RE.exec(line)) !== null) {
     const segment = match[0];
-    const isFloor = segment.includes("≤") || segment.includes("<");
+    const isFloor = FLOOR_MARK_RE.test(segment);
     pushResult(results, seen, match[1], match[2], isFloor);
   }
   return { pendingName, partialName, deferredValue };
@@ -264,7 +295,7 @@ export function parseFoxPdfText(text: string): ParsedResult[] {
   let deferredValue: { value: string; isFloor: boolean } | null = null;
   const nameQueue: string[] = [];
 
-  const lines = text.split(/\r?\n/);
+  const lines = normalizePdfText(text).split("\n");
   for (const rawLine of lines) {
     const line = rawLine.trim();
     if (!line || isNarrativeLine(line) || isMetadataField(line)) {
@@ -275,21 +306,21 @@ export function parseFoxPdfText(text: string): ParsedResult[] {
     }
 
     // Continuation: "* 6,76 мкг/мл" after product name on previous line
-    const cont = line.match(/^\*\s*(?:≤|<\s*)?(\d+(?:[.,]\d+)?)\s*мкг\/мл/i);
+    const cont = line.match(new RegExp(`^\\*\\s*(?:${LTE})?${NUM}\\s*${UNIT}`, "i"));
     if (cont && pendingName) {
-      const isFloor = line.includes("≤") || line.includes("<");
+      const isFloor = FLOOR_MARK_RE.test(line);
       pushResult(results, seen, pendingName, cont[1], isFloor);
       pendingName = null;
       continue;
     }
 
     // CCD row paired with lactoferrin control value on next line
-    if (/мкг\/мл/i.test(line) && /лактоферрин/i.test(line)) {
+    if (HAS_UNIT_RE.test(line) && /лактоферрин/i.test(line)) {
       const ccdIdx = nameQueue.lastIndexOf("CCD");
       if (ccdIdx >= 0) {
-        const val = line.match(/(?:≤|<)\s*(\d+(?:[.,]\d+)?)\s*мкг\/мл/i);
+        const val = line.match(new RegExp(`(?:${LTE})${NUM}\\s*${UNIT}`, "i"));
         if (val) {
-          pushResult(results, seen, "CCD", val[1], line.includes("≤") || line.includes("<"));
+          pushResult(results, seen, "CCD", val[1], FLOOR_MARK_RE.test(line));
           nameQueue.splice(ccdIdx, 1);
           continue;
         }
@@ -307,7 +338,7 @@ export function parseFoxPdfText(text: string): ParsedResult[] {
       continue;
     }
 
-    if (/мкг\/мл/i.test(line)) {
+    if (HAS_UNIT_RE.test(line)) {
       ({ pendingName, partialName, deferredValue } = parseCombinedLine(
         results,
         seen,
