@@ -42,39 +42,55 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          SizedBox(
+          // Positioned, not a plain SizedBox: StackFit.expand hands children
+          // tight constraints, which would stretch the portrait over the
+          // whole screen and push her face down under the copy.
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
             height: photoHeight,
-            child: AnimatedBuilder(
-              animation: _kb,
-              builder: (context, child) => Transform.scale(
-                scale: 1 + 0.06 * _kb.value,
-                // Pin the top edge so the push never drags the face downwards.
-                alignment: Alignment.topCenter,
-                child: child,
-              ),
-              child: Image.asset(
-                "assets/images/onboarding_hero.jpg",
-                fit: BoxFit.cover,
-                alignment: Alignment.topCenter,
-                errorBuilder: (_, _, _) => Container(color: FoxTokens.bgBrown),
+            // Without the clip the Ken Burns scale spills the photo below its
+            // box, past the gradient, and a bright strip lands on the copy.
+            child: ClipRect(
+              child: AnimatedBuilder(
+                animation: _kb,
+                builder: (context, child) => Transform.scale(
+                  scale: 1 + 0.06 * _kb.value,
+                  // Pin the top edge so the push never drags the face down.
+                  alignment: Alignment.topCenter,
+                  child: child,
+                ),
+                child: Image.asset(
+                  "assets/images/onboarding_hero.jpg",
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                  errorBuilder: (_, _, _) =>
+                      Container(color: FoxTokens.bgBrown),
+                ),
               ),
             ),
           ),
           // Photo shadows blend into the brand green, then fade to solid.
-          Container(
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
             height: photoHeight,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: [0.0, 0.30, 0.56, 0.82, 1.0],
-                colors: [
-                  Color(0x7A21251D),
-                  Color(0x0021251D),
-                  Color(0x6621251D),
-                  Color(0xE621251D),
-                  FoxTokens.bgGreen,
-                ],
+            child: const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: [0.0, 0.30, 0.56, 0.82, 1.0],
+                  colors: [
+                    Color(0x7A21251D),
+                    Color(0x0021251D),
+                    Color(0x6621251D),
+                    Color(0xE621251D),
+                    FoxTokens.bgGreen,
+                  ],
+                ),
               ),
             ),
           ),
