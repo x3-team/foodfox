@@ -1,48 +1,69 @@
 import "package:flutter/material.dart";
 
+import "package:foodfox/theme/fox_tokens.dart";
+
+/// Semantic aliases kept stable for existing screens; values follow the
+/// approved FOX design system (see fox_tokens.dart).
 abstract final class FoxColors {
-  static const bg = Color(0xFFF7F9F4);
-  static const surface = Color(0xFFFFFFFF);
-  static const primary = Color(0xFF256029);
-  static const primaryDark = Color(0xFF1B4D1F);
-  static const primarySoft = Color(0xFFE8F5E9);
-  static const primaryMuted = Color(0xFFC8E6C9);
-  static const text = Color(0xFF1C1C1E);
-  static const muted = Color(0xFF6B7280);
-  static const border = Color(0xFFE5E7EB);
-  static const reminder = Color(0xFFF0FDF4);
-  static const green = Color(0xFF059669);
-  static const yellow = Color(0xFFD97706);
-  static const red = Color(0xFFDC2626);
+  static const bg = FoxTokens.bgNeutral;
+  static const surface = FoxTokens.bgCard;
+  static const primary = FoxTokens.bgGreen;
+  static const primaryDark = Color(0xFF101400);
+  static const primarySoft = FoxTokens.zoneGreenBg;
+  static const primaryMuted = FoxTokens.bgGrey;
+  static const accent = FoxTokens.accentLime;
+  static const text = FoxTokens.textPrimary;
+  static const muted = FoxTokens.textSecondary;
+  static const border = FoxTokens.borderLight;
+  static const reminder = FoxTokens.zoneGreenBg;
+  static const green = FoxTokens.zoneGreen;
+  static const yellow = FoxTokens.zoneYellow;
+  static const red = FoxTokens.zoneRed;
 }
 
 ThemeData buildFoxTheme() {
   return ThemeData(
     useMaterial3: true,
+    fontFamily: FoxType.family,
     scaffoldBackgroundColor: FoxColors.bg,
     colorScheme: ColorScheme.fromSeed(
       seedColor: FoxColors.primary,
       primary: FoxColors.primary,
+      secondary: FoxColors.accent,
       surface: FoxColors.surface,
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: FoxColors.surface,
+      backgroundColor: FoxColors.bg,
       foregroundColor: FoxColors.text,
       elevation: 0,
+      scrolledUnderElevation: 0,
     ),
-    textTheme: const TextTheme(
-      headlineSmall: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w600,
-        color: FoxColors.text,
-        height: 1.2,
+    textTheme: TextTheme(
+      displaySmall: FoxType.h3.copyWith(color: FoxColors.text),
+      headlineMedium: FoxType.h3.copyWith(color: FoxColors.text),
+      headlineSmall: FoxType.h4.copyWith(color: FoxColors.text),
+      titleMedium: FoxType.button.copyWith(color: FoxColors.text),
+      bodyLarge: FoxType.bodyS.copyWith(color: FoxColors.text),
+      bodyMedium: FoxType.caption.copyWith(color: FoxColors.muted, height: 1.45),
+      labelLarge: FoxType.button.copyWith(color: FoxColors.surface),
+      labelSmall: FoxType.captionS.copyWith(color: FoxColors.muted),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: FoxColors.primary,
+        foregroundColor: FoxColors.surface,
+        minimumSize: const Size.fromHeight(54),
+        shape: const StadiumBorder(),
+        textStyle: FoxType.button,
       ),
-      bodyLarge: TextStyle(fontSize: 15, color: FoxColors.text),
-      bodyMedium: TextStyle(fontSize: 14, color: FoxColors.muted, height: 1.45),
-      labelLarge: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: FoxColors.text,
+        minimumSize: const Size.fromHeight(54),
+        side: const BorderSide(color: FoxColors.border),
+        shape: const StadiumBorder(),
+        textStyle: FoxType.button,
       ),
     ),
   );
@@ -50,12 +71,6 @@ ThemeData buildFoxTheme() {
 
 BoxDecoration foxCardDecoration = BoxDecoration(
   color: FoxColors.surface,
-  borderRadius: BorderRadius.circular(16),
-  boxShadow: const [
-    BoxShadow(
-      color: Color(0x0A000000),
-      blurRadius: 16,
-      offset: Offset(0, 4),
-    ),
-  ],
+  borderRadius: BorderRadius.circular(FoxTokens.radiusCard),
+  border: Border.all(color: FoxColors.border),
 );
