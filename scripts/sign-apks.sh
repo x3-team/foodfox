@@ -6,9 +6,10 @@
 # refuse to install without it — the user sees "problem parsing the package".
 # Sideloaded builds therefore carry all three schemes.
 #
-# apksigner only emits v1 when the target SDK range reaches below 24, hence the
-# explicit --min-sdk-version / --max-sdk-version pair; v2 and v3 keep the APK
-# valid on every newer Android release.
+# apksigner only emits v1 when the signing SDK range reaches below 24, hence the
+# explicit --min-sdk-version 21. The range is deliberately left open at the top:
+# capping it bounds the v3 signer, and a device past the cap then finds no
+# applicable signer at all.
 #
 #   bash scripts/sign-apks.sh 0.3.0
 
@@ -47,7 +48,7 @@ sign_one() {
     --ks "$KEYSTORE" --ks-pass "pass:$STORE_PASS" --key-pass "pass:$KEY_PASS" \
     --ks-key-alias "$KEY_ALIAS" \
     --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
-    --min-sdk-version 21 --max-sdk-version 30 \
+    --min-sdk-version 21 \
     --out "$out" "$src.aligned"
   rm -f "$src.aligned"
   "$APKSIGNER" verify -v --min-sdk-version 21 "$out" | grep -E "^Verifies|scheme"

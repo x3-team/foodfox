@@ -22,6 +22,18 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    packaging {
+        jniLibs {
+            // Play Store builds keep the .so files uncompressed and page
+            // aligned inside the APK. That layout is stricter than some OEM
+            // package installers handle on a sideloaded file, and any byte
+            // shifted in transit breaks it outright. Extracting the libraries
+            // at install time is the forgiving option and shrinks the
+            // download, which matters when the APK is passed around by hand.
+            useLegacyPackaging = true
+        }
+    }
+
     signingConfigs {
         create("demo") {
             if (keystorePropertiesFile.exists()) {
