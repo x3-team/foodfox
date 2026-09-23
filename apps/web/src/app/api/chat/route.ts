@@ -24,6 +24,10 @@ import {
   parseRequestedWeek,
 } from "@/lib/heli";
 
+// Reads the caller's session, so it must never be prerendered; stated
+// explicitly to match the rest of the API and keep it that way.
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const clientId = await getAuthClientId();

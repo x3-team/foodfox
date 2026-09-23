@@ -20,16 +20,26 @@ git pull origin "$BRANCH"
 echo "==> Postgres (Docker)"
 docker compose -f deploy/vps/docker-compose.yml up -d
 
-echo "==> Build Next.js"
 cd "$APP_ROOT/apps/web"
+
+# Load .env before the build, not just before the restart: anything the build
+# reads from the environment has to see the same values the server will.
+if [[ -f .env ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+else
+  echo "!! apps/web/.env is missing — the build will fall back to defaults" >&2
+fi
+
+echo "==> Build Next.js"
 npm ci --include=dev
+# A stale .next can keep serving prerendered route bodies from an older build.
+rm -rf .next
 npm run build
 
 echo "==> PM2 restart"
-set -a
-# shellcheck disable=SC1091
-source .env
-set +a
 if pm2 describe foodfox >/dev/null 2>&1; then
   pm2 restart foodfox --update-env
 else
@@ -38,6 +48,15 @@ fi
 pm2 save
 
 echo "==> Health"
-curl -sf "http://127.0.0.1:${PORT}/api/health" | head -c 200 || true
-echo ""
-echo "Done. Public URL: https://foodfox.yuri.guru/upload"
+sleep 4
+HEALTH="$(curl -sf "http://127.0.0.1:${PORT}/api/health" || true)"
+echo "$HEALTH"
+case "$HEALTH" in
+  *'"database":"postgres"'*)
+    echo "Done. Public URL: https://foodfox.yuri.guru/upload"
+    ;;
+  *)
+    echo "!! health did not report postgres — check apps/web/.env DATABASE_URL" >&2
+    exit 1
+    ;;
+esac
