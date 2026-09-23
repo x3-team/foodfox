@@ -298,8 +298,9 @@ class _DemoHint extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: FoxTokens.zoneGreenBg,
+        color: FoxTokens.bgCard,
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: FoxTokens.zoneGreen, width: 1.5),
       ),
       child: Row(
         children: [
@@ -316,7 +317,7 @@ class _DemoHint extends StatelessWidget {
                 Text(
                   "Демо-доступ: $_pretty",
                   style: FoxType.label.copyWith(
-                    color: FoxTokens.zoneGreen,
+                    color: FoxTokens.textPrimary,
                     fontSize: 14,
                   ),
                 ),
@@ -324,11 +325,16 @@ class _DemoHint extends StatelessWidget {
                 Text(
                   "Нажмите, чтобы подставить номер",
                   style: FoxType.captionS.copyWith(
-                    color: FoxTokens.zoneGreen.withValues(alpha: 0.75),
+                    color: FoxTokens.textSecondary,
                   ),
                 ),
               ],
             ),
+          ),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: 22,
+            color: FoxTokens.zoneGreen,
           ),
         ],
       ),

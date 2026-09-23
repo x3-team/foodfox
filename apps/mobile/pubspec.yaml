@@ -1,7 +1,7 @@
 name: foodfox
 description: FoodFox — FOX Food Xplorer (Android)
 publish_to: "none"
-version: 0.3.5+10
+version: 0.3.6+11
 
 environment:
   sdk: ^3.13.2

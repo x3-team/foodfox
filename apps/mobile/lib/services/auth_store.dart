@@ -73,11 +73,15 @@ class AuthStore {
   Future<void> setBiometricsEnabled(bool value) async =>
       (await _p).setBool(_kBiometrics, value);
 
-  /// Whether the device actually offers Face ID / fingerprint.
+  /// Whether a fingerprint or face is enrolled.
+  ///
+  /// Hardware support alone is not enough: [LocalAuthentication.authenticate]
+  /// opens a system dialog in English when nothing is enrolled.
   Future<bool> biometricsAvailable() async {
     try {
       final auth = LocalAuthentication();
-      return await auth.canCheckBiometrics || await auth.isDeviceSupported();
+      final enrolled = await auth.getAvailableBiometrics();
+      return enrolled.isNotEmpty;
     } catch (_) {
       return false;
     }

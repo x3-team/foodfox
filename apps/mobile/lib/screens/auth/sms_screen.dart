@@ -253,8 +253,9 @@ class _DemoCode extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: FoxTokens.zoneGreenBg,
+        color: FoxTokens.bgCard,
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: FoxTokens.zoneGreen, width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -268,16 +269,14 @@ class _DemoCode extends StatelessWidget {
           Text(
             "Демо-код: $code",
             style: FoxType.label.copyWith(
-              color: FoxTokens.zoneGreen,
+              color: FoxTokens.textPrimary,
               fontSize: 14,
             ),
           ),
           const SizedBox(width: 8),
           Text(
             "подставить",
-            style: FoxType.captionS.copyWith(
-              color: FoxTokens.zoneGreen.withValues(alpha: 0.75),
-            ),
+            style: FoxType.captionS.copyWith(color: FoxTokens.textSecondary),
           ),
         ],
       ),

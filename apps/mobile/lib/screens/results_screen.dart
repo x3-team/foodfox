@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:flutter/material.dart";
 
+import "package:foodfox/data/fox_categories.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_motion.dart";
@@ -35,6 +36,9 @@ class ResultsScreen extends StatefulWidget {
 class _ResultsScreenState extends State<ResultsScreen> {
   /// null = «Все», otherwise the selected zone.
   Zone? _zone;
+
+  /// null = every category, otherwise one group from [foxCategoryOrder].
+  String? _category;
   var _loading = false;
   Object? _error;
   List<ResultItem> _results = [];
@@ -92,27 +96,46 @@ class _ResultsScreenState extends State<ResultsScreen> {
     }
   }
 
+  List<ResultItem> get _zoneFiltered =>
+      _results.where((r) => _zone == null || r.zone == _zone).toList();
+
+  List<String> get _visibleCategories {
+    final present = _zoneFiltered.map((r) => foxCategoryOf(r.foxName)).toSet();
+    return [
+      for (final name in foxCategoryOrder)
+        if (present.contains(name)) name,
+    ];
+  }
+
+  /// Flat rows: a chosen category, or a search that should not hide matches
+  /// behind thirteen collapsed groups.
+  bool get _showGroups => _category == null && _query.trim().isEmpty;
+
   List<ResultItem> get _filtered {
     final q = _query.trim().toLowerCase();
-    final list = _results.where((r) {
-      if (_zone != null && r.zone != _zone) return false;
+    final list = _zoneFiltered.where((r) {
+      if (_category != null && foxCategoryOf(r.foxName) != _category) {
+        return false;
+      }
       if (q.isEmpty) return true;
       return r.foxName.toLowerCase().contains(q);
     }).toList();
 
-    list.sort((a, b) {
-      final byZone = _zoneRank(b.zone).compareTo(_zoneRank(a.zone));
-      if (byZone != 0) return byZone;
-      return (b.valueUgMl ?? 0).compareTo(a.valueUgMl ?? 0);
-    });
+    list.sort((a, b) => (b.valueUgMl ?? 0).compareTo(a.valueUgMl ?? 0));
     return list;
   }
 
-  int _zoneRank(Zone z) => switch (z) {
-    Zone.red => 2,
-    Zone.yellow => 1,
-    Zone.green => 0,
-  };
+  void _selectZone(Zone? zone) {
+    final stillThere =
+        _category == null ||
+        _results
+            .where((r) => zone == null || r.zone == zone)
+            .any((r) => foxCategoryOf(r.foxName) == _category);
+    setState(() {
+      _zone = zone;
+      if (!stillThere) _category = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,15 +184,40 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 counts: _counts,
                 total: total,
                 selected: _zone,
-                onSelect: (z) => setState(() => _zone = z),
+                onSelect: _selectZone,
               ),
             ),
+            const SizedBox(height: 12),
+            _CategoryFilters(
+              categories: _visibleCategories,
+              selected: _category,
+              onSelect: (name) => setState(() => _category = name),
+            ),
             const SizedBox(height: 18),
-            ..._buildRows(),
+            ...(_showGroups ? _buildGroups() : _buildRows()),
           ],
         ],
       ),
     );
+  }
+
+  List<Widget> _buildGroups() {
+    final byName = <String, List<ResultItem>>{};
+    for (final item in _zoneFiltered) {
+      byName.putIfAbsent(foxCategoryOf(item.foxName), () => []).add(item);
+    }
+
+    return [
+      for (final name in _visibleCategories)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: _CategoryRow(
+            name: name,
+            items: byName[name] ?? const [],
+            onTap: () => setState(() => _category = name),
+          ),
+        ),
+    ];
   }
 
   List<Widget> _buildRows() {
@@ -462,6 +510,145 @@ class _ZoneChip extends StatelessWidget {
   }
 }
 
+class _CategoryFilters extends StatelessWidget {
+  const _CategoryFilters({
+    required this.categories,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  final List<String> categories;
+  final String? selected;
+  final ValueChanged<String?> onSelect;
+
+  @override
+  Widget build(BuildContext context) => SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: Row(
+      children: [
+        FoxChip(
+          label: "Все",
+          selected: selected == null,
+          onTap: () => onSelect(null),
+        ),
+        for (final name in categories) ...[
+          const SizedBox(width: 8),
+          FoxChip(
+            label: name,
+            selected: selected == name,
+            onTap: () => onSelect(name),
+          ),
+        ],
+      ],
+    ),
+  );
+}
+
+class _CategoryRow extends StatelessWidget {
+  const _CategoryRow({
+    required this.name,
+    required this.items,
+    required this.onTap,
+  });
+
+  final String name;
+  final List<ResultItem> items;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final green = items.where((r) => r.zone == Zone.green).length;
+    final yellow = items.where((r) => r.zone == Zone.yellow).length;
+    final red = items.where((r) => r.zone == Zone.red).length;
+
+    return FoxCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      radius: 16,
+      onTap: onTap,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: FoxType.bodyS.copyWith(
+                    color: FoxTokens.textPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Text(
+                      _productsLabel(items.length),
+                      style: FoxType.captionS.copyWith(
+                        color: FoxTokens.textSecondary,
+                      ),
+                    ),
+                    if (green > 0) ...[
+                      const SizedBox(width: 10),
+                      const FoxZoneDot(color: Color(0xFFA3C644), size: 7),
+                      const SizedBox(width: 4),
+                      Text(
+                        "$green",
+                        style: FoxType.captionS.copyWith(
+                          color: FoxTokens.textSecondary,
+                        ),
+                      ),
+                    ],
+                    if (yellow > 0) ...[
+                      const SizedBox(width: 8),
+                      const FoxZoneDot(color: Color(0xFFE8B44A), size: 7),
+                      const SizedBox(width: 4),
+                      Text(
+                        "$yellow",
+                        style: FoxType.captionS.copyWith(
+                          color: FoxTokens.textSecondary,
+                        ),
+                      ),
+                    ],
+                    if (red > 0) ...[
+                      const SizedBox(width: 8),
+                      const FoxZoneDot(color: Color(0xFFC0563C), size: 7),
+                      const SizedBox(width: 4),
+                      Text(
+                        "$red",
+                        style: FoxType.captionS.copyWith(
+                          color: FoxTokens.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: 22,
+            color: FoxTokens.textSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _productsLabel(int count) {
+  final mod100 = count % 100;
+  final mod10 = count % 10;
+  final word = (mod100 >= 11 && mod100 <= 14)
+      ? "продуктов"
+      : switch (mod10) {
+          1 => "продукт",
+          2 || 3 || 4 => "продукта",
+          _ => "продуктов",
+        };
+  return "$count $word";
+}
+
 class _ProductRow extends StatelessWidget {
   const _ProductRow({required this.item, this.onAskBot});
 
@@ -493,7 +680,7 @@ class _ProductRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  _zoneLabel(item.zone),
+                  foxCategoryOf(item.foxName),
                   style: FoxType.captionS.copyWith(
                     color: FoxTokens.textSecondary,
                   ),
@@ -517,12 +704,6 @@ class _ProductRow extends StatelessWidget {
       ),
     );
   }
-
-  String _zoneLabel(Zone zone) => switch (zone) {
-    Zone.green => "Зелёная зона · без ограничений",
-    Zone.yellow => "Жёлтая зона · ротация раз в 4 дня",
-    Zone.red => "Красная зона · элиминация",
-  };
 }
 
 class _EmptyState extends StatelessWidget {

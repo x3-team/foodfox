@@ -236,14 +236,17 @@ class _UnlockGateState extends State<UnlockGate> {
 
   Future<void> _prepare() async {
     final enabled = await widget.store.biometricsEnabled;
-    final available = enabled && await widget.store.biometricsAvailable();
+    final enrolled = await widget.store.biometricsAvailable();
+    if (enabled && !enrolled) {
+      await widget.store.setBiometricsEnabled(false);
+    }
     final name = await widget.store.displayName;
     if (!mounted) return;
     setState(() {
-      _biometricAvailable = available;
+      _biometricAvailable = enabled && enrolled;
       _name = name;
     });
-    if (available) await _tryBiometric();
+    if (enabled && enrolled) await _tryBiometric();
   }
 
   Future<void> _tryBiometric() async {
@@ -254,9 +257,7 @@ class _UnlockGateState extends State<UnlockGate> {
   @override
   Widget build(BuildContext context) => PinScreen(
     mode: PinMode.unlock,
-    greeting: _name == null || _name!.isEmpty
-        ? "С возвращением"
-        : "С возвращением, $_name",
+    greeting: _greeting(_name),
     biometricAvailable: _biometricAvailable,
     onBiometric: _tryBiometric,
     onForgot: widget.onForgot,
@@ -269,4 +270,12 @@ class _UnlockGateState extends State<UnlockGate> {
       return "Неверный пин-код";
     },
   );
+}
+
+/// The server stores «Клиент» until a person sets a name. Greeting with that
+/// placeholder reads as if it were their name.
+String _greeting(String? name) {
+  final trimmed = name?.trim() ?? "";
+  if (trimmed.isEmpty || trimmed == "Клиент") return "С возвращением";
+  return "С возвращением, $trimmed";
 }
