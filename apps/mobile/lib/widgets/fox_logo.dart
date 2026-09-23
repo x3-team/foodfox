@@ -10,10 +10,7 @@ class FoxLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: "FoodFox",
-      child: Text(
-        "🦊",
-        style: TextStyle(fontSize: size * 0.92, height: 1),
-      ),
+      child: Text("🦊", style: TextStyle(fontSize: size * 0.92, height: 1)),
     );
   }
 }

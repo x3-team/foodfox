@@ -118,8 +118,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (_prettyPhone.isNotEmpty) _prettyPhone,
                         if (_client?.hasReport ?? false) "Неделя $week",
                       ].join(" · "),
-                      style: FoxType.captionS
-                          .copyWith(color: FoxTokens.textSecondary),
+                      style: FoxType.captionS.copyWith(
+                        color: FoxTokens.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -161,8 +162,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _biometricsAvailable
                           ? "Face ID или отпечаток вместо пин-кода"
                           : "Недоступно на этом устройстве",
-                      style: FoxType.captionS
-                          .copyWith(color: FoxTokens.textSecondary),
+                      style: FoxType.captionS.copyWith(
+                        color: FoxTokens.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -215,59 +217,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
 class _NutritionistCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => FoxCard(
-        tone: FoxCardTone.dark,
-        padding: const EdgeInsets.all(18),
-        radius: 22,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    tone: FoxCardTone.dark,
+    padding: const EdgeInsets.all(18),
+    radius: 22,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.medical_services_outlined,
-                      size: 22, color: FoxTokens.textInverted),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Нутрициолог",
-                        style: FoxType.bodyS.copyWith(
-                          color: FoxTokens.textInverted,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        "Подключите специалиста — он посмотрит план "
-                        "и добавит комментарии",
-                        style: FoxType.captionS.copyWith(
-                          color: FoxTokens.textInvertedSecondary,
-                          height: 17 / 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            Container(
+              width: 48,
+              height: 48,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.medical_services_outlined,
+                size: 22,
+                color: FoxTokens.textInverted,
+              ),
             ),
-            const SizedBox(height: 14),
-            FoxButton(
-              label: "Подключить специалиста",
-              kind: FoxButtonKind.accent,
-              size: FoxButtonSize.small,
-              onPressed: () {},
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Нутрициолог",
+                    style: FoxType.bodyS.copyWith(
+                      color: FoxTokens.textInverted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    "Подключите специалиста — он посмотрит план "
+                    "и добавит комментарии",
+                    style: FoxType.captionS.copyWith(
+                      color: FoxTokens.textInvertedSecondary,
+                      height: 17 / 12,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-      );
+        const SizedBox(height: 14),
+        FoxButton(
+          label: "Подключить специалиста",
+          kind: FoxButtonKind.accent,
+          size: FoxButtonSize.small,
+          onPressed: () {},
+        ),
+      ],
+    ),
+  );
 }

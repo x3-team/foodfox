@@ -8,11 +8,7 @@ class LazyTabLoader {
   var _loaded = false;
   var _lastReloadToken = 0;
 
-  void sync({
-    required bool active,
-    int reloadToken = 0,
-    bool force = false,
-  }) {
+  void sync({required bool active, int reloadToken = 0, bool force = false}) {
     if (!active) return;
     final shouldLoad = force || reloadToken != _lastReloadToken || !_loaded;
     if (!shouldLoad) return;

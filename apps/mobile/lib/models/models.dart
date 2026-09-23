@@ -54,11 +54,7 @@ class ZoneCounts {
 }
 
 class RecipeStep {
-  RecipeStep({
-    required this.title,
-    required this.body,
-    this.imageUrl,
-  });
+  RecipeStep({required this.title, required this.body, this.imageUrl});
 
   factory RecipeStep.fromJson(dynamic json, {int index = 0}) {
     if (json is String) {

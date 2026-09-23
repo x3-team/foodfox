@@ -90,8 +90,9 @@ class _TabItemState extends State<_TabItem>
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        widget.active ? FoxTokens.textPrimary : const Color(0xFF8A8C84);
+    final color = widget.active
+        ? FoxTokens.textPrimary
+        : const Color(0xFF8A8C84);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -123,7 +124,9 @@ class _TabItemState extends State<_TabItem>
                       top: -2,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 1),
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: FoxTokens.zoneRed,
                           borderRadius: BorderRadius.circular(100),
@@ -148,8 +151,7 @@ class _TabItemState extends State<_TabItem>
               style: FoxType.captionS.copyWith(
                 fontSize: 11,
                 color: color,
-                fontWeight:
-                    widget.active ? FontWeight.w500 : FontWeight.w400,
+                fontWeight: widget.active ? FontWeight.w500 : FontWeight.w400,
                 fontVariations: [
                   FontVariation("wght", widget.active ? 500 : 400),
                 ],

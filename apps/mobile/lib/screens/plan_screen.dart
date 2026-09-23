@@ -117,137 +117,138 @@ class _PlanScreenState extends State<PlanScreen> {
           child: _loading
               ? const Center(child: CircularProgressIndicator())
               : _error != null
-                  ? NetworkErrorPanel(
-                      error: _error!,
-                      onRetry: () => _loader.sync(active: true, force: true),
-                    )
-                  : _planMeta == null
-                      ? const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(24),
-                            child: Text(
-                              "Загрузите PDF-отчёт FOX на вкладке «Отчёт»",
-                              textAlign: TextAlign.center,
+              ? NetworkErrorPanel(
+                  error: _error!,
+                  onRetry: () => _loader.sync(active: true, force: true),
+                )
+              : _planMeta == null
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      "Загрузите PDF-отчёт FOX на вкладке «Отчёт»",
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                )
+              : ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: foxCardDecoration,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Персональный план на 8 недель",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
                             ),
                           ),
-                        )
-                      : ListView(
-                          padding: const EdgeInsets.all(16),
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: foxCardDecoration,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    "Персональный план на 8 недель",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  for (final block in planProtocol)
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 6),
-                                      child: RichText(
-                                        text: TextSpan(
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            color: FoxColors.text,
-                                            height: 1.35,
-                                          ),
-                                          children: [
-                                            TextSpan(
-                                              text: "Нед. ${block.weeks} ",
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                color: FoxColors.primary,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: "${block.phase} — ${block.detail}",
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              "Старт: ${_planMeta!.startedAt} · Сейчас неделя $_currentWeek из 8",
-                              style: const TextStyle(color: FoxColors.muted),
-                            ),
-                            const SizedBox(height: 12),
-                            WeekSelector(
-                              weeks: _selectorWeeks,
-                              currentWeek: _currentWeek,
-                              selectedWeek: _selectedWeek,
-                              onSelect: _selectWeek,
-                            ),
-                            if (banner != null)
-                              Container(
-                                width: double.infinity,
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: FoxColors.primarySoft,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  banner,
+                          const SizedBox(height: 8),
+                          for (final block in planProtocol)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: RichText(
+                                text: TextSpan(
                                   style: const TextStyle(
-                                    fontSize: 14,
-                                    color: FoxColors.primaryDark,
+                                    fontSize: 13,
+                                    color: FoxColors.text,
                                     height: 1.35,
                                   ),
+                                  children: [
+                                    TextSpan(
+                                      text: "Нед. ${block.weeks} ",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: FoxColors.primary,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: "${block.phase} — ${block.detail}",
+                                    ),
+                                  ],
                                 ),
                               ),
-                            if (_weekLoading)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 24),
-                                child: Center(child: CircularProgressIndicator()),
-                              )
-                            else if (summary != null) ...[
-                              const SizedBox(height: 16),
-                              Card(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Неделя $_selectedWeek: ${week!.phase}",
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      CompactProductChips(
-                                        items: summary.allowed,
-                                        label: "Можно",
-                                        tone: ChipTone.green,
-                                        previewCount: 8,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      CompactProductChips(
-                                        items: summary.forbidden,
-                                        label: "Исключить",
-                                        tone: ChipTone.red,
-                                        previewCount: 8,
-                                        collapsedByDefault: summary.forbidden.length > 8,
-                                      ),
-                                    ],
-                                  ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      "Старт: ${_planMeta!.startedAt} · Сейчас неделя $_currentWeek из 8",
+                      style: const TextStyle(color: FoxColors.muted),
+                    ),
+                    const SizedBox(height: 12),
+                    WeekSelector(
+                      weeks: _selectorWeeks,
+                      currentWeek: _currentWeek,
+                      selectedWeek: _selectedWeek,
+                      onSelect: _selectWeek,
+                    ),
+                    if (banner != null)
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: FoxColors.primarySoft,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          banner,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: FoxColors.primaryDark,
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                    if (_weekLoading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (summary != null) ...[
+                      const SizedBox(height: 16),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Неделя $_selectedWeek: ${week!.phase}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
                                 ),
+                              ),
+                              const SizedBox(height: 12),
+                              CompactProductChips(
+                                items: summary.allowed,
+                                label: "Можно",
+                                tone: ChipTone.green,
+                                previewCount: 8,
+                              ),
+                              const SizedBox(height: 8),
+                              CompactProductChips(
+                                items: summary.forbidden,
+                                label: "Исключить",
+                                tone: ChipTone.red,
+                                previewCount: 8,
+                                collapsedByDefault:
+                                    summary.forbidden.length > 8,
                               ),
                             ],
-                          ],
+                          ),
                         ),
+                      ),
+                    ],
+                  ],
+                ),
         ),
       ],
     );

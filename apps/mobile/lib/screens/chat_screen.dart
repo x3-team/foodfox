@@ -96,7 +96,12 @@ class _ChatScreenState extends State<ChatScreen> {
       _sending = true;
       _messages = [
         ..._messages,
-        ChatMessage(id: "tmp", role: "user", messageType: "chat", content: text),
+        ChatMessage(
+          id: "tmp",
+          role: "user",
+          messageType: "chat",
+          content: text,
+        ),
       ];
     });
     _toBottom();
@@ -138,8 +143,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  bool get _isFresh =>
-      _messages.where((m) => m.isUser).isEmpty && !_sending;
+  bool get _isFresh => _messages.where((m) => m.isUser).isEmpty && !_sending;
 
   @override
   Widget build(BuildContext context) {
@@ -151,19 +155,16 @@ class _ChatScreenState extends State<ChatScreen> {
         Expanded(
           child: _loading
               ? const Center(
-                  child: CircularProgressIndicator(color: FoxTokens.bgGreen))
+                  child: CircularProgressIndicator(color: FoxTokens.bgGreen),
+                )
               : _error != null
-                  ? NetworkErrorPanel(
-                      error: _error!,
-                      onRetry: () => _loader.sync(active: true, force: true),
-                    )
-                  : _buildThread(),
+              ? NetworkErrorPanel(
+                  error: _error!,
+                  onRetry: () => _loader.sync(active: true, force: true),
+                )
+              : _buildThread(),
         ),
-        _Composer(
-          controller: _controller,
-          sending: _sending,
-          onSend: _send,
-        ),
+        _Composer(controller: _controller, sending: _sending, onSend: _send),
       ],
     );
   }
@@ -200,16 +201,13 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       items.add(const SizedBox(height: 10));
       items.addAll(
-        foxStagger(
-          [
-            for (final q in _suggestions)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _SuggestionRow(text: q, onTap: () => _send(q)),
-              ),
-          ],
-          offset: 10,
-        ),
+        foxStagger([
+          for (final q in _suggestions)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _SuggestionRow(text: q, onTap: () => _send(q)),
+            ),
+        ], offset: 10),
       );
       items.add(const SizedBox(height: 8));
       items.add(const _SafetyNote());
@@ -228,51 +226,55 @@ class _ChatHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 6, 24, 14),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                color: FoxTokens.accentLime,
-                shape: BoxShape.circle,
+    padding: const EdgeInsets.fromLTRB(24, 6, 24, 14),
+    child: Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: FoxTokens.accentLime,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.auto_awesome,
+            size: 20,
+            color: FoxTokens.textPrimary,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Помощник FOX",
+                style: FoxType.bodyS.copyWith(
+                  color: FoxTokens.textPrimary,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              child: const Icon(Icons.auto_awesome,
-                  size: 20, color: FoxTokens.textPrimary),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 2),
+              Row(
                 children: [
+                  const FoxZoneDot(color: FoxTokens.zoneGreen, size: 7),
+                  const SizedBox(width: 6),
                   Text(
-                    "Помощник FOX",
-                    style: FoxType.bodyS.copyWith(
-                      color: FoxTokens.textPrimary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w500,
+                    "видит ваш отчёт и план",
+                    style: FoxType.captionS.copyWith(
+                      color: FoxTokens.textSecondary,
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      const FoxZoneDot(color: FoxTokens.zoneGreen, size: 7),
-                      const SizedBox(width: 6),
-                      Text(
-                        "видит ваш отчёт и план",
-                        style: FoxType.captionS
-                            .copyWith(color: FoxTokens.textSecondary),
-                      ),
-                    ],
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      );
+      ],
+    ),
+  );
 }
 
 class _Bubble extends StatelessWidget {
@@ -300,8 +302,8 @@ class _Bubble extends StatelessWidget {
               color: user
                   ? FoxTokens.bgGreen
                   : reminder
-                      ? FoxTokens.zoneGreenBg
-                      : FoxTokens.bgCard,
+                  ? FoxTokens.zoneGreenBg
+                  : FoxTokens.bgCard,
               border: user || reminder
                   ? null
                   : Border.all(color: FoxTokens.borderLight),
@@ -319,8 +321,8 @@ class _Bubble extends StatelessWidget {
                 color: user
                     ? FoxTokens.textInverted
                     : reminder
-                        ? FoxTokens.zoneGreen
-                        : FoxTokens.textPrimary,
+                    ? FoxTokens.zoneGreen
+                    : FoxTokens.textPrimary,
               ),
             ),
           ),
@@ -352,38 +354,40 @@ class _TypingBubbleState extends State<_TypingBubble>
 
   @override
   Widget build(BuildContext context) => Align(
-        alignment: Alignment.centerLeft,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          decoration: BoxDecoration(
-            color: FoxTokens.bgCard,
-            border: Border.all(color: FoxTokens.borderLight),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(6),
-              topRight: Radius.circular(20),
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
-            ),
-          ),
-          child: AnimatedBuilder(
-            animation: _c,
-            builder: (context, _) => Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var i = 0; i < 3; i++) ...[
-                  if (i > 0) const SizedBox(width: 6),
-                  Opacity(
-                    // 160 ms phase offset between the dots.
-                    opacity: _dotOpacity((_c.value + i * 0.133) % 1),
-                    child: const FoxZoneDot(
-                        color: FoxTokens.textSecondary, size: 8),
-                  ),
-                ],
-              ],
-            ),
-          ),
+    alignment: Alignment.centerLeft,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      decoration: BoxDecoration(
+        color: FoxTokens.bgCard,
+        border: Border.all(color: FoxTokens.borderLight),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(6),
+          topRight: Radius.circular(20),
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
-      );
+      ),
+      child: AnimatedBuilder(
+        animation: _c,
+        builder: (context, _) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < 3; i++) ...[
+              if (i > 0) const SizedBox(width: 6),
+              Opacity(
+                // 160 ms phase offset between the dots.
+                opacity: _dotOpacity((_c.value + i * 0.133) % 1),
+                child: const FoxZoneDot(
+                  color: FoxTokens.textSecondary,
+                  size: 8,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
 
   double _dotOpacity(double t) {
     final wave = t < 0.5 ? t * 2 : (1 - t) * 2;
@@ -399,22 +403,25 @@ class _SuggestionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FoxCard(
-        onTap: onTap,
-        radius: 16,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                text,
-                style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
-              ),
-            ),
-            const Icon(Icons.north_east_rounded,
-                size: 16, color: Color(0xFF8A8C84)),
-          ],
+    onTap: onTap,
+    radius: 16,
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            text,
+            style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
+          ),
         ),
-      );
+        const Icon(
+          Icons.north_east_rounded,
+          size: 16,
+          color: Color(0xFF8A8C84),
+        ),
+      ],
+    ),
+  );
 }
 
 class _SafetyNote extends StatelessWidget {
@@ -422,18 +429,18 @@ class _SafetyNote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FoxCard(
-        tone: FoxCardTone.grey,
-        radius: 14,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Text(
-          "Помощник опирается только на ваш отчёт. Он не ставит диагноз "
-          "и не заменяет нутрициолога.",
-          style: FoxType.captionS.copyWith(
-            color: FoxTokens.textSecondary,
-            height: 17 / 12,
-          ),
-        ),
-      );
+    tone: FoxCardTone.grey,
+    radius: 14,
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    child: Text(
+      "Помощник опирается только на ваш отчёт. Он не ставит диагноз "
+      "и не заменяет нутрициолога.",
+      style: FoxType.captionS.copyWith(
+        color: FoxTokens.textSecondary,
+        height: 17 / 12,
+      ),
+    ),
+  );
 }
 
 class _Composer extends StatelessWidget {
@@ -449,68 +456,70 @@ class _Composer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        color: FoxTokens.bgNeutral,
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 10, 24, 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: FoxTokens.bgCard,
-                      borderRadius:
-                          BorderRadius.circular(FoxTokens.radiusChip),
-                      border: Border.all(color: FoxTokens.borderLight),
+    color: FoxTokens.bgNeutral,
+    child: SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 10, 24, 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: FoxTokens.bgCard,
+                  borderRadius: BorderRadius.circular(FoxTokens.radiusChip),
+                  border: Border.all(color: FoxTokens.borderLight),
+                ),
+                child: TextField(
+                  controller: controller,
+                  minLines: 1,
+                  maxLines: 4,
+                  style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: "Спросите про продукт или план…",
+                    hintStyle: FoxType.bodyS.copyWith(
+                      color: FoxTokens.textSecondary,
                     ),
-                    child: TextField(
-                      controller: controller,
-                      minLines: 1,
-                      maxLines: 4,
-                      style: FoxType.bodyS
-                          .copyWith(color: FoxTokens.textPrimary),
-                      decoration: InputDecoration(
-                        hintText: "Спросите про продукт или план…",
-                        hintStyle: FoxType.bodyS
-                            .copyWith(color: FoxTokens.textSecondary),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 14),
-                      ),
-                      onSubmitted: (_) => onSend(),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 14,
                     ),
                   ),
+                  onSubmitted: (_) => onSend(),
                 ),
-                const SizedBox(width: 10),
-                FoxPressable(
-                  onTap: sending ? null : () => onSend(),
-                  child: AnimatedContainer(
-                    duration: FoxMotion.quick,
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: sending
-                          ? FoxTokens.bgGrey
-                          : FoxTokens.accentLime,
-                      shape: BoxShape.circle,
-                    ),
-                    child: sending
-                        ? const Padding(
-                            padding: EdgeInsets.all(14),
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: FoxTokens.textSecondary,
-                            ),
-                          )
-                        : const Icon(Icons.arrow_upward_rounded,
-                            size: 22, color: FoxTokens.textPrimary),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(width: 10),
+            FoxPressable(
+              onTap: sending ? null : () => onSend(),
+              child: AnimatedContainer(
+                duration: FoxMotion.quick,
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: sending ? FoxTokens.bgGrey : FoxTokens.accentLime,
+                  shape: BoxShape.circle,
+                ),
+                child: sending
+                    ? const Padding(
+                        padding: EdgeInsets.all(14),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: FoxTokens.textSecondary,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.arrow_upward_rounded,
+                        size: 22,
+                        color: FoxTokens.textPrimary,
+                      ),
+              ),
+            ),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 }

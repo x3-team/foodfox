@@ -50,7 +50,11 @@ class _PaginatedStringSectionState extends State<PaginatedStringSection> {
             padding: const EdgeInsets.only(bottom: 4),
             child: Text(
               item,
-              style: TextStyle(fontSize: 14, color: widget.textColor, height: 1.35),
+              style: TextStyle(
+                fontSize: 14,
+                color: widget.textColor,
+                height: 1.35,
+              ),
             ),
           ),
         ),
@@ -72,7 +76,11 @@ class _PaginatedStringSectionState extends State<PaginatedStringSection> {
             ),
             child: const Text(
               "Показать ещё 5",
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: FoxColors.primary),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: FoxColors.primary,
+              ),
             ),
           ),
       ],
@@ -94,7 +102,8 @@ class IncrementalScrollLoader extends StatefulWidget {
   final Widget child;
 
   @override
-  State<IncrementalScrollLoader> createState() => _IncrementalScrollLoaderState();
+  State<IncrementalScrollLoader> createState() =>
+      _IncrementalScrollLoaderState();
 }
 
 class _IncrementalScrollLoaderState extends State<IncrementalScrollLoader> {

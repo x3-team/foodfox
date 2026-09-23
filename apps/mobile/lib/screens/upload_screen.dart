@@ -57,7 +57,8 @@ class _UploadScreenState extends State<UploadScreen> {
       children: [
         const PageHeader(
           title: "Загрузка отчёта",
-          subtitle: "Загрузите PDF FOX Food Xplorer — мы разберём 286 антигенов",
+          subtitle:
+              "Загрузите PDF FOX Food Xplorer — мы разберём 286 антигенов",
         ),
         Expanded(
           child: ListView(
@@ -67,13 +68,19 @@ class _UploadScreenState extends State<UploadScreen> {
                 color: FoxColors.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(color: FoxColors.primaryMuted, width: 2),
+                  side: const BorderSide(
+                    color: FoxColors.primaryMuted,
+                    width: 2,
+                  ),
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: _loading ? null : _pickAndUpload,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 40,
+                      horizontal: 24,
+                    ),
                     child: Column(
                       children: [
                         Container(
@@ -102,7 +109,10 @@ class _UploadScreenState extends State<UploadScreen> {
                         const SizedBox(height: 6),
                         const Text(
                           "Файл с устройства — разбор ~285 антигенов",
-                          style: TextStyle(fontSize: 14, color: FoxColors.muted),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: FoxColors.muted,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -128,7 +138,11 @@ class _UploadScreenState extends State<UploadScreen> {
                     SizedBox(height: 6),
                     Text(
                       "IgG-анализ 286 пищевых антигенов. Результаты носят информационный характер и не заменяют консультацию врача.",
-                      style: TextStyle(fontSize: 13, color: FoxColors.muted, height: 1.45),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: FoxColors.muted,
+                        height: 1.45,
+                      ),
                     ),
                   ],
                 ),
@@ -141,7 +155,10 @@ class _UploadScreenState extends State<UploadScreen> {
                     color: const Color(0xFFFEF2F2),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(_error!, style: const TextStyle(color: FoxColors.red)),
+                  child: Text(
+                    _error!,
+                    style: const TextStyle(color: FoxColors.red),
+                  ),
                 ),
               ],
               const SizedBox(height: 16),

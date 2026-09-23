@@ -21,9 +21,9 @@ class FoxIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => CustomPaint(
-        size: Size.square(size),
-        painter: _FoxIconPainter(kind: kind, color: color, filled: filled),
-      );
+    size: Size.square(size),
+    painter: _FoxIconPainter(kind: kind, color: color, filled: filled),
+  );
 }
 
 class _FoxIconPainter extends CustomPainter {
@@ -59,7 +59,10 @@ class _FoxIconPainter extends CustomPainter {
         final wedge = Path()
           ..moveTo(12, 12)
           ..lineTo(12, 3.5)
-          ..arcToPoint(const Offset(20.5, 12), radius: const Radius.circular(8.5))
+          ..arcToPoint(
+            const Offset(20.5, 12),
+            radius: const Radius.circular(8.5),
+          )
           ..close();
         canvas.drawPath(wedge, fill);
 
@@ -73,7 +76,11 @@ class _FoxIconPainter extends CustomPainter {
         );
         canvas.drawLine(const Offset(8, 3), const Offset(8, 7), stroke);
         canvas.drawLine(const Offset(16, 3), const Offset(16, 7), stroke);
-        canvas.drawLine(const Offset(3.5, 10.5), const Offset(20.5, 10.5), stroke);
+        canvas.drawLine(
+          const Offset(3.5, 10.5),
+          const Offset(20.5, 10.5),
+          stroke,
+        );
         if (filled) {
           canvas.drawRRect(
             RRect.fromRectAndRadius(
@@ -183,7 +190,13 @@ class FoxRingPainter extends CustomPainter {
         ..color = seg.color;
 
       final g = sweepFull > 0.12 ? gap : 0.0;
-      canvas.drawArc(rect, start + g / 2, math.max(sweep - g, 0.001), false, paint);
+      canvas.drawArc(
+        rect,
+        start + g / 2,
+        math.max(sweep - g, 0.001),
+        false,
+        paint,
+      );
       start += sweepFull;
     }
   }

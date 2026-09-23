@@ -109,10 +109,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
   }
 
   int _zoneRank(Zone z) => switch (z) {
-        Zone.red => 2,
-        Zone.yellow => 1,
-        Zone.green => 0,
-      };
+    Zone.red => 2,
+    Zone.yellow => 1,
+    Zone.green => 0,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +146,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
           else if (total == 0)
             _EmptyState(onUpload: widget.onUpload)
           else ...[
-            FoxFadeSlide(child: _Summary(counts: _counts, total: total)),
+            FoxFadeSlide(
+              child: _Summary(counts: _counts, total: total),
+            ),
             const SizedBox(height: 18),
             FoxFadeSlide(
               delay: FoxMotion.stagger,
@@ -212,31 +214,34 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Expanded(
-            child: FoxScreenTitle(
-              title: "Мои результаты",
-              subtitle: "FOX Food Xplorer",
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      const Expanded(
+        child: FoxScreenTitle(
+          title: "Мои результаты",
+          subtitle: "FOX Food Xplorer",
+        ),
+      ),
+      if (onDownload != null)
+        FoxPressable(
+          onTap: onDownload,
+          child: Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: FoxTokens.bgCard,
+              shape: BoxShape.circle,
+              border: Border.all(color: FoxTokens.borderLight),
+            ),
+            child: const Icon(
+              Icons.file_upload_outlined,
+              size: 19,
+              color: FoxTokens.textPrimary,
             ),
           ),
-          if (onDownload != null)
-            FoxPressable(
-              onTap: onDownload,
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: FoxTokens.bgCard,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: FoxTokens.borderLight),
-                ),
-                child: const Icon(Icons.file_upload_outlined,
-                    size: 19, color: FoxTokens.textPrimary),
-              ),
-            ),
-        ],
-      );
+        ),
+    ],
+  );
 }
 
 class _Summary extends StatelessWidget {
@@ -352,26 +357,30 @@ class _SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        decoration: BoxDecoration(
-          color: FoxTokens.bgCard,
-          borderRadius: BorderRadius.circular(FoxTokens.radiusChip),
-          border: Border.all(color: FoxTokens.borderLight),
+    decoration: BoxDecoration(
+      color: FoxTokens.bgCard,
+      borderRadius: BorderRadius.circular(FoxTokens.radiusChip),
+      border: Border.all(color: FoxTokens.borderLight),
+    ),
+    child: TextField(
+      controller: controller,
+      style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
+      decoration: InputDecoration(
+        hintText: "Поиск продукта",
+        hintStyle: FoxType.bodyS.copyWith(color: FoxTokens.textSecondary),
+        prefixIcon: const Icon(
+          Icons.search_rounded,
+          size: 20,
+          color: FoxTokens.textSecondary,
         ),
-        child: TextField(
-          controller: controller,
-          style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
-          decoration: InputDecoration(
-            hintText: "Поиск продукта",
-            hintStyle:
-                FoxType.bodyS.copyWith(color: FoxTokens.textSecondary),
-            prefixIcon: const Icon(Icons.search_rounded,
-                size: 20, color: FoxTokens.textSecondary),
-            border: InputBorder.none,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-          ),
+        border: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 14,
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class _ZoneFilters extends StatelessWidget {
@@ -389,26 +398,26 @@ class _ZoneFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            FoxChip(
-              label: "Все $total",
-              selected: selected == null,
-              onTap: () => onSelect(null),
-            ),
-            for (final z in Zone.values) ...[
-              const SizedBox(width: 8),
-              _ZoneChip(
-                zone: z,
-                count: counts.forZone(z),
-                selected: selected == z,
-                onTap: () => onSelect(z),
-              ),
-            ],
-          ],
+    scrollDirection: Axis.horizontal,
+    child: Row(
+      children: [
+        FoxChip(
+          label: "Все $total",
+          selected: selected == null,
+          onTap: () => onSelect(null),
         ),
-      );
+        for (final z in Zone.values) ...[
+          const SizedBox(width: 8),
+          _ZoneChip(
+            zone: z,
+            count: counts.forZone(z),
+            selected: selected == z,
+            onTap: () => onSelect(z),
+          ),
+        ],
+      ],
+    ),
+  );
 }
 
 class _ZoneChip extends StatelessWidget {
@@ -485,8 +494,9 @@ class _ProductRow extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   _zoneLabel(item.zone),
-                  style: FoxType.captionS
-                      .copyWith(color: FoxTokens.textSecondary),
+                  style: FoxType.captionS.copyWith(
+                    color: FoxTokens.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -509,10 +519,10 @@ class _ProductRow extends StatelessWidget {
   }
 
   String _zoneLabel(Zone zone) => switch (zone) {
-        Zone.green => "Зелёная зона · без ограничений",
-        Zone.yellow => "Жёлтая зона · ротация раз в 4 дня",
-        Zone.red => "Красная зона · элиминация",
-      };
+    Zone.green => "Зелёная зона · без ограничений",
+    Zone.yellow => "Жёлтая зона · ротация раз в 4 дня",
+    Zone.red => "Красная зона · элиминация",
+  };
 }
 
 class _EmptyState extends StatelessWidget {
@@ -522,42 +532,45 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        children: [
-          const SizedBox(height: 40),
-          Container(
-            width: 76,
-            height: 76,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: FoxTokens.bgGrey,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.description_outlined,
-                size: 32, color: FoxTokens.textSecondary),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            "Пока нет отчёта",
-            textAlign: TextAlign.center,
-            style: FoxType.h4.copyWith(color: FoxTokens.textPrimary),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Загрузите PDF из лаборатории — распознаем 285 антигенов "
-            "и соберём персональный протокол",
-            textAlign: TextAlign.center,
-            style: FoxType.bodyS.copyWith(
-              color: FoxTokens.textSecondary,
-              height: 21 / 16,
-            ),
-          ),
-          const SizedBox(height: 28),
-          if (onUpload != null)
-            FoxButton(
-              label: "Загрузить отчёт FOX",
-              kind: FoxButtonKind.accent,
-              onPressed: onUpload,
-            ),
-        ],
-      );
+    children: [
+      const SizedBox(height: 40),
+      Container(
+        width: 76,
+        height: 76,
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          color: FoxTokens.bgGrey,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.description_outlined,
+          size: 32,
+          color: FoxTokens.textSecondary,
+        ),
+      ),
+      const SizedBox(height: 18),
+      Text(
+        "Пока нет отчёта",
+        textAlign: TextAlign.center,
+        style: FoxType.h4.copyWith(color: FoxTokens.textPrimary),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        "Загрузите PDF из лаборатории — распознаем 285 антигенов "
+        "и соберём персональный протокол",
+        textAlign: TextAlign.center,
+        style: FoxType.bodyS.copyWith(
+          color: FoxTokens.textSecondary,
+          height: 21 / 16,
+        ),
+      ),
+      const SizedBox(height: 28),
+      if (onUpload != null)
+        FoxButton(
+          label: "Загрузить отчёт FOX",
+          kind: FoxButtonKind.accent,
+          onPressed: onUpload,
+        ),
+    ],
+  );
 }

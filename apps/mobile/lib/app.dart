@@ -98,7 +98,10 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
   Widget _body() {
     switch (_stage) {
       case _Stage.splash:
-        return SplashScreen(key: const ValueKey("splash"), onFinished: _onSplashDone);
+        return SplashScreen(
+          key: const ValueKey("splash"),
+          onFinished: _onSplashDone,
+        );
 
       case _Stage.unlock:
         return UnlockGate(

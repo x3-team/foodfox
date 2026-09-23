@@ -85,19 +85,19 @@ class _PinScreenState extends State<PinScreen> {
   }
 
   ({String title, String subtitle}) get _copy => switch (widget.mode) {
-        PinMode.create => (
-            title: "Придумайте пин-код",
-            subtitle: "4 цифры — чтобы не запрашивать СМС при каждом входе",
-          ),
-        PinMode.confirm => (
-            title: "Повторите пин-код",
-            subtitle: "Введите те же 4 цифры ещё раз",
-          ),
-        PinMode.unlock => (
-            title: widget.greeting ?? "С возвращением",
-            subtitle: "Введите пин-код",
-          ),
-      };
+    PinMode.create => (
+      title: "Придумайте пин-код",
+      subtitle: "4 цифры — чтобы не запрашивать СМС при каждом входе",
+    ),
+    PinMode.confirm => (
+      title: "Повторите пин-код",
+      subtitle: "Введите те же 4 цифры ещё раз",
+    ),
+    PinMode.unlock => (
+      title: widget.greeting ?? "С возвращением",
+      subtitle: "Введите пин-код",
+    ),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +128,8 @@ class _PinScreenState extends State<PinScreen> {
                                     color: FoxTokens.bgCard,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                        color: FoxTokens.borderLight),
+                                      color: FoxTokens.borderLight,
+                                    ),
                                   ),
                                   child: const Icon(
                                     Icons.arrow_back_ios_new_rounded,
@@ -174,8 +175,9 @@ class _PinScreenState extends State<PinScreen> {
                     Text(
                       copy.subtitle,
                       textAlign: TextAlign.center,
-                      style: FoxType.bodyS
-                          .copyWith(color: FoxTokens.textSecondary),
+                      style: FoxType.bodyS.copyWith(
+                        color: FoxTokens.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: 28),
                     FoxShake(
@@ -199,7 +201,9 @@ class _PinScreenState extends State<PinScreen> {
                       FoxCard(
                         tone: FoxCardTone.grey,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 13),
+                          horizontal: 16,
+                          vertical: 13,
+                        ),
                         child: Text(
                           "Пин-код хранится только на устройстве "
                           "и не передаётся на сервер",

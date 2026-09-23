@@ -50,7 +50,9 @@ class WeekSelector extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
-                      color: isCurrent && !active ? FoxColors.primary : FoxColors.border,
+                      color: isCurrent && !active
+                          ? FoxColors.primary
+                          : FoxColors.border,
                       width: isCurrent && !active ? 1.5 : 1,
                     ),
                   ),
@@ -58,7 +60,10 @@ class WeekSelector extends StatelessWidget {
                     onTap: () => onSelect(w.weekNumber),
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -77,7 +82,9 @@ class WeekSelector extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 11,
-                              color: active ? Colors.white.withValues(alpha: 0.85) : FoxColors.muted,
+                              color: active
+                                  ? Colors.white.withValues(alpha: 0.85)
+                                  : FoxColors.muted,
                             ),
                           ),
                         ],
@@ -100,10 +107,7 @@ class WeekSelector extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
-                  colors: [
-                    FoxColors.bg.withValues(alpha: 0),
-                    FoxColors.bg,
-                  ],
+                  colors: [FoxColors.bg.withValues(alpha: 0), FoxColors.bg],
                 ),
               ),
             ),

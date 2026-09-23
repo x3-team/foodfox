@@ -14,12 +14,16 @@ class PhoneScreen extends StatefulWidget {
     this.onBack,
     this.error,
     this.busy = false,
+    this.demoPhone,
   });
 
   final Future<void> Function(String phone) onSubmit;
   final VoidCallback? onBack;
   final String? error;
   final bool busy;
+
+  /// Ten digits the review build can sign in with, or null in a real build.
+  final String? demoPhone;
 
   @override
   State<PhoneScreen> createState() => _PhoneScreenState();
@@ -100,6 +104,14 @@ class _PhoneScreenState extends State<PhoneScreen> {
                       value: _consent,
                       onChanged: (v) => setState(() => _consent = v),
                     ),
+                    if (widget.demoPhone != null) ...[
+                      const SizedBox(height: 18),
+                      _DemoHint(
+                        phone: widget.demoPhone!,
+                        onFill: () =>
+                            setState(() => _digits = widget.demoPhone!),
+                      ),
+                    ],
                     const SizedBox(height: 18),
                   ]),
                 ),
@@ -265,6 +277,62 @@ class _CaretState extends State<_Caret> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) => FadeTransition(
     opacity: _c,
     child: Container(width: 2, height: 26, color: FoxTokens.accentLime),
+  );
+}
+
+/// Review builds have no SMS gateway behind them, so the number the server
+/// will accept is offered right here instead of being something to ask about.
+class _DemoHint extends StatelessWidget {
+  const _DemoHint({required this.phone, required this.onFill});
+
+  final String phone;
+  final VoidCallback onFill;
+
+  String get _pretty =>
+      "+7 ${phone.substring(0, 3)} ${phone.substring(3, 6)}"
+      "-${phone.substring(6, 8)}-${phone.substring(8)}";
+
+  @override
+  Widget build(BuildContext context) => FoxPressable(
+    onTap: onFill,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: FoxTokens.zoneGreenBg,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.science_outlined,
+            size: 18,
+            color: FoxTokens.zoneGreen,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Демо-доступ: $_pretty",
+                  style: FoxType.label.copyWith(
+                    color: FoxTokens.zoneGreen,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  "Нажмите, чтобы подставить номер",
+                  style: FoxType.captionS.copyWith(
+                    color: FoxTokens.zoneGreen.withValues(alpha: 0.75),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
   );
 }
 

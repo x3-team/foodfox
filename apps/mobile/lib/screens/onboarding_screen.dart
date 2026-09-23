@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/widgets/ui/fox_ui.dart";
+import "package:foodfox/widgets/ui/fox_wordmark.dart";
 
 /// First screen after the splash: photo hero over the brand green with the
 /// value proposition and a single call to action.
@@ -33,9 +34,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
     final photoHeight = media.size.height * 0.68;
-    // The portrait's face sits in the top 42 % of the screen; copy starts
-    // below that line so it can never cover her.
-    final faceSafeHeight = media.size.height * 0.42;
+    // Typography tightens on shorter phones so the whole block still clears
+    // the portrait's face instead of creeping up over it.
+    final k = (media.size.height / 844).clamp(0.78, 1.0);
 
     return Scaffold(
       backgroundColor: FoxTokens.bgGreen,
@@ -94,88 +95,99 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               ),
             ),
           ),
+          // Deliberately not animated: the splash has just walked the lockup
+          // into this exact spot, and re-animating it here would restart the
+          // move the user already watched finish.
           Positioned(
-            left: 24,
-            top: media.padding.top + 12,
-            child: const FoxFadeSlide(offset: 10, child: _Wordmark()),
+            left: FoxWordmark.inset,
+            top: media.padding.top + FoxWordmark.topGap,
+            child: const FoxWordmark(),
           ),
-          // Reserve the face zone, then let the copy own everything below it.
-          // If the text ever outgrows that space it scrolls instead of
-          // climbing over the portrait.
+          // The copy sits at the bottom and the face zone above it is simply
+          // whatever is left. A fixed spacer plus a scroll view clipped the
+          // eyebrow line on shorter phones; here the block never scrolls, and
+          // the scaleDown shrinks it as one piece if a device is tight enough
+          // that it still would not fit.
           Column(
             children: [
-              SizedBox(height: faceSafeHeight),
-              Expanded(
-                child: SingleChildScrollView(
-                  reverse: true,
-                  padding: EdgeInsets.fromLTRB(
-                    24,
-                    0,
-                    24,
-                    media.padding.bottom + 24,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: foxStagger([
-                      Row(
-                        children: [
-                          const FoxZoneDot(
-                            color: FoxTokens.accentLime,
-                            size: 7,
+              const Spacer(),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.bottomCenter,
+                  child: SizedBox(
+                    width: media.size.width - 48,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        bottom: media.padding.bottom + 24 * k,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: foxStagger([
+                          Row(
+                            children: [
+                              const FoxZoneDot(
+                                color: FoxTokens.accentLime,
+                                size: 7,
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  "IgG-тест FOX · сопровождение после сдачи",
+                                  style: FoxType.captionS.copyWith(
+                                    color: FoxTokens.accentLime,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(height: 14 * k),
                           Text(
-                            "IgG-тест FOX · сопровождение после сдачи",
-                            style: FoxType.captionS.copyWith(
-                              color: FoxTokens.accentLime,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.4,
+                            "Персональный план питания по вашему тесту FOX",
+                            style: FoxType.h2.copyWith(
+                              color: FoxTokens.textInverted,
+                              fontSize: 38 * k,
+                              height: 42 / 38,
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        "Персональный план питания по вашему тесту FOX",
-                        style: FoxType.h2.copyWith(
-                          color: FoxTokens.textInverted,
-                          fontSize: 38,
-                          height: 42 / 38,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        "Загрузите PDF-отчёт — распознаем 285 антигенов "
-                        "и соберём протокол на 4–6 месяцев",
-                        style: FoxType.bodyS.copyWith(
-                          color: FoxTokens.textInvertedSecondary,
-                          height: 23 / 16,
-                        ),
-                      ),
-                      const SizedBox(height: 22),
-                      const _Stats(),
-                      const SizedBox(height: 30),
-                      FoxButton(
-                        label: "Войти по номеру телефона",
-                        kind: FoxButtonKind.accent,
-                        trailingIcon: Icons.arrow_forward_rounded,
-                        onPressed: widget.onStart,
-                      ),
-                      const SizedBox(height: 14),
-                      SizedBox(
-                        width: double.infinity,
-                        child: Text(
-                          "IgG — не диагноз аллергии. Результаты "
-                          "интерпретируются со специалистом.",
-                          textAlign: TextAlign.center,
-                          style: FoxType.captionS.copyWith(
-                            color: FoxTokens.textInvertedSecondary,
-                            height: 16 / 12,
+                          SizedBox(height: 14 * k),
+                          Text(
+                            "Загрузите PDF-отчёт — распознаем 285 антигенов "
+                            "и соберём протокол на 4–6 месяцев",
+                            style: FoxType.bodyS.copyWith(
+                              color: FoxTokens.textInvertedSecondary,
+                              fontSize: 16 * k,
+                              height: 23 / 16,
+                            ),
                           ),
-                        ),
+                          SizedBox(height: 22 * k),
+                          const _Stats(),
+                          SizedBox(height: 30 * k),
+                          FoxButton(
+                            label: "Войти по номеру телефона",
+                            kind: FoxButtonKind.accent,
+                            trailingIcon: Icons.arrow_forward_rounded,
+                            onPressed: widget.onStart,
+                          ),
+                          SizedBox(height: 14 * k),
+                          SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              "IgG — не диагноз аллергии. Результаты "
+                              "интерпретируются со специалистом.",
+                              textAlign: TextAlign.center,
+                              style: FoxType.captionS.copyWith(
+                                color: FoxTokens.textInvertedSecondary,
+                                height: 16 / 12,
+                              ),
+                            ),
+                          ),
+                        ], start: const Duration(milliseconds: 120)),
                       ),
-                    ], start: const Duration(milliseconds: 120)),
+                    ),
                   ),
                 ),
               ),
@@ -185,39 +197,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       ),
     );
   }
-}
-
-class _Wordmark extends StatelessWidget {
-  const _Wordmark();
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        "FOX",
-        style: FoxType.h4.copyWith(
-          color: FoxTokens.textInverted,
-          fontSize: 26,
-          height: 1,
-          letterSpacing: 1,
-          fontWeight: FontWeight.w800,
-          fontVariations: const [FontVariation("wght", 800)],
-        ),
-      ),
-      const SizedBox(height: 2),
-      Text(
-        "FOOD XPLORER",
-        style: FoxType.captionS.copyWith(
-          color: FoxTokens.textInvertedSecondary,
-          fontSize: 9,
-          letterSpacing: 1.6,
-          fontWeight: FontWeight.w500,
-          fontVariations: const [FontVariation("wght", 500)],
-        ),
-      ),
-    ],
-  );
 }
 
 class _Stats extends StatelessWidget {

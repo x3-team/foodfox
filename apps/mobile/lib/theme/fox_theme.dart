@@ -44,7 +44,10 @@ ThemeData buildFoxTheme() {
       headlineSmall: FoxType.h4.copyWith(color: FoxColors.text),
       titleMedium: FoxType.button.copyWith(color: FoxColors.text),
       bodyLarge: FoxType.bodyS.copyWith(color: FoxColors.text),
-      bodyMedium: FoxType.caption.copyWith(color: FoxColors.muted, height: 1.45),
+      bodyMedium: FoxType.caption.copyWith(
+        color: FoxColors.muted,
+        height: 1.45,
+      ),
       labelLarge: FoxType.button.copyWith(color: FoxColors.surface),
       labelSmall: FoxType.captionS.copyWith(color: FoxColors.muted),
     ),

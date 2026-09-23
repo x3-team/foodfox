@@ -223,7 +223,9 @@ class FoxChip extends StatelessWidget {
     final Color bg;
     final Color fg;
     if (onDark) {
-      bg = selected ? FoxTokens.accentLime : Colors.white.withValues(alpha: 0.1);
+      bg = selected
+          ? FoxTokens.accentLime
+          : Colors.white.withValues(alpha: 0.1);
       fg = selected ? FoxTokens.textPrimary : FoxTokens.textInverted;
     } else {
       bg = selected ? FoxTokens.bgGreen : FoxTokens.bgCard;
@@ -263,10 +265,10 @@ class FoxZoneDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      );
+    width: size,
+    height: size,
+    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  );
 }
 
 class FoxStatusBadge extends StatelessWidget {
@@ -283,26 +285,26 @@ class FoxStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.fromLTRB(11, 6, 13, 6),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(FoxTokens.radiusChip),
+    padding: const EdgeInsets.fromLTRB(11, 6, 13, 6),
+    decoration: BoxDecoration(
+      color: background,
+      borderRadius: BorderRadius.circular(FoxTokens.radiusChip),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FoxZoneDot(color: foreground, size: 7),
+        const SizedBox(width: 7),
+        Text(
+          label,
+          style: FoxType.captionS.copyWith(
+            color: foreground,
+            fontWeight: FontWeight.w500,
+          ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FoxZoneDot(color: foreground, size: 7),
-            const SizedBox(width: 7),
-            Text(
-              label,
-              style: FoxType.captionS.copyWith(
-                color: foreground,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      );
+      ],
+    ),
+  );
 }
 
 class FoxListRow extends StatelessWidget {
@@ -325,48 +327,51 @@ class FoxListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FoxCard(
-        onTap: onTap,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        radius: 16,
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: FoxType.bodyS.copyWith(
-                      color: FoxTokens.textPrimary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 3),
-                    Text(
-                      subtitle!,
-                      style: FoxType.captionS
-                          .copyWith(color: FoxTokens.textSecondary),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (hint != null)
+    onTap: onTap,
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    radius: 16,
+    child: Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                hint!,
-                style: FoxType.captionS
-                    .copyWith(color: FoxTokens.textSecondary),
+                title,
+                style: FoxType.bodyS.copyWith(
+                  color: FoxTokens.textPrimary,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ?trailing,
-            if (showChevron) ...[
-              const SizedBox(width: 8),
-              const Icon(Icons.chevron_right_rounded,
-                  size: 20, color: Color(0xFF8A8C84)),
+              if (subtitle != null) ...[
+                const SizedBox(height: 3),
+                Text(
+                  subtitle!,
+                  style: FoxType.captionS.copyWith(
+                    color: FoxTokens.textSecondary,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
-      );
+        if (hint != null)
+          Text(
+            hint!,
+            style: FoxType.captionS.copyWith(color: FoxTokens.textSecondary),
+          ),
+        ?trailing,
+        if (showChevron) ...[
+          const SizedBox(width: 8),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: 20,
+            color: Color(0xFF8A8C84),
+          ),
+        ],
+      ],
+    ),
+  );
 }
 
 class FoxInput extends StatelessWidget {
@@ -416,12 +421,13 @@ class FoxInput extends StatelessWidget {
           style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle:
-                FoxType.bodyS.copyWith(color: FoxTokens.textSecondary),
+            hintStyle: FoxType.bodyS.copyWith(color: FoxTokens.textSecondary),
             filled: true,
             fillColor: FoxTokens.bgCard,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 16,
+            ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(
@@ -465,26 +471,24 @@ class FoxProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ClipRRect(
-        borderRadius: BorderRadius.circular(100),
-        child: Container(
-          height: height,
-          color: onDark
-              ? Colors.white.withValues(alpha: 0.15)
-              : FoxTokens.bgGrey,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: value.clamp(0, 1)),
-              duration: FoxMotion.progress,
-              curve: FoxMotion.easeOut,
-              builder: (context, v, _) => FractionallySizedBox(
-                widthFactor: v == 0 ? 0.001 : v,
-                child: Container(color: FoxTokens.accentLime),
-              ),
-            ),
+    borderRadius: BorderRadius.circular(100),
+    child: Container(
+      height: height,
+      color: onDark ? Colors.white.withValues(alpha: 0.15) : FoxTokens.bgGrey,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: value.clamp(0, 1)),
+          duration: FoxMotion.progress,
+          curve: FoxMotion.easeOut,
+          builder: (context, v, _) => FractionallySizedBox(
+            widthFactor: v == 0 ? 0.001 : v,
+            child: Container(color: FoxTokens.accentLime),
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 /// Screen title used across the app (Manrope Light, tight tracking).
@@ -496,38 +500,38 @@ class FoxScreenTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: FoxType.h3.copyWith(
-              color: FoxTokens.textPrimary,
-              fontSize: 30,
-              height: 34 / 30,
-            ),
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        title,
+        style: FoxType.h3.copyWith(
+          color: FoxTokens.textPrimary,
+          fontSize: 30,
+          height: 34 / 30,
+        ),
+      ),
+      if (subtitle != null) ...[
+        const SizedBox(height: 6),
+        Text(
+          subtitle!,
+          style: FoxType.caption.copyWith(
+            color: FoxTokens.textSecondary,
+            height: 20 / 14,
           ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              subtitle!,
-              style: FoxType.caption.copyWith(
-                color: FoxTokens.textSecondary,
-                height: 20 / 14,
-              ),
-            ),
-          ],
-        ],
-      );
+        ),
+      ],
+    ],
+  );
 }
 
 Color foxZoneForeground(String zone) => switch (zone) {
-      "green" => FoxTokens.zoneGreen,
-      "yellow" => FoxTokens.zoneYellow,
-      _ => FoxTokens.zoneRed,
-    };
+  "green" => FoxTokens.zoneGreen,
+  "yellow" => FoxTokens.zoneYellow,
+  _ => FoxTokens.zoneRed,
+};
 
 Color foxZoneBackground(String zone) => switch (zone) {
-      "green" => FoxTokens.zoneGreenBg,
-      "yellow" => FoxTokens.zoneYellowBg,
-      _ => FoxTokens.zoneRedBg,
-    };
+  "green" => FoxTokens.zoneGreenBg,
+  "yellow" => FoxTokens.zoneYellowBg,
+  _ => FoxTokens.zoneRedBg,
+};

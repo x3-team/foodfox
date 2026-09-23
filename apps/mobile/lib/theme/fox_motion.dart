@@ -48,8 +48,10 @@ class _FoxFadeSlideState extends State<FoxFadeSlide>
     vsync: this,
     duration: widget.duration,
   );
-  late final Animation<double> _a =
-      CurvedAnimation(parent: _c, curve: FoxMotion.easeOut);
+  late final Animation<double> _a = CurvedAnimation(
+    parent: _c,
+    curve: FoxMotion.easeOut,
+  );
 
   @override
   void initState() {
@@ -95,11 +97,7 @@ List<Widget> foxStagger(
 }) {
   return [
     for (var i = 0; i < children.length; i++)
-      FoxFadeSlide(
-        delay: start + step * i,
-        offset: offset,
-        child: children[i],
-      ),
+      FoxFadeSlide(delay: start + step * i, offset: offset, child: children[i]),
   ];
 }
 

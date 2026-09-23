@@ -28,10 +28,7 @@ class NetworkErrorPanel extends StatelessWidget {
               style: const TextStyle(color: FoxColors.text, height: 1.4),
             ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onRetry,
-              child: const Text("Повторить"),
-            ),
+            FilledButton(onPressed: onRetry, child: const Text("Повторить")),
           ],
         ),
       ),

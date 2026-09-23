@@ -4,24 +4,25 @@ import "package:foodfox/theme/fox_theme.dart";
 import "package:foodfox/widgets/zone_donut.dart";
 
 String zoneShortLabel(Zone zone) => switch (zone) {
-      Zone.green => "Зелёные",
-      Zone.yellow => "Жёлтые",
-      Zone.red => "Красные",
-    };
+  Zone.green => "Зелёные",
+  Zone.yellow => "Жёлтые",
+  Zone.red => "Красные",
+};
 
 String zoneFullLabel(Zone zone) => switch (zone) {
-      Zone.green => "Зелёная зона",
-      Zone.yellow => "Жёлтая зона",
-      Zone.red => "Красная зона",
-    };
+  Zone.green => "Зелёная зона",
+  Zone.yellow => "Жёлтая зона",
+  Zone.red => "Красная зона",
+};
 
 String zoneHint(Zone zone) => switch (zone) {
-      Zone.green => "Можно без ограничений",
-      Zone.yellow => "Ротация раз в 4 дня",
-      Zone.red => "Временная элиминация",
-    };
+  Zone.green => "Можно без ограничений",
+  Zone.yellow => "Ротация раз в 4 дня",
+  Zone.red => "Временная элиминация",
+};
 
-int percentOf(int value, int total) => total <= 0 ? 0 : ((value / total) * 100).round();
+int percentOf(int value, int total) =>
+    total <= 0 ? 0 : ((value / total) * 100).round();
 
 /// Bar length is relative to the zone's own range so items stay comparable
 /// against their neighbours instead of every red item rendering as a full bar.
@@ -71,7 +72,11 @@ String summaryHeadline(ZoneCounts counts) {
 }
 
 class ReportSummary extends StatelessWidget {
-  const ReportSummary({super.key, required this.counts, required this.onSelectZone});
+  const ReportSummary({
+    super.key,
+    required this.counts,
+    required this.onSelectZone,
+  });
 
   final ZoneCounts counts;
   final ValueChanged<Zone> onSelectZone;
@@ -207,9 +212,16 @@ class TopTriggers extends StatelessWidget {
             children: [
               Text(
                 "Главные триггеры",
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: FoxColors.text),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: FoxColors.text,
+                ),
               ),
-              Text("µg/ml IgG", style: TextStyle(fontSize: 12, color: FoxColors.muted)),
+              Text(
+                "µg/ml IgG",
+                style: TextStyle(fontSize: 12, color: FoxColors.muted),
+              ),
             ],
           ),
           const SizedBox(height: 4),
@@ -248,11 +260,17 @@ class TopTriggers extends StatelessWidget {
                       item.foxName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 14, color: FoxColors.text),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: FoxColors.text,
+                      ),
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEF2F2),
                       borderRadius: BorderRadius.circular(8),
@@ -407,7 +425,10 @@ class ResultRow extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       formatValue(item.valueUgMl, item.isFloorValue),
-                      style: const TextStyle(fontSize: 12, color: FoxColors.muted),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: FoxColors.muted,
+                      ),
                     ),
                   ],
                 ),

@@ -77,97 +77,101 @@ class _RecipesScreenState extends State<RecipesScreen> {
             onRefresh: _load,
             color: FoxColors.primary,
             child: _loading
-                ? const Center(child: CircularProgressIndicator(color: FoxColors.primary))
+                ? const Center(
+                    child: CircularProgressIndicator(color: FoxColors.primary),
+                  )
                 : _error != null
-                    ? ListView(
-                        children: [
-                          NetworkErrorPanel(
-                            error: _error!,
-                            onRetry: () => _loader.sync(active: true, force: true),
-                          ),
-                        ],
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                        itemCount: _recipes.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Text(
-                                "$_suitableCount из ${_recipes.length} блюд подходят вам",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: FoxColors.primary,
-                                ),
-                              ),
-                            );
-                          }
-                          final recipe = _recipes[index - 1];
-                          final preview = recipe.lead ?? recipe.description;
-                          return Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => _openRecipe(recipe),
-                              borderRadius: BorderRadius.circular(16),
-                              child: Container(
-                                margin: const EdgeInsets.only(bottom: 16),
-                                decoration: foxCardDecoration,
-                                clipBehavior: Clip.antiAlias,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    RecipeCardMedia(
-                                      badge: recipeZoneBadge(recipe),
-                                      title: recipe.title,
-                                      photoUrl: recipe.photoUrl,
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            recipe.title,
-                                            style: const TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.w600,
-                                              color: FoxColors.text,
-                                            ),
-                                          ),
-                                          if (preview != null && preview.isNotEmpty) ...[
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              preview,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                color: FoxColors.muted,
-                                                height: 1.45,
-                                              ),
-                                            ),
-                                          ],
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            "${recipe.tags.take(2).join(" · ")} · Читать рецепт →",
-                                            style: const TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600,
-                                              color: FoxColors.primary,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
+                ? ListView(
+                    children: [
+                      NetworkErrorPanel(
+                        error: _error!,
+                        onRetry: () => _loader.sync(active: true, force: true),
                       ),
+                    ],
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                    itemCount: _recipes.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            "$_suitableCount из ${_recipes.length} блюд подходят вам",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: FoxColors.primary,
+                            ),
+                          ),
+                        );
+                      }
+                      final recipe = _recipes[index - 1];
+                      final preview = recipe.lead ?? recipe.description;
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _openRecipe(recipe),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: foxCardDecoration,
+                            clipBehavior: Clip.antiAlias,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                RecipeCardMedia(
+                                  badge: recipeZoneBadge(recipe),
+                                  title: recipe.title,
+                                  photoUrl: recipe.photoUrl,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        recipe.title,
+                                        style: const TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w600,
+                                          color: FoxColors.text,
+                                        ),
+                                      ),
+                                      if (preview != null &&
+                                          preview.isNotEmpty) ...[
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          preview,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: FoxColors.muted,
+                                            height: 1.45,
+                                          ),
+                                        ),
+                                      ],
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        "${recipe.tags.take(2).join(" · ")} · Читать рецепт →",
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: FoxColors.primary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ),
       ],

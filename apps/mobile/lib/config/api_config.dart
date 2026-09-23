@@ -17,4 +17,13 @@ class ApiConfig {
     "FOX_BASIC_PASS",
     defaultValue: "FoodFox2026!",
   );
+
+  /// Review builds are handed round without access to the SMS gateway, so they
+  /// carry the credentials the server accepts and surface them in the UI.
+  /// Both are empty in a normal build, which hides the hint entirely.
+  static const demoPhone = String.fromEnvironment("FOX_DEMO_PHONE");
+  static const demoOtp = String.fromEnvironment("FOX_DEMO_OTP");
+
+  static bool get hasDemoCredentials =>
+      demoPhone.length == 10 && demoOtp.isNotEmpty;
 }

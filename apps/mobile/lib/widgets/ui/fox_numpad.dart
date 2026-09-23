@@ -36,7 +36,9 @@ class FoxNumpad extends StatelessWidget {
             Row(
               children: [
                 for (final key in row)
-                  Expanded(child: _Key(value: key, pad: this)),
+                  Expanded(
+                    child: _Key(value: key, pad: this),
+                  ),
               ],
             ),
         ],
@@ -79,11 +81,17 @@ class _KeyState extends State<_Key> {
       case "":
         child = const SizedBox(width: 28, height: 28);
       case "del":
-        child = const Icon(Icons.backspace_outlined,
-            size: 24, color: FoxTokens.textPrimary);
+        child = const Icon(
+          Icons.backspace_outlined,
+          size: 24,
+          color: FoxTokens.textPrimary,
+        );
       case "bio":
-        child = const Icon(Icons.face_retouching_natural_outlined,
-            size: 28, color: FoxTokens.textPrimary);
+        child = const Icon(
+          Icons.face_retouching_natural_outlined,
+          size: 28,
+          color: FoxTokens.textPrimary,
+        );
       default:
         child = Text(
           widget.value,
@@ -130,28 +138,28 @@ class FoxPinDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          for (var i = 0; i < length; i++) ...[
-            if (i > 0) const SizedBox(width: 18),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 140),
-              curve: FoxMotion.easeOut,
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: i < filled
-                    ? (error ? FoxTokens.zoneRed : FoxTokens.textPrimary)
-                    : Colors.transparent,
-                border: i < filled
-                    ? null
-                    : Border.all(color: FoxTokens.borderLight, width: 1.5),
-              ),
-            ),
-          ],
-        ],
-      );
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      for (var i = 0; i < length; i++) ...[
+        if (i > 0) const SizedBox(width: 18),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          curve: FoxMotion.easeOut,
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: i < filled
+                ? (error ? FoxTokens.zoneRed : FoxTokens.textPrimary)
+                : Colors.transparent,
+            border: i < filled
+                ? null
+                : Border.all(color: FoxTokens.borderLight, width: 1.5),
+          ),
+        ),
+      ],
+    ],
+  );
 }
 
 /// Horizontal shake used when a PIN or code is rejected.
@@ -188,13 +196,13 @@ class _FoxShakeState extends State<FoxShake>
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
-        animation: _c,
-        builder: (context, child) {
-          // Two damped oscillations of ±6 px.
-          final t = _c.value;
-          final dx = t == 0 ? 0.0 : 6 * (1 - t) * math.sin(t * 4 * math.pi);
-          return Transform.translate(offset: Offset(dx, 0), child: child);
-        },
-        child: widget.child,
-      );
+    animation: _c,
+    builder: (context, child) {
+      // Two damped oscillations of ±6 px.
+      final t = _c.value;
+      final dx = t == 0 ? 0.0 : 6 * (1 - t) * math.sin(t * 4 * math.pi);
+      return Transform.translate(offset: Offset(dx, 0), child: child);
+    },
+    child: widget.child,
+  );
 }

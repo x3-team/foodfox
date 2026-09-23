@@ -5,6 +5,7 @@ import "package:flutter/material.dart";
 import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/widgets/ui/fox_icons.dart";
+import "package:foodfox/widgets/ui/fox_wordmark.dart";
 
 /// Launch animation: a lime seed unfolds into the FOX zone ring, the wordmark
 /// resolves inside it, then the ring expands past the screen and hands the
@@ -53,11 +54,15 @@ class _SplashScreenState extends State<SplashScreen>
     curve: const Interval(0.10, 0.62, curve: FoxMotion.easeOut),
   );
 
-  // 2850 → 3800 ms: hold ends, the ring opens past the screen edge.
+  // 2850 → 3800 ms: hold ends, the ring opens past the screen edge while the
+  // wordmark travels to the corner it occupies on the onboarding screen.
   late final Animation<double> _burst = CurvedAnimation(
     parent: _c,
     curve: const Interval(0.75, 1.0, curve: Curves.easeInOutCubic),
   );
+
+  /// How much larger the lockup sits at rest than in its docked corner.
+  static const _zoom = 2.3;
 
   @override
   void initState() {
@@ -85,6 +90,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
     const segments = <({double fraction, Color color})>[
       (fraction: 0.60, color: FoxTokens.accentLime),
       (fraction: 0.10, color: Color(0xFFE8B44A)),
@@ -102,7 +108,7 @@ class _SplashScreenState extends State<SplashScreen>
           final seedOpacity = (1 - ringDraw * 6).clamp(0.0, 1.0);
           // 168 px ring opens to 1500 px while fading out.
           final ringSize = 168 + burst * 1332;
-          final logoScale = 0.94 + 0.06 * _logo.value - burst * 0.34;
+          final logoScale = 0.94 + 0.06 * _logo.value;
           // Glow breathes gently once the ring is complete.
           final breathe = 1 + 0.03 * math.sin(_c.value * math.pi * 3);
 
@@ -151,36 +157,26 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
               ),
-              Opacity(
-                opacity: (_logo.value * (1 - burst * 0.4)).clamp(0.0, 1.0),
-                child: Transform.scale(
-                  scale: logoScale.clamp(0.4, 1.2),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "FOX",
-                        style: FoxType.h2.copyWith(
-                          color: FoxTokens.textInverted,
-                          fontSize: 40,
-                          height: 1,
-                          letterSpacing: 2,
-                          fontWeight: FontWeight.w800,
-                          fontVariations: const [FontVariation("wght", 800)],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "FOOD XPLORER",
-                        style: FoxType.captionS.copyWith(
-                          color: FoxTokens.textInvertedSecondary,
-                          fontSize: 10,
-                          letterSpacing: 2.4,
-                          fontWeight: FontWeight.w500,
-                          fontVariations: const [FontVariation("wght", 500)],
-                        ),
-                      ),
-                    ],
+              // The lockup slides and shrinks into the exact spot the
+              // onboarding screen keeps it, so the two screens hand it over
+              // instead of blinking it from the middle to the corner.
+              Align(
+                alignment: Alignment.lerp(
+                  Alignment.center,
+                  Alignment.topLeft,
+                  burst,
+                )!,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: FoxWordmark.inset * burst,
+                    top: (media.padding.top + FoxWordmark.topGap) * burst,
+                  ),
+                  child: Transform.scale(
+                    scale: logoScale * (1 + (_zoom - 1) * (1 - burst)),
+                    child: Opacity(
+                      opacity: _logo.value.clamp(0.0, 1.0),
+                      child: const FoxWordmark(),
+                    ),
                   ),
                 ),
               ),

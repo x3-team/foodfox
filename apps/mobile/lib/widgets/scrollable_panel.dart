@@ -7,7 +7,10 @@ const listVisibleRows = 7;
 const listRowHeight = 68.0;
 const listRowGap = 8.0;
 
-double scrollListViewportHeight(BuildContext context, {int visibleRows = listVisibleRows}) {
+double scrollListViewportHeight(
+  BuildContext context, {
+  int visibleRows = listVisibleRows,
+}) {
   final target = visibleRows * listRowHeight + (visibleRows - 1) * listRowGap;
   final maxFromScreen = MediaQuery.sizeOf(context).height * 0.42;
   return min(target, max(320.0, maxFromScreen));
@@ -50,28 +53,36 @@ class ScrollablePanel extends StatelessWidget {
               decoration: BoxDecoration(
                 color: FoxColors.surface.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: FoxColors.border.withValues(alpha: 0.7)),
+                border: Border.all(
+                  color: FoxColors.border.withValues(alpha: 0.7),
+                ),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: isEmpty
                     ? Center(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 32,
+                          ),
                           child: Text(
                             emptyMessage ?? "Нет элементов",
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 15, color: FoxColors.muted),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: FoxColors.muted,
+                            ),
                           ),
                         ),
                       )
                     : scrollable
-                        ? Scrollbar(
-                            thumbVisibility: true,
-                            radius: const Radius.circular(8),
-                            child: child,
-                          )
-                        : child,
+                    ? Scrollbar(
+                        thumbVisibility: true,
+                        radius: const Radius.circular(8),
+                        child: child,
+                      )
+                    : child,
               ),
             ),
             if (scrollable)
@@ -83,7 +94,9 @@ class ScrollablePanel extends StatelessWidget {
                 child: IgnorePointer(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(16),
+                      ),
                       gradient: LinearGradient(
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,

@@ -1,6 +1,6 @@
 class ApiCacheEntry<T> {
   ApiCacheEntry(this.data, {Duration ttl = const Duration(minutes: 5)})
-      : expiresAt = DateTime.now().add(ttl);
+    : expiresAt = DateTime.now().add(ttl);
 
   final T data;
   final DateTime expiresAt;

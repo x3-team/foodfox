@@ -66,7 +66,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text(
                         "FoodFox",
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
                               color: FoxColors.primary,
                               fontWeight: FontWeight.w700,
                             ),
@@ -82,10 +83,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Expanded(
                             child: FilledButton(
-                              onPressed: _loading ? null : () => setState(() => _register = false),
+                              onPressed: _loading
+                                  ? null
+                                  : () => setState(() => _register = false),
                               style: FilledButton.styleFrom(
-                                backgroundColor: !_register ? FoxColors.primary : FoxColors.surface,
-                                foregroundColor: !_register ? Colors.white : FoxColors.muted,
+                                backgroundColor: !_register
+                                    ? FoxColors.primary
+                                    : FoxColors.surface,
+                                foregroundColor: !_register
+                                    ? Colors.white
+                                    : FoxColors.muted,
                               ),
                               child: const Text("Вход"),
                             ),
@@ -93,10 +100,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: FilledButton(
-                              onPressed: _loading ? null : () => setState(() => _register = true),
+                              onPressed: _loading
+                                  ? null
+                                  : () => setState(() => _register = true),
                               style: FilledButton.styleFrom(
-                                backgroundColor: _register ? FoxColors.primary : FoxColors.surface,
-                                foregroundColor: _register ? Colors.white : FoxColors.muted,
+                                backgroundColor: _register
+                                    ? FoxColors.primary
+                                    : FoxColors.surface,
+                                foregroundColor: _register
+                                    ? Colors.white
+                                    : FoxColors.muted,
                               ),
                               child: const Text("Регистрация"),
                             ),
@@ -123,7 +136,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       if (_error != null) ...[
                         const SizedBox(height: 12),
-                        Text(_error!, style: const TextStyle(color: FoxColors.red)),
+                        Text(
+                          _error!,
+                          style: const TextStyle(color: FoxColors.red),
+                        ),
                       ],
                       const Spacer(),
                       FilledButton(
@@ -132,13 +148,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           backgroundColor: FoxColors.primary,
                           minimumSize: const Size.fromHeight(48),
                         ),
-                        child: Text(_loading ? "Подождите…" : (_register ? "Создать аккаунт" : "Войти")),
+                        child: Text(
+                          _loading
+                              ? "Подождите…"
+                              : (_register ? "Создать аккаунт" : "Войти"),
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         "v$kAppVersionLabel",
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: FoxColors.muted),
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: FoxColors.muted),
                       ),
                     ],
                   ),

@@ -77,7 +77,9 @@ class FoodFoxApi {
     final body = response.body.isEmpty ? "{}" : response.body;
     final data = jsonDecode(body) as Map<String, dynamic>;
     if (response.statusCode >= 400) {
-      throw Exception(data["error"] as String? ?? "HTTP ${response.statusCode}");
+      throw Exception(
+        data["error"] as String? ?? "HTTP ${response.statusCode}",
+      );
     }
     _captureTokens(data);
     return data;
@@ -188,28 +190,28 @@ class FoodFoxApi {
 
   Future<({UserProfile user, ClientProfile profile})> fetchMe() async {
     return _withRetry(() async {
-      final response = await _client.get(_uri("/api/auth/me"), headers: _headers);
+      final response = await _client.get(
+        _uri("/api/auth/me"),
+        headers: _headers,
+      );
       final data = await _decode(response);
       return (
         user: UserProfile.fromJson(data["user"] as Map<String, dynamic>),
-        profile: ClientProfile.fromJson(data["profile"] as Map<String, dynamic>),
+        profile: ClientProfile.fromJson(
+          data["profile"] as Map<String, dynamic>,
+        ),
       );
     });
   }
 
-  Future<({
-    PlanData? plan,
-    List<PlanWeekItem> weekTabs,
-    int currentWeek,
-  })> fetchPlan({int? week, bool force = false}) async {
+  Future<({PlanData? plan, List<PlanWeekItem> weekTabs, int currentWeek})>
+  fetchPlan({int? week, bool force = false}) async {
     final cacheKey = "plan:${week ?? "current"}";
     if (!force) {
-      final cached = _cache.get<
-          ({
-            PlanData? plan,
-            List<PlanWeekItem> weekTabs,
-            int currentWeek,
-          })>(cacheKey);
+      final cached = _cache
+          .get<
+            ({PlanData? plan, List<PlanWeekItem> weekTabs, int currentWeek})
+          >(cacheKey);
       if (cached != null) return cached;
     }
 
@@ -240,18 +242,23 @@ class FoodFoxApi {
     bool force = false,
   }) async {
     if (!force) {
-      final cached =
-          _cache.get<({List<ResultItem> results, ZoneCounts counts})>("results");
+      final cached = _cache
+          .get<({List<ResultItem> results, ZoneCounts counts})>("results");
       if (cached != null) return cached;
     }
 
     final result = await _withRetry(() async {
-      final response = await _client.get(_uri("/api/results"), headers: _headers);
+      final response = await _client.get(
+        _uri("/api/results"),
+        headers: _headers,
+      );
       final data = await _decode(response);
       final results = (data["results"] as List<dynamic>)
           .map((e) => ResultItem.fromJson(e as Map<String, dynamic>))
           .toList();
-      final counts = ZoneCounts.fromJson(data["counts"] as Map<String, dynamic>);
+      final counts = ZoneCounts.fromJson(
+        data["counts"] as Map<String, dynamic>,
+      );
       return (results: results, counts: counts);
     });
 
@@ -259,19 +266,21 @@ class FoodFoxApi {
     return result;
   }
 
-  Future<({List<RecipeItem> recipes, int weekNumber, int suitableCount})> fetchRecipes({
-    bool force = false,
-  }) async {
+  Future<({List<RecipeItem> recipes, int weekNumber, int suitableCount})>
+  fetchRecipes({bool force = false}) async {
     if (!force) {
-      final cached = _cache.get<
-          ({List<RecipeItem> recipes, int weekNumber, int suitableCount})>(
-        "recipes",
-      );
+      final cached = _cache
+          .get<({List<RecipeItem> recipes, int weekNumber, int suitableCount})>(
+            "recipes",
+          );
       if (cached != null) return cached;
     }
 
     final result = await _withRetry(() async {
-      final response = await _client.get(_uri("/api/recipes"), headers: _headers);
+      final response = await _client.get(
+        _uri("/api/recipes"),
+        headers: _headers,
+      );
       final data = await _decode(response);
       final recipes = (data["recipes"] as List<dynamic>)
           .map((e) => RecipeItem.fromJson(e as Map<String, dynamic>))
@@ -294,8 +303,10 @@ class FoodFoxApi {
     }
 
     final result = await _withRetry(() async {
-      final response =
-          await _client.get(_uri("/api/chat/messages"), headers: _headers);
+      final response = await _client.get(
+        _uri("/api/chat/messages"),
+        headers: _headers,
+      );
       final data = await _decode(response);
       return (data["messages"] as List<dynamic>)
           .map((e) => ChatMessage.fromJson(e as Map<String, dynamic>))
@@ -334,7 +345,10 @@ class FoodFoxApi {
 
   Future<void> uploadPdf(List<int> bytes, String filename) async {
     await _withRetry(() async {
-      final request = http.MultipartRequest("POST", _uri("/api/reports/upload"));
+      final request = http.MultipartRequest(
+        "POST",
+        _uri("/api/reports/upload"),
+      );
       request.headers.addAll(_headers);
       request.files.add(
         http.MultipartFile.fromBytes("file", bytes, filename: filename),

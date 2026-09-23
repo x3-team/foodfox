@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 
+import "package:foodfox/config/api_config.dart";
 import "package:foodfox/screens/auth/phone_screen.dart";
 import "package:foodfox/screens/auth/pin_screen.dart";
 import "package:foodfox/screens/auth/sms_screen.dart";
@@ -117,6 +118,7 @@ class _AuthFlowState extends State<AuthFlow> {
         return PhoneScreen(
           busy: _busy,
           error: _error,
+          demoPhone: ApiConfig.hasDemoCredentials ? ApiConfig.demoPhone : null,
           onBack: () => setState(() {
             _step = _Step.onboarding;
             _error = null;
@@ -129,6 +131,7 @@ class _AuthFlowState extends State<AuthFlow> {
           phone: _phone,
           busy: _busy,
           error: _error,
+          demoCode: ApiConfig.hasDemoCredentials ? ApiConfig.demoOtp : null,
           onSubmit: _verifyCode,
           onResend: () => widget.api.requestOtp(_phone),
           onChangeNumber: () => setState(() {
@@ -152,7 +155,9 @@ class _AuthFlowState extends State<AuthFlow> {
           mode: PinMode.confirm,
           onBack: () => setState(() => _step = _Step.pinCreate),
           onCompleted: (pin) async {
-            if (pin != _firstPin) return "Коды не совпадают — попробуйте ещё раз";
+            if (pin != _firstPin) {
+              return "Коды не совпадают — попробуйте ещё раз";
+            }
             await widget.store.setPin(pin);
             if (await widget.store.biometricsAvailable()) {
               await widget.store.setBiometricsEnabled(true);
@@ -211,20 +216,20 @@ class _UnlockGateState extends State<UnlockGate> {
 
   @override
   Widget build(BuildContext context) => PinScreen(
-        mode: PinMode.unlock,
-        greeting: _name == null || _name!.isEmpty
-            ? "С возвращением"
-            : "С возвращением, $_name",
-        biometricAvailable: _biometricAvailable,
-        onBiometric: _tryBiometric,
-        onForgot: widget.onForgot,
-        onCompleted: (pin) async {
-          final ok = await widget.store.verifyPin(pin);
-          if (ok) {
-            widget.onUnlocked();
-            return null;
-          }
-          return "Неверный пин-код";
-        },
-      );
+    mode: PinMode.unlock,
+    greeting: _name == null || _name!.isEmpty
+        ? "С возвращением"
+        : "С возвращением, $_name",
+    biometricAvailable: _biometricAvailable,
+    onBiometric: _tryBiometric,
+    onForgot: widget.onForgot,
+    onCompleted: (pin) async {
+      final ok = await widget.store.verifyPin(pin);
+      if (ok) {
+        widget.onUnlocked();
+        return null;
+      }
+      return "Неверный пин-код";
+    },
+  );
 }

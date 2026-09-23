@@ -31,7 +31,10 @@ class PageHeader extends StatelessWidget {
                 Text(title, style: Theme.of(context).textTheme.headlineSmall),
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
-                  Text(subtitle!, style: Theme.of(context).textTheme.bodyMedium),
+                  Text(
+                    subtitle!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ],
               ],
             ),

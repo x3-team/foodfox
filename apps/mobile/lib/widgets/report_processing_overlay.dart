@@ -58,7 +58,8 @@ class ReportProcessingOverlay extends StatefulWidget {
   final VoidCallback onFinished;
 
   @override
-  State<ReportProcessingOverlay> createState() => _ReportProcessingOverlayState();
+  State<ReportProcessingOverlay> createState() =>
+      _ReportProcessingOverlayState();
 }
 
 class _ReportProcessingOverlayState extends State<ReportProcessingOverlay>
@@ -73,12 +74,17 @@ class _ReportProcessingOverlayState extends State<ReportProcessingOverlay>
   @override
   void initState() {
     super.initState();
-    _swing = AnimationController(vsync: this, duration: const Duration(milliseconds: 2400))
-      ..repeat(reverse: true);
+    _swing = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
     _stepTimer = Timer.periodic(const Duration(milliseconds: 1800), (_) {
       if (!mounted || _done) return;
       setState(() {
-        _activeIndex = (_activeIndex + 1).clamp(0, reportProcessingSteps.length - 2);
+        _activeIndex = (_activeIndex + 1).clamp(
+          0,
+          reportProcessingSteps.length - 2,
+        );
       });
     });
     _run();
@@ -117,7 +123,8 @@ class _ReportProcessingOverlayState extends State<ReportProcessingOverlay>
   Widget build(BuildContext context) {
     final progress = _done
         ? 100
-        : (((_activeIndex + 0.35) / reportProcessingSteps.length) * 100).round();
+        : (((_activeIndex + 0.35) / reportProcessingSteps.length) * 100)
+              .round();
 
     return Material(
       color: Colors.black.withValues(alpha: 0.4),
@@ -138,7 +145,10 @@ class _ReportProcessingOverlayState extends State<ReportProcessingOverlay>
                     children: [
                       RotationTransition(
                         turns: Tween<double>(begin: -0.03, end: 0.03).animate(
-                          CurvedAnimation(parent: _swing, curve: Curves.easeInOut),
+                          CurvedAnimation(
+                            parent: _swing,
+                            curve: Curves.easeInOut,
+                          ),
                         ),
                         child: FoxLogo(size: 44),
                       ),
@@ -151,8 +161,8 @@ class _ReportProcessingOverlayState extends State<ReportProcessingOverlay>
                               _failed
                                   ? "Не удалось обработать"
                                   : _done
-                                      ? "Отчёт готов!"
-                                      : "Обрабатываем отчёт FOX",
+                                  ? "Отчёт готов!"
+                                  : "Обрабатываем отчёт FOX",
                               style: const TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w600,
@@ -163,7 +173,10 @@ class _ReportProcessingOverlayState extends State<ReportProcessingOverlay>
                               widget.fileName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 13, color: FoxColors.muted),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: FoxColors.muted,
+                              ),
                             ),
                           ],
                         ),
@@ -199,7 +212,9 @@ class _ReportProcessingOverlayState extends State<ReportProcessingOverlay>
                       child: LinearProgressIndicator(
                         value: progress / 100,
                         minHeight: 8,
-                        backgroundColor: FoxColors.border.withValues(alpha: 0.6),
+                        backgroundColor: FoxColors.border.withValues(
+                          alpha: 0.6,
+                        ),
                         color: FoxColors.primary,
                       ),
                     ),
@@ -209,8 +224,8 @@ class _ReportProcessingOverlayState extends State<ReportProcessingOverlay>
                       final state = _done || index < _activeIndex
                           ? _StepState.done
                           : index == _activeIndex
-                              ? _StepState.active
-                              : _StepState.pending;
+                          ? _StepState.active
+                          : _StepState.pending;
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: Row(
@@ -261,7 +276,10 @@ class _ReportProcessingOverlayState extends State<ReportProcessingOverlay>
                       ),
                       child: Text(
                         _error ?? "Ошибка обработки",
-                        style: const TextStyle(color: FoxColors.red, fontSize: 14),
+                        style: const TextStyle(
+                          color: FoxColors.red,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -298,7 +316,10 @@ class _StepIcon extends StatelessWidget {
         return Container(
           width: 28,
           height: 28,
-          decoration: const BoxDecoration(color: FoxColors.primary, shape: BoxShape.circle),
+          decoration: const BoxDecoration(
+            color: FoxColors.primary,
+            shape: BoxShape.circle,
+          ),
           child: const Icon(Icons.check, size: 16, color: Colors.white),
         );
       case _StepState.active:
@@ -320,7 +341,10 @@ class _StepIcon extends StatelessWidget {
               const SizedBox(
                 width: 14,
                 height: 14,
-                child: CircularProgressIndicator(strokeWidth: 2, color: FoxColors.primary),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: FoxColors.primary,
+                ),
               ),
             ],
           ),

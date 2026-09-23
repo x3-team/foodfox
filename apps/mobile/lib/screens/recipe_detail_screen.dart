@@ -36,7 +36,10 @@ class RecipeDetailScreen extends StatelessWidget {
                     const DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [FoxColors.primarySoft, FoxColors.primaryMuted],
+                          colors: [
+                            FoxColors.primarySoft,
+                            FoxColors.primaryMuted,
+                          ],
                         ),
                       ),
                       child: Center(
@@ -88,7 +91,10 @@ class RecipeDetailScreen extends StatelessWidget {
                       if (recipe.cookTime != null)
                         _MetaChip(icon: "🔥", label: recipe.cookTime!),
                       if (recipe.servings != null)
-                        _MetaChip(icon: "🍽", label: "${recipe.servings} порции"),
+                        _MetaChip(
+                          icon: "🍽",
+                          label: "${recipe.servings} порции",
+                        ),
                       ...recipe.tags.map((tag) => _TagChip(label: tag)),
                     ],
                   ),
@@ -122,7 +128,11 @@ class RecipeDetailScreen extends StatelessWidget {
                       ),
                       child: Column(
                         children: [
-                          for (var i = 0; i < recipe.ingredientsList.length; i++) ...[
+                          for (
+                            var i = 0;
+                            i < recipe.ingredientsList.length;
+                            i++
+                          ) ...[
                             if (i > 0)
                               const Divider(height: 1, color: FoxColors.border),
                             Padding(
@@ -191,7 +201,8 @@ class RecipeDetailScreen extends StatelessWidget {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         step.title,
@@ -215,7 +226,8 @@ class RecipeDetailScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            if (step.imageUrl != null && step.imageUrl!.isNotEmpty) ...[
+                            if (step.imageUrl != null &&
+                                step.imageUrl!.isNotEmpty) ...[
                               const SizedBox(height: 12),
                               Padding(
                                 padding: const EdgeInsets.only(left: 44),
@@ -264,7 +276,10 @@ class RecipeDetailScreen extends StatelessWidget {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text("• ", style: TextStyle(fontSize: 14)),
+                                  const Text(
+                                    "• ",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
                                   Expanded(
                                     child: Text(
                                       tip,
@@ -328,7 +343,11 @@ class _MetaChip extends StatelessWidget {
       ),
       child: Text(
         "$icon $label",
-        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: FoxColors.muted),
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: FoxColors.muted,
+        ),
       ),
     );
   }
@@ -367,17 +386,21 @@ class _ZoneBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, bg, fg) = switch (badge) {
-      RecipeZoneBadge.allGreen => ("100% зелёная зона", FoxColors.primary, Colors.white),
+      RecipeZoneBadge.allGreen => (
+        "100% зелёная зона",
+        FoxColors.primary,
+        Colors.white,
+      ),
       RecipeZoneBadge.suitable => (
-          "Подходит с учётом ротации",
-          FoxColors.yellow.withValues(alpha: 0.2),
-          FoxColors.yellow,
-        ),
+        "Подходит с учётом ротации",
+        FoxColors.yellow.withValues(alpha: 0.2),
+        FoxColors.yellow,
+      ),
       RecipeZoneBadge.unsuitable => (
-          "Есть красная зона",
-          const Color(0xFFFEE2E2),
-          FoxColors.red,
-        ),
+        "Есть красная зона",
+        const Color(0xFFFEE2E2),
+        FoxColors.red,
+      ),
     };
 
     return DecoratedBox(
@@ -385,14 +408,23 @@ class _ZoneBadge extends StatelessWidget {
         color: bg,
         borderRadius: BorderRadius.circular(999),
         boxShadow: const [
-          BoxShadow(color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         child: Text(
           label,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg, height: 1.2),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: fg,
+            height: 1.2,
+          ),
         ),
       ),
     );

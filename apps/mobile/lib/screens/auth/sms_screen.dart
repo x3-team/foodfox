@@ -18,6 +18,7 @@ class SmsScreen extends StatefulWidget {
     required this.onResend,
     this.error,
     this.busy = false,
+    this.demoCode,
   });
 
   final String phone;
@@ -26,6 +27,9 @@ class SmsScreen extends StatefulWidget {
   final Future<void> Function() onResend;
   final String? error;
   final bool busy;
+
+  /// Code the review build can sign in with, or null in a real build.
+  final String? demoCode;
 
   @override
   State<SmsScreen> createState() => _SmsScreenState();
@@ -118,8 +122,11 @@ class _SmsScreenState extends State<SmsScreen> {
                             shape: BoxShape.circle,
                             border: Border.all(color: FoxTokens.borderLight),
                           ),
-                          child: const Icon(Icons.arrow_back_ios_new_rounded,
-                              size: 16, color: FoxTokens.textPrimary),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 16,
+                            color: FoxTokens.textPrimary,
+                          ),
                         ),
                       ),
                     ),
@@ -137,8 +144,9 @@ class _SmsScreenState extends State<SmsScreen> {
                     Text(
                       "Отправили на $_prettyPhone",
                       textAlign: TextAlign.center,
-                      style: FoxType.bodyS
-                          .copyWith(color: FoxTokens.textSecondary),
+                      style: FoxType.bodyS.copyWith(
+                        color: FoxTokens.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: 26),
                     FoxShake(
@@ -169,14 +177,16 @@ class _SmsScreenState extends State<SmsScreen> {
                     else if (widget.busy)
                       Text(
                         "Проверяем код…",
-                        style: FoxType.caption
-                            .copyWith(color: FoxTokens.textSecondary),
+                        style: FoxType.caption.copyWith(
+                          color: FoxTokens.textSecondary,
+                        ),
                       )
                     else if (_seconds > 0)
                       Text(
                         "Отправить снова через 0:${_seconds.toString().padLeft(2, '0')}",
-                        style: FoxType.caption
-                            .copyWith(color: FoxTokens.textSecondary),
+                        style: FoxType.caption.copyWith(
+                          color: FoxTokens.textSecondary,
+                        ),
                       )
                     else
                       FoxPressable(
@@ -203,6 +213,16 @@ class _SmsScreenState extends State<SmsScreen> {
                         ),
                       ),
                     ),
+                    if (widget.demoCode != null) ...[
+                      const SizedBox(height: 20),
+                      _DemoCode(
+                        code: widget.demoCode!,
+                        onFill: () {
+                          setState(() => _code = widget.demoCode!);
+                          widget.onSubmit(widget.demoCode!);
+                        },
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -215,8 +235,57 @@ class _SmsScreenState extends State<SmsScreen> {
   }
 }
 
+/// No SMS actually arrives in a review build, so the accepted code is on screen.
+class _DemoCode extends StatelessWidget {
+  const _DemoCode({required this.code, required this.onFill});
+
+  final String code;
+  final VoidCallback onFill;
+
+  @override
+  Widget build(BuildContext context) => FoxPressable(
+    onTap: onFill,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: FoxTokens.zoneGreenBg,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.science_outlined,
+            size: 18,
+            color: FoxTokens.zoneGreen,
+          ),
+          const SizedBox(width: 10),
+          Text(
+            "Демо-код: $code",
+            style: FoxType.label.copyWith(
+              color: FoxTokens.zoneGreen,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            "подставить",
+            style: FoxType.captionS.copyWith(
+              color: FoxTokens.zoneGreen.withValues(alpha: 0.75),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class _CodeBox extends StatelessWidget {
-  const _CodeBox({required this.value, required this.active, required this.error});
+  const _CodeBox({
+    required this.value,
+    required this.active,
+    required this.error,
+  });
 
   final String? value;
   final bool active;
@@ -224,34 +293,34 @@ class _CodeBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AnimatedContainer(
-        duration: FoxMotion.press,
-        curve: FoxMotion.easeOut,
-        width: 64,
-        height: 72,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: FoxTokens.bgCard,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: error
-                ? FoxTokens.zoneRed
-                : active
-                    ? FoxTokens.textPrimary
-                    : FoxTokens.borderLight,
-            width: active || error ? 1.5 : 1,
-          ),
-        ),
-        child: value != null
-            ? Text(
-                value!,
-                style: FoxType.bodyM.copyWith(
-                  fontSize: 28,
-                  color: error ? FoxTokens.zoneRed : FoxTokens.textPrimary,
-                  fontWeight: FontWeight.w500,
-                ),
-              )
+    duration: FoxMotion.press,
+    curve: FoxMotion.easeOut,
+    width: 64,
+    height: 72,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: FoxTokens.bgCard,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(
+        color: error
+            ? FoxTokens.zoneRed
             : active
-                ? Container(width: 2, height: 30, color: FoxTokens.accentLime)
-                : null,
-      );
+            ? FoxTokens.textPrimary
+            : FoxTokens.borderLight,
+        width: active || error ? 1.5 : 1,
+      ),
+    ),
+    child: value != null
+        ? Text(
+            value!,
+            style: FoxType.bodyM.copyWith(
+              fontSize: 28,
+              color: error ? FoxTokens.zoneRed : FoxTokens.textPrimary,
+              fontWeight: FontWeight.w500,
+            ),
+          )
+        : active
+        ? Container(width: 2, height: 30, color: FoxTokens.accentLime)
+        : null,
+  );
 }

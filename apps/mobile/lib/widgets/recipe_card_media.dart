@@ -20,7 +20,11 @@ RecipeZoneBadge recipeZoneBadge(RecipeItem recipe) {
 /// inside the bundle, so we prefer the local asset and only fall back to the
 /// network when the app meets an unknown path.
 class RecipePhoto extends StatelessWidget {
-  const RecipePhoto({super.key, required this.photoUrl, this.fit = BoxFit.cover});
+  const RecipePhoto({
+    super.key,
+    required this.photoUrl,
+    this.fit = BoxFit.cover,
+  });
 
   final String? photoUrl;
   final BoxFit fit;
@@ -45,18 +49,19 @@ class RecipePhoto extends StatelessWidget {
   }
 
   Widget _networkImage(String url) => Image.network(
-        url,
-        fit: fit,
-        headers: {
-          "Authorization": _basicAuth +
-              base64Encode(
-                utf8.encode("${ApiConfig.basicUser}:${ApiConfig.basicPass}"),
-              ),
-        },
-        errorBuilder: (_, _, _) => const _PhotoFallback(),
-        loadingBuilder: (context, child, progress) =>
-            progress == null ? child : const _PhotoFallback(),
-      );
+    url,
+    fit: fit,
+    headers: {
+      "Authorization":
+          _basicAuth +
+          base64Encode(
+            utf8.encode("${ApiConfig.basicUser}:${ApiConfig.basicPass}"),
+          ),
+    },
+    errorBuilder: (_, _, _) => const _PhotoFallback(),
+    loadingBuilder: (context, child, progress) =>
+        progress == null ? child : const _PhotoFallback(),
+  );
 }
 
 class _PhotoFallback extends StatelessWidget {
@@ -64,14 +69,14 @@ class _PhotoFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [FoxTokens.bgGrey, FoxTokens.zoneGreenBg],
-          ),
-        ),
-      );
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [FoxTokens.bgGrey, FoxTokens.zoneGreenBg],
+      ),
+    ),
+  );
 }
 
 class RecipeCardMedia extends StatelessWidget {
@@ -90,15 +95,15 @@ class RecipeCardMedia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        height: height,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            RecipePhoto(photoUrl: photoUrl),
-            Positioned(left: 14, top: 14, child: _ZoneBadge(badge: badge)),
-          ],
-        ),
-      );
+    height: height,
+    child: Stack(
+      fit: StackFit.expand,
+      children: [
+        RecipePhoto(photoUrl: photoUrl),
+        Positioned(left: 14, top: 14, child: _ZoneBadge(badge: badge)),
+      ],
+    ),
+  );
 }
 
 class _ZoneBadge extends StatelessWidget {
@@ -110,20 +115,20 @@ class _ZoneBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final (label, bg, fg) = switch (badge) {
       RecipeZoneBadge.allGreen => (
-          "100% зелёная зона",
-          FoxTokens.accentLime,
-          FoxTokens.textPrimary,
-        ),
+        "100% зелёная зона",
+        FoxTokens.accentLime,
+        FoxTokens.textPrimary,
+      ),
       RecipeZoneBadge.suitable => (
-          "Подходит с ротацией",
-          FoxTokens.zoneYellowBg,
-          FoxTokens.zoneYellow,
-        ),
+        "Подходит с ротацией",
+        FoxTokens.zoneYellowBg,
+        FoxTokens.zoneYellow,
+      ),
       RecipeZoneBadge.unsuitable => (
-          "Есть красная зона",
-          FoxTokens.zoneRedBg,
-          FoxTokens.zoneRed,
-        ),
+        "Есть красная зона",
+        FoxTokens.zoneRedBg,
+        FoxTokens.zoneRed,
+      ),
     };
 
     return Container(

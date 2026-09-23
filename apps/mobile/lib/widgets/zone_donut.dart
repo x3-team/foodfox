@@ -5,10 +5,10 @@ import "package:foodfox/models/models.dart";
 import "package:foodfox/theme/fox_theme.dart";
 
 Color zoneColor(Zone zone) => switch (zone) {
-      Zone.green => FoxColors.green,
-      Zone.yellow => FoxColors.yellow,
-      Zone.red => FoxColors.red,
-    };
+  Zone.green => FoxColors.green,
+  Zone.yellow => FoxColors.yellow,
+  Zone.red => FoxColors.red,
+};
 
 class ZoneDonut extends StatelessWidget {
   const ZoneDonut({
