@@ -147,45 +147,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const _MenuDivider(),
               const _MenuRow(title: "Уведомления"),
               const _MenuDivider(),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 10, 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Вход по биометрии",
-                            style: FoxType.bodyS.copyWith(
-                              color: FoxTokens.textPrimary,
-                              fontWeight: FontWeight.w500,
+              Semantics(
+                container: true,
+                label: "Вход по биометрии",
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 10, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Вход по биометрии",
+                              style: FoxType.bodyS.copyWith(
+                                color: FoxTokens.textPrimary,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            _biometricsAvailable
-                                ? "Face ID или отпечаток вместо пин-кода"
-                                : "Недоступно на этом устройстве",
-                            style: FoxType.captionS.copyWith(
-                              color: FoxTokens.textSecondary,
+                            const SizedBox(height: 3),
+                            Text(
+                              _biometricsAvailable
+                                  ? "Face ID или отпечаток вместо пин-кода"
+                                  : "Недоступно на этом устройстве",
+                              style: FoxType.captionS.copyWith(
+                                color: FoxTokens.textSecondary,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    Switch(
-                      value: _biometrics && _biometricsAvailable,
-                      onChanged: _biometricsAvailable
-                          ? (v) async {
-                              await widget.store.setBiometricsEnabled(v);
-                              if (mounted) setState(() => _biometrics = v);
-                            }
-                          : null,
-                      activeThumbColor: FoxTokens.accentLime,
-                      activeTrackColor: FoxTokens.bgGreen,
-                    ),
-                  ],
+                      Switch(
+                        value: _biometrics && _biometricsAvailable,
+                        onChanged: _biometricsAvailable
+                            ? (v) async {
+                                await widget.store.setBiometricsEnabled(v);
+                                if (mounted) setState(() => _biometrics = v);
+                              }
+                            : null,
+                        activeThumbColor: FoxTokens.accentLime,
+                        activeTrackColor: FoxTokens.bgGreen,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const _MenuDivider(),
@@ -263,33 +267,40 @@ class _MenuRow extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) => FoxPressable(
-    onTap: onTap,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: FoxType.bodyS.copyWith(
-                color: FoxTokens.textPrimary,
-                fontWeight: FontWeight.w500,
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    container: true,
+    label: hint == null ? title : "$title, $hint",
+    child: FoxPressable(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: FoxType.bodyS.copyWith(
+                  color: FoxTokens.textPrimary,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-          if (hint != null)
-            Text(
-              hint!,
-              style: FoxType.captionS.copyWith(color: FoxTokens.textSecondary),
+            if (hint != null)
+              Text(
+                hint!,
+                style: FoxType.captionS.copyWith(
+                  color: FoxTokens.textSecondary,
+                ),
+              ),
+            const SizedBox(width: 4),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: Color(0xFF8A8C84),
             ),
-          const SizedBox(width: 4),
-          const Icon(
-            Icons.chevron_right_rounded,
-            size: 20,
-            color: Color(0xFF8A8C84),
-          ),
-        ],
+          ],
+        ),
       ),
     ),
   );

@@ -341,11 +341,8 @@ bool _hasMeal(RecipeItem recipe, String meal) =>
 
 String _recipeMeta(RecipeItem recipe) {
   final time =
-      recipe.prepTime ??
-      recipe.tags.cast<String?>().firstWhere(
-        (tag) => tag != null && tag.contains("мин"),
-        orElse: () => null,
-      );
+      recipe.tags.where((tag) => tag.contains("мин")).firstOrNull ??
+      recipe.prepTime;
   final meal = recipe.tags
       .map((tag) => tag.toLowerCase())
       .where(
