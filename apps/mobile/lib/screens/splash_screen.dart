@@ -21,9 +21,10 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  // 3.8 s total. Long enough to read the ring being drawn zone by zone, with a
-  // real hold on the finished logo before the screen opens up.
-  static const _total = Duration(milliseconds: 3800);
+  // 4.2 s total. Long enough to read the ring being drawn zone by zone, hold
+  // on the finished logo, and still give the logo's trip to the corner over a
+  // second of its own rather than a flick at the end.
+  static const _total = Duration(milliseconds: 4200);
 
   late final AnimationController _c = AnimationController(
     vsync: this,
@@ -33,36 +34,50 @@ class _SplashScreenState extends State<SplashScreen>
   // Seed dot breathes in first, then hands over to the ring.
   late final Animation<double> _seed = CurvedAnimation(
     parent: _c,
-    curve: const Interval(0.0, 0.08, curve: FoxMotion.easeOut),
+    curve: const Interval(0.0, 0.07, curve: FoxMotion.easeOut),
   );
 
-  // 300 → 1800 ms: arcs sweep round. easeInOutCubic keeps the start and the
+  // 290 → 1810 ms: arcs sweep round. easeInOutCubic keeps the start and the
   // finish gentle instead of snapping into place.
   late final Animation<double> _ring = CurvedAnimation(
     parent: _c,
-    curve: const Interval(0.08, 0.47, curve: Curves.easeInOutCubic),
+    curve: const Interval(0.07, 0.43, curve: Curves.easeInOutCubic),
   );
 
-  // 1250 → 2200 ms: wordmark resolves while the last arc is still drawing.
+  // 1260 → 2180 ms: wordmark resolves while the last arc is still drawing.
   late final Animation<double> _logo = CurvedAnimation(
     parent: _c,
-    curve: const Interval(0.33, 0.58, curve: FoxMotion.easeOut),
+    curve: const Interval(0.30, 0.52, curve: FoxMotion.easeOut),
   );
 
   late final Animation<double> _glow = CurvedAnimation(
     parent: _c,
-    curve: const Interval(0.10, 0.62, curve: FoxMotion.easeOut),
+    curve: const Interval(0.09, 0.58, curve: FoxMotion.easeOut),
   );
 
-  // 2850 → 3800 ms: hold ends, the ring opens past the screen edge while the
-  // wordmark travels to the corner it occupies on the onboarding screen.
+  // 2770 → 3780 ms: the ring opens past the screen edge.
   late final Animation<double> _burst = CurvedAnimation(
     parent: _c,
-    curve: const Interval(0.75, 1.0, curve: Curves.easeInOutCubic),
+    curve: const Interval(0.66, 0.90, curve: Curves.easeInOutCubic),
+  );
+
+  // 2770 → 3990 ms: the wordmark walks to the corner it occupies on the
+  // onboarding screen. Deliberately slower than the ring burst and finishing
+  // before the controller does, so it visibly settles before the handover.
+  // easeInOutSine rather than the cubic used elsewhere: the cubic packs almost
+  // the whole distance into the middle 300 ms, which reads as a jump.
+  late final Animation<double> _fly = CurvedAnimation(
+    parent: _c,
+    curve: const Interval(0.66, 0.95, curve: Curves.easeInOutSine),
   );
 
   /// How much larger the lockup sits at rest than in its docked corner.
-  static const _zoom = 2.3;
+  /// Paired with [_ringSize]: the "FOOD XPLORER" line is the widest part of
+  /// the lockup and has to stay inside the ring.
+  static const _zoom = 2.05;
+
+  /// Diameter of the ring while it is being drawn.
+  static const _ringSize = 252.0;
 
   @override
   void initState() {
@@ -103,11 +118,12 @@ class _SplashScreenState extends State<SplashScreen>
         animation: _c,
         builder: (context, _) {
           final burst = _burst.value;
+          final fly = _fly.value;
           final ringDraw = _ring.value;
           // The seed dot grows into the ring, so the two never appear at once.
           final seedOpacity = (1 - ringDraw * 6).clamp(0.0, 1.0);
-          // 168 px ring opens to 1500 px while fading out.
-          final ringSize = 168 + burst * 1332;
+          // The ring opens past the screen edge while fading out.
+          final ringSize = _ringSize + burst * (1560 - _ringSize);
           final logoScale = 0.94 + 0.06 * _logo.value;
           // Glow breathes gently once the ring is complete.
           final breathe = 1 + 0.03 * math.sin(_c.value * math.pi * 3);
@@ -120,8 +136,8 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Transform.scale(
                   scale: breathe,
                   child: Container(
-                    width: 460,
-                    height: 460,
+                    width: 520,
+                    height: 520,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
@@ -164,15 +180,15 @@ class _SplashScreenState extends State<SplashScreen>
                 alignment: Alignment.lerp(
                   Alignment.center,
                   Alignment.topLeft,
-                  burst,
+                  fly,
                 )!,
                 child: Padding(
                   padding: EdgeInsets.only(
-                    left: FoxWordmark.inset * burst,
-                    top: (media.padding.top + FoxWordmark.topGap) * burst,
+                    left: FoxWordmark.inset * fly,
+                    top: (media.padding.top + FoxWordmark.topGap) * fly,
                   ),
                   child: Transform.scale(
-                    scale: logoScale * (1 + (_zoom - 1) * (1 - burst)),
+                    scale: logoScale * (1 + (_zoom - 1) * (1 - fly)),
                     child: Opacity(
                       opacity: _logo.value.clamp(0.0, 1.0),
                       child: const FoxWordmark(),

@@ -60,13 +60,17 @@ jobs:
             --build-number=${{ steps.version.outputs.build }} \
             --dart-define=FOX_API_BASE=https://foodfox.yuri.guru \
             --dart-define=FOX_BASIC_USER=demo \
-            --dart-define=FOX_BASIC_PASS=FoodFox2026!
+            --dart-define=FOX_BASIC_PASS=FoodFox2026! \
+            --dart-define=FOX_DEMO_PHONE=9991234567 \
+            --dart-define=FOX_DEMO_OTP=4747
           flutter build apk --release \
             --build-name=${{ steps.version.outputs.semver }} \
             --build-number=${{ steps.version.outputs.build }} \
             --dart-define=FOX_API_BASE=https://foodfox.yuri.guru \
             --dart-define=FOX_BASIC_USER=demo \
-            --dart-define=FOX_BASIC_PASS=FoodFox2026!
+            --dart-define=FOX_BASIC_PASS=FoodFox2026! \
+            --dart-define=FOX_DEMO_PHONE=9991234567 \
+            --dart-define=FOX_DEMO_OTP=4747
 
       # AGP omits JAR signing for minSdk >= 24 and some OEM package installers
       # reject such APKs with "problem parsing the package". Re-sign with every
