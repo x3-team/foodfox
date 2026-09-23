@@ -92,7 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: Text(
-                  _initials(_user?.displayName ?? "К"),
+                  _avatarLabel,
                   style: FoxType.bodyM.copyWith(
                     color: FoxTokens.textPrimary,
                     fontWeight: FontWeight.w500,
@@ -105,23 +105,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _user?.displayName ?? "Клиент",
+                      _displayName,
                       style: FoxType.bodyS.copyWith(
                         color: FoxTokens.textPrimary,
                         fontSize: 17,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      [
-                        if (_prettyPhone.isNotEmpty) _prettyPhone,
-                        if (_client?.hasReport ?? false) "Неделя $week",
-                      ].join(" · "),
-                      style: FoxType.captionS.copyWith(
-                        color: FoxTokens.textSecondary,
+                    if (_profileSubtitle(week).isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        _profileSubtitle(week),
+                        style: FoxType.captionS.copyWith(
+                          color: FoxTokens.textSecondary,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -131,60 +130,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 16),
         _NutritionistCard(),
         const SizedBox(height: 16),
-        FoxListRow(
-          title: "История отчётов",
-          hint: (_client?.hasReport ?? false) ? "1 отчёт" : "нет",
-          onTap: widget.onUploadReport,
-        ),
-        const SizedBox(height: 8),
-        const FoxListRow(title: "Дневник симптомов", hint: "ведётся"),
-        const SizedBox(height: 8),
-        const FoxListRow(title: "Обучение", hint: "6 уроков"),
-        const SizedBox(height: 8),
         FoxCard(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          radius: 16,
-          child: Row(
+          padding: EdgeInsets.zero,
+          radius: 20,
+          child: Column(
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              _MenuRow(
+                title: "История отчётов",
+                hint: (_client?.hasReport ?? false) ? "1 отчёт" : "нет",
+                onTap: widget.onUploadReport,
+              ),
+              const _MenuDivider(),
+              const _MenuRow(title: "Дневник симптомов", hint: "ведётся"),
+              const _MenuDivider(),
+              const _MenuRow(title: "Обучение", hint: "6 уроков"),
+              const _MenuDivider(),
+              const _MenuRow(title: "Уведомления"),
+              const _MenuDivider(),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 10, 8),
+                child: Row(
                   children: [
-                    Text(
-                      "Вход по биометрии",
-                      style: FoxType.bodyS.copyWith(
-                        color: FoxTokens.textPrimary,
-                        fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Вход по биометрии",
+                            style: FoxType.bodyS.copyWith(
+                              color: FoxTokens.textPrimary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            _biometricsAvailable
+                                ? "Face ID или отпечаток вместо пин-кода"
+                                : "Недоступно на этом устройстве",
+                            style: FoxType.captionS.copyWith(
+                              color: FoxTokens.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      _biometricsAvailable
-                          ? "Face ID или отпечаток вместо пин-кода"
-                          : "Недоступно на этом устройстве",
-                      style: FoxType.captionS.copyWith(
-                        color: FoxTokens.textSecondary,
-                      ),
+                    Switch(
+                      value: _biometrics && _biometricsAvailable,
+                      onChanged: _biometricsAvailable
+                          ? (v) async {
+                              await widget.store.setBiometricsEnabled(v);
+                              if (mounted) setState(() => _biometrics = v);
+                            }
+                          : null,
+                      activeThumbColor: FoxTokens.accentLime,
+                      activeTrackColor: FoxTokens.bgGreen,
                     ),
                   ],
                 ),
               ),
-              Switch(
-                value: _biometrics && _biometricsAvailable,
-                onChanged: _biometricsAvailable
-                    ? (v) async {
-                        await widget.store.setBiometricsEnabled(v);
-                        if (mounted) setState(() => _biometrics = v);
-                      }
-                    : null,
-                activeThumbColor: FoxTokens.accentLime,
-                activeTrackColor: FoxTokens.bgGreen,
-              ),
+              const _MenuDivider(),
+              const _MenuRow(title: "Согласия и данные", hint: "152-ФЗ"),
             ],
           ),
         ),
-        const SizedBox(height: 8),
-        const FoxListRow(title: "Согласия и данные", hint: "152-ФЗ"),
         const SizedBox(height: 18),
         FoxButton(
           label: "Выйти",
@@ -205,6 +213,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  String _profileSubtitle(int week) {
+    return [
+      if (_prettyPhone.isNotEmpty && _displayName != _prettyPhone) _prettyPhone,
+      if (_client?.hasReport ?? false) "Неделя $week",
+    ].join(" · ");
+  }
+
+  String get _displayName {
+    final name = _user?.displayName.trim() ?? "";
+    if (name.isEmpty || name == "Клиент") {
+      return _prettyPhone.isNotEmpty ? _prettyPhone : "Профиль";
+    }
+    return name;
+  }
+
+  String get _avatarLabel {
+    final name = _user?.displayName.trim() ?? "";
+    if (name.isNotEmpty && name != "Клиент") return _initials(name);
+    final phone = _phone;
+    if (phone != null && phone.length >= 2) {
+      return phone.substring(phone.length - 2);
+    }
+    return "К";
+  }
+
   String _initials(String name) {
     final parts = name.trim().split(RegExp(r"\s+"));
     if (parts.isEmpty || parts.first.isEmpty) return "К";
@@ -212,6 +245,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return (parts.first.characters.first + parts[1].characters.first)
         .toUpperCase();
   }
+}
+
+class _MenuDivider extends StatelessWidget {
+  const _MenuDivider();
+
+  @override
+  Widget build(BuildContext context) =>
+      const Divider(height: 1, thickness: 1, color: FoxTokens.borderLight);
+}
+
+class _MenuRow extends StatelessWidget {
+  const _MenuRow({required this.title, this.hint, this.onTap});
+
+  final String title;
+  final String? hint;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => FoxPressable(
+    onTap: onTap,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: FoxType.bodyS.copyWith(
+                color: FoxTokens.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          if (hint != null)
+            Text(
+              hint!,
+              style: FoxType.captionS.copyWith(color: FoxTokens.textSecondary),
+            ),
+          const SizedBox(width: 4),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: 20,
+            color: Color(0xFF8A8C84),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _NutritionistCard extends StatelessWidget {

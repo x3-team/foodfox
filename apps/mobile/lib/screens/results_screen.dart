@@ -4,6 +4,7 @@ import "package:flutter/material.dart";
 
 import "package:foodfox/data/fox_categories.dart";
 import "package:foodfox/models/models.dart";
+import "package:foodfox/screens/green_zone_screen.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_tokens.dart";
@@ -20,6 +21,7 @@ class ResultsScreen extends StatefulWidget {
     this.reloadToken = 0,
     this.onAskBot,
     this.onOpenPlan,
+    this.onOpenRecipes,
     this.onUpload,
   });
 
@@ -27,6 +29,7 @@ class ResultsScreen extends StatefulWidget {
   final int reloadToken;
   final void Function(String question)? onAskBot;
   final VoidCallback? onOpenPlan;
+  final VoidCallback? onOpenRecipes;
   final VoidCallback? onUpload;
 
   @override
@@ -126,6 +129,23 @@ class _ResultsScreenState extends State<ResultsScreen> {
   }
 
   void _selectZone(Zone? zone) {
+    if (zone == Zone.green) {
+      final green = _results.where((item) => item.zone == Zone.green).toList();
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => GreenZoneScreen(
+            api: widget.api,
+            items: green,
+            onOpenRecipes: () {
+              Navigator.of(context).pop();
+              widget.onOpenRecipes?.call();
+            },
+          ),
+        ),
+      );
+      return;
+    }
+
     final stillThere =
         _category == null ||
         _results

@@ -1,10 +1,12 @@
-import "package:flutter/material.dart";
-import "package:foodfox/services/foodfox_api.dart";
-import "package:foodfox/theme/fox_theme.dart";
-import "package:foodfox/widgets/page_header.dart";
-import "package:foodfox/widgets/report_processing_overlay.dart";
 import "package:file_picker/file_picker.dart";
+import "package:flutter/material.dart";
 
+import "package:foodfox/services/foodfox_api.dart";
+import "package:foodfox/theme/fox_tokens.dart";
+import "package:foodfox/widgets/report_processing_overlay.dart";
+import "package:foodfox/widgets/ui/fox_ui.dart";
+
+/// Screen 02 — pick the laboratory PDF and see what happens next.
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key, required this.api, required this.onUploaded});
 
@@ -52,132 +54,237 @@ class _UploadScreenState extends State<UploadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const PageHeader(
-          title: "Загрузка отчёта",
-          subtitle:
-              "Загрузите PDF FOX Food Xplorer — мы разберём 286 антигенов",
-        ),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-            children: [
-              Material(
-                color: FoxColors.surface,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(
-                    color: FoxColors.primaryMuted,
-                    width: 2,
-                  ),
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: _loading ? null : _pickAndUpload,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 40,
-                      horizontal: 24,
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: FoxColors.primarySoft,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(
-                            Icons.picture_as_pdf_outlined,
-                            size: 32,
-                            color: FoxColors.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          "Выберите PDF-отчёт FOX",
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            color: FoxColors.text,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          "Файл с устройства — разбор ~285 антигенов",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: FoxColors.muted,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
+    return Scaffold(
+      backgroundColor: FoxTokens.bgNeutral,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          children: [
+            FoxPressable(
+              onTap: () => Navigator.of(context).maybePop(),
+              child: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(
+                  Icons.arrow_back_rounded,
+                  size: 22,
+                  color: FoxTokens.textPrimary,
                 ),
               ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: foxCardDecoration,
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "FOX Food Xplorer",
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: FoxColors.text,
-                      ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      "IgG-анализ 286 пищевых антигенов. Результаты носят информационный характер и не заменяют консультацию врача.",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: FoxColors.muted,
-                        height: 1.45,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (_error != null) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF2F2),
-                    borderRadius: BorderRadius.circular(12),
+            ),
+            const SizedBox(height: 8),
+            const FoxScreenTitle(
+              title: "Отчёт FOX",
+              subtitle:
+                  "Загрузите PDF из лаборатории — распознаем 285 антигенов",
+            ),
+            const SizedBox(height: 20),
+            _Dropzone(loading: _loading, onTap: _pickAndUpload),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _SourceButton(
+                    icon: Icons.photo_camera_outlined,
+                    label: "Камера",
+                    onTap: _loading ? null : _pickAndUpload,
                   ),
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: FoxColors.red),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _SourceButton(
+                    icon: Icons.photo_library_outlined,
+                    label: "Галерея",
+                    onTap: _loading ? null : _pickAndUpload,
                   ),
                 ),
               ],
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _loading ? null : _pickAndUpload,
-                style: FilledButton.styleFrom(
-                  backgroundColor: FoxColors.primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: Text(_loading ? "Обрабатываем…" : "Загрузить отчёт"),
+            ),
+            const SizedBox(height: 18),
+            const _NextSteps(),
+            if (_error != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _error!,
+                style: FoxType.caption.copyWith(color: FoxTokens.zoneRed),
               ),
             ],
-          ),
+            const SizedBox(height: 20),
+            FoxButton(
+              label: _loading ? "Обрабатываем…" : "Выбрать PDF-файл",
+              loading: _loading,
+              onPressed: _loading ? null : _pickAndUpload,
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
+}
+
+class _Dropzone extends StatelessWidget {
+  const _Dropzone({required this.loading, required this.onTap});
+
+  final bool loading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => FoxPressable(
+    onTap: loading ? null : onTap,
+    borderRadius: BorderRadius.circular(22),
+    child: CustomPaint(
+      painter: _DashedRoundedPainter(),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
+        child: Column(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: FoxTokens.bgCard,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.upload_file_rounded,
+                size: 26,
+                color: FoxTokens.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              "Перетащите PDF сюда",
+              style: FoxType.bodyS.copyWith(
+                color: FoxTokens.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "или выберите файл с устройства",
+              style: FoxType.caption.copyWith(color: FoxTokens.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _SourceButton extends StatelessWidget {
+  const _SourceButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => FoxPressable(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(16),
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: FoxTokens.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: FoxTokens.borderLight),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 18, color: FoxTokens.textPrimary),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: FoxType.label.copyWith(color: FoxTokens.textPrimary),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _NextSteps extends StatelessWidget {
+  const _NextSteps();
+
+  static const _steps = [
+    "Разберём PDF и разложим антигены по зонам",
+    "Соберём план на ближайшие недели",
+    "Подберём рецепты из зелёной зоны",
+  ];
+
+  @override
+  Widget build(BuildContext context) => FoxCard(
+    tone: FoxCardTone.grey,
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+    radius: 20,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Что будет дальше",
+          style: FoxType.bodyS.copyWith(
+            color: FoxTokens.textPrimary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        for (var i = 0; i < _steps.length; i++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "${i + 1}",
+                  style: FoxType.label.copyWith(color: FoxTokens.zoneGreen),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _steps[i],
+                    style: FoxType.caption.copyWith(
+                      color: FoxTokens.textPrimary,
+                      height: 20 / 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+class _DashedRoundedPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(22),
+    );
+    final path = Path()..addRRect(rrect);
+    final paint = Paint()
+      ..color = FoxTokens.bgGrey
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final end = (distance + 7).clamp(0, metric.length).toDouble();
+        canvas.drawPath(metric.extractPath(distance, end), paint);
+        distance = end + 5;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

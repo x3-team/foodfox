@@ -218,6 +218,7 @@ class _AppShellState extends State<AppShell> {
                 reloadToken: _resultsReload,
                 onAskBot: _askBot,
                 onOpenPlan: () => _select(1),
+                onOpenRecipes: () => _select(3),
                 onUpload: () => _select(4),
               ),
             ),

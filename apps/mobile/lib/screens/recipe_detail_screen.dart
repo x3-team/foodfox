@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/theme/fox_theme.dart";
+import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/widgets/recipe_card_media.dart";
 
 class RecipeDetailScreen extends StatelessWidget {
@@ -20,8 +21,8 @@ class RecipeDetailScreen extends StatelessWidget {
           SliverAppBar(
             expandedHeight: 240,
             pinned: true,
-            backgroundColor: FoxColors.primary,
-            foregroundColor: Colors.white,
+            backgroundColor: FoxTokens.bgNeutral,
+            foregroundColor: FoxTokens.textPrimary,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.of(context).pop(),
@@ -390,8 +391,8 @@ class _ZoneBadge extends StatelessWidget {
     final (label, bg, fg) = switch (badge) {
       RecipeZoneBadge.allGreen => (
         "100% зелёная зона",
-        FoxColors.primary,
-        Colors.white,
+        FoxTokens.accentLime,
+        FoxTokens.textPrimary,
       ),
       RecipeZoneBadge.suitable => (
         "Подходит с учётом ротации",
