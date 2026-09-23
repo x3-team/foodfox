@@ -37,7 +37,18 @@
 <div class="cover">
   <h1>🦊 FoodFox — Архитектура и план разработки</h1>
   <p class="subtitle">Приложение для нутрициологов на базе теста FOX Food Xplorer<br>
-  Версия документа: 1.0 &nbsp;|&nbsp; Дата: 01.09.2026 &nbsp;|&nbsp; Статус: Draft для обсуждения</p>
+  Версия документа: 1.1 &nbsp;|&nbsp; Дата: 01.09.2026 &nbsp;|&nbsp; Статус: Draft для обсуждения</p>
+</div>
+
+<div class="info">
+  <strong>MVP v0.1 — утверждённые решения (01.09.2026):</strong>
+  <ul>
+    <li><strong>БД:</strong> своя PostgreSQL на Render (не Supabase) — см. <code>packages/database/schema.sql</code></li>
+    <li><strong>LLM:</strong> getheli.ru (Heli) — OpenAI-compatible gateway ко всем моделям, не OpenAI напрямую</li>
+    <li><strong>Push:</strong> только in-app (сообщения бота в чате + badge unread), без FCM/Telegram/email</li>
+    <li><strong>Web first:</strong> Next.js на Render; Flutter — после валидации MVP</li>
+  </ul>
+  Детали: <code>docs/MVP-v0.1-web-chat.md</code>
 </div>
 
 <div class="toc">
@@ -114,7 +125,7 @@
 <ul>
   <li><strong>Flutter App</strong> → API Gateway (REST) → Auth, Report, Plan, Recipe Services</li>
   <li><strong>Report Service</strong> → Queue (Redis) → <strong>PDF Parser Worker</strong> (Python)</li>
-  <li><strong>PostgreSQL</strong> — основные данные; <strong>S3/Supabase Storage</strong> — PDF и фото; <strong>Redis</strong> — очереди и кэш</li>
+  <li><strong>PostgreSQL (Render)</strong> — основные данные; <strong>S3/R2</strong> — PDF и фото; <strong>Redis</strong> — очереди и кэш (v0.2+)</li>
   <li><strong>Web Admin + Web Nutritionist</strong> → тот же API</li>
 </ul>
 
@@ -257,10 +268,11 @@
   <tr><td>Web B2B + Admin</td><td>Next.js / React</td><td>Формы, rich-text, таблицы 286 продуктов</td></tr>
   <tr><td>API</td><td>FastAPI (Python)</td><td>Удобно для PDF-парсера и ML</td></tr>
   <tr><td>Parser worker</td><td>Celery + Redis</td><td>Асинхронная обработка PDF</td></tr>
-  <tr><td>БД</td><td>PostgreSQL (Supabase / Render)</td><td>JSONB, связи, миграции</td></tr>
-  <tr><td>Файлы</td><td>S3 / Supabase Storage</td><td>PDF, фото (Render FS — ephemeral!)</td></tr>
-  <tr><td>Auth</td><td>Supabase Auth</td><td>Roles: client, nutritionist, admin</td></tr>
-  <tr><td>Push</td><td>Firebase Cloud Messaging</td><td>Уведомления о фазах плана</td></tr>
+  <tr><td>БД</td><td>PostgreSQL (Render, своя)</td><td>JSONB, связи, миграции; задел tenant_id</td></tr>
+  <tr><td>Файлы</td><td>S3 / Cloudflare R2</td><td>PDF, фото (Render FS — ephemeral!)</td></tr>
+  <tr><td>Auth</td><td>Своя (users + password_hash)</td><td>Roles: client, nutritionist, admin</td></tr>
+  <tr><td>LLM</td><td>getheli.ru (Heli)</td><td>OpenAI-compatible API, любая модель из каталога</td></tr>
+  <tr><td>Push MVP</td><td>In-app (chat_messages)</td><td>Badge unread; FCM/Telegram — позже</td></tr>
   <tr><td>Hosting API</td><td>Render</td><td>Web service + worker + postgres</td></tr>
 </table>
 
@@ -332,7 +344,7 @@ foodfox/
   <li>FastAPI на Render Web Service (<code>0.0.0.0:$PORT</code>)</li>
   <li>Parser Worker на Render Background Worker</li>
   <li>PostgreSQL на Render Postgres</li>
-  <li>PDF/фото — Supabase Storage или S3 (не локальный диск Render!)</li>
+  <li>PDF/фото — S3/R2 (не локальный диск Render!)</li>
 </ul>
 
 <p><strong>2. Flutter Web на Render — для быстрых демо (рекомендуется параллельно)</strong></p>
@@ -414,7 +426,7 @@ foodfox/
 <h3>Оценка по блокам (человеко-дни)</h3>
 <table>
   <tr><th>Блок</th><th>Дни</th><th>Комментарий</th></tr>
-  <tr><td>Инфра + CI/CD + Auth</td><td>8–10</td><td>Render, GitHub Actions, Supabase Auth, Flutter Web deploy</td></tr>
+  <tr><td>Инфра + CI/CD + Auth</td><td>8–10</td><td>Render, GitHub Actions, своя auth, Next.js Web deploy</td></tr>
   <tr><td>Каталог 286 продуктов + семейства</td><td>5–7</td><td>Import, aliases, dairy rules, API</td></tr>
   <tr><td>PDF Parser</td><td>15–20</td><td>Самый рискованный блок; POC → v2 → тесты на реальных PDF</td></tr>
   <tr><td>Plan Engine (фаза 1)</td><td>8–10</td><td>Зоны, элиминация, dairy profile</td></tr>

@@ -1,0 +1,4313 @@
+{
+ "generatedAt": "2026-09-23T08:20:18.679Z",
+ "me": {
+  "user": {
+   "email": "demo@foodfox.ru",
+   "displayName": "Ирина"
+  },
+  "profile": {
+   "hasReport": true,
+   "parsedCount": 285,
+   "currentWeek": 2,
+   "planStartedAt": "2026-09-13T08:20:18.678Z"
+  }
+ },
+ "results": {
+  "results": [
+   {
+    "id": "demo-1",
+    "foxName": "Абрикос",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-2",
+    "foxName": "Авокадо",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-3",
+    "foxName": "Агар-агар",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-4",
+    "foxName": "Алоэ",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-5",
+    "foxName": "Амарант",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-6",
+    "foxName": "Ананас",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-7",
+    "foxName": "Анис",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-8",
+    "foxName": "Апельсин",
+    "valueUgMl": 24.2,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-9",
+    "foxName": "Арахис",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-10",
+    "foxName": "Арбуз",
+    "valueUgMl": 2.26,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-11",
+    "foxName": "Артишок",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-12",
+    "foxName": "Атлантическая сельдь",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-13",
+    "foxName": "Атлантическая треска",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-14",
+    "foxName": "Атлантический морской окунь",
+    "valueUgMl": 16.05,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-15",
+    "foxName": "Базилик",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-16",
+    "foxName": "Баклажан",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-17",
+    "foxName": "Банан",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-18",
+    "foxName": "Баобаб",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-19",
+    "foxName": "Баранина",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-20",
+    "foxName": "Белая спаржа",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-21",
+    "foxName": "Белая фасоль",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-22",
+    "foxName": "Белокочанная капуста",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-23",
+    "foxName": "Бобы мунг",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-24",
+    "foxName": "Бразильский орех",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-25",
+    "foxName": "Брокколи",
+    "valueUgMl": 10.87,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-26",
+    "foxName": "Брюссельская капуста",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-27",
+    "foxName": "Бузина",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-28",
+    "foxName": "Буйволиное молоко",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-29",
+    "foxName": "Ваниль",
+    "valueUgMl": 78.52,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-30",
+    "foxName": "Венериды",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-31",
+    "foxName": "Верблюжье молоко",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-32",
+    "foxName": "Вешенка",
+    "valueUgMl": 27.31,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-33",
+    "foxName": "Виноград",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-34",
+    "foxName": "Вишня",
+    "valueUgMl": 2.68,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-35",
+    "foxName": "Гауда",
+    "valueUgMl": 40.89,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-36",
+    "foxName": "Гвоздика",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-37",
+    "foxName": "Гибискус",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-38",
+    "foxName": "Гинкго билоба",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-39",
+    "foxName": "Глютен",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-40",
+    "foxName": "Говядина",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-41",
+    "foxName": "Горох",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-42",
+    "foxName": "Горчица",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-43",
+    "foxName": "Гранат",
+    "valueUgMl": 16.89,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-44",
+    "foxName": "Гребешок",
+    "valueUgMl": 3.64,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-45",
+    "foxName": "Грейпфрут",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-46",
+    "foxName": "Грецкий орех",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-47",
+    "foxName": "Гречка",
+    "valueUgMl": 23.31,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-48",
+    "foxName": "Груша",
+    "valueUgMl": 1.08,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-49",
+    "foxName": "Гуарана",
+    "valueUgMl": 19.56,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-50",
+    "foxName": "Двустворчатый моллюск",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-51",
+    "foxName": "Дикий чеснок",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-52",
+    "foxName": "Домашний сверчок",
+    "valueUgMl": 2.75,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-53",
+    "foxName": "Дорада",
+    "valueUgMl": 57.94,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-54",
+    "foxName": "Дрожжи хлебопекарные",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-55",
+    "foxName": "Дыня",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-56",
+    "foxName": "Европейская камбала",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-57",
+    "foxName": "Европейская сардина",
+    "valueUgMl": 7.84,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-58",
+    "foxName": "Европейский анчоус",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-59",
+    "foxName": "Ежевика",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-60",
+    "foxName": "Жасмин",
+    "valueUgMl": 7.63,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-61",
+    "foxName": "Женьшень",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-62",
+    "foxName": "Зеленая капуста",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-63",
+    "foxName": "Зеленая фасоль",
+    "valueUgMl": 3.79,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-64",
+    "foxName": "зеленый / красный / желтый)",
+    "valueUgMl": 16.5,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-65",
+    "foxName": "Зира",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-66",
+    "foxName": "Изюм",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-67",
+    "foxName": "Икра",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-68",
+    "foxName": "Имбирь",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-69",
+    "foxName": "Индейка",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-70",
+    "foxName": "Инжир",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-71",
+    "foxName": "Кабан",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-72",
+    "foxName": "Кайенский перец",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-73",
+    "foxName": "Какао",
+    "valueUgMl": 29.76,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-74",
+    "foxName": "Кальмар",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-75",
+    "foxName": "Камамбер",
+    "valueUgMl": 1.56,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-76",
+    "foxName": "Каперсы",
+    "valueUgMl": 56,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-77",
+    "foxName": "Капуста",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-78",
+    "foxName": "Кардамон",
+    "valueUgMl": 42.1,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-79",
+    "foxName": "Карп",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-80",
+    "foxName": "Карри",
+    "valueUgMl": 15.88,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-81",
+    "foxName": "Картофель",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-82",
+    "foxName": "Кедровый орех",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-83",
+    "foxName": "Кешью",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-84",
+    "foxName": "Кивано",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-85",
+    "foxName": "Киви",
+    "valueUgMl": 4.44,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-86",
+    "foxName": "Киноа",
+    "valueUgMl": 56.39,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-87",
+    "foxName": "Клубника",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-88",
+    "foxName": "Клюква",
+    "valueUgMl": 7.38,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-89",
+    "foxName": "Козий сыр",
+    "valueUgMl": 19.77,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-90",
+    "foxName": "Козлятина",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-91",
+    "foxName": "Козье молоко",
+    "valueUgMl": 74.92,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-92",
+    "foxName": "Кокос",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-93",
+    "foxName": "Кокосовое молоко",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-94",
+    "foxName": "Кольраби",
+    "valueUgMl": 1.47,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-95",
+    "foxName": "Конина",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-96",
+    "foxName": "Корень лопуха большой",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-97",
+    "foxName": "Корень одуванчика",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-98",
+    "foxName": "Корень сельдерея",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-99",
+    "foxName": "Корень якона",
+    "valueUgMl": 13.15,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-100",
+    "foxName": "Кориандр",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-101",
+    "foxName": "Корица",
+    "valueUgMl": 12.2,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-102",
+    "foxName": "Коровье молоко",
+    "valueUgMl": 18.92,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-103",
+    "foxName": "Кофе",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-104",
+    "foxName": "Краб",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-105",
+    "foxName": "Красная капуста",
+    "valueUgMl": 73.31,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-106",
+    "foxName": "Красная свекла",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-107",
+    "foxName": "Красная смородина",
+    "valueUgMl": 16.71,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-108",
+    "foxName": "Кресс-салат",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-109",
+    "foxName": "Кролик",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-110",
+    "foxName": "Крыжовник",
+    "valueUgMl": 57.11,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-111",
+    "foxName": "Кукуруза",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-112",
+    "foxName": "Кунжут",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-113",
+    "foxName": "Курица",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-114",
+    "foxName": "Куркума",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-115",
+    "foxName": "Лавровый лист",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-116",
+    "foxName": "Лайм",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-117",
+    "foxName": "Лемонграсс",
+    "valueUgMl": 3.52,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-118",
+    "foxName": "Лимон",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-119",
+    "foxName": "Лисички",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-120",
+    "foxName": "Листья крапивы",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-121",
+    "foxName": "Личи",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-122",
+    "foxName": "Лосось",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-123",
+    "foxName": "Лук",
+    "valueUgMl": 11.04,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-124",
+    "foxName": "Лук-порей",
+    "valueUgMl": 6.92,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-125",
+    "foxName": "Лук-шалот",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-126",
+    "foxName": "Льняные семена",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-127",
+    "foxName": "М-трансглутаминаза мясной клей",
+    "valueUgMl": 15.46,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-128",
+    "foxName": "Майоран",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-129",
+    "foxName": "Мак",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-130",
+    "foxName": "Мака перуанская",
+    "valueUgMl": 6.16,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-131",
+    "foxName": "Макадамия, орех",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-132",
+    "foxName": "Малина",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-133",
+    "foxName": "Манго",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-134",
+    "foxName": "Мангольд",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-135",
+    "foxName": "Мандарин",
+    "valueUgMl": 66,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-136",
+    "foxName": "Маракуйя",
+    "valueUgMl": 7.32,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-137",
+    "foxName": "Мед",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-138",
+    "foxName": "Мидия обыкновенная",
+    "valueUgMl": 9.73,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-139",
+    "foxName": "Микс креветок",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-140",
+    "foxName": "Миндаль",
+    "valueUgMl": 15.64,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-141",
+    "foxName": "Миндальное молоко",
+    "valueUgMl": 2.53,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-142",
+    "foxName": "Молоко коровье Bos d 4 *",
+    "valueUgMl": 15.6,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-143",
+    "foxName": "Молоко коровье Bos d 5 *",
+    "valueUgMl": 8.57,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-144",
+    "foxName": "Молоко коровье Bos d 8 *",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-145",
+    "foxName": "Моринга",
+    "valueUgMl": 80.69,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-146",
+    "foxName": "Морковь",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-147",
+    "foxName": "Морские водоросли",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-148",
+    "foxName": "Морские ушки",
+    "valueUgMl": 8.52,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-149",
+    "foxName": "Морской черт",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-150",
+    "foxName": "Морской язык",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-151",
+    "foxName": "Моцарелла",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-152",
+    "foxName": "Мускатная тыква",
+    "valueUgMl": 14.58,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-153",
+    "foxName": "Мускатный орех",
+    "valueUgMl": 27.96,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-154",
+    "foxName": "Мясо косули",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-155",
+    "foxName": "Мята",
+    "valueUgMl": 7.53,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-156",
+    "foxName": "Мята перечная",
+    "valueUgMl": 14.53,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-157",
+    "foxName": "Нектарин",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-158",
+    "foxName": "Нори",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-159",
+    "foxName": "Нут",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-160",
+    "foxName": "Овёс",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-161",
+    "foxName": "Овечий сыр",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-162",
+    "foxName": "Овечье молоко",
+    "valueUgMl": 22.82,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-163",
+    "foxName": "Огурец",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-164",
+    "foxName": "Оленина",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-165",
+    "foxName": "Олива",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-166",
+    "foxName": "Омар",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-167",
+    "foxName": "Опята",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-168",
+    "foxName": "Орегано",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-169",
+    "foxName": "Орех кола",
+    "valueUgMl": 14.09,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-170",
+    "foxName": "Орех пекан",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-171",
+    "foxName": "Осьминог",
+    "valueUgMl": 1.74,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-172",
+    "foxName": "Пажитник",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-173",
+    "foxName": "Пак-чой/китайская капуста",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-174",
+    "foxName": "Палтус",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-175",
+    "foxName": "Папайя",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-176",
+    "foxName": "Паприка",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-177",
+    "foxName": "Пармезан",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-178",
+    "foxName": "Пастернак",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-179",
+    "foxName": "Пахта",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-180",
+    "foxName": "Пекинская капуста",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-181",
+    "foxName": "Перелетная саранча",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-182",
+    "foxName": "Перепелиное яйцо",
+    "valueUgMl": 81.15,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-183",
+    "foxName": "Персик",
+    "valueUgMl": 4.34,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-184",
+    "foxName": "Петрушка",
+    "valueUgMl": 23.91,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-185",
+    "foxName": "Пивные дрожжи",
+    "valueUgMl": 43.08,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-186",
+    "foxName": "Пикша",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-187",
+    "foxName": "Подосиновик/белый гриб",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-188",
+    "foxName": "Подсолнечник",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-189",
+    "foxName": "Полба",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-190",
+    "foxName": "Полевой салат",
+    "valueUgMl": 10.79,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-191",
+    "foxName": "Помидор",
+    "valueUgMl": 6.29,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-192",
+    "foxName": "Просо",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-193",
+    "foxName": "Пшеница",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-194",
+    "foxName": "Пшеница однозернянка",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-195",
+    "foxName": "Пшеница польская",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-196",
+    "foxName": "Пшеница твёрдая",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-197",
+    "foxName": "Пшеничные отруби",
+    "valueUgMl": 10.08,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-198",
+    "foxName": "Радиччо (красный салатный цикорий)",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-199",
+    "foxName": "Рапс",
+    "valueUgMl": 60.83,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-200",
+    "foxName": "Редис",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-201",
+    "foxName": "Репа",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-202",
+    "foxName": "Речной рак",
+    "valueUgMl": 16.64,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-203",
+    "foxName": "Рис",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-204",
+    "foxName": "Рожь",
+    "valueUgMl": 66.07,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-205",
+    "foxName": "Розмарин",
+    "valueUgMl": 15.76,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-206",
+    "foxName": "Романеско",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-207",
+    "foxName": "Ромашка",
+    "valueUgMl": 1.36,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-208",
+    "foxName": "Ростки бамбука",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-209",
+    "foxName": "Ростки пшеницы",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-210",
+    "foxName": "Руккола",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-211",
+    "foxName": "Рыба-меч",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-212",
+    "foxName": "Сафлоровое масло",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-213",
+    "foxName": "Сахарный горошек",
+    "valueUgMl": 14.79,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-214",
+    "foxName": "Свинина",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-215",
+    "foxName": "Северная креветка",
+    "valueUgMl": 6.21,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-216",
+    "foxName": "Северная щука",
+    "valueUgMl": 13.07,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-217",
+    "foxName": "Семена конопли",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-218",
+    "foxName": "Семена люпина",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-219",
+    "foxName": "Семена тыквы",
+    "valueUgMl": 27.38,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-220",
+    "foxName": "Семена чиа",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-221",
+    "foxName": "Сепия",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-222",
+    "foxName": "Скат (морская лисица)",
+    "valueUgMl": 55.05,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-223",
+    "foxName": "Скумбрия",
+    "valueUgMl": 10.05,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-224",
+    "foxName": "Сладкий картофель",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-225",
+    "foxName": "Сладкий каштан",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-226",
+    "foxName": "Слива",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-227",
+    "foxName": "Солод (ячмень)",
+    "valueUgMl": 16.96,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-228",
+    "foxName": "Соя",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-229",
+    "foxName": "Спельта",
+    "valueUgMl": 4.87,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-230",
+    "foxName": "Спирулина",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-231",
+    "foxName": "Стебель сельдерея",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-232",
+    "foxName": "Съедобный моллюск",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-233",
+    "foxName": "Сыть (чуфа)",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-234",
+    "foxName": "Тамаринд",
+    "valueUgMl": 3.03,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-235",
+    "foxName": "Тапиока",
+    "valueUgMl": 53.57,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-236",
+    "foxName": "Творог",
+    "valueUgMl": 12.1,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-237",
+    "foxName": "Телятина",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-238",
+    "foxName": "Тимьян",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-239",
+    "foxName": "Тмин",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-240",
+    "foxName": "Тростниковый сахар",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-241",
+    "foxName": "Тунец",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-242",
+    "foxName": "Тыква Хоккайдо",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-243",
+    "foxName": "Угорь",
+    "valueUgMl": 13.15,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-244",
+    "foxName": "Укроп",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-245",
+    "foxName": "Устрица",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-246",
+    "foxName": "Утиное мясо",
+    "valueUgMl": 8.46,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-247",
+    "foxName": "Фенхель (корень)",
+    "valueUgMl": 6.53,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-248",
+    "foxName": "Физалис",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-249",
+    "foxName": "Финик",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-250",
+    "foxName": "Фисташка",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-251",
+    "foxName": "Форель",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-252",
+    "foxName": "Фундук",
+    "valueUgMl": 6.56,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-253",
+    "foxName": "Хек",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-254",
+    "foxName": "Хлорелла",
+    "valueUgMl": 14.32,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-255",
+    "foxName": "Хмель",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-256",
+    "foxName": "Хрен",
+    "valueUgMl": 8.35,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-257",
+    "foxName": "Хрущак мучной",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-258",
+    "foxName": "Цветная капуста",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-259",
+    "foxName": "Цветы бузины",
+    "valueUgMl": 11.55,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-260",
+    "foxName": "Цикорий",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-261",
+    "foxName": "Цикорный салат",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-262",
+    "foxName": "Цуккини",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-263",
+    "foxName": "Чай, зеленый",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-264",
+    "foxName": "Чай, черный",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-265",
+    "foxName": "Черника",
+    "valueUgMl": 14.89,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-266",
+    "foxName": "Черноплодная рябина",
+    "valueUgMl": 68.52,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-267",
+    "foxName": "Чеснок",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-268",
+    "foxName": "Чечевица",
+    "valueUgMl": 70.03,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-269",
+    "foxName": "Чили (красный)",
+    "valueUgMl": 26.8,
+    "isFloorValue": false,
+    "zone": "red"
+   },
+   {
+    "id": "demo-270",
+    "foxName": "Шалфей",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-271",
+    "foxName": "Шампиньон",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-272",
+    "foxName": "Шелковица",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-273",
+    "foxName": "Шнитт-лук",
+    "valueUgMl": 9.24,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-274",
+    "foxName": "Шпинат",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-275",
+    "foxName": "Эмменталь",
+    "valueUgMl": 1.35,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-276",
+    "foxName": "Эринги",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-277",
+    "foxName": "Эстрагон",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-278",
+    "foxName": "Яблоко",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-279",
+    "foxName": "Ягода можжевельника",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-280",
+    "foxName": "Яичный белок",
+    "valueUgMl": 9.59,
+    "isFloorValue": false,
+    "zone": "green"
+   },
+   {
+    "id": "demo-281",
+    "foxName": "Яичный желток",
+    "valueUgMl": 16.31,
+    "isFloorValue": false,
+    "zone": "yellow"
+   },
+   {
+    "id": "demo-282",
+    "foxName": "Ячмень",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-283",
+    "foxName": "Aspergillus niger",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-284",
+    "foxName": "Cавойская капуста",
+    "valueUgMl": null,
+    "isFloorValue": true,
+    "zone": "green"
+   },
+   {
+    "id": "demo-285",
+    "foxName": "CCD",
+    "valueUgMl": 5.05,
+    "isFloorValue": false,
+    "zone": "green"
+   }
+  ],
+  "counts": {
+   "green": 225,
+   "yellow": 32,
+   "red": 28
+  }
+ },
+ "plan": {
+  "plan": {
+   "planId": "demo-plan",
+   "startedAt": "2026-09-13T08:20:18.678Z",
+   "weeks": [
+    {
+     "weekNumber": 1,
+     "phase": "Элиминация",
+     "days": [
+      {
+       "date": "2026-09-13",
+       "weekNumber": 1,
+       "allowed": [
+        "Абрикос",
+        "Авокадо",
+        "Агар-агар",
+        "Алоэ",
+        "Амарант",
+        "Ананас",
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": "Неделя 1: Элиминация. Держим зелёный список и следим за самочувствием."
+      },
+      {
+       "date": "2026-09-14",
+       "weekNumber": 1,
+       "allowed": [
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска",
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-15",
+       "weekNumber": 1,
+       "allowed": [
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа",
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-16",
+       "weekNumber": 1,
+       "allowed": [
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина",
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-17",
+       "weekNumber": 1,
+       "allowed": [
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика",
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-18",
+       "weekNumber": 1,
+       "allowed": [
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица",
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-19",
+       "weekNumber": 1,
+       "allowed": [
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок",
+        "Домашний сверчок",
+        "Дрожжи хлебопекарные",
+        "Дыня",
+        "Европейская камбала",
+        "Европейская сардина",
+        "Европейский анчоус"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      }
+     ]
+    },
+    {
+     "weekNumber": 2,
+     "phase": "Элиминация",
+     "days": [
+      {
+       "date": "2026-09-20",
+       "weekNumber": 2,
+       "allowed": [
+        "Абрикос",
+        "Авокадо",
+        "Агар-агар",
+        "Алоэ",
+        "Амарант",
+        "Ананас",
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": "Неделя 2: Элиминация. Держим зелёный список и следим за самочувствием."
+      },
+      {
+       "date": "2026-09-21",
+       "weekNumber": 2,
+       "allowed": [
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска",
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-22",
+       "weekNumber": 2,
+       "allowed": [
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа",
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-23",
+       "weekNumber": 2,
+       "allowed": [
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина",
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": true,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-24",
+       "weekNumber": 2,
+       "allowed": [
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика",
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-25",
+       "weekNumber": 2,
+       "allowed": [
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица",
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-26",
+       "weekNumber": 2,
+       "allowed": [
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок",
+        "Домашний сверчок",
+        "Дрожжи хлебопекарные",
+        "Дыня",
+        "Европейская камбала",
+        "Европейская сардина",
+        "Европейский анчоус"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      }
+     ]
+    },
+    {
+     "weekNumber": 3,
+     "phase": "Элиминация",
+     "days": [
+      {
+       "date": "2026-09-27",
+       "weekNumber": 3,
+       "allowed": [
+        "Абрикос",
+        "Авокадо",
+        "Агар-агар",
+        "Алоэ",
+        "Амарант",
+        "Ананас",
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": "Неделя 3: Элиминация. Держим зелёный список и следим за самочувствием."
+      },
+      {
+       "date": "2026-09-28",
+       "weekNumber": 3,
+       "allowed": [
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска",
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-29",
+       "weekNumber": 3,
+       "allowed": [
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа",
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-09-30",
+       "weekNumber": 3,
+       "allowed": [
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина",
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-01",
+       "weekNumber": 3,
+       "allowed": [
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика",
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-02",
+       "weekNumber": 3,
+       "allowed": [
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица",
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-03",
+       "weekNumber": 3,
+       "allowed": [
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок",
+        "Домашний сверчок",
+        "Дрожжи хлебопекарные",
+        "Дыня",
+        "Европейская камбала",
+        "Европейская сардина",
+        "Европейский анчоус"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      }
+     ]
+    },
+    {
+     "weekNumber": 4,
+     "phase": "Элиминация",
+     "days": [
+      {
+       "date": "2026-10-04",
+       "weekNumber": 4,
+       "allowed": [
+        "Абрикос",
+        "Авокадо",
+        "Агар-агар",
+        "Алоэ",
+        "Амарант",
+        "Ананас",
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": "Неделя 4: Элиминация. Держим зелёный список и следим за самочувствием."
+      },
+      {
+       "date": "2026-10-05",
+       "weekNumber": 4,
+       "allowed": [
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска",
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-06",
+       "weekNumber": 4,
+       "allowed": [
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа",
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-07",
+       "weekNumber": 4,
+       "allowed": [
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина",
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-08",
+       "weekNumber": 4,
+       "allowed": [
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика",
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-09",
+       "weekNumber": 4,
+       "allowed": [
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица",
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-10",
+       "weekNumber": 4,
+       "allowed": [
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок",
+        "Домашний сверчок",
+        "Дрожжи хлебопекарные",
+        "Дыня",
+        "Европейская камбала",
+        "Европейская сардина",
+        "Европейский анчоус"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      }
+     ]
+    },
+    {
+     "weekNumber": 5,
+     "phase": "Стабилизация",
+     "days": [
+      {
+       "date": "2026-10-11",
+       "weekNumber": 5,
+       "allowed": [
+        "Абрикос",
+        "Авокадо",
+        "Агар-агар",
+        "Алоэ",
+        "Амарант",
+        "Ананас",
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": "Неделя 5: Стабилизация. Держим зелёный список и следим за самочувствием."
+      },
+      {
+       "date": "2026-10-12",
+       "weekNumber": 5,
+       "allowed": [
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска",
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-13",
+       "weekNumber": 5,
+       "allowed": [
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа",
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-14",
+       "weekNumber": 5,
+       "allowed": [
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина",
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-15",
+       "weekNumber": 5,
+       "allowed": [
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика",
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-16",
+       "weekNumber": 5,
+       "allowed": [
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица",
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-17",
+       "weekNumber": 5,
+       "allowed": [
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок",
+        "Домашний сверчок",
+        "Дрожжи хлебопекарные",
+        "Дыня",
+        "Европейская камбала",
+        "Европейская сардина",
+        "Европейский анчоус"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      }
+     ]
+    },
+    {
+     "weekNumber": 6,
+     "phase": "Стабилизация",
+     "days": [
+      {
+       "date": "2026-10-18",
+       "weekNumber": 6,
+       "allowed": [
+        "Абрикос",
+        "Авокадо",
+        "Агар-агар",
+        "Алоэ",
+        "Амарант",
+        "Ананас",
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": "Неделя 6: Стабилизация. Держим зелёный список и следим за самочувствием."
+      },
+      {
+       "date": "2026-10-19",
+       "weekNumber": 6,
+       "allowed": [
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска",
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-20",
+       "weekNumber": 6,
+       "allowed": [
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа",
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-21",
+       "weekNumber": 6,
+       "allowed": [
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина",
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-22",
+       "weekNumber": 6,
+       "allowed": [
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика",
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-23",
+       "weekNumber": 6,
+       "allowed": [
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица",
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-24",
+       "weekNumber": 6,
+       "allowed": [
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок",
+        "Домашний сверчок",
+        "Дрожжи хлебопекарные",
+        "Дыня",
+        "Европейская камбала",
+        "Европейская сардина",
+        "Европейский анчоус"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      }
+     ]
+    },
+    {
+     "weekNumber": 7,
+     "phase": "Расширение",
+     "days": [
+      {
+       "date": "2026-10-25",
+       "weekNumber": 7,
+       "allowed": [
+        "Абрикос",
+        "Авокадо",
+        "Агар-агар",
+        "Алоэ",
+        "Амарант",
+        "Ананас",
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": "Неделя 7: Расширение. Держим зелёный список и следим за самочувствием."
+      },
+      {
+       "date": "2026-10-26",
+       "weekNumber": 7,
+       "allowed": [
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска",
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-27",
+       "weekNumber": 7,
+       "allowed": [
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа",
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-28",
+       "weekNumber": 7,
+       "allowed": [
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина",
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-29",
+       "weekNumber": 7,
+       "allowed": [
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика",
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-30",
+       "weekNumber": 7,
+       "allowed": [
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица",
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-10-31",
+       "weekNumber": 7,
+       "allowed": [
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок",
+        "Домашний сверчок",
+        "Дрожжи хлебопекарные",
+        "Дыня",
+        "Европейская камбала",
+        "Европейская сардина",
+        "Европейский анчоус"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      }
+     ]
+    },
+    {
+     "weekNumber": 8,
+     "phase": "Расширение",
+     "days": [
+      {
+       "date": "2026-11-01",
+       "weekNumber": 8,
+       "allowed": [
+        "Абрикос",
+        "Авокадо",
+        "Агар-агар",
+        "Алоэ",
+        "Амарант",
+        "Ананас",
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": "Неделя 8: Расширение. Держим зелёный список и следим за самочувствием."
+      },
+      {
+       "date": "2026-11-02",
+       "weekNumber": 8,
+       "allowed": [
+        "Анис",
+        "Арахис",
+        "Арбуз",
+        "Артишок",
+        "Атлантическая сельдь",
+        "Атлантическая треска",
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-11-03",
+       "weekNumber": 8,
+       "allowed": [
+        "Базилик",
+        "Баклажан",
+        "Банан",
+        "Баобаб",
+        "Баранина",
+        "Белая спаржа",
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-11-04",
+       "weekNumber": 8,
+       "allowed": [
+        "Белая фасоль",
+        "Белокочанная капуста",
+        "Бобы мунг",
+        "Бразильский орех",
+        "Брюссельская капуста",
+        "Бузина",
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-11-05",
+       "weekNumber": 8,
+       "allowed": [
+        "Буйволиное молоко",
+        "Венериды",
+        "Верблюжье молоко",
+        "Виноград",
+        "Вишня",
+        "Гвоздика",
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-11-06",
+       "weekNumber": 8,
+       "allowed": [
+        "Гибискус",
+        "Гинкго билоба",
+        "Глютен",
+        "Говядина",
+        "Горох",
+        "Горчица",
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      },
+      {
+       "date": "2026-11-07",
+       "weekNumber": 8,
+       "allowed": [
+        "Гребешок",
+        "Грейпфрут",
+        "Грецкий орех",
+        "Груша",
+        "Двустворчатый моллюск",
+        "Дикий чеснок",
+        "Домашний сверчок",
+        "Дрожжи хлебопекарные",
+        "Дыня",
+        "Европейская камбала",
+        "Европейская сардина",
+        "Европейский анчоус"
+       ],
+       "forbidden": [
+        "Апельсин",
+        "Ваниль",
+        "Вешенка",
+        "Гауда",
+        "Гречка",
+        "Дорада",
+        "Какао",
+        "Каперсы",
+        "Кардамон",
+        "Киноа"
+       ],
+       "isToday": false,
+       "botMessage": null
+      }
+     ]
+    }
+   ]
+  },
+  "weekTabs": [
+   {
+    "weekNumber": 1,
+    "phase": "Элиминация",
+    "days": []
+   },
+   {
+    "weekNumber": 2,
+    "phase": "Элиминация",
+    "days": []
+   },
+   {
+    "weekNumber": 3,
+    "phase": "Элиминация",
+    "days": []
+   },
+   {
+    "weekNumber": 4,
+    "phase": "Элиминация",
+    "days": []
+   },
+   {
+    "weekNumber": 5,
+    "phase": "Стабилизация",
+    "days": []
+   },
+   {
+    "weekNumber": 6,
+    "phase": "Стабилизация",
+    "days": []
+   },
+   {
+    "weekNumber": 7,
+    "phase": "Расширение",
+    "days": []
+   },
+   {
+    "weekNumber": 8,
+    "phase": "Расширение",
+    "days": []
+   }
+  ],
+  "currentWeek": 2
+ },
+ "recipes": {
+  "recipes": [
+   {
+    "id": "demo-recipe-3",
+    "title": "Запечённая куриная грудка",
+    "description": "Белковый ужин с минимумом ингредиентов",
+    "lead": "Запечённая грудка — база элиминационного меню: чистый белок, нейтральный вкус, легко комбинируется с овощами из зелёной зоны. Маринade из оливкового масла и лимона делает мясо ароматным без лишних аллергенов.",
+    "photoUrl": "/recipes/baked-chicken.jpg",
+    "prepTime": "10 мин",
+    "cookTime": "35 мин",
+    "servings": 2,
+    "tags": [
+     "40 мин",
+     "ужин",
+     "высокий белок"
+    ],
+    "steps": [
+     {
+      "title": "Подготовьте маринад",
+      "body": "Смешайте масло, сок половины лимона, соль, паприку и чеснок. Куриные грудки обсушите бумажным полотенцем — так корочка получится румянее."
+     },
+     {
+      "title": "Замаринуйте",
+      "body": "Натрите грудки маринадом со всех сторон. Оставьте на 10–15 минут. Для более насыщенного вкуса можно мариновать до 2 часов в холодильнике."
+     },
+     {
+      "title": "Запекайте",
+      "body": "Разогрейте духовку до 180 °C. Выложите грудки на противень, застеленный пергаментом. Запекайте 25–30 минут до внутренней температуры 74 °C или до прозрачного сока."
+     },
+     {
+      "title": "Дайте отдохнуть",
+      "body": "Перед нарезкой подождите 5 минут под фольгой — сок распределится, мясо останется сочным. Подавайте с тушёными овощами или салатом."
+     }
+    ],
+    "tips": [
+     "Не пересушивайте: грудка продолжает готовиться после духовки.",
+     "Нарежьте поперёк волокон — так кусочки будут мягче."
+    ],
+    "ingredientsList": [
+     {
+      "name": "Куриная грудка",
+      "amount": "2 шт. (~400 г)"
+     },
+     {
+      "name": "Оливковое масло",
+      "amount": "2 ст. л."
+     },
+     {
+      "name": "Лимон",
+      "amount": "½ шт."
+     },
+     {
+      "name": "Сушёный чеснок",
+      "amount": "½ ч. л."
+     },
+     {
+      "name": "Соль",
+      "amount": "по вкусу"
+     },
+     {
+      "name": "Паприка",
+      "amount": "½ ч. л."
+     }
+    ],
+    "ingredients": [
+     {
+      "name": "Курица",
+      "zone": "green"
+     }
+    ],
+    "suitable": true,
+    "allGreen": true,
+    "warnings": []
+   },
+   {
+    "id": "demo-recipe-5",
+    "title": "Рис с индейкой",
+    "description": "Сбалансированный обед на каждый день",
+    "lead": "Рис с индейкой — сытная тарелка, которая хорошо подходит для фазы стабилизации: белок, сложные углеводы и мало жира. Специи можно подбирать по своей зелёной зоне — базовый рецепт остаётся простым и понятным.",
+    "photoUrl": "/recipes/rice-turkey.jpg",
+    "prepTime": "10 мин",
+    "cookTime": "35 мин",
+    "servings": 2,
+    "tags": [
+     "35 мин",
+     "обед",
+     "сытно"
+    ],
+    "steps": [
+     {
+      "title": "Отварите рис",
+      "body": "Промойте рис. Залейте 300 мл воды, доведите до кипения, убавьте огонь и готовьте под крышкой 15–18 минут до мягкости. Дайте постоять 5 минут."
+     },
+     {
+      "title": "Нарежьте индейку и морковь",
+      "body": "Индейку нарежьте небольшими кубиками, морковь — тонкой соломкой или кубиками. Так всё прожарится равномерно."
+     },
+     {
+      "title": "Обжарьте индейку с овощами",
+      "body": "На сковороде разогрейте масло, обжаривайте индейку 5–6 минут. Добавьте морковь, готовьте ещё 4–5 минут до мягкости моркови и золотистой индейки."
+     },
+     {
+      "title": "Подавайте",
+      "body": "Выложите рис на тарелки, сверху — индейку с морковью. Перемешайте на тарелке или подавайте отдельными «горками»."
+     }
+    ],
+    "tips": [
+     "Для аромата добавьте лавровый лист при варке риса — если он в зелёной зоне.",
+     "Порцию можно взять с собой в контейнере — блюдо хорошо переносит разогрев."
+    ],
+    "ingredientsList": [
+     {
+      "name": "Рис",
+      "amount": "150 г"
+     },
+     {
+      "name": "Филе индейки",
+      "amount": "300 г"
+     },
+     {
+      "name": "Морковь",
+      "amount": "1 шт."
+     },
+     {
+      "name": "Оливковое масло",
+      "amount": "2 ст. л."
+     },
+     {
+      "name": "Вода или бульон",
+      "amount": "300 мл"
+     },
+     {
+      "name": "Соль",
+      "amount": "по вкусу"
+     }
+    ],
+    "ingredients": [
+     {
+      "name": "Рис",
+      "zone": "green"
+     },
+     {
+      "name": "Индейка",
+      "zone": "green"
+     }
+    ],
+    "suitable": true,
+    "allGreen": true,
+    "warnings": []
+   },
+   {
+    "id": "demo-recipe-4",
+    "title": "Салат с лососем и шпинатом",
+    "description": "Омега-3 и зелень для обеда",
+    "lead": "Лосось и шпинат — мощная пара для восстановления: жирные кислоты и железо, плюс лёгкость салата. Рыбу можно запечь или lightly обжарить — главное, не переварить, чтобы она осталась нежной.",
+    "photoUrl": "/recipes/salmon-spinach.jpg",
+    "prepTime": "12 мин",
+    "cookTime": "15 мин",
+    "servings": 2,
+    "tags": [
+     "30 мин",
+     "обед",
+     "омега-3"
+    ],
+    "steps": [
+     {
+      "title": "Приготовьте лосось",
+      "body": "Посолите филе, сбрызните маслом. Запекайте 12–14 минут при 190 °C или обжаривайте по 3–4 минуты с каждой стороны на среднем огне до готовности."
+     },
+     {
+      "title": "Подготовьте зелень",
+      "body": "Промойте шпинат и обсушите. Огурец нарежьте тонкими полукольцами. В большой миске смешайте шпинат и огурец."
+     },
+     {
+      "title": "Разделите рыбу",
+      "body": "Готовый лосось разделите на крупные куски вилкой — так сохранится текстура. Сбрызните лимонным соком."
+     },
+     {
+      "title": "Соберите блюдо",
+      "body": "Выложите лосось на зелень, добавьте оставшееся масло и лимон. Аккуратно перемешайте и подавайте сразу."
+     }
+    ],
+    "tips": [
+     "Если лосось в жёлтой зоне — уточните у бота частоту употребления.",
+     "Добавьте авокадо, если он в вашей зелёной зоне."
+    ],
+    "ingredientsList": [
+     {
+      "name": "Филе лосося",
+      "amount": "2 шт. (~300 г)"
+     },
+     {
+      "name": "Шпинат свежий",
+      "amount": "100 г"
+     },
+     {
+      "name": "Огурец",
+      "amount": "1 шт."
+     },
+     {
+      "name": "Оливковое масло",
+      "amount": "2 ст. л."
+     },
+     {
+      "name": "Лимон",
+      "amount": "½ шт."
+     },
+     {
+      "name": "Соль",
+      "amount": "по вкусу"
+     }
+    ],
+    "ingredients": [
+     {
+      "name": "Лосось",
+      "zone": "green"
+     },
+     {
+      "name": "Шпинат",
+      "zone": "green"
+     }
+    ],
+    "suitable": true,
+    "allGreen": true,
+    "warnings": []
+   },
+   {
+    "id": "demo-recipe-1",
+    "title": "Салат с индейкой и брокколи",
+    "description": "Лёгкий белковый обед из зелёной зоны",
+    "lead": "Сочный салат с нежной индейкой и хрустящей брокколи — идеален на этапе элиминации: много белка, мало возни, продукты из вашей зелёной зоны FOX. Заправка на оливковом масле не перебивает вкус, а лимон добавляет свежести.",
+    "photoUrl": "/recipes/turkey-broccoli.jpg",
+    "prepTime": "15 мин",
+    "cookTime": "12 мин",
+    "servings": 2,
+    "tags": [
+     "15 мин",
+     "обед",
+     "легко"
+    ],
+    "steps": [
+     {
+      "title": "Подготовьте индейку",
+      "body": "Нарежьте филе индейки тонкими полосками или кубиками. Посолите, поперчите и оставьте на 5 минут при комнатной темпераатуре — так мясо получится сочнее."
+     },
+     {
+      "title": "Обжарьте индейку",
+      "body": "Разогрейте сковороду с 1 ст. л. масла на среднем огне. Обжаривайте индейку 4–5 минут, помешивая, до золотистой корочки и полной готовности."
+     },
+     {
+      "title": "Приготовьте брокколи",
+      "body": "Разделите брокколи на небольшие соцветия. Отварите 3–4 минуты в подсоленной воде или приготовьте на пару — она должна остаться слегка хрустящей, не мягкой."
+     },
+     {
+      "title": "Соберите салат",
+      "body": "Смешайте индейку и брокколи в миске. Добавьте оставшееся масло, лимонный сок, аккуратно перемешайте. Подавайте сразу, пока брокколи ярко-зелёная."
+     }
+    ],
+    "tips": [
+     "Индейку можно заменить куриной грудкой, если она тоже в вашей зелёной зоне.",
+     "Салат хорошо сочетается с гречкой как гарниром на ужин."
+    ],
+    "ingredientsList": [
+     {
+      "name": "Филе индейки",
+      "amount": "300 г"
+     },
+     {
+      "name": "Брокколи",
+      "amount": "200 г"
+     },
+     {
+      "name": "Оливковое масло",
+      "amount": "2 ст. л."
+     },
+     {
+      "name": "Лимонный сок",
+      "amount": "1 ст. л."
+     },
+     {
+      "name": "Соль",
+      "amount": "по вкусу"
+     },
+     {
+      "name": "Чёрный перец",
+      "amount": "щепотка"
+     }
+    ],
+    "ingredients": [
+     {
+      "name": "Индейка",
+      "zone": "green"
+     },
+     {
+      "name": "Брокколи",
+      "zone": "yellow"
+     }
+    ],
+    "suitable": true,
+    "allGreen": false,
+    "warnings": [
+     "Брокколи — жёлтая зона, учитывайте ротацию"
+    ]
+   },
+   {
+    "id": "demo-recipe-2",
+    "title": "Гречка с кабачком",
+    "description": "Сытный ужин без глютена",
+    "lead": "Классическое сочетание для элиминационной фазы: гречка даёт медленные углеводы и сытость, а тушёный кабачок — мягкость и клетчатку. Блюдо готовится в одной сковороде, подходит для будних вечеров.",
+    "photoUrl": "/recipes/buckwheat-zucchini.jpg",
+    "prepTime": "10 мин",
+    "cookTime": "25 мин",
+    "servings": 2,
+    "tags": [
+     "25 мин",
+     "ужин",
+     "без глютена"
+    ],
+    "steps": [
+     {
+      "title": "Отварите гречку",
+      "body": "Промойте гречку до прозрачной воды. Залейте 240 мл воды, доведите до кипения, убавьте огонь и готовьте под крышкой 15 минут. Снимите с огня и дайте настояться 5 минут."
+     },
+     {
+      "title": "Нарежьте кабачок",
+      "body": "Кабачок нарежьте полукольцами толщиной около 5 мм. Если кожура жёсткая — снимите тонким слоем, молодой цуккини можно не чистить."
+     },
+     {
+      "title": "Прогрейте кабачок",
+      "body": "На сковороде разогрейте масло, добавьте измельчённый чеснок. Обжаривайте кабачок 6–8 минут на среднем огне до лёгкой золотистости, периодически переворачивая."
+     },
+     {
+      "title": "Подавайте",
+      "body": "Выложите гречку на тарелки, сверху — кабачок. Посыпьте укропом, при необходимости добавьте каплю масла. Подавайте горячим."
+     }
+    ],
+    "tips": [
+     "Для разнообразия добавьте щепотку куркумы в гречку при варке.",
+     "Остатки храните в холодильнике до 2 суток — разогревайте на сковороде."
+    ],
+    "ingredientsList": [
+     {
+      "name": "Гречка",
+      "amount": "120 г"
+     },
+     {
+      "name": "Кабачок / цуккини",
+      "amount": "1 шт. (~300 г)"
+     },
+     {
+      "name": "Оливковое масло",
+      "amount": "2 ст. л."
+     },
+     {
+      "name": "Чеснок",
+      "amount": "1 зубчик"
+     },
+     {
+      "name": "Укроп",
+      "amount": "несколько веточек"
+     },
+     {
+      "name": "Соль",
+      "amount": "по вкусу"
+     }
+    ],
+    "ingredients": [
+     {
+      "name": "Гречка",
+      "zone": "red"
+     },
+     {
+      "name": "Цуккини",
+      "zone": "green"
+     }
+    ],
+    "suitable": false,
+    "allGreen": false,
+    "warnings": [
+     "Гречка — в вашей красной зоне"
+    ]
+   }
+  ],
+  "weekNumber": 2,
+  "suitableCount": 4,
+  "totalCount": 5
+ },
+ "chat": {
+  "messages": [
+   {
+    "id": "demo-c1",
+    "role": "assistant",
+    "messageType": "daily_reminder",
+    "content": "Доброе утро! Идёт неделя 2 — элиминация. Сегодня держим зелёный список: абрикос, авокадо, агар-агар, алоэ."
+   },
+   {
+    "id": "demo-c2",
+    "role": "assistant",
+    "messageType": "chat",
+    "content": "Я разобрал ваш отчёт FOX. Спросите, что можно есть, чем заменить продукт из красной зоны или как собрать меню на день."
+   }
+  ]
+ }
+}
