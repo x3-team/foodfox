@@ -33,6 +33,20 @@ else
   echo "!! apps/web/.env is missing — the build will fall back to defaults" >&2
 fi
 
+# Printed on every deploy so a misconfigured server is obvious from the log.
+# Secrets are reported as set/MISSING only; the demo login is deliberately
+# shown in full because the app puts it on screen and the team needs to know
+# which test account the deployed server actually accepts.
+echo "==> Config"
+flag() { [[ -n "${1:-}" ]] && echo "set" || echo "MISSING"; }
+echo "    DATABASE_URL:     $(flag "${DATABASE_URL:-}")"
+echo "    SESSION_SECRET:   $(flag "${SESSION_SECRET:-}")"
+echo "    FOX_HELI_API_KEY: $(flag "${FOX_HELI_API_KEY:-}")"
+echo "    HELI_BASE_URL:    ${HELI_BASE_URL:-<code default>}"
+echo "    HELI_CHAT_MODEL:  ${HELI_CHAT_MODEL:-<code default>}"
+echo "    FOX_DEMO_PHONES:  ${FOX_DEMO_PHONES:-<code default>}"
+echo "    FOX_DEMO_OTP:     ${FOX_DEMO_OTP:-<code default>}"
+
 echo "==> Build Next.js"
 npm ci --include=dev
 # A stale .next can keep serving prerendered route bodies from an older build.
