@@ -85,14 +85,15 @@ class DemoBackend {
         )
         .weekNumber;
 
-    if (week == null) {
-      return (plan: plan, weekTabs: tabs, currentWeek: currentWeek);
-    }
+    // The server ships one week at a time and the screen loads the rest on
+    // demand, so the demo has to answer the same way or the selected week
+    // arrives empty.
+    final wanted = week ?? currentWeek;
     return (
       plan: PlanData(
         planId: plan.planId,
         startedAt: plan.startedAt,
-        weeks: plan.weeks.where((w) => w.weekNumber == week).toList(),
+        weeks: plan.weeks.where((w) => w.weekNumber == wanted).toList(),
       ),
       weekTabs: tabs,
       currentWeek: currentWeek,
@@ -124,7 +125,8 @@ class DemoBackend {
 
     return {
       "planId": raw["planId"],
-      "startedAt": generatedStart.add(shift).toIso8601String(),
+      // Date only, the shape the API returns.
+      "startedAt": _dayKey(generatedStart.add(shift)),
       "weeks": weeks,
     };
   }

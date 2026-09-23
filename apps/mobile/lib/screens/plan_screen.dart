@@ -86,6 +86,15 @@ class _PlanScreenState extends State<PlanScreen> {
     }
   }
 
+  /// The API sends an ISO date; nobody wants to read one in a sentence.
+  String _formatStart(String raw) {
+    final date = DateTime.tryParse(raw);
+    if (date == null) return raw;
+    final d = date.day.toString().padLeft(2, "0");
+    final m = date.month.toString().padLeft(2, "0");
+    return "$d.$m.${date.year}";
+  }
+
   List<PlanWeekItem> get _selectorWeeks {
     if (_weekTabs.isNotEmpty) {
       return _weekTabs.map((tab) {
@@ -178,7 +187,8 @@ class _PlanScreenState extends State<PlanScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      "Старт: ${_planMeta!.startedAt} · Сейчас неделя $_currentWeek из 8",
+                      "Старт: ${_formatStart(_planMeta!.startedAt)} · "
+                      "Сейчас неделя $_currentWeek из 8",
                       style: const TextStyle(color: FoxColors.muted),
                     ),
                     const SizedBox(height: 12),
