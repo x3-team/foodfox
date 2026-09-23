@@ -22,6 +22,22 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 20m
           script: |
+            set -euo pipefail
+            BRANCH=cursor/mvp-web-prototype-5e5b
             cd /var/www/foodfox
+
+            echo "==> checkout on server before running anything from it"
+            echo "    was: $(git rev-parse --short HEAD 2>/dev/null || echo 'not a git repo') \
+            on $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '-')"
+            git fetch --prune origin "$BRANCH"
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+            # The deploy script itself lives in the repo, so the sync cannot be
+            # delegated to it: a server left on an older commit has no script
+            # to run. Hard reset because this checkout is a deploy target, not
+            # a workspace — apps/web/.env is untracked and survives.
+            git reset --hard "origin/$BRANCH"
+            echo "    now: $(git rev-parse --short HEAD)"
+
             bash deploy/vps/update.sh
