@@ -36,9 +36,9 @@ export function hashOtp(phone: string, code: string): string {
  * app can be reviewed without a live provider.
  */
 export function demoCodeFor(phone: string): string | null {
-  const demo = (process.env.FOX_DEMO_PHONES ?? "79991234567")
+  const demo = (process.env.FOX_DEMO_PHONES ?? "79251111111,79991234567")
     .split(",")
     .map((p) => p.trim())
     .filter(Boolean);
-  return demo.includes(phone) ? (process.env.FOX_DEMO_OTP ?? "4747") : null;
+  return demo.includes(phone) ? (process.env.FOX_DEMO_OTP ?? "1111") : null;
 }

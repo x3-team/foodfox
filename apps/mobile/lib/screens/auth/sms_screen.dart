@@ -19,6 +19,7 @@ class SmsScreen extends StatefulWidget {
     this.error,
     this.busy = false,
     this.demoCode,
+    this.offlineNotice,
   });
 
   final String phone;
@@ -30,6 +31,10 @@ class SmsScreen extends StatefulWidget {
 
   /// Code the review build can sign in with, or null in a real build.
   final String? demoCode;
+
+  /// Set when the backend refused the request and the review build fell back
+  /// to bundled data, so the screen can say so rather than imply an SMS.
+  final String? offlineNotice;
 
   @override
   State<SmsScreen> createState() => _SmsScreenState();
@@ -142,7 +147,7 @@ class _SmsScreenState extends State<SmsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "Отправили на $_prettyPhone",
+                      widget.offlineNotice ?? "Отправили на $_prettyPhone",
                       textAlign: TextAlign.center,
                       style: FoxType.bodyS.copyWith(
                         color: FoxTokens.textSecondary,

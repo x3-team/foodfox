@@ -30,8 +30,10 @@ class RecipeDetailScreen extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
+                  // RecipePhoto, not Image.network: the catalogue stores
+                  // site-relative paths that only resolve against the bundle.
                   if (recipe.photoUrl != null && recipe.photoUrl!.isNotEmpty)
-                    Image.network(recipe.photoUrl!, fit: BoxFit.cover)
+                    RecipePhoto(photoUrl: recipe.photoUrl)
                   else
                     const DecoratedBox(
                       decoration: BoxDecoration(

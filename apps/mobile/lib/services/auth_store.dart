@@ -14,6 +14,7 @@ class AuthStore {
   static const _kPinHash = "fox.pinHash";
   static const _kPinSalt = "fox.pinSalt";
   static const _kBiometrics = "fox.biometrics";
+  static const _kDemo = "fox.demoSession";
   static const _kPhone = "fox.phone";
   static const _kName = "fox.displayName";
 
@@ -27,17 +28,23 @@ class AuthStore {
   Future<String?> get phone async => (await _p).getString(_kPhone);
   Future<String?> get displayName async => (await _p).getString(_kName);
 
+  /// Whether the stored session is the offline demo one, so a warm start
+  /// serves bundled data instead of calling a backend it cannot reach.
+  Future<bool> get isDemoSession async => (await _p).getBool(_kDemo) ?? false;
+
   Future<void> saveSession({
     required String accessToken,
     String? refreshToken,
     String? phone,
     String? displayName,
+    bool demo = false,
   }) async {
     final p = await _p;
     await p.setString(_kAccess, accessToken);
     if (refreshToken != null) await p.setString(_kRefresh, refreshToken);
     if (phone != null) await p.setString(_kPhone, phone);
     if (displayName != null) await p.setString(_kName, displayName);
+    await p.setBool(_kDemo, demo);
   }
 
   Future<bool> get hasPin async => (await _p).getString(_kPinHash) != null;

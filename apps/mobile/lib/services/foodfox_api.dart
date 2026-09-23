@@ -4,6 +4,7 @@ import "dart:io";
 
 import "package:foodfox/config/api_config.dart";
 import "package:foodfox/models/models.dart";
+import "package:foodfox/services/demo_backend.dart";
 import "package:foodfox/utils/api_cache.dart";
 import "package:foodfox/utils/network_errors.dart";
 import "package:http/http.dart" as http;
@@ -16,6 +17,21 @@ class FoodFoxApi {
   String? _accessToken;
   String? _refreshToken;
   String? _sessionCookie;
+  DemoBackend? _demo;
+
+  /// Serving canned data because the demo account signed in without a server.
+  bool get isDemo => _demo != null;
+
+  /// Only reachable from the demo credentials, which are empty unless the
+  /// build was made with the review dart-defines.
+  Future<UserProfile> startDemoSession() async {
+    if (!ApiConfig.hasDemoCredentials) {
+      throw Exception("Демо-режим недоступен в этой сборке");
+    }
+    _demo = await DemoBackend.load();
+    _cache.clear();
+    return _demo!.me().user;
+  }
 
   Map<String, String> get _headers {
     final credentials = base64Encode(
@@ -85,7 +101,8 @@ class FoodFoxApi {
     return data;
   }
 
-  bool get isLoggedIn => _accessToken != null || _sessionCookie != null;
+  bool get isLoggedIn =>
+      _accessToken != null || _sessionCookie != null || _demo != null;
 
   String? get accessToken => _accessToken;
   String? get refreshTokenValue => _refreshToken;
@@ -189,6 +206,8 @@ class FoodFoxApi {
   }
 
   Future<({UserProfile user, ClientProfile profile})> fetchMe() async {
+    final demo = _demo;
+    if (demo != null) return demo.me();
     return _withRetry(() async {
       final response = await _client.get(
         _uri("/api/auth/me"),
@@ -206,6 +225,8 @@ class FoodFoxApi {
 
   Future<({PlanData? plan, List<PlanWeekItem> weekTabs, int currentWeek})>
   fetchPlan({int? week, bool force = false}) async {
+    final demo = _demo;
+    if (demo != null) return demo.plan(week: week);
     final cacheKey = "plan:${week ?? "current"}";
     if (!force) {
       final cached = _cache
@@ -241,6 +262,8 @@ class FoodFoxApi {
   Future<({List<ResultItem> results, ZoneCounts counts})> fetchResults({
     bool force = false,
   }) async {
+    final demo = _demo;
+    if (demo != null) return demo.results();
     if (!force) {
       final cached = _cache
           .get<({List<ResultItem> results, ZoneCounts counts})>("results");
@@ -268,6 +291,8 @@ class FoodFoxApi {
 
   Future<({List<RecipeItem> recipes, int weekNumber, int suitableCount})>
   fetchRecipes({bool force = false}) async {
+    final demo = _demo;
+    if (demo != null) return demo.recipes();
     if (!force) {
       final cached = _cache
           .get<({List<RecipeItem> recipes, int weekNumber, int suitableCount})>(
@@ -297,6 +322,8 @@ class FoodFoxApi {
   }
 
   Future<List<ChatMessage>> fetchMessages({bool force = false}) async {
+    final demo = _demo;
+    if (demo != null) return demo.messages();
     if (!force) {
       final cached = _cache.get<List<ChatMessage>>("chat");
       if (cached != null) return cached;
@@ -318,12 +345,18 @@ class FoodFoxApi {
   }
 
   Future<void> markChatRead() async {
+    if (_demo != null) return;
     await _withRetry(() async {
       await _client.patch(_uri("/api/chat/unread"), headers: _headers);
     });
   }
 
   Future<List<ChatMessage>> sendChat(String message) async {
+    final demo = _demo;
+    if (demo != null) {
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+      return demo.reply(message);
+    }
     return _withRetry(
       () async {
         final response = await _client.post(
@@ -344,6 +377,12 @@ class FoodFoxApi {
   }
 
   Future<void> uploadPdf(List<int> bytes, String filename) async {
+    if (_demo != null) {
+      throw Exception(
+        "В демо-режиме отчёт не загружается: разбор PDF выполняется на сервере. "
+        "Результаты во вкладке «Результаты» — из демо-отчёта.",
+      );
+    }
     await _withRetry(() async {
       final request = http.MultipartRequest(
         "POST",

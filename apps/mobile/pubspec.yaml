@@ -28,6 +28,7 @@ flutter:
     - assets/images/fox_logo.png
     - assets/images/onboarding_hero.jpg
     - assets/recipes/
+    - assets/demo/
   fonts:
     - family: Manrope
       fonts:

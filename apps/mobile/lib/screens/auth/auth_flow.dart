@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 
 import "package:foodfox/config/api_config.dart";
+import "package:foodfox/models/models.dart";
 import "package:foodfox/screens/auth/phone_screen.dart";
 import "package:foodfox/screens/auth/pin_screen.dart";
 import "package:foodfox/screens/auth/sms_screen.dart";
@@ -35,6 +36,13 @@ class _AuthFlowState extends State<AuthFlow> {
   String? _error;
   bool _busy = false;
 
+  /// True while the review build is signing in against bundled data because
+  /// the backend could not take the request.
+  bool _offlineDemo = false;
+
+  bool _isDemoPhone(String phone) =>
+      ApiConfig.hasDemoCredentials && phone == "7${ApiConfig.demoPhone}";
+
   Future<void> _requestCode(String phone) async {
     setState(() {
       _busy = true;
@@ -45,11 +53,23 @@ class _AuthFlowState extends State<AuthFlow> {
       if (!mounted) return;
       setState(() {
         _phone = phone;
+        _offlineDemo = false;
         _step = _Step.sms;
         _busy = false;
       });
     } catch (e) {
       if (!mounted) return;
+      // The demo account is meant for reviewing the app, so an unreachable or
+      // out-of-date backend must not be the thing that blocks it.
+      if (_isDemoPhone(phone)) {
+        setState(() {
+          _phone = phone;
+          _offlineDemo = true;
+          _step = _Step.sms;
+          _busy = false;
+        });
+        return;
+      }
       setState(() {
         _error = _clean(e);
         _busy = false;
@@ -63,12 +83,17 @@ class _AuthFlowState extends State<AuthFlow> {
       _error = null;
     });
     try {
-      final profile = await widget.api.verifyOtp(_phone, code);
+      final profile = _offlineDemo
+          ? await _verifyOffline(code)
+          : await widget.api.verifyOtp(_phone, code);
       await widget.store.saveSession(
-        accessToken: widget.api.accessToken ?? "",
+        // The demo session has no token; a placeholder keeps the warm-start
+        // path, which only checks for a stored session, working.
+        accessToken: widget.api.accessToken ?? (_offlineDemo ? "demo" : ""),
         refreshToken: widget.api.refreshTokenValue,
         phone: _phone,
         displayName: profile.displayName,
+        demo: _offlineDemo,
       );
       if (!mounted) return;
       setState(() {
@@ -82,6 +107,15 @@ class _AuthFlowState extends State<AuthFlow> {
         _busy = false;
       });
     }
+  }
+
+  Future<UserProfile> _verifyOffline(String code) async {
+    if (code != ApiConfig.demoOtp) {
+      throw Exception(
+        "Неверный код — в демо-режиме подходит только ${ApiConfig.demoOtp}",
+      );
+    }
+    return widget.api.startDemoSession();
   }
 
   String _clean(Object e) =>
@@ -132,6 +166,9 @@ class _AuthFlowState extends State<AuthFlow> {
           busy: _busy,
           error: _error,
           demoCode: ApiConfig.hasDemoCredentials ? ApiConfig.demoOtp : null,
+          offlineNotice: _offlineDemo
+              ? "Сервер недоступен — вход в демо-режиме с тестовыми данными"
+              : null,
           onSubmit: _verifyCode,
           onResend: () => widget.api.requestOtp(_phone),
           onChangeNumber: () => setState(() {

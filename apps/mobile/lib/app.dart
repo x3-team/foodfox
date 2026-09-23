@@ -41,6 +41,18 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
 
   /// Restores tokens while the splash animation plays.
   Future<void> _bootstrap() async {
+    if (await _store.isDemoSession) {
+      try {
+        await _api.startDemoSession();
+        _hasStoredSession = await _store.hasPin;
+        _bootstrapped = true;
+        if (mounted) setState(() {});
+        return;
+      } catch (_) {
+        // Falls through to the normal path when the build carries no demo data.
+      }
+    }
+
     final access = await _store.accessToken;
     final refresh = await _store.refreshToken;
     _api.restoreSession(accessToken: access, refreshToken: refresh);
