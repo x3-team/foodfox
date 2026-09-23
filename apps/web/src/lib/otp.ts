@@ -36,9 +36,13 @@ export function hashOtp(phone: string, code: string): string {
  * app can be reviewed without a live provider.
  */
 export function demoCodeFor(phone: string): string | null {
+  // Normalise the configured list the same way the caller's number was
+  // normalised. Operators write these by hand in .env and reasonably reach for
+  // "+7 925 111-11-11"; comparing raw strings silently issues a real random
+  // code instead, and the demo account then cannot log in at all.
   const demo = (process.env.FOX_DEMO_PHONES ?? "79251111111,79991234567")
     .split(",")
-    .map((p) => p.trim())
-    .filter(Boolean);
+    .map((p) => normalizePhone(p))
+    .filter((p): p is string => p !== null);
   return demo.includes(phone) ? (process.env.FOX_DEMO_OTP ?? "1111") : null;
 }

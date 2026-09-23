@@ -12,7 +12,8 @@
     "parser:fixture:gen": "npx tsx scripts/generate-parser-fixture.ts",
     "parser:run": "npx tsx scripts/run-fox-parser.ts",
     "parser:catalog": "npx tsx scripts/generate-fox-catalog-ru.ts",
-    "figma:capture": "npx tsx scripts/figma-capture-one.ts"
+    "figma:capture": "npx tsx scripts/figma-capture-one.ts",
+    "otp:test": "npx tsx scripts/otp.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1123.0",
