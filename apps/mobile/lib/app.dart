@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 
 import "package:foodfox/screens/auth/auth_flow.dart";
 import "package:foodfox/screens/chat_screen.dart";
@@ -203,61 +204,67 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FoxTokens.bgNeutral,
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _layer(
-              0,
-              ResultsScreen(
-                key: const ValueKey("results"),
-                api: widget.api,
-                reloadToken: _resultsReload,
-                onAskBot: _askBot,
-                onOpenPlan: () => _select(1),
-                onOpenRecipes: () => _select(3),
-                onUpload: () => _select(4),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: foxSystemOverlay,
+      child: Scaffold(
+        backgroundColor: FoxTokens.bgNeutral,
+        body: SafeArea(
+          bottom: false,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              _layer(
+                0,
+                ResultsScreen(
+                  key: const ValueKey("results"),
+                  api: widget.api,
+                  reloadToken: _resultsReload,
+                  onAskBot: _askBot,
+                  onOpenPlan: () => _select(1),
+                  onOpenRecipes: () => _select(3),
+                  onUpload: () => _select(4),
+                ),
               ),
-            ),
-            _layer(1, PlanScreen(key: const ValueKey("plan"), api: widget.api)),
-            _layer(
-              2,
-              ChatScreen(
-                key: ValueKey("chat-$_chatSeed"),
-                api: widget.api,
-                initialMessage: _chatPrompt,
+              _layer(
+                1,
+                PlanScreen(key: const ValueKey("plan"), api: widget.api),
               ),
-            ),
-            _layer(
-              3,
-              RecipesScreen(key: const ValueKey("recipes"), api: widget.api),
-            ),
-            _layer(
-              4,
-              ProfileScreen(
-                key: const ValueKey("profile"),
-                api: widget.api,
-                store: widget.store,
-                onSignOut: widget.onSignOut,
-                onUploadReport: () => _openUpload(),
+              _layer(
+                2,
+                ChatScreen(
+                  key: ValueKey("chat-$_chatSeed"),
+                  api: widget.api,
+                  initialMessage: _chatPrompt,
+                ),
               ),
-            ),
+              _layer(
+                3,
+                RecipesScreen(key: const ValueKey("recipes"), api: widget.api),
+              ),
+              _layer(
+                4,
+                ProfileScreen(
+                  key: const ValueKey("profile"),
+                  api: widget.api,
+                  store: widget.store,
+                  onSignOut: widget.onSignOut,
+                  onUploadReport: () => _openUpload(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: FoxTabBar(
+          index: _tab,
+          onSelect: _select,
+          tabs: const [
+            FoxTab(kind: FoxIconKind.report, label: "Отчёт"),
+            FoxTab(kind: FoxIconKind.plan, label: "План"),
+            FoxTab(kind: FoxIconKind.chat, label: "Чат"),
+            FoxTab(kind: FoxIconKind.recipes, label: "Рецепты"),
+            FoxTab(kind: FoxIconKind.profile, label: "Профиль"),
           ],
         ),
-      ),
-      bottomNavigationBar: FoxTabBar(
-        index: _tab,
-        onSelect: _select,
-        tabs: const [
-          FoxTab(kind: FoxIconKind.report, label: "Отчёт"),
-          FoxTab(kind: FoxIconKind.plan, label: "План"),
-          FoxTab(kind: FoxIconKind.chat, label: "Чат"),
-          FoxTab(kind: FoxIconKind.recipes, label: "Рецепты"),
-          FoxTab(kind: FoxIconKind.profile, label: "Профиль"),
-        ],
       ),
     );
   }

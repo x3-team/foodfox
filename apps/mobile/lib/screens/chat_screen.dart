@@ -477,7 +477,7 @@ class _Composer extends StatelessWidget {
                   maxLines: 4,
                   style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
                   decoration: InputDecoration(
-                    hintText: "Спросите про продукт или план…",
+                    hintText: "Спросить",
                     hintStyle: FoxType.bodyS.copyWith(
                       color: FoxTokens.textSecondary,
                     ),

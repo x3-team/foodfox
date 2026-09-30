@@ -27,14 +27,18 @@ class FoxTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).padding.bottom;
+    // Scaffold pins this bar to the physical bottom of the window. On Android
+    // that window runs under the system navigation bar, so the labels have to
+    // sit above the inset or the system buttons cover them.
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Container(
+      key: const Key("fox-tab-bar"),
       decoration: const BoxDecoration(
         color: FoxTokens.bgCard,
         border: Border(top: BorderSide(color: FoxTokens.borderLight)),
       ),
-      padding: EdgeInsets.only(top: 12, bottom: bottomInset > 0 ? 10 : 14),
+      padding: EdgeInsets.only(top: 12, bottom: 14 + bottomInset),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
