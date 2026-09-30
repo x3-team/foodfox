@@ -1,0 +1,10 @@
+.android-sdk/
+apps/mobile/build/
+apps/mobile/.dart_tool/
+apps/web/.next/
+apps/web/node_modules/
+artifacts/
+data/reports/
+.DS_Store
+.flutter-sdk/
+*.iml

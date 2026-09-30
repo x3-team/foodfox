@@ -1,0 +1,24 @@
+# FoodFox on VPS — Postgres only (web runs via PM2 on host)
+# Usage: docker compose -f deploy/vps/docker-compose.yml up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: foodfox-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: foodfox
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-foodfox_local}
+      POSTGRES_DB: foodfox
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - foodfox_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U foodfox -d foodfox"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  foodfox_pg_data:

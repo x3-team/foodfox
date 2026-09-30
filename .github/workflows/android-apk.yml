@@ -1,0 +1,86 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [cursor/mvp-web-prototype-5e5b, main]
+    paths:
+      - "apps/mobile/**"
+      - "VERSION"
+      - "scripts/bump-version.sh"
+      - ".github/workflows/android-apk.yml"
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bump build number
+        run: bash ../../scripts/bump-version.sh build
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android licenses
+        run: yes | flutter doctor --android-licenses || true
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Configure demo signing
+        run: cp android/key.properties.example android/key.properties
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Read version
+        id: version
+        working-directory: .
+        run: |
+          SEMVER=$(tr -d '[:space:]' < VERSION)
+          BUILD=$(grep '^version:' apps/mobile/pubspec.yaml | sed -E 's/.*\+([0-9]+).*/\1/')
+          echo "label=${SEMVER} (${BUILD})" >> "$GITHUB_OUTPUT"
+          echo "semver=${SEMVER}" >> "$GITHUB_OUTPUT"
+          echo "build=${BUILD}" >> "$GITHUB_OUTPUT"
+
+      - name: Build release APKs
+        run: |
+          flutter build apk --release --split-per-abi \
+            --build-name=${{ steps.version.outputs.semver }} \
+            --build-number=${{ steps.version.outputs.build }} \
+            --dart-define=FOX_API_BASE=https://foodfox.yuri.guru \
+            --dart-define=FOX_BASIC_USER=demo \
+            --dart-define=FOX_BASIC_PASS=FoodFox2026! \
+            --dart-define=FOX_DEMO_PHONE=9251111111 \
+            --dart-define=FOX_DEMO_OTP=1111
+          flutter build apk --release \
+            --build-name=${{ steps.version.outputs.semver }} \
+            --build-number=${{ steps.version.outputs.build }} \
+            --dart-define=FOX_API_BASE=https://foodfox.yuri.guru \
+            --dart-define=FOX_BASIC_USER=demo \
+            --dart-define=FOX_BASIC_PASS=FoodFox2026! \
+            --dart-define=FOX_DEMO_PHONE=9251111111 \
+            --dart-define=FOX_DEMO_OTP=1111
+
+      # AGP omits JAR signing for minSdk >= 24 and some OEM package installers
+      # reject such APKs with "problem parsing the package". Re-sign with every
+      # scheme so sideloading works on any device.
+      - name: Re-sign APKs with v1+v2+v3
+        run: bash ../../scripts/sign-apks.sh "${{ steps.version.outputs.semver }}"
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: foodfox-android-${{ steps.version.outputs.label }}
+          path: apps/mobile/dist/*.apk
+          retention-days: 30
