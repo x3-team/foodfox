@@ -13,9 +13,8 @@ void main() {
         home: Builder(
           builder: (context) {
             return MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                padding: const EdgeInsets.only(bottom: inset),
-              ),
+              data: MediaQuery.of(context)
+                  .copyWith(padding: const EdgeInsets.only(bottom: inset)),
               child: Scaffold(
                 bottomNavigationBar: FoxTabBar(
                   index: 0,
