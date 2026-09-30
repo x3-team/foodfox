@@ -1,6 +1,18 @@
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 
 import "package:foodfox/theme/fox_tokens.dart";
+
+/// Light system bars. The app does not follow the OS dark theme, and a black
+/// navigation bar drawn edge-to-edge covers the tab labels.
+const SystemUiOverlayStyle foxSystemOverlay = SystemUiOverlayStyle(
+  statusBarColor: Color(0x00000000),
+  statusBarIconBrightness: Brightness.dark,
+  statusBarBrightness: Brightness.light,
+  systemNavigationBarColor: Color(0xFFFFFFFF),
+  systemNavigationBarIconBrightness: Brightness.dark,
+  systemNavigationBarContrastEnforced: false,
+);
 
 /// Semantic aliases kept stable for existing screens; values follow the
 /// approved FOX design system (see fox_tokens.dart).
@@ -37,6 +49,7 @@ ThemeData buildFoxTheme() {
       foregroundColor: FoxColors.text,
       elevation: 0,
       scrolledUnderElevation: 0,
+      systemOverlayStyle: foxSystemOverlay,
     ),
     textTheme: TextTheme(
       displaySmall: FoxType.h3.copyWith(color: FoxColors.text),

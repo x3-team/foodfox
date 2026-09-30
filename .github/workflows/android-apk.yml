@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [cursor/mvp-web-prototype-5e5b, main]
+    branches: [main, "cursor/**"]
     paths:
       - "apps/mobile/**"
       - "VERSION"
@@ -29,7 +29,7 @@ jobs:
           cache: true
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Accept Android licenses
         run: yes | flutter doctor --android-licenses || true

@@ -148,11 +148,13 @@ class FoodFoxApi {
     final token = _refreshToken;
     if (token == null || token.isEmpty) return false;
     try {
-      final response = await _client.post(
-        _uri("/api/auth/refresh"),
-        headers: {..._headers, "Content-Type": "application/json"},
-        body: jsonEncode({"refreshToken": token}),
-      );
+      final response = await _client
+          .post(
+            _uri("/api/auth/refresh"),
+            headers: {..._headers, "Content-Type": "application/json"},
+            body: jsonEncode({"refreshToken": token}),
+          )
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode >= 400) return false;
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       _captureTokens(data);

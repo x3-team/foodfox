@@ -1,4 +1,7 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 
 import "package:foodfox/screens/auth/auth_flow.dart";
 import "package:foodfox/screens/chat_screen.dart";
@@ -31,6 +34,7 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
 
   _Stage _stage = _Stage.splash;
   bool _bootstrapped = false;
+  bool _splashFinished = false;
   bool _hasStoredSession = false;
 
   @override
@@ -39,45 +43,68 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
     _bootstrap();
   }
 
-  /// Restores tokens while the splash animation plays.
+  /// Restores the local session while the splash animation plays.
+  ///
+  /// A round trip to the server must not gate this. [fetchMe] retries for
+  /// about a minute and a half, and [refreshSession] has no deadline of its
+  /// own, so waiting here left the finished splash (logo in the corner, empty
+  /// green) on screen for as long as the network stayed quiet.
   Future<void> _bootstrap() async {
-    if (await _store.isDemoSession) {
-      try {
-        await _api.startDemoSession();
-        _hasStoredSession = await _store.hasPin;
-        _bootstrapped = true;
-        if (mounted) setState(() {});
-        return;
-      } catch (_) {
-        // Falls through to the normal path when the build carries no demo data.
+    try {
+      if (await _store.isDemoSession) {
+        try {
+          await _api.startDemoSession().timeout(const Duration(seconds: 3));
+          _hasStoredSession = await _store.hasPin;
+          return;
+        } catch (_) {
+          // Falls through to the normal path when the build carries no demo data.
+        }
+      }
+
+      final access = await _store.accessToken;
+      final refresh = await _store.refreshToken;
+      _api.restoreSession(accessToken: access, refreshToken: refresh);
+      final hasPin = await _store.hasPin;
+      _hasStoredSession = hasPin && _api.isLoggedIn;
+      if (_api.isLoggedIn && !_api.isDemo) unawaited(_warmSession());
+    } catch (_) {
+      _hasStoredSession = false;
+    } finally {
+      _bootstrapped = true;
+      if (mounted) {
+        setState(() {});
+        _leaveSplash();
       }
     }
-
-    final access = await _store.accessToken;
-    final refresh = await _store.refreshToken;
-    _api.restoreSession(accessToken: access, refreshToken: refresh);
-
-    var valid = false;
-    if (_api.isLoggedIn) {
-      try {
-        await _api.fetchMe();
-        valid = true;
-      } catch (_) {
-        valid = await _api.refreshSession();
-      }
-    }
-
-    _hasStoredSession = valid && await _store.hasPin;
-    _bootstrapped = true;
-    if (mounted) setState(() {});
   }
 
-  Future<void> _onSplashDone() async {
-    // Wait for the token check if the animation finished first.
-    while (!_bootstrapped) {
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+  /// Confirms a saved token after the splash has already moved on.
+  Future<void> _warmSession() async {
+    try {
+      await _api.fetchMe();
+    } catch (_) {
+      await _api.refreshSession();
     }
-    if (!mounted) return;
+  }
+
+  void _onSplashDone() {
+    _splashFinished = true;
+    if (_bootstrapped) {
+      _leaveSplash();
+      return;
+    }
+    // Local storage should already be back. If it never answers, leave the
+    // finished frame anyway instead of waiting on it forever.
+    Future<void>.delayed(const Duration(seconds: 2), () {
+      if (!mounted || _stage != _Stage.splash) return;
+      _bootstrapped = true;
+      _leaveSplash();
+    });
+  }
+
+  void _leaveSplash() {
+    if (!_splashFinished || !_bootstrapped || !mounted) return;
+    if (_stage != _Stage.splash) return;
     setState(() => _stage = _hasStoredSession ? _Stage.unlock : _Stage.auth);
   }
 
@@ -203,61 +230,67 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FoxTokens.bgNeutral,
-      body: SafeArea(
-        bottom: false,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _layer(
-              0,
-              ResultsScreen(
-                key: const ValueKey("results"),
-                api: widget.api,
-                reloadToken: _resultsReload,
-                onAskBot: _askBot,
-                onOpenPlan: () => _select(1),
-                onOpenRecipes: () => _select(3),
-                onUpload: () => _select(4),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: foxSystemOverlay,
+      child: Scaffold(
+        backgroundColor: FoxTokens.bgNeutral,
+        body: SafeArea(
+          bottom: false,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              _layer(
+                0,
+                ResultsScreen(
+                  key: const ValueKey("results"),
+                  api: widget.api,
+                  reloadToken: _resultsReload,
+                  onAskBot: _askBot,
+                  onOpenPlan: () => _select(1),
+                  onOpenRecipes: () => _select(3),
+                  onUpload: () => _select(4),
+                ),
               ),
-            ),
-            _layer(1, PlanScreen(key: const ValueKey("plan"), api: widget.api)),
-            _layer(
-              2,
-              ChatScreen(
-                key: ValueKey("chat-$_chatSeed"),
-                api: widget.api,
-                initialMessage: _chatPrompt,
+              _layer(
+                1,
+                PlanScreen(key: const ValueKey("plan"), api: widget.api),
               ),
-            ),
-            _layer(
-              3,
-              RecipesScreen(key: const ValueKey("recipes"), api: widget.api),
-            ),
-            _layer(
-              4,
-              ProfileScreen(
-                key: const ValueKey("profile"),
-                api: widget.api,
-                store: widget.store,
-                onSignOut: widget.onSignOut,
-                onUploadReport: () => _openUpload(),
+              _layer(
+                2,
+                ChatScreen(
+                  key: ValueKey("chat-$_chatSeed"),
+                  api: widget.api,
+                  initialMessage: _chatPrompt,
+                ),
               ),
-            ),
+              _layer(
+                3,
+                RecipesScreen(key: const ValueKey("recipes"), api: widget.api),
+              ),
+              _layer(
+                4,
+                ProfileScreen(
+                  key: const ValueKey("profile"),
+                  api: widget.api,
+                  store: widget.store,
+                  onSignOut: widget.onSignOut,
+                  onUploadReport: () => _openUpload(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: FoxTabBar(
+          index: _tab,
+          onSelect: _select,
+          tabs: const [
+            FoxTab(kind: FoxIconKind.report, label: "Отчёт"),
+            FoxTab(kind: FoxIconKind.plan, label: "План"),
+            FoxTab(kind: FoxIconKind.chat, label: "Чат"),
+            FoxTab(kind: FoxIconKind.recipes, label: "Рецепты"),
+            FoxTab(kind: FoxIconKind.profile, label: "Профиль"),
           ],
         ),
-      ),
-      bottomNavigationBar: FoxTabBar(
-        index: _tab,
-        onSelect: _select,
-        tabs: const [
-          FoxTab(kind: FoxIconKind.report, label: "Отчёт"),
-          FoxTab(kind: FoxIconKind.plan, label: "План"),
-          FoxTab(kind: FoxIconKind.chat, label: "Чат"),
-          FoxTab(kind: FoxIconKind.recipes, label: "Рецепты"),
-          FoxTab(kind: FoxIconKind.profile, label: "Профиль"),
-        ],
       ),
     );
   }

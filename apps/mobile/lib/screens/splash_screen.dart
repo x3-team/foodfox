@@ -79,21 +79,33 @@ class _SplashScreenState extends State<SplashScreen>
   /// Diameter of the ring while it is being drawn.
   static const _ringSize = 252.0;
 
+  var _handedOff = false;
+
   @override
   void initState() {
     super.initState();
     _c.addStatusListener((status) {
-      if (status == AnimationStatus.completed) widget.onFinished();
+      if (status == AnimationStatus.completed) _handOff();
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (FoxMotion.reduced(context)) {
         Future<void>.delayed(const Duration(milliseconds: 300), () {
-          if (mounted) widget.onFinished();
+          if (mounted) _handOff();
         });
       } else {
         _c.forward();
       }
+    });
+  }
+
+  /// The controller is still notifying when it completes. Navigating away in
+  /// that callback disposes it mid-notification, so the handoff waits a frame.
+  void _handOff() {
+    if (_handedOff) return;
+    _handedOff = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.onFinished();
     });
   }
 
