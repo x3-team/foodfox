@@ -12,10 +12,7 @@ const nextConfig = {
       "/course",
       "/privacy",
     ];
-    return [
-      { source: "/", destination: "/blog", permanent: false },
-      ...later.map((source) => ({ source, destination: "/placeholder", permanent: false })),
-    ];
+    return later.map((source) => ({ source, destination: "/placeholder", permanent: false }));
   },
 };
 
