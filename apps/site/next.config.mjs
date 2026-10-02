@@ -1,0 +1,19 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  async redirects() {
+    const later = [
+      "/specialists",
+      "/labs",
+      "/certificates",
+      "/faq",
+      "/reviews",
+      "/contacts",
+      "/report",
+      "/course",
+      "/privacy",
+    ];
+    return later.map((source) => ({ source, destination: "/placeholder", permanent: false }));
+  },
+};
+
+export default nextConfig;

@@ -8,3 +8,8 @@ data/reports/
 .DS_Store
 .flutter-sdk/
 *.iml
+
+node_modules/
+apps/site/.next/
+apps/site/node_modules/
+apps/site/tsconfig.tsbuildinfo
