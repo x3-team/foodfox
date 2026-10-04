@@ -1,36 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AuthSplit, Field, inputClass } from "@/components/partner/AuthSplit";
 
+const CLIENT_ROLE_ERROR =
+  "Этот номер зарегистрирован как клиент. В кабинет партнёра он не входит.";
+
 export default function PartnerLoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <AuthSplit>
-          <p className="text-[14px] text-[#5C5E57]">Загрузка…</p>
-        </AuthSplit>
-      }
-    >
-      <PartnerLoginForm />
-    </Suspense>
-  );
+  return <PartnerLoginForm />;
 }
 
 function PartnerLoginForm() {
   const router = useRouter();
-  const params = useSearchParams();
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"phone" | "code">("phone");
-  const [error, setError] = useState(
-    params.get("error") === "role"
-      ? "Этот номер зарегистрирован как клиент. В кабинет партнёра он не входит."
-      : "",
-  );
+  const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "role") setError(CLIENT_ROLE_ERROR);
+  }, []);
 
   async function requestCode(event: React.FormEvent) {
     event.preventDefault();
@@ -70,10 +63,7 @@ function PartnerLoginForm() {
         user?: { role?: string };
       };
       if (!response.ok || body.user?.role !== "partner") {
-        setError(
-          body.error ??
-            "Этот номер зарегистрирован как клиент. В кабинет партнёра он не входит.",
-        );
+        setError(body.error ?? CLIENT_ROLE_ERROR);
         return;
       }
       router.push("/partner/home");
