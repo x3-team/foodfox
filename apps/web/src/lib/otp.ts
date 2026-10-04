@@ -47,9 +47,17 @@ export function isPartnerDemoPhone(phone: string): boolean {
 }
 
 /**
+ * Echo the fixed code in the HTTP response only when the operator turned demo
+ * mode on. Login still accepts the fixed code when the flag is off.
+ */
+export function isDemoMode(): boolean {
+  const flag = (process.env.FOX_DEMO_MODE ?? "").trim().toLowerCase();
+  return flag === "1" || flag === "true" || flag === "yes";
+}
+
+/**
  * Demo numbers bypass the SMS gateway and always accept a fixed code, so the
- * app can be reviewed without a live provider. Every other number gets null,
- * and the HTTP response must omit `demoCode` entirely.
+ * app can be reviewed without a live provider. Every other number gets null.
  */
 export function demoCodeFor(phone: string): string | null {
   if (isPartnerDemoPhone(phone)) {
@@ -66,7 +74,10 @@ export function demoCodeFor(phone: string): string | null {
   return demo.includes(phone) ? (process.env.FOX_DEMO_OTP ?? "1111") : null;
 }
 
-/** JSON body for POST /api/auth/otp/request. `demoCode` is set only for demo numbers. */
+/**
+ * JSON body for POST /api/auth/otp/request.
+ * `demoCode` is present only for a demo number and only when FOX_DEMO_MODE is set.
+ */
 export function otpRequestPayload(
   phone: string,
   resendAfterMs: number,
@@ -77,6 +88,6 @@ export function otpRequestPayload(
     phone,
     resendAfterMs,
   };
-  if (demoCode) body.demoCode = demoCode;
+  if (demoCode && isDemoMode()) body.demoCode = demoCode;
   return body;
 }

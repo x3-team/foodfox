@@ -52,34 +52,36 @@ export default function PartnerMaterialsPage() {
       <p className="mt-1 text-[14px] text-[#5C5E57]">
         Готовые файлы и формулировки, согласованные с compliance FOX
       </p>
-      <section className="mt-6 flex flex-col items-start gap-5 rounded-[22px] border border-[#E3E4DF] bg-white px-4 py-5 sm:flex-row sm:items-center sm:gap-8 sm:px-6">
+      <section className="mt-6 flex flex-col gap-5 rounded-[22px] border border-[#E3E4DF] bg-white px-4 py-5 sm:flex-row sm:items-center sm:gap-8 sm:px-6">
         <img
           src="/partner/referral-qr.svg"
           alt="QR реферальной ссылки"
           width={104}
           height={104}
-          className="size-[104px] rounded-xl border border-[#E3E4DF] bg-white p-2"
+          className="size-[104px] shrink-0 self-start rounded-xl border border-[#E3E4DF] bg-white p-2"
         />
-        <div className="min-w-0 flex-1">
+        <div className="w-full min-w-0 flex-1">
           <p className="text-[13px] text-[#5C5E57]">Ваша реферальная ссылка</p>
-          <div className="mt-2 flex flex-wrap items-center gap-3">
-            <div className="min-w-0 flex-1 break-all rounded-xl border border-[#E3E4DF] px-4 py-3 text-[16px] font-medium">
+          <div className="mt-2 w-full min-w-0">
+            <div className="w-full break-all rounded-xl border border-[#E3E4DF] px-4 py-3 text-[16px] font-medium leading-6">
               {partner.link}
             </div>
-            <button
-              type="button"
-              onClick={copyLink}
-              className="rounded-full bg-[#21251D] px-5 py-3 text-[14px] font-medium text-[#F8F9F6]"
-            >
-              {copied ? "Скопировано" : "Копировать"}
-            </button>
-            <a
-              href="/partner/referral-qr.svg"
-              download="KOVALEVA-24-qr.svg"
-              className="rounded-full border border-[#E3E4DF] px-5 py-3 text-[14px] font-medium"
-            >
-              Скачать QR
-            </a>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={copyLink}
+                className="rounded-full bg-[#21251D] px-5 py-3 text-[14px] font-medium text-[#F8F9F6]"
+              >
+                {copied ? "Скопировано" : "Копировать"}
+              </button>
+              <a
+                href="/partner/referral-qr.svg"
+                download="KOVALEVA-24-qr.svg"
+                className="rounded-full border border-[#E3E4DF] px-5 py-3 text-[14px] font-medium"
+              >
+                Скачать QR
+              </a>
+            </div>
           </div>
           <p className="mt-3 text-[13px] text-[#5C5E57]">
             Клиент переходит по ссылке → записывается на тест → отчёт

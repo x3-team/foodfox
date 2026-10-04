@@ -35,6 +35,19 @@ async function requestOtp(page: Page, phone: string) {
 }
 
 test.describe.serial("partner cabinet", () => {
+  test("empty login shows an error on the phone field", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/partner");
+    await page.getByRole("button", { name: "Получить код" }).click();
+    const error = page.getByText("Введите номер телефона");
+    await expect(error).toBeVisible();
+    const field = await page.getByLabel("Телефон").boundingBox();
+    const message = await error.boundingBox();
+    expect(field).not.toBeNull();
+    expect(message).not.toBeNull();
+    expect(message!.y).toBeGreaterThan(field!.y);
+  });
+
   test("wrong code is rejected and a normal number omits demoCode", async ({ page }) => {
     const phone = `79${String(Date.now()).slice(-9)}`;
     await page.setViewportSize({ width: 375, height: 812 });
@@ -70,7 +83,7 @@ test.describe.serial("partner cabinet", () => {
     const requested = await requestOtp(page, "+7 925 111-11-11");
     expect(requested.ok()).toBeTruthy();
     const payload = (await requested.json()) as { demoCode?: string };
-    expect(payload.demoCode).toBe("1111");
+    expect(payload.demoCode).toBeUndefined();
 
     const verified = await page.request.post("/api/auth/otp/verify", {
       data: { phone: "+7 925 111-11-11", code: "1111", intent: "partner" },
@@ -107,7 +120,7 @@ test.describe.serial("partner cabinet", () => {
     }
     expect(requested.ok()).toBeTruthy();
     const payload = (await requested.json()) as { demoCode?: string };
-    expect(payload.demoCode).toBe("2026");
+    expect(payload.demoCode).toBeUndefined();
 
     await page.getByLabel("Код из СМС").fill("2026");
     await page.getByRole("button", { name: "Войти" }).click();
@@ -122,6 +135,14 @@ test.describe.serial("partner cabinet", () => {
         await page.goto(route);
         await expect(page).toHaveURL(new RegExp(`${route}/?$`));
         await expect(page.locator("text=KOVALEVA-24 >> visible=true").first()).toBeVisible();
+        if (route === "/partner/materials") {
+          const link = page.getByText("foodfox.ru/t/KOVALEVA-24");
+          const box = await link.boundingBox();
+          expect(box).not.toBeNull();
+          expect(box!.width).toBeGreaterThan(180);
+          expect(box!.height).toBeLessThan(96);
+          await expect(page.getByRole("button", { name: "Копировать" })).toBeVisible();
+        }
         await noHorizontalScroll(page);
       }
     }

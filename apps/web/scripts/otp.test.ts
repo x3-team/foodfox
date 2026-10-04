@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import {
   demoCodeFor,
+  isDemoMode,
   isPartnerDemoPhone,
   normalizePhone,
   otpRequestPayload,
@@ -93,13 +94,27 @@ test("partner demo uses its own code and is not the client number", () => {
   }
 });
 
-test("otp response includes demoCode only for demo numbers", () => {
-  const hidden = otpRequestPayload("79000000001", 42000, null);
-  assert.equal("demoCode" in hidden, false);
-  const partner = otpRequestPayload("79990001122", 42000, "2026");
-  assert.equal(partner.demoCode, "2026");
-  const client = otpRequestPayload("79251111111", 42000, "1111");
-  assert.equal(client.demoCode, "1111");
+test("otp response includes demoCode only in demo mode and only when a code exists", () => {
+  const saved = process.env.FOX_DEMO_MODE;
+  delete process.env.FOX_DEMO_MODE;
+  try {
+    assert.equal(isDemoMode(), false);
+    for (const code of [null, "2026", "1111"]) {
+      const body = otpRequestPayload("79990001122", 42000, code);
+      assert.equal("demoCode" in body, false);
+    }
+  } finally {
+    if (saved === undefined) delete process.env.FOX_DEMO_MODE;
+    else process.env.FOX_DEMO_MODE = saved;
+  }
+
+  withEnv({ FOX_DEMO_MODE: "1" }, () => {
+    assert.equal(isDemoMode(), true);
+    const hidden = otpRequestPayload("79000000001", 42000, null);
+    assert.equal("demoCode" in hidden, false);
+    assert.equal(otpRequestPayload("79990001122", 42000, "2026").demoCode, "2026");
+    assert.equal(otpRequestPayload("79251111111", 42000, "1111").demoCode, "1111");
+  });
 });
 
 console.log("\nAll OTP tests passed.");

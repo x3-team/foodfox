@@ -27,6 +27,14 @@ function PartnerLoginForm() {
 
   async function requestCode(event: React.FormEvent) {
     event.preventDefault();
+    if (!phone.trim()) {
+      setError("Введите номер телефона");
+      return;
+    }
+    if (!isPhone(phone)) {
+      setError("Неверный номер телефона");
+      return;
+    }
     setError("");
     setBusy(true);
     try {
@@ -50,6 +58,10 @@ function PartnerLoginForm() {
 
   async function verifyCode(event: React.FormEvent) {
     event.preventDefault();
+    if (code.length !== 4) {
+      setError("Введите код из СМС");
+      return;
+    }
     setError("");
     setBusy(true);
     try {
@@ -89,7 +101,7 @@ function PartnerLoginForm() {
               inputMode="tel"
               autoComplete="tel"
               placeholder="+7 999 000-11-22"
-              required
+              aria-invalid={error ? true : undefined}
             />
           </Field>
           {error ? <ErrorText>{error}</ErrorText> : null}
@@ -116,13 +128,13 @@ function PartnerLoginForm() {
               inputMode="numeric"
               autoComplete="one-time-code"
               placeholder="••••"
-              required
+              aria-invalid={error ? true : undefined}
             />
           </Field>
           {error ? <ErrorText>{error}</ErrorText> : null}
           <button
             type="submit"
-            disabled={busy || code.length !== 4}
+            disabled={busy}
             className="rounded-full bg-[#21251D] py-4 text-[15px] font-medium text-[#F8F9F6] disabled:opacity-60"
           >
             {busy ? "Проверяем…" : "Войти"}
@@ -167,6 +179,12 @@ function ApplyLink() {
       </Link>
     </p>
   );
+}
+
+function isPhone(raw: string): boolean {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 11 && (digits.startsWith("7") || digits.startsWith("8"))) return true;
+  return digits.length === 10;
 }
 
 function ErrorText({ children }: { children: React.ReactNode }) {
