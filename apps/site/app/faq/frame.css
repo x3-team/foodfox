@@ -81,9 +81,10 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   [data-s="f01"] h1, .f03-card h2 { font-size: 40px; line-height: 44px; }
   .f01-row, .f02, .f03-card { grid-template-columns: 1fr; }
   .f01-visual { height: 320px; }
+  .f02, .f-nav, .f-nav-links { min-width: 0; max-width: 100%; }
   .f-nav { position: static; }
   .f-nav-links {
-    position: sticky; top: 64px; z-index: 5; background: #f8f9f6;
+    position: sticky; top: 64px; z-index: 5; background: #f8f9f6; width: 100%;
     display: flex; gap: 8px; overflow-x: auto; align-items: center; padding: 8px 0;
   }
   .f-nav-links a { flex: 0 0 auto; }
