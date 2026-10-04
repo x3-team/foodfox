@@ -305,7 +305,7 @@ export function CoursePage() {
               <h2>Для кого курс по иммунологической пищевой непереносимости</h2>
               <p>Найдите свою специальность — покажем, что именно вы разберёте на уроках. Клик по карточке открывает соответствующий урок в программе.</p>
             </div>
-            <div className="kf-audience">
+            <div className="kf-audience" data-allow-x>
               {AUDIENCE.map((card) => (
                 <button key={card.title} type="button" className="kf-aud" onClick={() => openLesson(card.lesson)}>
                   <span className="kf-aud-top">
@@ -368,7 +368,7 @@ export function CoursePage() {
               <h2>Лекторы курса</h2>
               <p>Каждый лектор ведёт свои уроки — номера указаны на карточке. Клик открывает профиль автора в блоге.</p>
             </div>
-            <div className="kf-lectors">
+            <div className="kf-lectors" data-allow-x>
               {LECTURERS.map((person) => (
                 <Link key={person.name} href={person.href} className="kf-lector">
                   <img src={person.photo} alt="" />
@@ -460,6 +460,7 @@ export function CoursePage() {
 
 export function LessonsPage() {
   const [current, setCurrent] = useState(1);
+  const [sheet, setSheet] = useState(false);
   const [done, setDone] = useState<number[]>([0]);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -497,6 +498,19 @@ export function LessonsPage() {
       <Header />
       <main>
         <section data-s="l01" className="ls-layout">
+          <button type="button" className="btn btn-ghost ls-open" onClick={() => setSheet(true)}>Программа курса</button>
+          {sheet && (
+            <div className="modal-back" onClick={() => setSheet(false)}>
+              <div className="modal ls-sheet" role="dialog" aria-label="Программа" onClick={(event) => event.stopPropagation()}>
+                <h2>Программа</h2>
+                {LESSONS.map((item, index) => (
+                  <button key={item.title} type="button" className="ls-item" onClick={() => { setCurrent(index); setSheet(false); }}>
+                    <strong>{item.short}</strong>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <aside className="ls-side">
             <p>Программа</p>
             <div className="ls-list">

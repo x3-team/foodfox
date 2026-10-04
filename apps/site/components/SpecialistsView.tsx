@@ -234,10 +234,41 @@ export function SpecialistsView() {
     });
   }
 
+  const [turning, setTurning] = useState(false);
+  const stageRef = useRef<HTMLDivElement>(null);
+
   function pickReport(index: number) {
-    if (index < 0 || index >= REPORT.length) return;
-    setReport(index);
+    if (index < 0 || index >= REPORT.length || index === report) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setReport(index);
+      return;
+    }
+    setTurning(true);
+    window.setTimeout(() => {
+      setReport(index);
+      setTurning(false);
+    }, 340);
   }
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let paused = false;
+    const node = stageRef.current;
+    const enter = () => { paused = true; };
+    const leave = () => { paused = false; };
+    node?.addEventListener("mouseenter", enter);
+    node?.addEventListener("mouseleave", leave);
+    const timer = window.setInterval(() => {
+      if (paused) return;
+      setReport((current) => (current + 1) % REPORT.length);
+    }, 6000);
+    return () => {
+      window.clearInterval(timer);
+      node?.removeEventListener("mouseenter", enter);
+      node?.removeEventListener("mouseleave", leave);
+    };
+  }, []);
 
   return (
     <>
@@ -332,7 +363,7 @@ export function SpecialistsView() {
         <section className="sp-sec sp-white" data-s="p03">
           <div className="wrap sp-stack-40">
             <h2 className="sp-h2 sp-narrow">Почему специалисты выбирают FOX</h2>
-            <div className="sp-args">
+            <div className="sp-args" data-allow-x>
               {ARGS.map((item) => (
                 <article className="sp-arg" key={item.k}>
                   <div className="sp-arg-visual">
@@ -367,7 +398,7 @@ export function SpecialistsView() {
               <svg className="sp-route-line" viewBox="0 0 100 2" preserveAspectRatio="none" aria-hidden>
                 <line x1="0" y1="1" x2="100" y2="1" pathLength="1" />
               </svg>
-              <div className="sp-steps">
+              <div className="sp-steps" data-allow-x>
                 {ROUTE.map((step, index) => (
                   <article className="sp-step" key={step.title}>
                     <div className="sp-step-top">
@@ -445,14 +476,14 @@ export function SpecialistsView() {
                   </Link>
                 </div>
               </div>
-              <div className="sp-stage">
+              <div className="sp-stage" ref={stageRef}>
                 <div className="sp-sheet is-back-2" aria-hidden>
                   <img src="/figma/report/front.png" alt="" />
                 </div>
                 <div className="sp-sheet is-back-1" aria-hidden>
                   <img src="/figma/report/front.png" alt="" />
                 </div>
-                <div className={`sp-sheet is-front is-zone-${report + 1}`}>
+                <div className={`sp-sheet is-front is-zone-${report + 1}${turning ? " is-turning" : ""}`}>
                   <img src="/figma/report/front.png" alt="" />
                   <span className="sp-highlight" />
                   <b>{String(report + 1).padStart(2, "0")}</b>
@@ -494,7 +525,7 @@ export function SpecialistsView() {
         <section className="sp-sec" data-s="p07">
           <div className="wrap sp-stack-48">
             <h2 className="sp-h2 sp-narrow">Наши эксперты</h2>
-            <div className="sp-experts">
+            <div className="sp-experts" data-allow-x>
               {EXPERTS.map((person) => (
                 <article key={person.name}>
                   <div className="sp-portrait">

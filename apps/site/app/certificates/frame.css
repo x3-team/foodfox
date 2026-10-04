@@ -50,13 +50,6 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
 .c05 li { background: #fff; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 8px; min-width: 0; border-top: 3px solid #e7f551; }
 .c05 b { font-weight: 500; }
 
-@media (min-width: 1100px) {
-  [data-s="c01"] { height: 658px; box-sizing: border-box; }
-  [data-s="c02"] { height: 796px; box-sizing: border-box; }
-  [data-s="c03"] { height: 672px; box-sizing: border-box; }
-  [data-s="c04"] { height: 712px; box-sizing: border-box; }
-  [data-s="c05"] { height: 400px; box-sizing: border-box; padding-top: 24px; }
-}
 @media (max-width: 1099px) {
   [data-s="c01"] h1 { font-size: 40px; line-height: 44px; }
   .c01-row, .c-docs, .c03, .c04, .c05 ol { grid-template-columns: 1fr; }

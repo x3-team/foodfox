@@ -8,9 +8,12 @@ export function CookieBar() {
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState(false);
   const [analytics, setAnalytics] = useState(false);
+  const [toast, setToast] = useState(false);
 
   useEffect(() => {
-    setOpen(!localStorage.getItem("fox-cookie"));
+    if (localStorage.getItem("fox-cookie")) return;
+    const timer = window.setTimeout(() => setOpen(true), 800);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -26,9 +29,9 @@ export function CookieBar() {
     localStorage.setItem("fox-cookie", JSON.stringify(choice));
     setOpen(false);
     setSettings(false);
+    setToast(true);
+    window.setTimeout(() => setToast(false), 2200);
   }
-
-  if (!open && !settings) return null;
 
   return (
     <>
@@ -50,12 +53,19 @@ export function CookieBar() {
         <div className="modal-back" onClick={() => setSettings(false)}>
           <div className="modal" role="dialog" aria-label="Настройки cookie" onClick={(event) => event.stopPropagation()}>
             <h2>Настройки cookie</h2>
-            <label className="check-row"><input type="checkbox" checked readOnly /><span>Необходимые — всегда включены</span></label>
-            <label className="check-row"><input type="checkbox" checked={analytics} onChange={(event) => setAnalytics(event.target.checked)} /><span>Аналитика</span></label>
+            <div className="switch-row">
+              <span>Необходимые — всегда включены</span>
+              <button type="button" className="switch is-on" role="switch" aria-checked="true" aria-label="Необходимые cookie" disabled />
+            </div>
+            <div className="switch-row">
+              <span>Аналитика</span>
+              <button type="button" className={`switch${analytics ? " is-on" : ""}`} role="switch" aria-checked={analytics} aria-label="Аналитика" onClick={() => setAnalytics((value) => !value)} />
+            </div>
             <button className="btn btn-dark" type="button" onClick={() => save({ necessary: true, analytics })}>Сохранить</button>
           </div>
         </div>
       )}
+      {toast && <p className="fox-toast" role="status">Настройки сохранены</p>}
     </>
   );
 }

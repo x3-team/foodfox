@@ -48,7 +48,7 @@ export function CertificatesView() {
               <h2>Документы</h2>
               <p>Формулировки — о производстве и качестве. Нажмите, чтобы открыть PDF в просмотрщике.</p>
             </header>
-            <div className="c-docs" data-certs>
+            <div className="c-docs" data-certs data-allow-x>
               {DOCS.map(([code, kind, text, size]) => (
                 <article className="cert-card" key={code}>
                   <div className="c-paper" aria-hidden="true"><b>{code}</b></div>

@@ -155,8 +155,8 @@ export function HomePage() {
   const [group, setGroup] = useState(GROUPS[0]);
   const [picked, setPicked] = useState(PRODUCTS[0]);
   const [count, setCount] = useState(0);
-  const [faq, setFaq] = useState(0);
-  const [ask, setAsk] = useState(false);
+  const [faq, setFaq] = useState<number[]>([0]);
+  const [suggest, setSuggest] = useState(false);
   const [reportPage, setReportPage] = useState(0);
   const scaleRef = useRef<HTMLElement>(null);
   const deckRef = useRef<HTMLElement>(null);
@@ -254,13 +254,17 @@ export function HomePage() {
     let paused = false;
     let raf = 0;
     let last = performance.now();
+    const track = row.querySelector<HTMLElement>(".review-track");
+    let offset = 0;
     const tick = (now: number) => {
       if (stop) return;
       const dt = now - last;
       last = now;
-      if (!paused) {
-        row.scrollLeft += (dt / 1000) * 48;
-        if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 4) row.scrollLeft = 0;
+      if (!paused && track) {
+        offset += (dt / 1000) * 48;
+        const half = track.scrollWidth / 2;
+        if (half > 0 && offset >= half) offset -= half;
+        track.style.transform = `translate3d(${-offset}px,0,0)`;
       }
       raf = requestAnimationFrame(tick);
     };
@@ -319,7 +323,7 @@ export function HomePage() {
               Персональный тест питания против болей в животе, вздутия, акне и других симптомов.
             </p>
             <div style={{ display: "flex", gap: 8, marginTop: 20, flexWrap: "wrap" }}>
-              <Link className="btn btn-light" href="/labs#zapis">Записаться на тест</Link>
+              <button className="btn btn-light" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
               <Link className="btn btn-ghost" href="/report" style={{ color: "white", borderColor: "rgba(248,249,246,.35)" }}>Пример отчёта</Link>
             </div>
             <div className="facts">
@@ -366,7 +370,7 @@ export function HomePage() {
         <section className="symptom-band" data-s="s05">
           <div className="wrap">
             <h2 className="page-title" style={{ color: "white" }}>Симптомы, при которых стоит обсудить тест со специалистом</h2>
-            <div className="cards-4" style={{ marginTop: 28 }}>
+            <div className="cards-4" data-allow-x style={{ marginTop: 28 }}>
               {[
                 ["Кожные реакции", "Высыпания, экзема, дерматиты и зуд", "/figma/symptoms/s7.png"],
                 ["Проблемы с ЖКТ", "Вздутие, газообразование, диарея, тошнота, спазмы", "/figma/symptoms/s12.png"],
@@ -407,7 +411,10 @@ export function HomePage() {
                 );
               })}
             </div>
-            <aside className="panel checker-card">
+            <aside className="panel checker-card checker-dark">
+              <div className="checker-bars" aria-hidden>
+                {SYMPTOMS.map((item) => <i key={item.id} className={item.items.some((label) => checked.includes(label)) ? "is-on" : ""} />)}
+              </div>
               <h3>{ready ? `С чего начать: ${lead.specialist}` : checked.length === 1 ? "Отметьте ещё один признак" : "Пока ничего не отмечено"}</h3>
               <p>{ready ? "Нутрициолог подключается следом. Это не диагноз и не оценка риска." : "Порог — два признака. До него кнопка списка неактивна."}</p>
               {ready && (
@@ -434,8 +441,8 @@ export function HomePage() {
           <div className="wrap shows">
             <div className="shows-pin">
               <h2 className="page-title">Что показывает тест</h2>
-              <div className="dots" aria-hidden>
-                {SHOWS.map((_, index) => <i key={index} />)}
+              <div className="antigen-dots" aria-hidden>
+                {Array.from({ length: 286 }, (_, index) => <i key={index} className={index < 48 ? "is-hot" : ""} />)}
               </div>
             </div>
             <div className="shows-cards">
@@ -490,11 +497,21 @@ export function HomePage() {
           <h2 className="page-title">Продукты, которые исследует FOX</h2>
           <p className="lead">Самый частый вопрос перед тестом — «а мой продукт там есть?»</p>
           <p className="count-line"><strong data-antigen-count>{count}</strong> пищевых антигенов из 13 групп · один забор крови</p>
+          <div className="suggest">
           <label className="search" style={{ marginTop: 20, width: "min(640px, 100%)" }}>
             <img src="/icons/search.svg" alt="" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Например, казеин, гречка или солея" aria-label="Поиск продукта" />
+            <input data-hotkey value={query} onChange={(event) => { setQuery(event.target.value); setSuggest(true); }} onFocus={() => setSuggest(true)} placeholder="Например, казеин, гречка или солея" aria-label="Поиск продукта" />
           </label>
-          {compound?.compound && query.trim().length > 2 && <p className="hint">{compound.compound}</p>}
+          {suggest && query.trim().length >= 2 && (
+            <div className="suggest-list" role="listbox">
+              {shown.slice(0, 6).map((item) => (
+                <button type="button" key={item.name} className={picked.name === item.name ? "is-on" : ""} onClick={() => { setPicked(item); setQuery(item.name); setSuggest(false); }}>{item.name}</button>
+              ))}
+              {shown.length === 0 && <p>В показанной части панели такого запроса нет.</p>}
+            </div>
+          )}
+          </div>
+          {compound?.compound && query.trim().length >= 2 && <p className="hint">{compound.compound}</p>}
           <div className="chips" data-allow-x style={{ marginTop: 16 }}>
             {GROUPS.map((item) => (
               <button key={item} className={`chip${group === item ? " is-active" : ""}`} type="button" onClick={() => setGroup(item)}>{item}</button>
@@ -523,7 +540,7 @@ export function HomePage() {
           <div className="wrap">
             <h2 className="page-title">Тест разработан в Австрии</h2>
             <p className="lead">FOX разработала компания MacroArray Diagnostics (MADx), Вена. С 2016 года.</p>
-            <div className="cards-4" style={{ marginTop: 24 }}>
+            <div className="cards-4" data-allow-x style={{ marginTop: 24 }}>
               {[
                 ["CE-IVDR", "Европейский стандарт для медизделий in vitro диагностики", "/certificates"],
                 ["ISO 13485", "Качество медицинских изделий", "/certificates"],
@@ -553,23 +570,25 @@ export function HomePage() {
         <section className="wrap band" data-s="s13">
           <h2 className="page-title">Отзывы наших клиентов</h2>
           <div className="review-row" data-allow-x ref={reviewsRef}>
+            <div className="review-track">
             {[...REVIEWS, ...REVIEWS].map(([name, text], index) => (
               <article className="panel" key={`${name}-${index}`}>
-                <img className="review-shot" src={index % 2 === 0 ? "/figma/reviews/r1.png" : "/figma/reviews/r5.png"} alt="" />
+                <img className="review-shot" src={`/figma/reviews/r${(index % 8) + 1}.png`} alt="" />
                 <h3>{name}</h3>
                 <p>{text}</p>
               </article>
             ))}
+            </div>
           </div>
           <Link className="text-link" href="/reviews">Все отзывы <img src="/icons/arrow-right.svg" alt="" /></Link>
         </section>
 
         <section className="wrap band" data-s="s14">
           <h2 className="page-title">Блог</h2>
-          <div className="cards-4" style={{ marginTop: 24 }}>
-            {articles.slice(0, 4).map((article) => (
-              <Link className="panel" key={article.slug} href={`/blog/${article.slug}`}>
-                <img src={article.cover} alt="" style={{ height: 140, width: "100%", objectFit: "cover", borderRadius: 12 }} />
+          <div className="cards-4" data-allow-x style={{ marginTop: 24 }}>
+            {articles.slice(0, 4).map((article, index) => (
+              <Link className="panel sym-card" key={article.slug} href={`/blog/${article.slug}`}>
+                <img src={`/figma/symptoms/s${[7, 12, 10, 6][index]}.png`} alt="" style={{ height: 180, width: "100%", objectFit: "cover", borderRadius: 12 }} />
                 <h3>{article.title}</h3>
               </Link>
             ))}
@@ -582,33 +601,28 @@ export function HomePage() {
           <div className="wrap">
           <h2 className="page-title" style={{ color: "white" }}>Частые вопросы</h2>
           <div className="stack" style={{ marginTop: 20 }}>
-            {FAQ.map(([q, a], index) => (
-              <button key={q} className="acc" aria-expanded={faq === index} onClick={() => setFaq(faq === index ? -1 : index)}>
-                <strong>{q}</strong>
-                {faq === index && <p>{a}</p>}
-              </button>
-            ))}
+            {FAQ.map(([q, a], index) => {
+              const on = faq.includes(index);
+              return (
+              <div key={q} className={`acc${on ? " is-open" : ""}`}>
+                <button type="button" aria-expanded={on} onClick={() => setFaq((current) => on ? current.filter((item) => item !== index) : [...current, index])}>
+                  <strong>{q}</strong>
+                </button>
+                <div className="acc-body"><div><p>{a}</p></div></div>
+              </div>
+              );
+            })}
           </div>
           <Link href="/faq" style={{ color: "white" }}>Все вопросы →</Link>
-          <div className="panel" style={{ marginTop: 28, background: "rgba(16,20,0,.55)", color: "white" }}>
+          <div className="s15-glass">
             <h2>Остались вопросы?</h2>
             <p>Свяжитесь с нами и мы ответим в ближайшее время.</p>
-            <button className="btn btn-light" type="button" onClick={() => setAsk(true)}>Связаться</button>
+            <button className="btn btn-light" type="button" onClick={() => window.dispatchEvent(new Event("fox:contact"))}>Связаться</button>
           </div>
           </div>
         </section>
       </main>
       <Footer />
-      {ask && (
-        <div className="modal-back" onClick={() => setAsk(false)}>
-          <form className="modal" role="dialog" aria-label="Связаться" onClick={(event) => event.stopPropagation()} onSubmit={(event) => { event.preventDefault(); setAsk(false); }}>
-            <h2>Связаться</h2>
-            <label className="field">Имя<input name="name" required /></label>
-            <label className="field">Email<input name="email" type="email" required /></label>
-            <button className="btn btn-dark" type="submit">Отправить</button>
-          </form>
-        </div>
-      )}
     </>
   );
 }

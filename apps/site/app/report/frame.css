@@ -118,7 +118,6 @@
   color: var(--ink);
 }
 
-[data-s="zones"] { min-height: 444px; }
 .rf-zones { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; min-height: 230px; }
 .rf-zone {
   min-height: 230px;
@@ -163,7 +162,6 @@
   line-height: 20px;
 }
 
-[data-s="anatomy"] { min-height: 929px; }
 .rf-anatomy-lead { font-size: 16px; line-height: 20px; color: #5c5e57; min-height: 20px; }
 .rf-anatomy { display: grid; grid-template-columns: 540px minmax(0, 1fr); gap: 24px; min-height: 775px; }
 .rf-viewer { border: 1px solid var(--ink-10); border-radius: 16px; overflow: hidden; background: #fff; min-height: 775px; display: flex; flex-direction: column; }
@@ -201,7 +199,6 @@
 .rf-marker small { display: block; margin-top: 4px; font-size: 14px; line-height: 18px; color: #5c5e57; }
 .rf-marker.is-on { background: #fff; border-color: var(--ink-10); }
 
-[data-s="units"] { min-height: 628px; }
 .rf-uml-lead { font-size: 20px; line-height: 24px; color: #5c5e57; max-width: 1032px; min-height: 72px; }
 .rf-deck { position: relative; height: 380px; }
 .report-page .uml-card {
@@ -268,27 +265,11 @@
 .report-page .uml-card p { color: var(--ink); font-size: 16px; line-height: 20px; max-width: 280px; margin-top: 16px; }
 .rf-deck-action { margin-top: 12px; font-size: 14px; line-height: 18px; font-weight: 500; }
 .rf-uml-note { font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.3); min-height: 18px; }
-.rf-hidden-table {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
 .rf-hidden-table,
 .rf-hidden-table * {
-  display: block;
-  width: 1px;
-  max-width: 1px;
-  height: 1px;
-  overflow: hidden;
-  white-space: nowrap;
+  display: none !important;
 }
 
-[data-s="ccd"] { min-height: 450px; }
 .rf-ccd { display: grid; grid-template-columns: 240px minmax(0, 1.4fr) minmax(180px, 1fr); gap: 32px; min-height: 340px; align-items: stretch; }
 .rf-ccd img { width: 240px; height: 100%; min-height: 340px; object-fit: cover; border-radius: 16px; }
 .rf-ccd-copy { display: flex; flex-direction: column; gap: 12px; }
@@ -298,7 +279,6 @@
 .rf-ccd aside strong { font-weight: 500; font-size: 14px; line-height: 18px; color: #5c5e57; }
 .rf-ccd aside p { font-size: 16px; line-height: 20px; }
 
-[data-s="after"] { min-height: 642px; box-sizing: border-box; }
 .rf-after { background: #d7d8cd; border-radius: 24px; padding: 40px; }
 .rf-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .rf-actions article {
@@ -316,7 +296,6 @@
 .rf-actions h3 { font-weight: 300; font-size: 24px; line-height: 28px; letter-spacing: -0.5px; }
 .rf-actions p { color: #5c5e57; font-size: 16px; line-height: 20px; }
 
-[data-s="limits"] { min-height: 474px; box-sizing: border-box; }
 .rf-limits { padding: 32px 0; }
 .rf-limits-lead { font-size: 16px; line-height: 24px; color: #5c5e57; min-height: 24px; }
 .rf-limits ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; min-height: 186px; align-content: flex-start; }
@@ -334,7 +313,6 @@
 }
 .rf-limits-note { font-size: 16px; line-height: 20px; color: #5c5e57; max-width: 760px; min-height: 40px; }
 
-[data-s="faq"] { min-height: 551px; }
 .rf-faq { gap: 24px; }
 .rf-faq-list { display: flex; flex-direction: column; }
 .rf-faq-item { border-bottom: 1px solid var(--ink-10); }
@@ -355,7 +333,6 @@
 .rf-faq-item p { color: #5c5e57; font-size: 16px; line-height: 20px; padding: 0 0 20px; max-width: 760px; }
 .rf-faq-item p[hidden] { display: none; }
 
-[data-s="cta"] { min-height: 268px; }
 .rf-cta {
   position: relative;
   overflow: hidden;

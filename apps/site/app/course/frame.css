@@ -43,7 +43,6 @@
   letter-spacing: -1px;
 }
 .kf-head p { margin: 0; font-size: 20px; line-height: 24px; color: #5c5e57; }
-[data-s="k02"] { min-height: 1527px; box-sizing: border-box; }
 .kf-audience { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .kf-aud {
   height: 369px;
@@ -69,7 +68,6 @@
 .kf-aud-foot span:first-child { font-size: 14px; line-height: 18px; color: #5c5e57; }
 .kf-aud-foot span:last-child { font-size: 16px; line-height: 20px; }
 
-[data-s="k03"] { min-height: 1187px; box-sizing: border-box; }
 .kf-program { display: flex; flex-direction: column; gap: 40px; }
 .kf-program-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; min-height: 44px; }
 .kf-program-head p { margin: 0; color: #5c5e57; }
@@ -93,7 +91,6 @@
 .kf-lesson-body aside { flex: 1; background: #d7d8cd; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
 .kf-lesson-body aside span { font-weight: 500; }
 
-[data-s="k04"] { min-height: 952px; box-sizing: border-box; }
 .kf-lectors { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; min-height: 608px; }
 .kf-lector { display: flex; flex-direction: column; gap: 20px; min-height: 608px; color: inherit; }
 .kf-lector img { width: 100%; height: 380px; object-fit: cover; border-radius: 16px; background: #d7d8cd; }
@@ -103,7 +100,6 @@
 .kf-facts-list { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; color: #5c5e57; font-size: 14px; line-height: 18px; }
 .kf-chip-lime { align-self: flex-start; background: var(--lime); border-radius: 999px; padding: 8px 14px; font-size: 14px; line-height: 18px; }
 
-[data-s="k05"] { position: relative; min-height: 796px; color: #f8f9f6; overflow: hidden; box-sizing: border-box; }
 .kf-includes-bg, .kf-final > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .kf-includes-shade { position: absolute; inset: 0; background: rgba(33, 37, 29, 0.85); }
 .kf-includes-in { position: relative; z-index: 1; padding: 96px 0; display: flex; flex-direction: column; gap: 48px; box-sizing: border-box; min-height: 796px; }
@@ -131,7 +127,6 @@
   mask: url("/icons/search.svg") center / 16px 16px no-repeat;
 }
 
-[data-s="k06"] { min-height: 686px; box-sizing: border-box; }
 .kf-faq { display: grid; grid-template-columns: 437px minmax(0, 1fr); gap: 48px; align-items: start; }
 .kf-faq h2 { max-width: 10ch; }
 .kf-faq button { width: 100%; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; padding: 24px 0; font-size: 20px; line-height: 24px; }
@@ -142,7 +137,6 @@
 .kf-faq p { margin: 0 0 20px; max-width: 760px; color: #5c5e57; font-size: 16px; line-height: 20px; }
 .kf-faq p[hidden] { display: none; }
 
-[data-s="k07"] { position: relative; min-height: 570px; overflow: hidden; color: #f8f9f6; }
 .kf-final-in { position: relative; z-index: 1; min-height: 570px; box-sizing: border-box; padding: 96px 0; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; justify-content: center; }
 .kf-bar { width: 64px; height: 4px; border-radius: 2px; background: var(--lime); }
 .kf-final h2, .kf-final p { max-width: min(640px, 100%); overflow-wrap: break-word; }
@@ -151,7 +145,7 @@
 [data-s="k07"] .kf-includes-shade { background: rgba(16, 20, 0, 0.78); }
 
 [data-s="l01"] {
-  width: min(1344px, calc(100% - 96px));
+  width: min(1344px, calc(100% - 40px));
   margin: 0 auto;
   padding: 40px 0 96px;
   display: grid;
@@ -159,7 +153,6 @@
   gap: 32px;
   align-items: start;
   box-sizing: border-box;
-  min-height: 1277px;
 }
 .ls-side { position: sticky; top: 120px; width: 324px; display: flex; flex-direction: column; gap: 24px; }
 .ls-side > p { margin: 0; font-size: 14px; line-height: 18px; color: #5c5e57; }
@@ -176,7 +169,7 @@
 .ls-cert p { margin: 16px 0 0; color: #5c5e57; font-size: 16px; line-height: 20px; }
 .ls-cert-btn { height: 48px; border-radius: 4px; background: rgba(11, 12, 8, 0.1); color: rgba(255, 255, 255, 0.3); }
 .ls-cert-btn:disabled { cursor: not-allowed; }
-.ls-main { display: flex; flex-direction: column; gap: 24px; min-height: 1141px; min-width: 0; }
+.ls-main { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
 .ls-title { min-height: 114px; display: flex; flex-direction: column; gap: 8px; }
 .ls-title p { margin: 0; font-size: 14px; line-height: 18px; color: #5c5e57; }
 .ls-title h1 { margin: 0; font-weight: 300; font-size: 40px; line-height: 44px; letter-spacing: -1px; }

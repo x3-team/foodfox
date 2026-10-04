@@ -31,7 +31,7 @@ export function AuthorsBrowser() {
               <p>
                 Врачи и нутрициологи, которые готовят материалы. Каждый автор — практикующий специалист с указанной квалификацией; научный редактор проверяет текст.
               </p>
-              <Link className="text-link" href="/placeholder">
+              <Link className="text-link" href="/contacts">
                 Как мы проверяем материалы <img src="/icons/arrow-right.svg" alt="" />
               </Link>
             </div>
@@ -79,7 +79,7 @@ export function AuthorsBrowser() {
               <h2>Работаете с пациентами? Пройдите курс FOX для специалистов</h2>
               <p>6 уроков от лекторов с этой страницы: как устроен тест, как читать отчёт и как применять его в практике. Бесплатно, с сертификатом.</p>
             </div>
-            <Link className="btn btn-light" href="/placeholder">
+            <Link className="btn btn-light" href="/contacts">
               О курсе
             </Link>
           </article>

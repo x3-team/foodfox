@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { CookieBar } from "@/components/CookieBar";
+import { SiteOverlays } from "@/components/SiteOverlays";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a className="skip-link" href="#content">К содержанию</a>
         <div id="content">{children}</div>
         <CookieBar />
+        <SiteOverlays />
       </body>
     </html>
   );

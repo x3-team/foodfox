@@ -85,10 +85,10 @@ function Blocks({ blocks }: { blocks: Block[] }) {
             <h2>{block.title}</h2>
             <p>{block.text}</p>
             <div className="actions">
-              <Link className="btn btn-light" href="/placeholder">
+              <Link className="btn btn-light" href="/contacts">
                 {block.primary}
               </Link>
-              <Link className="btn btn-ghost" href="/placeholder" style={{ color: "var(--paper)", borderColor: "rgba(248,249,246,.35)" }}>
+              <Link className="btn btn-ghost" href="/contacts" style={{ color: "var(--paper)", borderColor: "rgba(248,249,246,.35)" }}>
                 {block.secondary}
               </Link>
             </div>
@@ -254,7 +254,7 @@ export function ArticleView({ article }: { article: Article }) {
                 <h2>Записаться на тест</h2>
                 <p>286 продуктов, один забор крови, результат через 7–10 дней. Стоимость устанавливает лаборатория.</p>
                 <div className="actions">
-                  <Link className="btn btn-light" href="/placeholder">
+                  <Link className="btn btn-light" href="/contacts">
                     Выбрать лабораторию
                   </Link>
                 </div>

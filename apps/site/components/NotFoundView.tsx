@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -19,8 +19,10 @@ const TILES = [
 export function NotFoundView() {
   const router = useRouter();
   const [q, setQ] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     document.title = "Страница не найдена — FOX Food Xplorer";
+    searchRef.current?.focus();
   }, []);
   return (
     <>
@@ -41,14 +43,18 @@ export function NotFoundView() {
                 }}
               >
                 <img src="/icons/search.svg" alt="" />
-                <input value={q} onChange={(event) => setQ(event.target.value)} aria-label="Поиск по сайту" placeholder="Например: «где сдать тест в Казани»" />
+                <input ref={searchRef} value={q} onChange={(event) => setQ(event.target.value)} aria-label="Поиск по сайту" placeholder="Например: «где сдать тест в Казани»" />
               </form>
               <div className="e-actions">
                 <Link className="btn btn-dark" href="/">На главную</Link>
-                <Link className="btn btn-ghost" href="/contacts">Сообщить о битой ссылке</Link>
+                <button className="btn btn-ghost" type="button" onClick={() => window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Спасибо, ссылку записали" }))}>Сообщить о битой ссылке</button>
               </div>
             </div>
-            <img src="/figma/not-found/plate.jpg" alt="" />
+            <div className="e-plate">
+              <img src="/figma/not-found/plate.jpg" alt="" />
+              <p className="e-four" aria-hidden>404</p>
+              <p className="e-chip">Здесь пусто</p>
+            </div>
           </div>
         </section>
         <section data-s="e02">

@@ -45,7 +45,7 @@ const FAQ_NAV = [
 ];
 
 export function FaqPage() {
-  const [open, setOpen] = useState(FAQ_GROUPS[0].items[0][0]);
+  const [open, setOpen] = useState<string[]>([FAQ_GROUPS[0].items[0][0]]);
   const [q, setQ] = useState("");
   const [nav, setNav] = useState("method");
   const query = q.trim().toLowerCase();
@@ -68,7 +68,7 @@ export function FaqPage() {
                 <p className="fx-lead">Коротко о методе, подготовке и том, как читать отчёт. Медицинскую интерпретацию по переписке не даём.</p>
                 <form className="search f-search" onSubmit={(event) => event.preventDefault()}>
                   <img src="/icons/search.svg" alt="" />
-                  <input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Например: anti-CCD, дети, цена" aria-label="Поиск по вопросам" />
+                  <input data-hotkey value={q} onChange={(event) => setQ(event.target.value)} placeholder="Например: anti-CCD, дети, цена" aria-label="Поиск по вопросам" />
                   <kbd>/</kbd>
                   <button className="btn btn-dark" type="submit">Найти</button>
                 </form>
@@ -83,7 +83,7 @@ export function FaqPage() {
                 <article>
                   <p>Самый частый вопрос</p>
                   <h2>Можно ли доверять FOX, если IgG-тесты критикуют?</h2>
-                  <button type="button" onClick={() => { setOpen(FAQ_GROUPS[0].items[0][0]); document.getElementById("method")?.scrollIntoView({ behavior: "smooth" }); }}>Читать ответ</button>
+                  <button type="button" onClick={() => { setOpen([FAQ_GROUPS[0].items[0][0]]); document.getElementById("method")?.scrollIntoView({ behavior: "smooth" }); }}>Читать ответ</button>
                 </article>
                 <p className="f01-expert"><img src="/figma/faq/expert.jpg" alt="" />Ответы проверил эксперт</p>
               </div>
@@ -112,16 +112,22 @@ export function FaqPage() {
                 <section key={group.id} id={group.id}>
                   <header><h2>{group.title}</h2><span>{group.count}</span></header>
                   {group.items.map(([question, answer]) => {
-                    const expanded = open === question;
+                    const expanded = open.includes(question);
+                    const mark = (text: string) => {
+                      if (query.length < 2) return text;
+                      const i = text.toLowerCase().indexOf(query);
+                      if (i < 0) return text;
+                      return <>{text.slice(0, i)}<mark className="hit">{text.slice(i, i + query.length)}</mark>{text.slice(i + query.length)}</>;
+                    };
                     return (
                       <article key={question} className={expanded ? "is-open" : ""}>
-                        <button type="button" aria-expanded={expanded} onClick={() => setOpen(expanded ? "" : question)}>
-                          <strong>{question}</strong>
+                        <button type="button" aria-expanded={expanded} onClick={() => setOpen((current) => expanded ? current.filter((item) => item !== question) : [...current, question])}>
+                          <strong>{mark(question)}</strong>
                           <img src="/icons/chevron-down.svg" alt="" />
                         </button>
-                        {expanded && (
-                          <div className="f-answer">
-                            <p>{answer}</p>
+                        <div className="f-answer">
+                          <div>
+                            <p>{mark(answer)}</p>
                             <div className="f-actions">
                               <span>Ссылка на ответ</span>
                               <span>Ответ помог?</span>
@@ -129,7 +135,7 @@ export function FaqPage() {
                               <button type="button">Нет</button>
                             </div>
                           </div>
-                        )}
+                        </div>
                       </article>
                     );
                   })}
@@ -194,6 +200,7 @@ const NETS = ["Все сети", "Ситилаб", "Гемотест", "KDL", "�
 
 export function LabsPage() {
   const [city, setCity] = useState("Москва");
+  const [labView, setLabView] = useState<"list" | "map">("list");
   const [selected, setSelected] = useState(BRANCHES[0].id);
   const [net, setNet] = useState("Все сети");
   const [addr, setAddr] = useState("");
@@ -308,11 +315,15 @@ export function LabsPage() {
                 <button type="button" className={`chip${openNow ? " is-active" : ""}`} onClick={() => setOpenNow((value) => !value)}>Открыто сейчас</button>
               </div>
               {more && <p className="l-more">Ещё в городе: CMD, CHROMOLAB, Хеликс. Точки этих сетей покажем, когда они появятся в выбранном городе.</p>}
+              <div className="l-mode" role="tablist" aria-label="Вид отделений">
+                <button type="button" className={`chip${labView === "list" ? " is-active" : ""}`} onClick={() => setLabView("list")}>Список</button>
+                <button type="button" className={`chip${labView === "map" ? " is-active" : ""}`} onClick={() => setLabView("map")}>Карта</button>
+              </div>
             </header>
             {empty ? (
               <p className="l-empty" role="status">В этом городе партнёров пока нет. Оставьте почту ниже — напишем один раз, когда тест FOX появится.</p>
             ) : (
-              <div className="l-split">
+              <div className={`l-split is-${labView}`}>
                 <div className="l-pane">
                   <label className="search">
                     <img src="/icons/search.svg" alt="" />
@@ -407,16 +418,34 @@ export function ContactsPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [ok, setOk] = useState(false);
   const [who, setWho] = useState<(typeof WHO)[number]>("Пациент");
+  const [shake, setShake] = useState(false);
+  const [net, setNet] = useState(false);
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const next: Record<string, string> = {};
+    const contact = String(data.get("email") || "").trim();
     if (String(data.get("name") || "").trim().length < 2) next.name = "Укажите имя";
-    if (!String(data.get("email") || "").includes("@")) next.email = "Проверьте email";
+    if (!contact.includes("@") && contact.replace(/\D/g, "").length < 10) next.email = "Укажите e-mail или телефон";
     if (!data.get("agree")) next.agree = "Нужно согласие";
     setErrors(next);
-    setOk(Object.keys(next).length === 0);
+    if (Object.keys(next).length) {
+      setShake(true);
+      window.setTimeout(() => setShake(false), 450);
+      setOk(false);
+      setNet(false);
+      return;
+    }
+    if (!navigator.onLine) {
+      setNet(true);
+      setOk(false);
+      return;
+    }
+    setNet(false);
+    setOk(true);
   }
+  const moscowHour = (new Date().getUTCHours() + 3) % 24;
+  const officeOpen = moscowHour >= 10 && moscowHour < 19;
   return (
     <>
       <Header />
@@ -440,6 +469,8 @@ export function ContactsPage() {
               <h2>Телефон</h2>
               <a href="tel:+74953748305">+7 (495) 374-83-05</a>
               <p>Пн–Пт 10:00–19:00 (МСК)</p>
+              <p role="status">{officeOpen ? "Сейчас офис на связи" : "Сейчас офис закрыт — напишите, ответим утром"}</p>
+              <button type="button" className="k-go" onClick={() => { void navigator.clipboard?.writeText("+7 (495) 374-83-05"); window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Номер скопирован" })); }}>Скопировать</button>
               <a className="k-go" href="tel:+74953748305">Позвонить</a>
             </article>
             <article>
@@ -464,7 +495,7 @@ export function ContactsPage() {
         </section>
         <section data-s="k03">
           <div className="wrap k03">
-            <form id="k-form" onSubmit={submit} noValidate>
+            <form id="k-form" className={shake ? "is-shake" : ""} onSubmit={submit} noValidate>
               <h2>Задать вопрос</h2>
               <p>Выберите, кто вы — так письмо попадёт к нужному сотруднику.</p>
               <div className="who-tabs" role="tablist" aria-label="Тип обращения">
@@ -478,16 +509,17 @@ export function ContactsPage() {
                 {who === "Лаборатория" && <>Подключение сети: обучение персонала и материалы для пациентов. <a href={PARTNER_LOGIN}>Кабинет партнёра</a></>}
               </p>
               <label className={`field${errors.name ? " is-error" : ""}`}>Имя<input name="name" aria-invalid={!!errors.name} />{errors.name && <span className="err">{errors.name}</span>}</label>
-              <label className={`field${errors.email ? " is-error" : ""}`}>Email<input name="email" type="email" aria-invalid={!!errors.email} />{errors.email && <span className="err">{errors.email}</span>}</label>
-              <label className="field">Сообщение<textarea name="text" rows={4} /></label>
+              <label className={`field${errors.email ? " is-error" : ""}`}>E-mail или телефон<input name="email" aria-invalid={!!errors.email} />{errors.email && <span className="err">{errors.email}</span>}</label>
+              <label className="field">Сообщение<textarea name="text" rows={4} maxLength={500} /></label>
               <label className={`check-row${errors.agree ? " is-error" : ""}`}><input type="checkbox" name="agree" /><span>Согласен на обработку персональных данных по 152-ФЗ и с политикой конфиденциальности</span></label>
               {errors.agree && <p className="err" role="alert">{errors.agree}</p>}
+              {net && <p className="err" role="alert">Не удалось отправить. Проверьте соединение и попробуйте ещё раз.</p>}
               {ok && <p role="status">Сообщение отправлено. Ответим в ближайший рабочий день.</p>}
               <button className="btn btn-dark" type="submit">Отправить</button>
               <p className="k-hint">Отвечаем в течение 1 рабочего дня</p>
             </form>
             <aside className="k-map">
-              <img src="/figma/contacts/hero.jpg" alt="" />
+              <LabsMap points={[{ id: "office", lab: "Офис", address: "ул. Таганская, 3", metro: "Марксистская", hours: "Пн–Пт 10–19", lat: 55.7406, lng: 37.653 }]} selected="office" onSelect={() => undefined} />
               <div>
                 <h2>Офис Инмунотех</h2>
                 <p>Москва, ул. Таганская, 3 · 5 минут от м. Марксистская</p>
@@ -544,6 +576,11 @@ export function ReviewsPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("Все");
+  useEffect(() => {
+    const type = new URLSearchParams(window.location.search).get("type");
+    if (type === "video") setFilter("Видео");
+    if (type === "text" || type === "текст") setFilter("Текст");
+  }, []);
   const [topic, setTopic] = useState("");
   const [page, setPage] = useState(1);
   const cards = REVIEWS.filter((item) => (filter === "Все" || item.who === filter || item.kind === filter) && (!topic || item.tag === topic));
@@ -559,7 +596,7 @@ export function ReviewsPage() {
               <div>
                 <h1>Отзывы</h1>
                 <p className="fx-lead">Истории людей, которые сдали тест FOX, и специалистов, которые разбирают отчёт на приёме. Публикуем после модерации.</p>
-                <p className="v-rate"><b>4,9</b><span className="v-stars" aria-hidden="true">★★★★★</span></p>
+                <p className="v-rate"><b>4.8</b><span className="v-stars" aria-hidden="true">★★★★★</span></p>
                 <p className="v-meta">312 отзывов после модерации</p>
                 <p className="v-avatars">
                   <span><img src="/figma/reviews/r1.png" alt="" /><img src="/figma/reviews/r2.png" alt="" /><img src="/figma/reviews/r3.png" alt="" /><img src="/figma/reviews/r4.png" alt="" /></span>
@@ -580,7 +617,15 @@ export function ReviewsPage() {
             <div className="v-tools">
               <div className="chips">
                 {["Все", "Пациенты", "Специалисты", "Видео"].map((item) => (
-                  <button key={item} className={`chip${filter === item ? " is-active" : ""}`} type="button" onClick={() => { setFilter(item); setPage(1); }}>{item}</button>
+                  <button key={item} className={`chip${filter === item ? " is-active" : ""}`} type="button" onClick={() => {
+                    setFilter(item);
+                    setPage(1);
+                    const url = new URL(window.location.href);
+                    if (item === "Видео") url.searchParams.set("type", "video");
+                    else if (item === "Текст") url.searchParams.set("type", "text");
+                    else url.searchParams.delete("type");
+                    window.history.replaceState(null, "", url);
+                  }}>{item}</button>
                 ))}
               </div>
               <div className="chips">

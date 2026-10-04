@@ -26,7 +26,7 @@ export function ReportToc({ items }: { items: Array<[string, string]> }) {
   const shareUrl = typeof window !== "undefined" ? window.location.href : "https://foodfox.example/report";
 
   return (
-    <nav className="toc" aria-label="Содержание">
+    <nav className="toc" data-allow-x aria-label="Содержание">
       <p className="rf-toc-label">На этой странице</p>
       {items.map(([id, title]) => (
         <a key={id} href={`#${id}`} className={active === id ? "is-active" : ""} aria-current={active === id ? "location" : undefined}>

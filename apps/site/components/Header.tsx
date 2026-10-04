@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const NAV = [
   { href: "/specialists", label: "Для специалистов" },
@@ -34,18 +34,33 @@ export const PARTNER_LOGIN = "https://foodfox.yuri.guru/partner";
 export function Header() {
   const path = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [menu, setMenu] = useState(false);
+  const lastY = useRef(0);
+  const lessons = path.startsWith("/course/lessons");
   const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
   const darkHero = path === "/" || path.startsWith("/specialists") || path === "/course" || path === "/labs" || path === "/faq" || path === "/reviews" || path === "/contacts" || path === "/report" || path === "/certificates";
-  const onDark = !scrolled && darkHero;
+  const onDark = !scrolled && darkHero && !lessons;
   const items = variant === "b2b" ? B2B : variant === "course" ? COURSE : NAV;
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => {
+      const y = window.scrollY;
+      const mobile = window.matchMedia("(max-width: 1100px)").matches;
+      setScrolled(y > 80);
+      if (menu) {
+        setHidden(false);
+      } else if (mobile && y > 80 && y > lastY.current + 6) {
+        setHidden(true);
+      } else if (!mobile || y < lastY.current - 6 || y < 40) {
+        setHidden(false);
+      }
+      lastY.current = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [menu]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("is-scrolled", scrolled);
@@ -69,7 +84,7 @@ export function Header() {
   }, [menu]);
 
   return (
-    <header className={`site-header${scrolled ? " is-scrolled" : ""}${onDark ? " on-dark" : ""} header-${variant}`}>
+    <header className={`site-header${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}${onDark ? " on-dark" : ""} header-${variant}`}>
       <div className="header-left">
         <Link href="/" className="logo" aria-label="FOX Food Xplorer">
           <img src={onDark ? "/icons/logo-light.svg" : "/icons/logo-dark.svg"} alt="" />
@@ -92,28 +107,34 @@ export function Header() {
         <a className="partner-dot" href={PARTNER_LOGIN} aria-label="Кабинет партнёра">
           <img src={onDark ? "/icons/user-light.svg" : "/icons/user.svg"} alt="" />
         </a>
-        {variant === "site" ? (
-          <Link className="btn btn-dark" href="/labs#zapis">Записаться на тест</Link>
+        {lessons ? (
+          <span className="cabinet-pill">Кабинет курса</span>
+        ) : variant === "site" ? (
+          <>
+            <button className="btn btn-ghost header-contact" type="button" onClick={() => window.dispatchEvent(new Event("fox:contact"))}>Связаться</button>
+            <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
+          </>
         ) : (
           <Link className="btn btn-dark" href="/course">Зарегистрироваться на курс</Link>
         )}
-        <button className="burger" aria-expanded={menu} aria-controls="mobile-menu" onClick={() => setMenu(true)}>
-          Меню ≡
+        <button className={`burger${menu ? " is-x" : ""}`} aria-label="Меню" aria-expanded={menu} aria-controls="mobile-menu" onClick={() => setMenu((value) => !value)}>
+          <span />
+          <span />
+          <span />
         </button>
       </div>
       {menu && (
         <div id="mobile-menu" className="mobile-menu" role="dialog" aria-label="Меню">
-          <button className="menu-close" type="button" onClick={() => setMenu(false)}>Закрыть ×</button>
           {NAV.map((item, index) => (
             <Link key={item.href} href={item.href} style={{ animationDelay: `${80 + index * 45}ms` }} aria-current={path.startsWith(item.href) ? "page" : undefined}>
               {item.label} <img src="/icons/arrow-right-light.svg" alt="" />
             </Link>
           ))}
-          <Link href="/course" style={{ animationDelay: "420ms" }}>Для специалистов</Link>
           <a href={PARTNER_LOGIN} style={{ animationDelay: "460ms" }}>Кабинет партнёра</a>
           <a href="tel:+74953748305" style={{ animationDelay: "500ms" }}>+7 (495) 374-83-05</a>
           <a href="https://t.me/foxfoodxplorer" style={{ animationDelay: "540ms" }}>Telegram</a>
-          <Link className="btn btn-light" href="/labs#zapis" style={{ animationDelay: "580ms" }}>Записаться на тест</Link>
+          <button className="btn btn-light" type="button" style={{ animationDelay: "580ms" }} onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:contact")); }}>Связаться</button>
+          <button className="btn btn-light" type="button" style={{ animationDelay: "620ms" }} onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:book")); }}>Записаться на тест</button>
         </div>
       )}
     </header>

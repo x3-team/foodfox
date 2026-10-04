@@ -605,18 +605,8 @@
 .sp-lectors span { display: block; margin-top: 2px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
 
 @media (min-width: 1440px) {
-  [data-s="p01"] { min-height: 1084px; }
-  [data-s="p02"] { min-height: 1034px; }
-  [data-s="p03"] { min-height: 1390px; }
-  [data-s="p04"] { min-height: 810px; }
-  [data-s="p05"] { min-height: 1092px; }
-  [data-s="p06"] { min-height: 1541px; }
-  [data-s="p07"] { min-height: 974px; }
-  [data-s="p08"] { min-height: 1050px; }
-  [data-s="p09"] { min-height: 794px; }
   .sp-tabs { flex-wrap: nowrap; }
 }
-
 @media (max-width: 1439px) {
   .sp-stage { height: auto; }
   .sp-sheet.is-back-1,

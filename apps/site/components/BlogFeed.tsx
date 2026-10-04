@@ -460,7 +460,7 @@ export function BlogFeed() {
               <h2>Не уверены, что симптомы связаны с едой?</h2>
               <p>Симптом-чекер за 2 минуты соберёт список жалоб для разговора со специалистом. Без регистрации — данные остаются в вашем браузере.</p>
             </div>
-            <Link className="btn btn-light" href="/placeholder">
+            <Link className="btn btn-light" href="/contacts">
               Проверить симптомы
             </Link>
           </article>

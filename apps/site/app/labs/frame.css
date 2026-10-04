@@ -144,14 +144,6 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .l05 li { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; }
 .l05 small { grid-column: 1 / -1; color: rgba(11, 12, 8, 0.65); }
 
-@media (min-width: 1100px) {
-  [data-s="l01"] { height: 778px; box-sizing: border-box; }
-  [data-s="l02"] { height: 872px; box-sizing: border-box; }
-  [data-s="l03"] { height: 1014px; box-sizing: border-box; }
-  [data-s="l04"] { height: 596px; box-sizing: border-box; }
-  [data-s="l05"] { height: 570px; box-sizing: border-box; }
-}
-
 @media (max-width: 1099px) {
   [data-s="l01"] h1 { font-size: 40px; line-height: 44px; letter-spacing: -1px; }
   .l01-row, .l-partners, .l-visit, .l05, .l-split { grid-template-columns: 1fr; height: auto; }
