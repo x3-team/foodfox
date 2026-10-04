@@ -1,70 +1,158 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, ReactNode, useEffect, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header, PARTNER_LOGIN } from "@/components/Header";
 import { LabsMap, type Branch } from "@/components/LabsMap";
 
-const FAQ: Array<[string, string, string]> = [
-  ["О тесте и методе", "Можно ли доверять FOX, если IgG-тесты критикуют?", "Споры возникают, когда пищеспецифические IgG используют как окончательный диагноз или готовый список запрещённой еды. FOX измеряет IgG к 286 антигенам и собирает их в отчёт для плана временной элиминации."],
-  ["О тесте и методе", "Чем пищевая непереносимость отличается от аллергии?", "Аллергия — быстрая реакция IgE. FOX смотрит IgG, реакции могут быть отложенными. Тест не диагностирует аллергию."],
-  ["О тесте и методе", "Почему сложно самостоятельно определить триггеры?", "Отсроченная реакция проявляется через 3–72 часа, поэтому дневник без опоры быстро становится догадкой."],
-  ["Как читать результат", "Может ли результат измениться со временем?", "FOX показывает текущее состояние IgG, а не предрасположенность. Повторный отчёт может отличаться."],
-  ["Как читать результат", "Какие продукты входят в панель?", "286 пищевых антигенов из 13 групп: от молочных белков до специй и компонентов добавок."],
-  ["Как читать результат", "Что такое anti-CCD-контроль?", "Отдельный канал на перекрёстные углеводные структуры. Он снижает риск принять шум за сигнал."],
-  ["После теста и рацион", "Нужно ли голодать перед забором крови?", "Нет. Специальной подготовки и диеты накануне не требуется."],
-  ["После теста и рацион", "Подходит ли тест детям?", "Решение принимает специалист, который ведёт ребёнка. Тест не заменяет педиатра."],
-  ["После теста и рацион", "Можно ли сдавать тест на фоне приёма лекарств?", "Это вопрос к врачу перед записью. Сайт не даёт индивидуальных назначений."],
-  ["Оплата и лаборатории", "Сколько стоит тест FOX?", "Цену устанавливает лаборатория. На сайте её нет."],
-  ["Скепсис и критика IgG", "Насколько надёжен тест FOX?", "В основе ELISA и европейская маркировка IVDR. Результат интерпретирует специалист."],
-  ["Скепсис и критика IgG", "Можно ли доверять IgG-тестам?", "Споры возникают, когда IgG выдают за диагноз. FOX — карта для разговора о рационе, не запрет навсегда."],
-  ["Для специалистов", "Мне уже делали тесты на аллергию. Нужен ли FOX?", "Это разные вопросы. Если симптомы остались, специалист может предложить FOX как отдельный инструмент."],
-  ["Для специалистов", "Сколько ждать результат?", "7–10 дней. Сам анализ занимает около трёх часов."],
+const FAQ_GROUPS: Array<{ id: string; title: string; count: string; items: Array<[string, string]> }> = [
+  {
+    id: "method",
+    title: "О тесте и методе",
+    count: "8 вопросов",
+    items: [
+      ["Можно ли доверять FOX, если IgG-тесты критикуют?", "Споры возникают, когда пищеспецифические IgG используют как окончательный диагноз или готовый список запрещённой еды. FOX решает другую задачу: лабораторно измеряет IgG к 286 пищевым антигенам и объединяет результаты в подробном отчёте. Широкая панель помогает системно оценить рацион, составить план временной элиминации и последовательно возвращать продукты под наблюдением специалиста."],
+      ["Чем пищевая непереносимость отличается от аллергии?", "Аллергия — быстрая реакция IgE. FOX смотрит IgG, реакции могут быть отложенными. Тест не диагностирует аллергию."],
+      ["Почему сложно самостоятельно определить триггеры?", "Отсроченная реакция проявляется через 3–72 часа, поэтому дневник без опоры быстро становится догадкой."],
+      ["Может ли результат измениться со временем?", "FOX показывает текущее состояние IgG, а не предрасположенность. Повторный отчёт может отличаться."],
+      ["Какие продукты входят в панель?", "286 пищевых антигенов из 13 групп: от молочных белков до специй и компонентов добавок."],
+      ["Что такое anti-CCD-контроль?", "Отдельный канал на перекрёстные углеводные структуры. Он снижает риск принять шум за сигнал."],
+    ],
+  },
+  {
+    id: "prep",
+    title: "Перед сдачей",
+    count: "5 вопросов",
+    items: [
+      ["Нужно ли специально готовиться к сдаче крови?", "Правила на месте называет лаборатория. FOX не назначает диету накануне и не заменяет эту инструкцию."],
+      ["Нужно ли голодать перед забором крови?", "Нет. Специальной подготовки и диеты накануне не требуется."],
+      ["Подходит ли тест детям?", "Решение принимает специалист, который ведёт ребёнка. Тест не заменяет педиатра."],
+      ["Можно ли сдавать тест на фоне приёма лекарств?", "Это вопрос к врачу перед записью. Сайт не даёт индивидуальных назначений."],
+      ["Сколько стоит тест FOX?", "Цену устанавливает лаборатория. На сайте её нет."],
+    ],
+  },
+];
+
+const FAQ_NAV = [
+  ["method", "О тесте и методе", "8"],
+  ["prep", "Перед сдачей", "5"],
+  ["read", "Как читать результат", "7"],
+  ["after", "После теста и рацион", "6"],
+  ["doubt", "Скепсис и критика IgG", "4"],
+  ["pro", "Для специалистов", "6"],
+  ["pay", "Оплата и лаборатории", "3"],
 ];
 
 export function FaqPage() {
-  const [open, setOpen] = useState(0);
+  const [open, setOpen] = useState(FAQ_GROUPS[0].items[0][0]);
   const [q, setQ] = useState("");
-  const [section, setSection] = useState("Все");
-  const sections = ["Все", ...new Set(FAQ.map((item) => item[0]))];
-  const items = FAQ.filter((item) => (section === "Все" || item[0] === section) && item.join(" ").toLowerCase().includes(q.trim().toLowerCase()));
+  const [nav, setNav] = useState("method");
+  const query = q.trim().toLowerCase();
+  const groups = FAQ_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => item.join(" ").toLowerCase().includes(query)),
+  })).filter((group) => group.items.length > 0);
+
   return (
     <>
       <Header />
       <main>
-        <section className="dark-hero" style={{ minHeight: 420 }}>
-          <img className="bg" src="/blog/cover-symptoms.jpg" alt="" />
-          <div className="shade" />
-          <div className="wrap inner">
-            <h1 className="page-title" style={{ color: "white" }}>Вопросы и ответы</h1>
-            <p className="lead" style={{ color: "rgba(248,249,246,.8)" }}>{FAQ.length} ответов · проверены экспертами FOX</p>
+        <section className="dark-hero fx-hero" data-s="f01">
+          <div className="wrap f01">
+            <p className="crumbs"><Link href="/">Главная</Link><span className="sep">/</span><span aria-current="page">Вопросы и ответы</span></p>
+            <div className="f01-row">
+              <div className="f01-copy">
+                <p className="fx-eye"><i />39 ответов · проверены экспертами FOX</p>
+                <h1>Вопросы и ответы</h1>
+                <p className="fx-lead">Коротко о методе, подготовке и том, как читать отчёт. Медицинскую интерпретацию по переписке не даём.</p>
+                <form className="search f-search" onSubmit={(event) => event.preventDefault()}>
+                  <img src="/icons/search.svg" alt="" />
+                  <input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Например: anti-CCD, дети, цена" aria-label="Поиск по вопросам" />
+                  <kbd>/</kbd>
+                  <button className="btn btn-dark" type="submit">Найти</button>
+                </form>
+                <div className="chips">
+                  {["Критика IgG", "Подготовка", "Детям", "Сроки", "Цена"].map((item) => (
+                    <button key={item} className="chip" type="button" onClick={() => setQ(item === "Критика IgG" ? "критикуют" : item === "Подготовка" ? "готовиться" : item === "Детям" ? "детям" : item === "Сроки" ? "дней" : "стоит")}>{item}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="f01-visual">
+                <img src="/figma/faq/hero.jpg" alt="" />
+                <article>
+                  <p>Самый частый вопрос</p>
+                  <h2>Можно ли доверять FOX, если IgG-тесты критикуют?</h2>
+                  <button type="button" onClick={() => { setOpen(FAQ_GROUPS[0].items[0][0]); document.getElementById("method")?.scrollIntoView({ behavior: "smooth" }); }}>Читать ответ</button>
+                </article>
+                <p className="f01-expert"><img src="/figma/faq/expert.jpg" alt="" />Ответы проверил эксперт</p>
+              </div>
+            </div>
           </div>
         </section>
-        <section className="wrap band faq-layout">
-          <aside className="stack">
-            {sections.map((item) => (
-              <button key={item} className={`chip${section === item ? " is-active" : ""}`} type="button" onClick={() => setSection(item)}>{item}</button>
-            ))}
-          </aside>
-          <div>
-            <label className="search" style={{ marginBottom: 16, width: "min(480px, 100%)" }}>
-              <img src="/icons/search.svg" alt="" />
-              <input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Например: anti-CCD, дети, цена" aria-label="Поиск по вопросам" />
-            </label>
-            {items.length === 0 && <p role="status">Ничего не нашлось. Сбросьте запрос или напишите нам.</p>}
-            <div className="stack">
-              {items.map((item, index) => (
-                <button key={item[1]} className="acc" aria-expanded={open === index} onClick={() => setOpen(open === index ? -1 : index)}>
-                  <strong>{item[1]}</strong>
-                  {open === index && <p>{item[2]}</p>}
-                </button>
+
+        <section data-s="f02">
+          <div className="wrap f02">
+            <aside className="f-nav">
+              <p>Разделы</p>
+              {FAQ_NAV.map(([id, title, count]) => (
+                <a key={id} href={`#${id}`} className={nav === id ? "is-on" : ""} onClick={() => setNav(id)}>
+                  <span>{title}</span><b>{count}</b>
+                </a>
+              ))}
+              <article className="f-spec">
+                <h2>Вы врач или нутрициолог?</h2>
+                <p>Материалы для приёма и курс по отчёту — в отдельном разделе.</p>
+                <Link href="/specialists">Специалистам <img src="/icons/arrow-right.svg" alt="" /></Link>
+              </article>
+            </aside>
+            <div className="f-groups">
+              {groups.length === 0 && <p role="status">Ничего не нашлось. Сбросьте запрос или напишите нам.</p>}
+              {groups.map((group) => (
+                <section key={group.id} id={group.id}>
+                  <header><h2>{group.title}</h2><span>{group.count}</span></header>
+                  {group.items.map(([question, answer]) => {
+                    const expanded = open === question;
+                    return (
+                      <article key={question} className={expanded ? "is-open" : ""}>
+                        <button type="button" aria-expanded={expanded} onClick={() => setOpen(expanded ? "" : question)}>
+                          <strong>{question}</strong>
+                          <img src="/icons/chevron-down.svg" alt="" />
+                        </button>
+                        {expanded && (
+                          <div className="f-answer">
+                            <p>{answer}</p>
+                            <div className="f-actions">
+                              <span>Ссылка на ответ</span>
+                              <span>Ответ помог?</span>
+                              <button type="button">Да</button>
+                              <button type="button">Нет</button>
+                            </div>
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })}
+                </section>
               ))}
             </div>
-            <article className="panel" style={{ marginTop: 28 }}>
-              <h2>Не нашли ответ?</h2>
-              <p>Напишите нам. Медицинскую интерпретацию отчёта дистанционно не даём.</p>
-              <Link className="btn btn-dark" href="/contacts">Задать вопрос</Link>
+          </div>
+        </section>
+
+        <section data-s="f03">
+          <div className="wrap">
+            <article className="f03-card">
+              <div>
+                <p className="fx-kicker">Отвечаем в течение одного рабочего дня</p>
+                <h2>Не нашли ответ?</h2>
+                <p>Напишите в службу заботы. Дистанционно отчёт не интерпретируем — это разговор со специалистом, который вас ведёт.</p>
+                <Link className="btn btn-dark" href="/contacts">Задать вопрос</Link>
+                <p className="f03-phone"><a href="tel:+74953748305">+7 (495) 374-83-05</a></p>
+              </div>
+              <div className="f03-photo">
+                <img src="/figma/faq/consultant.jpg" alt="" />
+                <p><b>Анна, служба заботы</b><span>Здравствуйте! Чем помочь?</span></p>
+              </div>
             </article>
           </div>
         </section>
@@ -88,99 +176,237 @@ const SPB: Branch[] = [
   { id: "helix-spb", lab: "Хеликс", address: "ул. Марата, 22", metro: "Маяковская · 200 м", hours: "Пн–Пт 7:30–19:00", lat: 59.926, lng: 30.355 },
 ];
 
-const LABS = ["Ситилаб", "Гемотест", "KDL", "ДНКОМ", "Инвитро", "CMD", "Хеликс", "Хромолаб", "Юнимед"];
+const EMPTY: Branch[] = [];
+
+const PARTNERS = [
+  { name: "Ситилаб", logo: "/figma/labs/citilab.svg", count: "86 отделений", here: true, href: "https://citilab.ru" },
+  { name: "Гемотест", logo: "/figma/labs/gemotest.svg", count: "140 отделений", here: true, href: "https://gemotest.ru" },
+  { name: "KDL", logo: "/figma/labs/kdl.svg", count: "54 отделения", here: true, href: "https://kdl.ru" },
+  { name: "ДНКОМ", logo: "/figma/labs/dnkom.svg", count: "17 отделений", here: true, href: "https://dnkom.ru" },
+  { name: "INVITRO", logo: "/figma/labs/invitro.svg", count: "128 отделений", here: true, href: "https://www.invitro.ru" },
+  { name: "CMD", logo: "/figma/labs/cmd.svg", count: "41 отделение", here: true, href: "https://cmd-online.ru" },
+  { name: "CHROMOLAB", logo: "/figma/labs/chromolab.png", count: "23 отделения", here: true, href: "https://chromolab.ru" },
+  { name: "Хеликс", logo: "/figma/labs/helix.svg", count: "32 отделения", here: true, href: "https://helix.ru" },
+  { name: "Юнимед", logo: "/figma/labs/unimed.svg", count: "Нет в вашем городе", here: false, href: "#l05" },
+];
+
+const NETS = ["Все сети", "Ситилаб", "Гемотест", "KDL", "ДНКОМ"];
 
 export function LabsPage() {
   const [city, setCity] = useState("Москва");
   const [selected, setSelected] = useState(BRANCHES[0].id);
-  const [step, setStep] = useState(0);
-  const [booked, setBooked] = useState(false);
+  const [net, setNet] = useState("Все сети");
+  const [addr, setAddr] = useState("");
+  const [openNow, setOpenNow] = useState(false);
+  const [more, setMore] = useState(false);
+  const [mail, setMail] = useState("");
+  const [told, setTold] = useState(false);
   const key = city.trim().toLowerCase();
-  const points = key === "санкт-петербург" || key === "спб" || key === "петербург" ? SPB : key === "москва" || key === "" ? BRANCHES : [];
+  const points = useMemo(() => {
+    if (key === "санкт-петербург" || key === "спб" || key === "петербург") return SPB;
+    if (key === "москва" || key === "") return BRANCHES;
+    return EMPTY;
+  }, [key]);
   const empty = city.trim().length > 0 && points.length === 0;
-  const current = points.find((item) => item.id === selected) ?? points[0] ?? BRANCHES[0];
+  const cityTitle = key === "санкт-петербург" || key === "спб" || key === "петербург" ? "Санкт-Петербурге" : "Москве";
+  const shown = points.filter((item) => {
+    if (net !== "Все сети" && item.lab !== net && !(net === "Ситилаб" && item.lab === "Ситилаб")) return false;
+    if (openNow && !item.hours.toLowerCase().includes("открыто") && !item.hours.includes("20:00")) return false;
+    const blob = `${item.lab} ${item.address} ${item.metro}`.toLowerCase();
+    return blob.includes(addr.trim().toLowerCase());
+  });
+  const nearest = points[0];
+
   useEffect(() => {
-    if (step === 0) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setStep(0);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [step]);
+    setSelected(points[0]?.id ?? "");
+    setNet("Все сети");
+    setOpenNow(false);
+  }, [points]);
+
+  function pickNet(name: string) {
+    setNet(name);
+    if (name === "Все сети") return;
+    const hit = points.find((item) => item.lab === name);
+    if (hit) setSelected(hit.id);
+  }
+
   return (
     <>
       <Header />
       <main id="zapis">
-        <section className="dark-hero" style={{ minHeight: 520 }}>
-          <img className="bg" src="/blog/cover-lab.png" alt="" />
-          <div className="shade" />
-          <div className="wrap inner">
-            <h1 className="page-title" style={{ color: "white" }}>Где сдать тест FOX</h1>
-            <p className="lead" style={{ color: "rgba(248,249,246,.8)" }}>Цена устанавливается лабораторией. На сайте её нет. 1500+ точек в сетях-партнёрах.</p>
+        <section className="dark-hero fx-hero" data-s="l01">
+          <div className="wrap l01">
+            <p className="crumbs"><Link href="/">Главная</Link><span className="sep">/</span><span aria-current="page">Где сдать тест</span></p>
+            <div className="l01-row">
+              <div className="l01-copy">
+                <p className="fx-eye"><i />8 федеральных сетей · 1 500+ отделений по России</p>
+                <h1>Где сдать тест FOX</h1>
+                <p className="fx-lead">Выберите город — покажем сети-партнёры и ближайшие отделения. Цену, срок и правила подготовки устанавливает лаборатория — уточняйте на её официальном сайте.</p>
+                <article className="l-city">
+                  <div className="l-city-top">
+                    <span className="l-pin"><img src="/icons/pin.svg" alt="" /></span>
+                    <div className="l-city-name">
+                      <span>Ваш город · определили по IP</span>
+                      <input value={city} onChange={(event) => setCity(event.target.value)} aria-label="Город" />
+                    </div>
+                    <button type="button" className="l-change" onClick={() => document.querySelector<HTMLInputElement>("[aria-label='Город']")?.focus()}>
+                      Изменить город <img src="/icons/chevron-down.svg" alt="" />
+                    </button>
+                  </div>
+                  <div className="l-stats">
+                    <p><b>8</b><span>сетей-партнёров в городе</span></p>
+                    <p><b>{empty ? "0" : key.startsWith("санкт") || key === "спб" || key === "петербург" ? String(points.length) : "128"}</b><span>{empty ? "отделений рядом" : `отделений в ${city || "городе"}`}</span></p>
+                    <p><b>7–10 дней</b><span>до готового отчёта</span></p>
+                  </div>
+                </article>
+                <p className="l-note">Цена на сайте FOX не публикуется: она зависит от региона и сети.</p>
+              </div>
+              <div className="l01-photo">
+                <img src="/figma/labs/room.jpg" alt="" />
+                <p className="l-pill">Забор крови — 10 минут</p>
+                {nearest && (
+                  <article className="l-near">
+                    <p><span>Ближайшее к вам</span><em>Открыто до 20:00</em></p>
+                    <strong>{nearest.lab === "Инвитро" ? "INVITRO" : nearest.lab} · {nearest.address}</strong>
+                    <span><img src="/icons/pin.svg" alt="" />{nearest.metro} от вас</span>
+                  </article>
+                )}
+              </div>
+            </div>
           </div>
         </section>
-        <section className="wrap band">
-        <label className="field">Город
-          <input value={city} onChange={(event) => setCity(event.target.value)} aria-label="Город" />
-        </label>
-        <section>
-          <h2>Сети-партнёры</h2>
-          <div className="lab-grid">
-            {LABS.map((name) => (
-              <article className="lab-tile" key={name}>{name}</article>
-            ))}
-            <article className="lab-tile">1500+</article>
-          </div>
-        </section>
-        <section>
-          <h2>Перед визитом</h2>
-          <p>Голодать не нужно. Диету накануне не назначают. Возьмите паспорт и направление, если его дал специалист.</p>
-        </section>
-        {empty ? (
-          <p role="status">Вашего города нет в списке: партнёров пока нет. Оставьте контакт — напишем, когда появится сеть.</p>
-        ) : (
-          <div className="cards-2" style={{ marginTop: 20 }}>
-            <div className="stack" data-lab-list>
-              {points.map((item) => (
-                <button key={item.id} className="panel" aria-pressed={selected === item.id} onClick={() => setSelected(item.id)}>
-                  <h3>{item.lab}</h3>
-                  <p>{item.address}</p>
-                  <p>{item.metro}</p>
-                  <p>{item.hours}</p>
-                </button>
+
+        <section data-s="l02">
+          <div className="wrap l02">
+            <header>
+              <h2>Лаборатории-партнёры</h2>
+              <p>Выберите сеть — откроем страницу теста FOX на её сайте в новой вкладке.</p>
+              <p className="l-legend"><i className="on" />есть в вашем городе <i />пока нет — покажем ближайшие города</p>
+            </header>
+            <div className="l-partners">
+              {PARTNERS.map((item) => (
+                <a key={item.name} className={item.here ? "" : "is-away"} href={item.href} {...(item.here ? { target: "_blank", rel: "noreferrer" } : {})}>
+                  <img src={item.logo} alt="" />
+                  <strong>{item.name}</strong>
+                  <span><i />{item.count}</span>
+                  <em>{item.here ? "Сдать тест на сайте сети" : "Смотреть города"} <img src="/icons/arrow-up-right.svg" alt="" /></em>
+                </a>
               ))}
             </div>
-            <LabsMap points={points} selected={selected} onSelect={setSelected} />
           </div>
-        )}
-        <button className="btn btn-dark" style={{ marginTop: 20 }} onClick={() => setStep(1)}>Записаться на тест</button>
         </section>
-        {step > 0 && (
-          <div className="modal-back" onClick={() => setStep(0)}>
-            <div className="modal" role="dialog" aria-label="Запись" onClick={(event) => event.stopPropagation()}>
-              {booked ? <p>Открываем сайт {current.lab}. Цена и слот — на стороне лаборатории.</p> : (
-                <>
-                  <h2>Шаг {step} из 2</h2>
-                  {step === 1 && <p>Город: {city || "не выбран"}</p>}
-                  {step === 2 && <p>Сеть: {current.lab}, {current.address}</p>}
-                  <button className="btn btn-dark" style={{ marginTop: 12 }} onClick={() => step === 1 ? setStep(2) : setBooked(true)}>
-                    {step === 1 ? "Дальше" : "Перейти на сайт сети"}
-                  </button>
-                </>
-              )}
+
+        <section data-s="l03">
+          <div className="wrap l03">
+            <header>
+              <h2>{empty ? "Отделения" : `Отделения в ${cityTitle}`}</h2>
+              <div className="chips">
+                {NETS.map((item) => (
+                  <button key={item} type="button" className={`chip${net === item ? " is-active" : ""}`} onClick={() => pickNet(item)}>{item}</button>
+                ))}
+                <button type="button" className={`chip${more ? " is-active" : ""}`} onClick={() => setMore((value) => !value)}>Ещё 3</button>
+                <button type="button" className={`chip${openNow ? " is-active" : ""}`} onClick={() => setOpenNow((value) => !value)}>Открыто сейчас</button>
+              </div>
+              {more && <p className="l-more">Ещё в городе: CMD, CHROMOLAB, Хеликс. Точки этих сетей покажем, когда они появятся в выбранном городе.</p>}
+            </header>
+            {empty ? (
+              <p className="l-empty" role="status">В этом городе партнёров пока нет. Оставьте почту ниже — напишем один раз, когда тест FOX появится.</p>
+            ) : (
+              <div className="l-split">
+                <div className="l-pane">
+                  <label className="search">
+                    <img src="/icons/search.svg" alt="" />
+                    <input value={addr} onChange={(event) => setAddr(event.target.value)} placeholder="Адрес, метро или сеть" aria-label="Адрес, метро или сеть" />
+                  </label>
+                  <p className="l-found"><span>Найдено {shown.length} {shown.length === 1 ? "отделение" : "отделений"}</span><span>Сначала ближайшие</span></p>
+                  <div data-lab-list>
+                    {shown.map((item) => (
+                      <article key={item.id} className={selected === item.id ? "is-on" : ""} onClick={() => setSelected(item.id)}>
+                        <h3>{item.lab}</h3>
+                        <p>{item.address}</p>
+                        <p>{item.metro}</p>
+                        <p>{item.hours}</p>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+                <div className="l03-map">
+                  <LabsMap points={points} selected={selected} onSelect={setSelected} />
+                </div>
+              </div>
+            )}
+            <p className="l-caption">Список и карта связаны: выбранное отделение подсвечивается и на карте.</p>
+          </div>
+        </section>
+
+        <section data-s="l04">
+          <div className="wrap l04">
+            <header>
+              <h2>Перед визитом в лабораторию</h2>
+              <p>Четыре вопроса, которые задают чаще всего перед тем, как перейти на сайт лаборатории.</p>
+            </header>
+            <div className="l-visit">
+              <article>
+                <span>1</span>
+                <h3>Цена</h3>
+                <p>На сайте FOX её нет: стоимость называет сеть в вашем городе, на своей странице записи.</p>
+              </article>
+              <article>
+                <span>2</span>
+                <h3>Подготовка</h3>
+                <p>Голодать не нужно. Диету накануне не назначают. Паспорт и направление — если его дал специалист.</p>
+              </article>
+              <article>
+                <span>3</span>
+                <h3>Срок</h3>
+                <p>Готовый отчёт обычно через 7–10 дней. Сам лабораторный анализ занимает около трёх часов.</p>
+              </article>
+              <article>
+                <span>4</span>
+                <h3>Как читать</h3>
+                <p>Отчёт — карта для разговора со специалистом, не список запретов навсегда.</p>
+                <Link href="/report">Как читать отчёт <img src="/icons/arrow-right.svg" alt="" /></Link>
+              </article>
             </div>
           </div>
-        )}
+        </section>
+
+        <section data-s="l05" id="l05">
+          <div className="wrap">
+            <div className="l05">
+              <div>
+                <h2>Вашего города нет в списке?</h2>
+                <p>Оставьте почту — напишем один раз, когда тест FOX появится в вашем городе. Без рассылок.</p>
+                <form onSubmit={(event) => { event.preventDefault(); if (mail.includes("@")) setTold(true); }}>
+                  <input type="email" value={mail} onChange={(event) => setMail(event.target.value)} placeholder="Ваш e-mail" aria-label="Почта для уведомления" />
+                  <button className="btn btn-dark" type="submit">Сообщить, когда появится</button>
+                </form>
+                {told && <p role="status">Записали. Напишем один раз, когда сеть появится.</p>}
+                <p className="l-fine">Нажимая кнопку, вы соглашаетесь на одно письмо по 152-ФЗ. Отписка — ответом на него.</p>
+              </div>
+              <aside>
+                <h3>Ближайшие города</h3>
+                <ul>
+                  <li><span>Владикавказ</span><b>92 км</b><small>4 отделения</small></li>
+                  <li><span>Нальчик</span><b>118 км</b><small>2 отделения</small></li>
+                  <li><span>Пятигорск</span><b>204 км</b><small>7 отделений</small></li>
+                </ul>
+              </aside>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>
   );
 }
 
+const WHO = ["Пациент", "Специалист", "Лаборатория"] as const;
+
 export function ContactsPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [ok, setOk] = useState(false);
-  const [who, setWho] = useState("Пациент");
+  const [who, setWho] = useState<(typeof WHO)[number]>("Пациент");
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -195,44 +421,107 @@ export function ContactsPage() {
     <>
       <Header />
       <main>
-        <section className="dark-hero" style={{ minHeight: 420 }}>
-          <img className="bg" src="/blog/cover-story.png" alt="" />
-          <div className="shade" />
-          <div className="wrap inner">
-            <h1 className="page-title" style={{ color: "white" }}>Контакты</h1>
+        <section className="dark-hero fx-hero" data-s="k01">
+          <div className="wrap k01">
+            <p className="crumbs"><Link href="/">Главная</Link><span className="sep">/</span><span aria-current="page">Контакты</span></p>
+            <div className="k01-row">
+              <div>
+                <h1>Контакты</h1>
+                <p className="fx-lead">Вопросы о сайте, документах и партнёрстве. Дистанционную медицинскую интерпретацию отчёта не делаем.</p>
+                <p className="k-note">Офис — не лаборатория: анализы здесь не берут. Где сдать тест — на странице <Link href="/labs">/labs</Link>.</p>
+              </div>
+              <img src="/figma/contacts/hero.jpg" alt="" />
+            </div>
           </div>
         </section>
-        <section className="wrap band">
-        <div className="cards-3" style={{ marginTop: 20 }}>
-          <article className="panel"><h3>Телефон</h3><p><a href="tel:+74953748305">+7 (495) 374-83-05</a></p></article>
-          <article className="panel"><h3>Почта</h3><p><a href="mailto:info@inmunotech.ru">info@inmunotech.ru</a></p></article>
-          <article className="panel"><h3>Офис</h3><p>Москва, ул. Таганская, 3</p></article>
-        </div>
-        <p><a href={PARTNER_LOGIN}>Кабинет партнёра</a></p>
-        <div className="who-tabs" role="tablist" aria-label="Тип обращения">
-          {["Пациент", "Специалист", "Лаборатория"].map((item) => (
-            <button key={item} type="button" role="tab" aria-selected={who === item} className={who === item ? "is-active" : ""} onClick={() => setWho(item)}>{item}</button>
-          ))}
-        </div>
-        <p className="lead">
-          {who === "Пациент" && "Запись на тест идёт через лабораторию. Здесь можно задать вопрос о сайте и документах."}
-          {who === "Специалист" && "Курс, протокол и пример отчёта — в разделе для специалистов."}
-          {who === "Лаборатория" && "Подключение сети: обучение персонала и материалы для пациентов."}
-        </p>
-        <div className="cards-2">
-          <form onSubmit={submit} className="panel" noValidate>
-            <label className={`field${errors.name ? " is-error" : ""}`}>Имя<input name="name" aria-invalid={!!errors.name} />{errors.name && <span className="err">{errors.name}</span>}</label>
-            <label className={`field${errors.email ? " is-error" : ""}`}>Email<input name="email" type="email" aria-invalid={!!errors.email} />{errors.email && <span className="err">{errors.email}</span>}</label>
-            <label className="field">Сообщение<textarea name="text" rows={4} /></label>
-            <label className={`check-row${errors.agree ? " is-error" : ""}`}><input type="checkbox" name="agree" /><span>Согласен на обработку данных</span></label>
-            {errors.agree && <p className="err" role="alert">{errors.agree}</p>}
-            {ok && <p role="status">Сообщение отправлено. Ответим в ближайший рабочий день.</p>}
-            <button className="btn btn-dark" style={{ marginTop: 12 }} type="submit">Отправить</button>
-          </form>
-          <div className="leaflet-map" aria-label="Карта офиса" style={{ background: "#d7d8cd" }}>
-            <p style={{ padding: 24 }}>Москва, ул. Таганская, 3</p>
+        <section data-s="k02">
+          <div className="wrap k-cards">
+            <article>
+              <h2>Телефон</h2>
+              <a href="tel:+74953748305">+7 (495) 374-83-05</a>
+              <p>Пн–Пт 10:00–19:00 (МСК)</p>
+              <a className="k-go" href="tel:+74953748305">Позвонить</a>
+            </article>
+            <article>
+              <h2>E-mail</h2>
+              <a href="mailto:info@inmunotech.ru">info@inmunotech.ru</a>
+              <p>Для общих вопросов и партнёрства</p>
+              <a className="k-go" href="mailto:info@inmunotech.ru">Написать</a>
+            </article>
+            <article>
+              <h2>Адрес</h2>
+              <p className="k-strong">ул. Таганская, 3</p>
+              <p>Офис, не лаборатория</p>
+              <a className="k-go" href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer">Маршрут</a>
+            </article>
+            <article>
+              <h2>Telegram</h2>
+              <p className="k-strong">@foxfoodxplorer</p>
+              <p>Новости и материалы</p>
+              <a className="k-go" href="https://t.me/foxfoodxplorer" target="_blank" rel="noreferrer">Открыть канал</a>
+            </article>
           </div>
-        </div>
+        </section>
+        <section data-s="k03">
+          <div className="wrap k03">
+            <form id="k-form" onSubmit={submit} noValidate>
+              <h2>Задать вопрос</h2>
+              <p>Выберите, кто вы — так письмо попадёт к нужному сотруднику.</p>
+              <div className="who-tabs" role="tablist" aria-label="Тип обращения">
+                {WHO.map((item) => (
+                  <button key={item} type="button" role="tab" aria-selected={who === item} className={who === item ? "is-active" : ""} onClick={() => setWho(item)}>{item}</button>
+                ))}
+              </div>
+              <p className="k-who">
+                {who === "Пациент" && "Запись на тест идёт через лабораторию. Здесь можно задать вопрос о сайте и документах."}
+                {who === "Специалист" && "Курс, протокол и пример отчёта — в разделе для специалистов."}
+                {who === "Лаборатория" && <>Подключение сети: обучение персонала и материалы для пациентов. <a href={PARTNER_LOGIN}>Кабинет партнёра</a></>}
+              </p>
+              <label className={`field${errors.name ? " is-error" : ""}`}>Имя<input name="name" aria-invalid={!!errors.name} />{errors.name && <span className="err">{errors.name}</span>}</label>
+              <label className={`field${errors.email ? " is-error" : ""}`}>Email<input name="email" type="email" aria-invalid={!!errors.email} />{errors.email && <span className="err">{errors.email}</span>}</label>
+              <label className="field">Сообщение<textarea name="text" rows={4} /></label>
+              <label className={`check-row${errors.agree ? " is-error" : ""}`}><input type="checkbox" name="agree" /><span>Согласен на обработку персональных данных по 152-ФЗ и с политикой конфиденциальности</span></label>
+              {errors.agree && <p className="err" role="alert">{errors.agree}</p>}
+              {ok && <p role="status">Сообщение отправлено. Ответим в ближайший рабочий день.</p>}
+              <button className="btn btn-dark" type="submit">Отправить</button>
+              <p className="k-hint">Отвечаем в течение 1 рабочего дня</p>
+            </form>
+            <aside className="k-map">
+              <img src="/figma/contacts/hero.jpg" alt="" />
+              <div>
+                <h2>Офис Инмунотех</h2>
+                <p>Москва, ул. Таганская, 3 · 5 минут от м. Марксистская</p>
+              </div>
+            </aside>
+          </div>
+        </section>
+        <section data-s="k04">
+          <div className="wrap k04">
+            <p className="fx-kicker">Куда обратиться</p>
+            <h2>Быстрее, чем письмо: готовые маршруты</h2>
+            <div className="k-routes">
+              <article>
+                <h3>Пациентам</h3>
+                <p>Где сдать тест, как читать отчёт, как найти специалиста</p>
+                <Link href="/faq">В FAQ <img src="/icons/arrow-right.svg" alt="" /></Link>
+              </article>
+              <article>
+                <h3>Специалистам</h3>
+                <p>Материалы для приёма, курс, вопросы по интерпретации</p>
+                <Link href="/specialists">Специалистам <img src="/icons/arrow-right.svg" alt="" /></Link>
+              </article>
+              <article>
+                <h3>Лабораториям и клиникам</h3>
+                <p>Стать партнёром FOX, подключить тест в свою сеть</p>
+                <a href="#k-form">Оставить заявку <img src="/icons/arrow-right.svg" alt="" /></a>
+              </article>
+              <article>
+                <h3>Прессе и партнёрам</h3>
+                <p>Комментарии экспертов, материалы, логотипы</p>
+                <a href="mailto:info@inmunotech.ru">Написать <img src="/icons/arrow-right.svg" alt="" /></a>
+              </article>
+            </div>
+          </div>
         </section>
       </main>
       <Footer />
@@ -240,55 +529,136 @@ export function ContactsPage() {
   );
 }
 
+const REVIEWS = [
+  { id: "r1", kind: "Видео", who: "Пациенты", tag: "ЖКТ", photo: "/figma/reviews/r1.png", video: true, title: "Наконец поняла, что менять в рационе", name: "Елена, 34 года", text: "" },
+  { id: "r2", kind: "Текст", who: "Пациенты", tag: "Питание", photo: "/figma/reviews/r2.png", video: false, title: "", name: "Екатерина Ласковская", text: "Убирала молочку, потом глютен, потом всё сразу — и каждый раз наугад. Отчёт наконец дал конкретный список." },
+  { id: "r3", kind: "Текст", who: "Пациенты", tag: "Общее самочувствие", photo: "/figma/reviews/r3.png", video: false, title: "", name: "Игорь Потруников", text: "Списывал всё на возраст и работу. Четыре месяца вёл дневник питания и не продвинулся ни на шаг." },
+  { id: "r4", kind: "Текст", who: "Специалисты", tag: "Специалист", photo: "/figma/reviews/r4.png", video: false, title: "", name: "Алёна Вавилова", role: "Нутрициолог", text: "С отчётом легче выстроить разговор: пациент видит структуру, а не список запретов." },
+  { id: "r5", kind: "Видео", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r5.png", video: true, title: "«Ответ оказался не в косметологии»", name: "Алексей, 41 год", text: "" },
+  { id: "r6", kind: "Текст", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r6.png", video: false, title: "", name: "Марина К.", text: "С врачом собрали план по отчёту — без угадывания. Через два месяца стало заметно лучше." },
+  { id: "r7", kind: "Текст", who: "Пациенты", tag: "Вес и отёчность", photo: "/figma/reviews/r7.png", video: false, title: "", name: "Ольга, 29 лет", text: "Думала, что дело в соли. С нутрициологом временно убрали лишнее — ушло ощущение тяжести." },
+  { id: "r8", kind: "Текст", who: "Специалисты", tag: "Общее самочувствие", photo: "/figma/reviews/r8.png", video: false, title: "", name: "Клиника на Таганке", text: "Отчёт стал структурой приёма, а не списком запретов, который пациент составил сам." },
+];
+
 export function ReviewsPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("Все");
+  const [topic, setTopic] = useState("");
   const [page, setPage] = useState(1);
-  const cards = [
-    ["Екатерина Ласковская", "Пациенты", "Отчёт дал конкретный список. Двух продуктов из него я бы не заподозрила."],
-    ["Игорь Потруников", "Пациенты", "Убрал три продукта и возвращал их по одному. Через два месяца день перестал зависеть от желудка."],
-    ["Клиника на Таганке", "Специалисты", "Отчёт стал структурой приёма, а не списком запретов, который пациент составил сам."],
-  ].filter((item) => filter === "Все" || item[1] === filter);
+  const cards = REVIEWS.filter((item) => (filter === "Все" || item.who === filter || item.kind === filter) && (!topic || item.tag === topic));
+  const slice = cards.slice((page - 1) * 8, page * 8);
   return (
     <>
       <Header />
       <main>
-        <section className="dark-hero" style={{ minHeight: 480 }}>
-          <img className="bg" src="/blog/author-alyona.png" alt="" />
-          <div className="shade" />
-          <div className="wrap inner">
-            <h1 className="page-title" style={{ color: "white" }}>Отзывы</h1>
-            <p className="lead" style={{ color: "rgba(248,249,246,.8)" }}>4,9 · истории людей и специалистов. Все отзывы проходят модерацию.</p>
+        <section className="dark-hero fx-hero" data-s="v01">
+          <div className="wrap v01">
+            <p className="crumbs"><Link href="/">Главная</Link><span className="sep">/</span><span aria-current="page">Отзывы</span></p>
+            <div className="v01-row">
+              <div>
+                <h1>Отзывы</h1>
+                <p className="fx-lead">Истории людей, которые сдали тест FOX, и специалистов, которые разбирают отчёт на приёме. Публикуем после модерации.</p>
+                <p className="v-rate"><b>4,9</b><span className="v-stars" aria-hidden="true">★★★★★</span></p>
+                <p className="v-meta">312 отзывов после модерации</p>
+                <p className="v-avatars">
+                  <span><img src="/figma/reviews/r1.png" alt="" /><img src="/figma/reviews/r2.png" alt="" /><img src="/figma/reviews/r3.png" alt="" /><img src="/figma/reviews/r4.png" alt="" /></span>
+                  +48
+                </p>
+                <p>из них 48 — от врачей и нутрициологов</p>
+              </div>
+              <div className="v-collage">
+                <img src="/figma/reviews/hero-a.jpg" alt="" />
+                <img src="/figma/reviews/hero-b.jpg" alt="" />
+                <p>Отчёт наконец дал конкретный список</p>
+              </div>
+            </div>
           </div>
         </section>
-        <section className="wrap band">
-        <div className="chips" style={{ marginTop: 16 }}>
-          {["Все", "Пациенты", "Специалисты"].map((item) => (
-            <button key={item} className={`chip${filter === item ? " is-active" : ""}`} type="button" onClick={() => { setFilter(item); setPage(1); }}>{item}</button>
-          ))}
-        </div>
-        <div className="cards-3" style={{ marginTop: 20 }}>
-          {cards.slice((page - 1) * 6, page * 6).map(([name, kind, text]) => (
-            <article className="panel" key={name}><p className="meta-line">{kind}</p><h3>{name}</h3><p>{text}</p></article>
-          ))}
-        </div>
-        <button className="btn btn-ghost" type="button" onClick={() => setPage(page === 1 ? 2 : 1)}>Страница {page}</button>
-        <form className="panel" style={{ marginTop: 16, maxWidth: 640 }} onSubmit={(event) => {
-          event.preventDefault();
-          const data = new FormData(event.currentTarget);
-          if (!data.get("agree")) return setError("Нужно согласие на публикацию");
-          if (String(data.get("text") || "").trim().length < 10) return setError("Напишите чуть подробнее");
-          setError("");
-          setSent(true);
-        }}>
-          <h3>Оставить отзыв</h3>
-          <label className="field">Текст<textarea name="text" rows={4} /></label>
-          <label className="check-row"><input name="agree" type="checkbox" /><span>Согласен на модерацию и публикацию</span></label>
-          {error && <p className="err" role="alert">{error}</p>}
-          {sent && <p role="status">Отзыв отправлен на модерацию.</p>}
-          <button className="btn btn-dark" type="submit">Отправить</button>
-        </form>
+        <section data-s="v02">
+          <div className="wrap v02">
+            <div className="v-tools">
+              <div className="chips">
+                {["Все", "Пациенты", "Специалисты", "Видео"].map((item) => (
+                  <button key={item} className={`chip${filter === item ? " is-active" : ""}`} type="button" onClick={() => { setFilter(item); setPage(1); }}>{item}</button>
+                ))}
+              </div>
+              <div className="chips">
+                {["ЖКТ", "Кожа", "Вес и отёчность", "Общее самочувствие"].map((item) => (
+                  <button key={item} className={`chip${topic === item ? " is-active" : ""}`} type="button" onClick={() => { setTopic(topic === item ? "" : item); setPage(1); }}>{item}</button>
+                ))}
+              </div>
+              <label className="v-sort">Сначала новые
+                <select aria-label="Сначала новые" defaultValue="new"><option value="new">Сначала новые</option></select>
+              </label>
+            </div>
+            <p className="v-shown">Показано {Math.min(8, cards.length)} из 312</p>
+            <div className="v-grid">
+              {slice.map((item) => item.video ? (
+                <article key={item.id} className="rev rev-video" style={{ backgroundImage: `url(${item.photo})` }}>
+                  <p><span>{item.tag}</span><span>Видео</span></p>
+                  <div>
+                    <p className="rev-play"><img src="/figma/icons/play.svg" alt="" />Смотреть историю · 1:24</p>
+                    <h3>{item.title}</h3>
+                    <b>{item.name}</b>
+                    <small><img src="/figma/icons/check.svg" alt="" />Отзыв проверен модератором</small>
+                  </div>
+                </article>
+              ) : (
+                <article key={item.id} className={`rev${item.who === "Специалисты" ? " is-pro" : ""}`}>
+                  <p><span>{item.tag}</span><em>{item.kind}</em></p>
+                  <i aria-hidden="true">“</i>
+                  <blockquote>{item.text}</blockquote>
+                  <footer>
+                    <img src={item.photo} alt="" />
+                    <span><b>{item.name}</b>{item.role && <small>{item.role}</small>}<small><img src="/figma/icons/check.svg" alt="" />Отзыв проверен модератором</small></span>
+                  </footer>
+                </article>
+              ))}
+              <article className="rev rev-promo">
+                <h3>Сдали тест? Поделитесь историей</h3>
+                <p>Поможете тем, кто только ищет причину своих симптомов</p>
+                <a className="btn btn-dark" href="#review-form">Оставить отзыв</a>
+              </article>
+            </div>
+            <div className="v-pages">
+              {[1, 2, 3].map((item) => (
+                <button key={item} type="button" className={page === item ? "is-on" : ""} onClick={() => setPage(item)} aria-label={`Страница ${item}`}>{item}</button>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section data-s="v03" id="review-form">
+          <div className="wrap v03">
+            <div>
+              <h2>Оставить отзыв</h2>
+              <ul>
+                <li><b>Без диагнозов</b><span>Не публикуем обещания, что тест что-то вылечил.</span></li>
+                <li><b>Без обещаний излечения</b><span>История — про опыт, не про назначение.</span></li>
+                <li><b>Модерация 1–2 рабочих дня</b><span>Проверяем, что отзыв написал человек, а не шаблон.</span></li>
+              </ul>
+            </div>
+            <form onSubmit={(event) => {
+              event.preventDefault();
+              const data = new FormData(event.currentTarget);
+              if (!data.get("agree")) return setError("Нужно согласие на публикацию");
+              if (String(data.get("text") || "").trim().length < 10) return setError("Напишите чуть подробнее");
+              setError("");
+              setSent(true);
+            }}>
+              <label className="field">Имя<input name="name" /></label>
+              <label className="field">Город<input name="city" /></label>
+              <label className="field">О ком отзыв
+                <select name="who" defaultValue="Пациент"><option>Пациент</option><option>Специалист</option></select>
+              </label>
+              <label className="field">Текст<textarea name="text" rows={5} /></label>
+              <label className="check-row"><input name="agree" type="checkbox" /><span>Согласен на публикацию отзыва и обработку персональных данных (152-ФЗ)</span></label>
+              {error && <p className="err" role="alert">{error}</p>}
+              {sent && <p role="status">Отзыв отправлен на модерацию.</p>}
+              <button className="btn btn-dark" type="submit">Отправить</button>
+              <p className="v-hint">Кнопка активна после согласия</p>
+            </form>
+          </div>
         </section>
       </main>
       <Footer />

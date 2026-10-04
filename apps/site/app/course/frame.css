@@ -79,7 +79,8 @@
 .kf-acc button { width: 100%; display: flex; align-items: center; gap: 24px; text-align: left; padding: 32px; min-height: 114px; }
 .kf-num { width: 40px; height: 40px; border-radius: 999px; background: #d7d8cd; display: grid; place-items: center; flex: 0 0 40px; }
 .kf-acc article.is-open .kf-num { background: #101400; color: #f8f9f6; }
-.kf-acc button span:nth-child(2) { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.kf-acc button span:nth-child(2) { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.kf-acc article img { flex: 0 0 24px; }
 .kf-acc strong { font-weight: 300; font-size: 24px; line-height: 28px; letter-spacing: -0.5px; }
 .kf-acc small { font-size: 14px; line-height: 18px; color: #5c5e57; }
 .kf-acc article img { width: 24px; height: 24px; transition: transform 300ms ease-out; }
@@ -133,7 +134,8 @@
 [data-s="k06"] { min-height: 686px; box-sizing: border-box; }
 .kf-faq { display: grid; grid-template-columns: 437px minmax(0, 1fr); gap: 48px; align-items: start; }
 .kf-faq h2 { max-width: 10ch; }
-.kf-faq button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 24px; text-align: left; padding: 24px 0; font-size: 20px; line-height: 24px; }
+.kf-faq button { width: 100%; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; padding: 24px 0; font-size: 20px; line-height: 24px; }
+.kf-faq button img { flex: 0 0 24px; }
 .kf-faq > div > div { border-bottom: 1px solid var(--ink-10); }
 .kf-faq img { transition: transform 300ms ease-out; }
 .kf-faq .is-open img { transform: rotate(180deg); }
@@ -143,7 +145,8 @@
 [data-s="k07"] { position: relative; min-height: 570px; overflow: hidden; color: #f8f9f6; }
 .kf-final-in { position: relative; z-index: 1; min-height: 570px; box-sizing: border-box; padding: 96px 0; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; justify-content: center; }
 .kf-bar { width: 64px; height: 4px; border-radius: 2px; background: var(--lime); }
-.kf-final p { margin: 0; max-width: 640px; font-size: 20px; line-height: 24px; color: rgba(248, 249, 246, 0.8); }
+.kf-final h2, .kf-final p { max-width: min(640px, 100%); overflow-wrap: break-word; }
+.kf-final p { margin: 0; font-size: 20px; line-height: 24px; color: rgba(248, 249, 246, 0.8); }
 .kf-disclaimer { font-size: 14px !important; line-height: 18px !important; color: rgba(248, 249, 246, 0.65) !important; }
 [data-s="k07"] .kf-includes-shade { background: rgba(16, 20, 0, 0.78); }
 
@@ -182,10 +185,11 @@
 .ls-stage .player-poster { width: 100%; height: 100%; object-fit: cover; display: block; }
 .ls-play { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); width: 72px; height: 72px; border-radius: 99px; background: #fff; display: grid; place-items: center; }
 .ls-play img { width: 24px; height: 24px; }
-.ls-controls { height: 58px; display: flex; align-items: center; gap: 16px; padding: 0 20px; background: rgba(0, 0, 0, 0.35); color: #f8f9f6; }
-.ls-ctrl { color: #f8f9f6; min-width: 88px; text-align: left; }
+.ls-controls { min-height: 58px; display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: rgba(0, 0, 0, 0.35); color: #f8f9f6; min-width: 0; }
+.ls-controls span { min-width: 0; }
+.ls-ctrl { color: #f8f9f6; text-align: left; flex: 0 0 auto; }
 .ls-controls input[type="range"] { flex: 1; accent-color: var(--lime); }
-.ls-controls span { font-size: 14px; line-height: 18px; white-space: nowrap; }
+.ls-controls span { font-size: 14px; line-height: 18px; }
 .ls-actions { min-height: 48px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .ls-quiet { display: inline-flex; align-items: center; height: 48px; padding: 0 16px; }
 .ls-about { min-height: 277px; box-sizing: border-box; background: #d7d8cd; border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 16px; }
@@ -206,4 +210,5 @@
   .kf-lesson-body { flex-direction: column; }
   .kf-lesson-body > div { width: 100%; }
   .kf-hero-copy h1 { font-size: 40px; line-height: 44px; }
+  .kf-acc button { padding: 20px 16px; gap: 12px; min-height: 0; }
 }

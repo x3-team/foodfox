@@ -5,12 +5,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import "@/app/not-found/frame.css";
 
 const TILES = [
-  ["Где сдать тест", "/labs", "/blog/cover-lab.png"],
-  ["Как читать отчёт", "/report", "/blog/cover-report.png"],
-  ["Блог", "/blog", "/blog/cover-plate.jpg"],
-  ["Специалистам", "/specialists", "/blog/cover-story.png"],
+  ["О тесте FOX", "/", "Что измеряет тест и чем он не является"],
+  ["Где сдать тест", "/labs", "Сети-партнёры и отделения"],
+  ["Как читать отчёт", "/report", "Пример страниц и шкалы"],
+  ["Блог", "/blog", "Материалы редакции"],
+  ["Вопросы и ответы", "/faq", "Подготовка, сроки, критика IgG"],
+  ["Специалистам", "/specialists", "Курс и материалы для приёма"],
 ];
 
 export function NotFoundView() {
@@ -22,30 +25,45 @@ export function NotFoundView() {
   return (
     <>
       <Header />
-      <main className="wrap band" style={{ minHeight: "70vh" }}>
-        <p className="crumbs">404</p>
-        <h1 className="page-title">Страница не найдена</h1>
-        <p className="lead">Такого адреса нет. Поиск по материалам или один из частых разделов.</p>
-        <form
-          className="search"
-          style={{ marginTop: 20, width: "min(480px, 100%)" }}
-          onSubmit={(event) => {
-            event.preventDefault();
-            router.push(`/blog?q=${encodeURIComponent(q)}`);
-          }}
-        >
-          <img src="/icons/search.svg" alt="" />
-          <input value={q} onChange={(event) => setQ(event.target.value)} aria-label="Поиск по сайту" placeholder="Поиск по сайту" />
-        </form>
-        <h2>Куда чаще всего идут</h2>
-        <div className="cards-4">
-          {TILES.map(([title, href, src]) => (
-            <Link className="panel" key={href} href={href}>
-              <img src={src} alt="" style={{ height: 120, width: "100%", objectFit: "cover", borderRadius: 12 }} />
-              <h3>{title}</h3>
-            </Link>
-          ))}
-        </div>
+      <main>
+        <section data-s="e01">
+          <div className="wrap e01">
+            <h1 className="e-a11y">Страница не найдена</h1>
+            <div className="e01-copy">
+              <p className="e-badge">Ошибка 404</p>
+              <h1>Такой страницы нет</h1>
+              <p>Может, ссылка устарела или в адресе опечатка. Поищите по сайту или выберите один из популярных разделов ниже.</p>
+              <form
+                className="search"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  router.push(`/blog?q=${encodeURIComponent(q)}`);
+                }}
+              >
+                <img src="/icons/search.svg" alt="" />
+                <input value={q} onChange={(event) => setQ(event.target.value)} aria-label="Поиск по сайту" placeholder="Например: «где сдать тест в Казани»" />
+              </form>
+              <div className="e-actions">
+                <Link className="btn btn-dark" href="/">На главную</Link>
+                <Link className="btn btn-ghost" href="/contacts">Сообщить о битой ссылке</Link>
+              </div>
+            </div>
+            <img src="/figma/not-found/plate.jpg" alt="" />
+          </div>
+        </section>
+        <section data-s="e02">
+          <div className="wrap e02">
+            <h2>Куда чаще всего идут с этого места</h2>
+            <div className="e-tiles">
+              {TILES.map(([title, href, text]) => (
+                <Link key={href} href={href}>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>

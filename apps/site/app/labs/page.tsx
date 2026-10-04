@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LabsPage } from "@/components/ServicePages";
+import "./frame.css";
 
 export const metadata: Metadata = { title: "Где сдать тест" };
 

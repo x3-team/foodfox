@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ReviewsPage } from "@/components/ServicePages";
+import "./frame.css";
 
 export const metadata: Metadata = { title: "Отзывы" };
 

@@ -277,6 +277,15 @@
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
+.rf-hidden-table,
+.rf-hidden-table * {
+  display: block;
+  width: 1px;
+  max-width: 1px;
+  height: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+}
 
 [data-s="ccd"] { min-height: 450px; }
 .rf-ccd { display: grid; grid-template-columns: 240px minmax(0, 1.4fr) minmax(180px, 1fr); gap: 32px; min-height: 340px; align-items: stretch; }
@@ -370,7 +379,8 @@
   .rf-hero { min-height: 0; }
   .rf-hero-in, .rf-hero-row, .rf-hero-visual, [data-s="zones"], [data-s="anatomy"], [data-s="units"], [data-s="ccd"], [data-s="after"], [data-s="limits"], [data-s="faq"], [data-s="cta"] { min-height: 0; }
   .rf-stats { grid-template-columns: 1fr 1fr; }
-  .rf-paper { height: 360px; }
+  .rf-paper { height: 280px; overflow: hidden; }
+  .rf-paper img, .rf-paper-back { left: 0; width: min(260px, 100%); height: 260px; }
   .report-page .uml-card,
   .report-page .uml-card.low,
   .report-page .uml-card.mid,
