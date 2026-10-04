@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, ReactNode, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header, PARTNER_LOGIN } from "@/components/Header";
+import { LabsMap, type Branch } from "@/components/LabsMap";
 
 const FAQ = [
   ["Чем пищевая непереносимость отличается от аллергии?", "Аллергия — быстрая реакция IgE. FOX смотрит IgG, реакции могут быть отложенными. Тест не диагностирует аллергию."],
@@ -42,14 +43,21 @@ export function FaqPage() {
   );
 }
 
-const LABS = ["Ситилаб", "Гемотест", "KDL", "ДНКОМ", "Инвитро", "CMD", "Хеликс", "Хромолаб", "Юнимед"];
+const BRANCHES: Branch[] = [
+  { id: "inv", lab: "Инвитро", address: "ул. Таганская, 3", metro: "Марксистская · 400 м", hours: "Пн–Пт 7:30–20:00 · Сб–Вс 8–18", lat: 55.7406, lng: 37.653 },
+  { id: "cit", lab: "Ситилаб", address: "ул. Земляной Вал, 27", metro: "Курская · 500 м", hours: "Пн–Сб 8:00–20:00", lat: 55.7572, lng: 37.659 },
+  { id: "gem", lab: "Гемотест", address: "ул. Марксистская, 9", metro: "Марксистская · 200 м", hours: "Открыто до 19:00", lat: 55.7374, lng: 37.656 },
+  { id: "kdl", lab: "KDL", address: "Таганская пл., 12", metro: "Таганская · 150 м", hours: "Пн–Пт 7:30–20:00", lat: 55.7422, lng: 37.6538 },
+  { id: "dnk", lab: "ДНКОМ", address: "ул. Воронцовская, 8", metro: "Таганская · 700 м", hours: "Пн–Сб 8:00–18:00", lat: 55.7348, lng: 37.658 },
+];
 
 export function LabsPage() {
   const [city, setCity] = useState("Москва");
-  const [lab, setLab] = useState("Ситилаб");
+  const [selected, setSelected] = useState(BRANCHES[0].id);
   const [step, setStep] = useState(0);
   const [booked, setBooked] = useState(false);
   const empty = city.trim().toLowerCase() === "нет";
+  const current = BRANCHES.find((item) => item.id === selected) ?? BRANCHES[0];
   return (
     <>
       <Header />
@@ -62,33 +70,29 @@ export function LabsPage() {
         {empty ? (
           <p role="status">В этом городе партнёров пока нет. Оставьте контакт — напишем, когда появится сеть.</p>
         ) : (
-          <div className="cards-3" style={{ marginTop: 20 }}>
-            {LABS.map((name) => (
-              <button key={name} className="panel" onClick={() => setLab(name)} aria-pressed={lab === name}>
-                <h3>{name}</h3>
-                <p>{name === "Хромолаб" && city !== "Москва" ? "Нет в вашем городе" : "Пункты на карте"}</p>
-              </button>
-            ))}
+          <div className="cards-2" style={{ marginTop: 20 }}>
+            <div className="stack" data-lab-list>
+              {BRANCHES.map((item) => (
+                <button key={item.id} className="panel" aria-pressed={selected === item.id} onClick={() => setSelected(item.id)}>
+                  <h3>{item.lab}</h3>
+                  <p>{item.address}</p>
+                  <p>{item.metro}</p>
+                  <p>{item.hours}</p>
+                </button>
+              ))}
+            </div>
+            <LabsMap points={BRANCHES} selected={selected} onSelect={setSelected} />
           </div>
         )}
-        <div className="map" aria-label="Карта отделений" style={{ marginTop: 20 }}>
-          <i className="pin" style={{ left: "30%", top: "40%" }} />
-          <i className="pin" style={{ left: "55%", top: "48%" }} />
-          <i className="pin" style={{ left: "62%", top: "36%" }} />
-        </div>
         <button className="btn btn-dark" style={{ marginTop: 20 }} onClick={() => setStep(1)}>Записаться на тест</button>
         {step > 0 && (
           <div className="modal-back" onClick={() => setStep(0)}>
             <div className="modal" role="dialog" aria-label="Запись" onClick={(event) => event.stopPropagation()}>
-              {booked ? <p>Открываем сайт {lab}. Цена и слот — на стороне лаборатории.</p> : (
+              {booked ? <p>Открываем сайт {current.lab}. Цена и слот — на стороне лаборатории.</p> : (
                 <>
                   <h2>Шаг {step} из 2</h2>
                   {step === 1 && <p>Город: {city || "не выбран"}</p>}
-                  {step === 2 && (
-                    <label className="field">Сеть
-                      <select value={lab} onChange={(event) => setLab(event.target.value)}>{LABS.map((name) => <option key={name}>{name}</option>)}</select>
-                    </label>
-                  )}
+                  {step === 2 && <p>Сеть: {current.lab}, {current.address}</p>}
                   <button className="btn btn-dark" style={{ marginTop: 12 }} onClick={() => step === 1 ? setStep(2) : setBooked(true)}>
                     {step === 1 ? "Дальше" : "Перейти на сайт сети"}
                   </button>

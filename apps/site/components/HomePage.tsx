@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 
@@ -12,9 +12,58 @@ const GROUPS = [
   { id: "well", title: "Общее самочувствие", items: ["Усталость", "Туман в голове", "Сонливость после еды"] },
 ];
 
+const SCALE_WORDS = "До 20% людей живут с пищевой непереносимостью и не знают об этом".split(" ");
+const DECK = [
+  ["Узнайте причину, а не симптомы", "Реакция на продукт проявляется через 3–72 часа. Поэтому связь с едой легко потерять."],
+  ["Симптомы маскируются под другие состояния", "Усталость, высыпания и тяжесть после еды часто списывают на стресс, возраст или работу."],
+  ["Не предрасположенность, а текущее состояние", "В отличие от генетических тестов, FOX показывает IgG сейчас — и этот снимок может измениться."],
+];
+
 export function HomePage() {
   const [checked, setChecked] = useState<string[]>([]);
   const [query, setQuery] = useState("");
+  const scaleRef = useRef<HTMLElement>(null);
+  const deckRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const words = scaleRef.current?.querySelectorAll<HTMLElement>("[data-word]");
+    const pin = scaleRef.current;
+    const onScroll = () => {
+      if (pin && words && !reduce) {
+        const rect = pin.getBoundingClientRect();
+        const total = pin.offsetHeight - window.innerHeight;
+        const progress = total <= 0 ? 1 : Math.min(1, Math.max(0, -rect.top / total));
+        words.forEach((word, index) => {
+          const start = index / words.length;
+          const local = Math.min(1, Math.max(0, (progress - start) / (1 / words.length)));
+          const blur = 12 * (1 - local);
+          word.style.filter = `blur(${blur}px)`;
+          word.style.opacity = String(0.18 + 0.82 * local);
+        });
+      }
+      if (!reduce && deckRef.current) {
+        const cards = [...deckRef.current.querySelectorAll<HTMLElement>(".deck-card")];
+        cards.forEach((card, index) => {
+          const next = cards[index + 1];
+          if (!next) {
+            card.style.transform = "";
+            card.style.filter = "";
+            card.style.opacity = "1";
+            return;
+          }
+          const overlap = card.getBoundingClientRect().bottom - next.getBoundingClientRect().top;
+          const amount = Math.min(1, Math.max(0, overlap / 220));
+          card.style.transform = `scale(${1 - 0.06 * amount})`;
+          card.style.filter = `blur(${3 * amount}px)`;
+          card.style.opacity = String(1 - 0.45 * amount);
+        });
+      }
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   const products = ["Казеин", "Коровье молоко", "Гречка", "Пшеница", "Глютен", "Рис", "Соя", "Яйцо"];
   const shown = useMemo(
     () => products.filter((item) => item.toLowerCase().includes(query.trim().toLowerCase())),
@@ -60,8 +109,23 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="wrap band" id="scale">
-          <h2 className="page-title">До 20% людей живут с пищевой непереносимостью и не знают об этом</h2>
+        <section className="scale" id="scale" ref={scaleRef} data-scale>
+          <div className="scale-pin">
+            <h2 className="page-title">
+              {SCALE_WORDS.map((word, index) => (
+                <span data-word key={`${word}-${index}`}>{word} </span>
+              ))}
+            </h2>
+          </div>
+        </section>
+
+        <section className="wrap deck" ref={deckRef} data-deck>
+          {DECK.map(([title, text], index) => (
+            <article className="deck-card" key={title} style={{ top: 96 + index * 12 }}>
+              <h2>{title}</h2>
+              <p>{text}</p>
+            </article>
+          ))}
         </section>
 
         <section className="wrap band" id="checker">

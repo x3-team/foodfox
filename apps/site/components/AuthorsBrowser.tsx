@@ -57,7 +57,7 @@ export function AuthorsBrowser() {
         <section className="wrap author-grid">
           {list.map((author) => (
             <Link key={author.slug} href={`/blog/authors/${author.slug}`} className="author-card">
-              <div className={`shot${author.portrait.includes("avatar") ? " is-soft" : ""}`}>
+              <div className="shot">
                 <img src={author.portrait} alt="" />
               </div>
               <div>

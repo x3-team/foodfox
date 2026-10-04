@@ -1,5 +1,6 @@
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { ReportStage } from "@/components/ReportStage";
 
 export const metadata = { title: "Отчёт FOX: как читать" };
 
@@ -18,11 +19,7 @@ export default function Page() {
       <Header />
       <main className="wrap band">
         <h1 className="page-title">Как читать отчёт FOX</h1>
-        <div className="cards-3" style={{ marginTop: 24 }}>
-          <article className="zone low"><h3>Низкий</h3><p>Можно оставить в рационе.</p></article>
-          <article className="zone mid"><h3>Средний</h3><p>Ротация и наблюдение.</p></article>
-          <article className="zone high"><h3>Повышенный</h3><p>Временное исключение, не навсегда.</p></article>
-        </div>
+        <ReportStage />
         <div className="article-grid" style={{ marginTop: 32 }}>
           <nav className="toc" aria-label="Содержание">
             {SECTIONS.map(([id, title]) => <a key={id} href={`#${id}`}>{title}</a>)}

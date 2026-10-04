@@ -123,6 +123,46 @@ test("home has no serious accessibility violations", async ({ page }) => {
   expect(results.violations.filter((item) => item.impact === "critical")).toEqual([]);
 });
 
+test("home scale and sticky deck follow the motion spec", async ({ page }) => {
+  await page.goto("/");
+  await ready(page);
+  await expect(page.locator("[data-scale] [data-word]")).toHaveCount(12);
+  const sticky = await page.locator(".deck-card").first().evaluate((node) => getComputedStyle(node).position);
+  expect(sticky).toBe("sticky");
+  await expect(page.locator(".deck-card")).toHaveCount(3);
+});
+
+test("report flips pages and stacks U/mL cards", async ({ page }) => {
+  await page.goto("/report");
+  await ready(page);
+  await expect(page.locator("[data-uml] .uml-card")).toHaveCount(3);
+  await page.getByRole("button", { name: "Следующая страница отчёта" }).click();
+  await expect(page.getByText("Страница 2 из 3")).toBeVisible();
+});
+
+test("labs map stays in sync with the branch list", async ({ page }) => {
+  await page.goto("/labs");
+  await ready(page);
+  await expect(page.locator(".leaflet-container")).toBeVisible();
+  await page.getByRole("button", { name: /Гемотест/ }).click();
+  await expect(page.locator("[data-pin='gem']")).toHaveClass(/is-on/);
+});
+
+test("certificate carousel opens a document", async ({ page }) => {
+  await page.goto("/certificates");
+  await ready(page);
+  await expect(page.locator("[data-certs] .cert-card")).toHaveCount(4);
+  await page.getByRole("button", { name: "Открыть PDF" }).first().click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+});
+
+test("privacy policy contains every numbered section", async ({ page }) => {
+  await page.goto("/privacy");
+  await ready(page);
+  await expect(page.getByRole("heading", { name: "10. Контакты оператора" })).toBeVisible();
+  await expect(page.getByText("152-ФЗ").first()).toBeVisible();
+});
+
 test("desktop home screenshot", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "1440" && testInfo.project.name !== "375");
   await page.goto("/");
