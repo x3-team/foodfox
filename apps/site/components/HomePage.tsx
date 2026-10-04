@@ -83,22 +83,21 @@ const PRODUCTS: Array<{ name: string; group: string; aka?: string[]; compound?: 
 ];
 
 const LABS: Array<[string, string]> = [
-  ["Ситилаб", "citilab"],
-  ["Гемотест", "gemotest"],
-  ["KDL", "kdl"],
-  ["ДНКОМ", "dnkom"],
-  ["Инвитро", "invitro"],
-  ["CMD", "cmd"],
-  ["Хеликс", "helix"],
-  ["Хромолаб", "chromolab"],
-  ["Юнимед", "unimed"],
+  ["Ситилаб", "/figma/labs/citilab.svg"],
+  ["Гемотест", "/figma/labs/gemotest.svg"],
+  ["KDL", "/figma/labs/kdl.svg"],
+  ["ДНКОМ", "/figma/labs/dnkom.svg"],
+  ["Инвитро", "/figma/labs/invitro.svg"],
+  ["CMD", "/figma/labs/cmd.svg"],
+  ["Хеликс", "/figma/labs/helix.svg"],
+  ["Хромолаб", "/figma/labs/chromolab.png"],
+  ["Юнимед", "/figma/labs/unimed.svg"],
 ];
 
 const REPORT_SLIDES = [
-  ["/report/page-zones.svg", "Сводка зон", "Три уровня IgG на одной странице."],
-  ["/report/page-milk.svg", "Точные значения", "Уровень IgG в U/mL по каждому продукту."],
-  ["/report/page-grain.svg", "Группы продуктов", "13 групп вместо сплошного списка."],
-  ["/report/page-zones.svg", "Рекомендации", "Понятная градация: что убрать в первую очередь."],
+  ["/figma/report/p4.png", "Точные значения", "Уровень IgG в U/mL по каждому продукту."],
+  ["/figma/report/p2.png", "Группы продуктов", "13 групп вместо сплошного списка."],
+  ["/figma/report/front.png", "Понятная градация", "Сразу видно, что убрать в первую очередь."],
 ];
 
 let antigenAnimated = false;
@@ -337,7 +336,7 @@ export function HomePage() {
             <div>
               {[...LABS, ...LABS].map(([name, slug], index) => (
                 <Link key={`${slug}-${index}`} href="/labs">
-                  <img className="lab-logo" src={`/labs/${slug}.svg`} alt="" />
+                  <img className="lab-logo" src={slug} alt="" />
                   {name}
                 </Link>
               ))}
@@ -369,10 +368,10 @@ export function HomePage() {
             <h2 className="page-title" style={{ color: "white" }}>Симптомы, при которых стоит обсудить тест со специалистом</h2>
             <div className="cards-4" style={{ marginTop: 28 }}>
               {[
-                ["Кожные реакции", "Высыпания, экзема, дерматиты и зуд", "/blog/cover-story.png"],
-                ["Проблемы с ЖКТ", "Вздутие, газообразование, диарея, тошнота, спазмы", "/blog/cover-plate.jpg"],
-                ["Самочувствие", "Усталость, слабость, тяжесть после еды, сон", "/blog/cover-symptoms.jpg"],
-                ["Вес и отёчность", "Трудно снизить вес, стойкая отёчность, отёки лица", "/blog/cover-citrus.jpg"],
+                ["Кожные реакции", "Высыпания, экзема, дерматиты и зуд", "/figma/symptoms/s7.png"],
+                ["Проблемы с ЖКТ", "Вздутие, газообразование, диарея, тошнота, спазмы", "/figma/symptoms/s12.png"],
+                ["Самочувствие", "Усталость, слабость, тяжесть после еды, сон", "/figma/symptoms/s10.png"],
+                ["Вес и отёчность", "Трудно снизить вес, стойкая отёчность, отёки лица", "/figma/symptoms/s6.png"],
               ].map(([title, text, src]) => (
                 <article className="sym-card" key={title}>
                   <img src={src} alt="" />
@@ -520,7 +519,7 @@ export function HomePage() {
         </section>
 
         <section className="austria" data-s="s11" ref={austriaRef}>
-          <img className="parallax" src="/blog/cover-lab.png" alt="" />
+          <img className="parallax" src="/figma/austria/a1.png" alt="" />
           <div className="wrap">
             <h2 className="page-title">Тест разработан в Австрии</h2>
             <p className="lead">FOX разработала компания MacroArray Diagnostics (MADx), Вена. С 2016 года.</p>
@@ -543,7 +542,7 @@ export function HomePage() {
           <div className="lab-grid">
             {LABS.map(([name, slug]) => (
               <Link className="lab-tile" key={slug} href="/labs">
-                <img className="lab-logo" src={`/labs/${slug}.svg`} alt="" />
+                <img className="lab-logo" src={slug} alt="" />
                 {name}
               </Link>
             ))}
@@ -556,7 +555,7 @@ export function HomePage() {
           <div className="review-row" data-allow-x ref={reviewsRef}>
             {[...REVIEWS, ...REVIEWS].map(([name, text], index) => (
               <article className="panel" key={`${name}-${index}`}>
-                <img className="review-shot" src={index % 2 === 0 ? "/blog/author-ksenia.png" : "/blog/author-dmitry.png"} alt="" />
+                <img className="review-shot" src={index % 2 === 0 ? "/figma/reviews/r1.png" : "/figma/reviews/r5.png"} alt="" />
                 <h3>{name}</h3>
                 <p>{text}</p>
               </article>
@@ -578,7 +577,7 @@ export function HomePage() {
         </section>
 
         <section className="faq-band" data-s="s15">
-          <img className="bokeh" src="/blog/cover-symptoms.jpg" alt="" />
+          <img className="bokeh" src="/figma/symptoms/s7.png" alt="" />
           <div className="shade" />
           <div className="wrap">
           <h2 className="page-title" style={{ color: "white" }}>Частые вопросы</h2>
