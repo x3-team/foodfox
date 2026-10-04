@@ -46,13 +46,13 @@ export default function PartnerMaterialsPage() {
 
   return (
     <PartnerShell>
-      <h1 className="text-[34px] font-light leading-[38px] tracking-[-0.5px]">
+      <h1 className="text-[28px] font-light leading-8 tracking-[-0.5px] sm:text-[34px] sm:leading-[38px]">
         Материалы для рекомендации теста
       </h1>
       <p className="mt-1 text-[14px] text-[#5C5E57]">
         Готовые файлы и формулировки, согласованные с compliance FOX
       </p>
-      <section className="mt-6 flex items-center gap-8 rounded-[22px] border border-[#E3E4DF] bg-white px-6 py-5">
+      <section className="mt-6 flex flex-col items-start gap-5 rounded-[22px] border border-[#E3E4DF] bg-white px-4 py-5 sm:flex-row sm:items-center sm:gap-8 sm:px-6">
         <img
           src="/partner/referral-qr.svg"
           alt="QR реферальной ссылки"
@@ -63,7 +63,7 @@ export default function PartnerMaterialsPage() {
         <div className="min-w-0 flex-1">
           <p className="text-[13px] text-[#5C5E57]">Ваша реферальная ссылка</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <div className="min-w-[280px] flex-1 rounded-xl border border-[#E3E4DF] px-4 py-3 text-[16px] font-medium">
+            <div className="min-w-0 flex-1 break-all rounded-xl border border-[#E3E4DF] px-4 py-3 text-[16px] font-medium">
               {partner.link}
             </div>
             <button
@@ -87,7 +87,7 @@ export default function PartnerMaterialsPage() {
           </p>
         </div>
       </section>
-      <div className="mt-4 grid grid-cols-3 gap-4">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {materials.map((item) => (
           <article
             key={item.title}
@@ -106,7 +106,7 @@ export default function PartnerMaterialsPage() {
           </article>
         ))}
       </div>
-      <section className="mt-4 grid grid-cols-2 gap-4">
+      <section className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
         <PhraseCard title="Можно говорить" items={allowedPhrases} tone="green" />
         <PhraseCard title="Нельзя говорить" items={forbiddenPhrases} tone="red" />
       </section>

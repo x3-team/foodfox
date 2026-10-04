@@ -30,6 +30,7 @@ import {
   demoCodeFor,
   generateOtp,
   hashOtp,
+  isPartnerDemoPhone,
   OTP_MAX_ATTEMPTS,
   OTP_RESEND_MS,
 } from "./otp";
@@ -185,7 +186,11 @@ export async function ensureSchema(): Promise<void> {
   } catch {
     // schema may already exist
   }
-  for (const name of ["002_auth_telemetry_rls.sql", "003_phone_auth.sql"]) {
+  for (const name of [
+    "002_auth_telemetry_rls.sql",
+    "003_phone_auth.sql",
+    "004_partner_role.sql",
+  ]) {
     try {
       const sql = readFileSync(
         join(process.cwd(), "../../packages/database/migrations", name),
@@ -410,26 +415,42 @@ export async function verifyPhoneOtp(
      WHERE u.phone = $1 LIMIT 1`,
     [phone],
   );
+  const partnerDemo = isPartnerDemoPhone(phone);
+
   if (existing.rows[0]) {
     const u = existing.rows[0];
+    let role = (u.role as UserRole) ?? "client";
+    let displayName = (u.display_name as string | null) ?? "Клиент";
+    if (partnerDemo) {
+      role = "partner";
+      displayName = "Мария Ковалёва";
+      await p.query(`UPDATE users SET role = 'partner' WHERE id = $1`, [u.id]);
+      await p.query(`UPDATE clients SET display_name = $2 WHERE id = $1`, [
+        u.client_id,
+        displayName,
+      ]);
+    }
     trackEvent(p, u.client_id as string, "user_logged_in", { method: "phone" });
     return {
       userId: u.id,
       clientId: u.client_id,
       email: u.email ?? `${phone}@phone.foodfox`,
-      displayName: u.display_name ?? "Клиент",
-      role: (u.role as UserRole) ?? "client",
+      displayName,
+      role,
     };
   }
 
+  const role: UserRole = partnerDemo ? "partner" : "client";
+  const displayName = partnerDemo ? "Мария Ковалёва" : "Клиент";
+
   const user = await p.query(
-    `INSERT INTO users (phone, email, role) VALUES ($1, $2, 'client') RETURNING id`,
-    [phone, `${phone}@phone.foodfox`],
+    `INSERT INTO users (phone, email, role) VALUES ($1, $2, $3) RETURNING id`,
+    [phone, `${phone}@phone.foodfox`, role],
   );
   const client = await p.query(
     `INSERT INTO clients (user_id, display_name, privacy_consent_at)
      VALUES ($1, $2, now()) RETURNING id`,
-    [user.rows[0].id, "Клиент"],
+    [user.rows[0].id, displayName],
   );
   const clientId = client.rows[0].id as string;
 
@@ -441,8 +462,8 @@ export async function verifyPhoneOtp(
     userId: user.rows[0].id,
     clientId,
     email: `${phone}@phone.foodfox`,
-    displayName: "Клиент",
-    role: "client",
+    displayName,
+    role,
   };
 }
 

@@ -13,7 +13,7 @@ const rows = [
 export default function PartnerSettingsPage() {
   return (
     <PartnerShell>
-      <h1 className="text-[34px] font-light leading-[38px] tracking-[-0.5px]">
+      <h1 className="text-[28px] font-light leading-8 tracking-[-0.5px] sm:text-[34px] sm:leading-[38px]">
         Настройки
       </h1>
       <p className="mt-1 text-[14px] text-[#5C5E57]">
@@ -23,10 +23,10 @@ export default function PartnerSettingsPage() {
         {rows.map(([label, value]) => (
           <div
             key={label}
-            className="flex items-center justify-between border-b border-[#E3E4DF] px-6 py-4 last:border-b-0"
+            className="flex flex-col items-start gap-1 border-b border-[#E3E4DF] px-4 py-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-6"
           >
             <span className="text-[14px] text-[#5C5E57]">{label}</span>
-            <span className="text-[15px] font-medium">{value}</span>
+            <span className="min-w-0 break-words text-[15px] font-medium sm:text-right">{value}</span>
           </div>
         ))}
       </div>

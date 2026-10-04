@@ -6,7 +6,7 @@ export const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 24 * 30;
 const SESSION_MAX_AGE = ACCESS_TOKEN_MAX_AGE;
 export const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 90;
 
-export type UserRole = "client" | "admin" | "nutritionist";
+export type UserRole = "client" | "admin" | "nutritionist" | "partner";
 
 export interface SessionData {
   userId: string;

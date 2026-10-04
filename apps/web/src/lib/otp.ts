@@ -31,11 +31,30 @@ export function hashOtp(phone: string, code: string): string {
   return createHash("sha256").update(`${secret}:${phone}:${code}`).digest("hex");
 }
 
+/** Partner-cabinet demo. Distinct from the client demo so a client OTP cannot enter. */
+export const PARTNER_DEMO_PHONE_DEFAULT = "79990001122";
+export const PARTNER_DEMO_OTP_DEFAULT = "2026";
+
+export function partnerDemoPhone(): string {
+  return (
+    normalizePhone(process.env.FOX_PARTNER_DEMO_PHONE ?? PARTNER_DEMO_PHONE_DEFAULT) ??
+    PARTNER_DEMO_PHONE_DEFAULT
+  );
+}
+
+export function isPartnerDemoPhone(phone: string): boolean {
+  return phone === partnerDemoPhone();
+}
+
 /**
  * Demo numbers bypass the SMS gateway and always accept a fixed code, so the
- * app can be reviewed without a live provider.
+ * app can be reviewed without a live provider. Every other number gets null,
+ * and the HTTP response must omit `demoCode` entirely.
  */
 export function demoCodeFor(phone: string): string | null {
+  if (isPartnerDemoPhone(phone)) {
+    return process.env.FOX_PARTNER_DEMO_OTP ?? PARTNER_DEMO_OTP_DEFAULT;
+  }
   // Normalise the configured list the same way the caller's number was
   // normalised. Operators write these by hand in .env and reasonably reach for
   // "+7 925 111-11-11"; comparing raw strings silently issues a real random
@@ -45,4 +64,19 @@ export function demoCodeFor(phone: string): string | null {
     .map((p) => normalizePhone(p))
     .filter((p): p is string => p !== null);
   return demo.includes(phone) ? (process.env.FOX_DEMO_OTP ?? "1111") : null;
+}
+
+/** JSON body for POST /api/auth/otp/request. `demoCode` is set only for demo numbers. */
+export function otpRequestPayload(
+  phone: string,
+  resendAfterMs: number,
+  demoCode: string | null,
+): { ok: true; phone: string; resendAfterMs: number; demoCode?: string } {
+  const body: { ok: true; phone: string; resendAfterMs: number; demoCode?: string } = {
+    ok: true,
+    phone,
+    resendAfterMs,
+  };
+  if (demoCode) body.demoCode = demoCode;
+  return body;
 }

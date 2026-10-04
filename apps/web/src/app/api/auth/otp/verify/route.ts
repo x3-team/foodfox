@@ -24,6 +24,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (body.intent === "partner" && session.role !== "partner") {
+      return NextResponse.json(
+        {
+          error:
+            "Этот номер зарегистрирован как клиент. В кабинет партнёра он не входит.",
+        },
+        { status: 403 },
+      );
+    }
+
     setSessionCookie(session);
     const refreshToken = await createRefreshToken(session.userId);
     return NextResponse.json(buildAuthResponse(session, refreshToken));

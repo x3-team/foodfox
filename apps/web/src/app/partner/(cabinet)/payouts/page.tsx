@@ -18,13 +18,13 @@ export default function PartnerPayoutsPage() {
 
   return (
     <PartnerShell>
-      <h1 className="text-[34px] font-light leading-[38px] tracking-[-0.5px]">
+      <h1 className="text-[28px] font-light leading-8 tracking-[-0.5px] sm:text-[34px] sm:leading-[38px]">
         Начисления и выплаты
       </h1>
       <p className="mt-1 text-[14px] text-[#5C5E57]">
         Выплаты 5-го числа каждого месяца · минимальная сумма вывода 3 000 ₽
       </p>
-      <div className="mt-6 grid grid-cols-[1.4fr_1fr_1fr_1fr] gap-4">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <article className="rounded-[22px] bg-[#21251D] px-[26px] py-6 text-[#F8F9F6]">
           <p className="text-[13px] text-[#A8AAA3]">Доступно к выплате</p>
           <p className="mt-3 text-[40px] font-light leading-none text-[#E7F551]">
@@ -58,10 +58,10 @@ export default function PartnerPayoutsPage() {
           </article>
         ))}
       </div>
-      <div className="mt-6 overflow-hidden rounded-[22px] border border-[#E3E4DF] bg-white px-6 pb-4 pt-5">
-        <div className="flex items-center justify-between pb-4">
+      <div className="mt-6 overflow-hidden rounded-[22px] border border-[#E3E4DF] bg-white px-4 pb-4 pt-5 sm:px-6">
+        <div className="flex flex-col gap-3 pb-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-[17px] font-medium">История выплат</h2>
-          <div className="flex items-center gap-3 text-[14px]">
+          <div className="flex flex-wrap items-center gap-3 text-[14px]">
             <span className="rounded-full bg-[#21251D] px-3.5 py-2 text-[#F8F9F6]">
               2026
             </span>
@@ -77,20 +77,43 @@ export default function PartnerPayoutsPage() {
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-[150px_200px_120px_240px_140px_1fr] border-b border-[#E3E4DF] pb-2.5 text-[12px] font-medium text-[#5C5E57]">
+        <ul className="space-y-3 xl:hidden">
+          {payouts.map((row) => (
+            <li key={row.period} className="rounded-2xl border border-[#E3E4DF] px-4 py-3 text-[14px]">
+              <div className="flex items-start justify-between gap-3">
+                <span className="font-medium">{row.period}</span>
+                <span className="shrink-0 font-medium">{row.amount}</span>
+              </div>
+              <p className="mt-1 text-[#5C5E57]">
+                {row.date} · {row.count} отчётов
+              </p>
+              <p className="mt-1 break-words text-[#5C5E57]">{row.method}</p>
+              <span
+                className={`mt-2 inline-flex rounded-full px-3 py-1.5 text-[12px] font-medium ${
+                  row.status === "Выплачено"
+                    ? "bg-[#EDF3D9] text-[#4A6B1F]"
+                    : "bg-[#FBF0D8] text-[#8A6416]"
+                }`}
+              >
+                {row.status}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div className="hidden xl:grid xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)_minmax(0,0.7fr)_minmax(0,1.4fr)_minmax(0,0.8fr)_minmax(0,0.8fr)] xl:border-b xl:border-[#E3E4DF] xl:pb-2.5 xl:text-[12px] xl:font-medium xl:text-[#5C5E57]">
           {["Дата", "Период", "Отчётов", "Способ", "Сумма", "Статус"].map((column) => (
             <span key={column}>{column}</span>
           ))}
         </div>
         {payouts.map((row) => (
           <div
-            key={row.period}
-            className="grid grid-cols-[150px_200px_120px_240px_140px_1fr] items-center border-b border-[#E3E4DF] py-[15px] text-[14px]"
+            key={`${row.period}-desktop`}
+            className="hidden grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)_minmax(0,0.7fr)_minmax(0,1.4fr)_minmax(0,0.8fr)_minmax(0,0.8fr)] items-center border-b border-[#E3E4DF] py-[15px] text-[14px] xl:grid"
           >
             <span className="text-[#5C5E57]">{row.date}</span>
             <span>{row.period}</span>
             <span>{row.count}</span>
-            <span className="pr-3 text-[#5C5E57]">{row.method}</span>
+            <span className="min-w-0 break-words pr-3 text-[#5C5E57]">{row.method}</span>
             <span className="font-medium">{row.amount}</span>
             <span>
               <span

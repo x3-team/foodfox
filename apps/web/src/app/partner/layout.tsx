@@ -15,7 +15,7 @@ export default function PartnerLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${manrope.className} min-h-screen bg-[#F8F9F6]`}>
+    <div className={`${manrope.className} min-h-screen overflow-x-hidden bg-[#F8F9F6]`}>
       {children}
     </div>
   );

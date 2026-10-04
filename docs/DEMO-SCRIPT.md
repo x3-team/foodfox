@@ -2,7 +2,8 @@
 
 **URL:** https://foodfox.yuri.guru  
 **Nginx:** `demo` / `FoodFox2026!`  
-**Демо-аккаунт (отчёт уже в базе):** `demo@foodfox.local` / `DemoFox2026!`
+**Демо-аккаунт (отчёт уже в базе):** `demo@foodfox.local` / `DemoFox2026!`  
+**Кабинет партнёра:** см. [PARTNER-DEMO-ACCESS.md](PARTNER-DEMO-ACCESS.md) — `+7 999 000-11-22`, код `2026`
 
 ---
 

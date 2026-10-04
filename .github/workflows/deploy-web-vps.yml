@@ -2,7 +2,9 @@ name: Deploy web to VPS
 
 on:
   push:
-    branches: [cursor/mvp-web-prototype-5e5b]
+    branches:
+      - cursor/mvp-web-prototype-5e5b
+      - cursor/partner-cabinet-auth-5e5b
     paths:
       - "apps/web/**"
       - "packages/database/**"
@@ -25,7 +27,7 @@ jobs:
           command_timeout: 20m
           script: |
             set -euo pipefail
-            BRANCH=cursor/mvp-web-prototype-5e5b
+            export BRANCH="${{ github.ref_name }}"
             cd /var/www/foodfox
 
             echo "==> checkout on server before running anything from it"

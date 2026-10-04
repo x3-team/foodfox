@@ -46,6 +46,8 @@ echo "    HELI_BASE_URL:    ${HELI_BASE_URL:-<code default>}"
 echo "    HELI_CHAT_MODEL:  ${HELI_CHAT_MODEL:-<code default>}"
 echo "    FOX_DEMO_PHONES:  ${FOX_DEMO_PHONES:-<code default>}"
 echo "    FOX_DEMO_OTP:     ${FOX_DEMO_OTP:-<code default>}"
+echo "    FOX_PARTNER_DEMO_PHONE: ${FOX_PARTNER_DEMO_PHONE:-<code default 79990001122>}"
+echo "    FOX_PARTNER_DEMO_OTP:   ${FOX_PARTNER_DEMO_OTP:-<code default 2026>}"
 
 echo "==> Build Next.js"
 npm ci --include=dev

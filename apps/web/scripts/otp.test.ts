@@ -1,6 +1,11 @@
 #!/usr/bin/env npx tsx
 import assert from "node:assert/strict";
-import { demoCodeFor, normalizePhone } from "../src/lib/otp";
+import {
+  demoCodeFor,
+  isPartnerDemoPhone,
+  normalizePhone,
+  otpRequestPayload,
+} from "../src/lib/otp";
 
 function test(name: string, fn: () => void) {
   try {
@@ -62,6 +67,39 @@ test("garbage entries are dropped instead of matching everything", () => {
     assert.equal(demoCodeFor("79251111111"), "1111");
     assert.equal(demoCodeFor("79991234567"), null);
   });
+});
+
+test("partner demo uses its own code and is not the client number", () => {
+  const savedPhone = process.env.FOX_PARTNER_DEMO_PHONE;
+  const savedOtp = process.env.FOX_PARTNER_DEMO_OTP;
+  delete process.env.FOX_PARTNER_DEMO_PHONE;
+  delete process.env.FOX_PARTNER_DEMO_OTP;
+  try {
+    withEnv(
+      { FOX_DEMO_PHONES: "79251111111,79991234567", FOX_DEMO_OTP: "1111" },
+      () => {
+        assert.equal(demoCodeFor("79990001122"), "2026");
+        assert.equal(isPartnerDemoPhone("79990001122"), true);
+        assert.equal(demoCodeFor("79251111111"), "1111");
+        assert.equal(isPartnerDemoPhone("79251111111"), false);
+        assert.equal(demoCodeFor("79000000001"), null);
+      },
+    );
+  } finally {
+    if (savedPhone === undefined) delete process.env.FOX_PARTNER_DEMO_PHONE;
+    else process.env.FOX_PARTNER_DEMO_PHONE = savedPhone;
+    if (savedOtp === undefined) delete process.env.FOX_PARTNER_DEMO_OTP;
+    else process.env.FOX_PARTNER_DEMO_OTP = savedOtp;
+  }
+});
+
+test("otp response includes demoCode only for demo numbers", () => {
+  const hidden = otpRequestPayload("79000000001", 42000, null);
+  assert.equal("demoCode" in hidden, false);
+  const partner = otpRequestPayload("79990001122", 42000, "2026");
+  assert.equal(partner.demoCode, "2026");
+  const client = otpRequestPayload("79251111111", 42000, "1111");
+  assert.equal(client.demoCode, "1111");
 });
 
 console.log("\nAll OTP tests passed.");
