@@ -454,12 +454,12 @@ export function HomePage() {
           <div className="cards-2" style={{ marginTop: 24 }}>
             <article className="panel">
               <img className="s08-shot" key={reportPage} src={REPORT_SLIDES[reportPage][0]} alt="" />
-              <p className="meta-line">Страница {reportPage + 1} из 4</p>
+              <p className="meta-line">Страница {reportPage + 1} из {REPORT_SLIDES.length}</p>
               <h3>{REPORT_SLIDES[reportPage][1]}</h3>
               <p>{REPORT_SLIDES[reportPage][2]}</p>
               <div className="flip-nav">
-                <button type="button" className="btn btn-ghost" onClick={() => setReportPage((n) => (n + 3) % 4)}>Назад</button>
-                <button type="button" className="btn btn-dark" onClick={() => setReportPage((n) => (n + 1) % 4)}>Дальше</button>
+                <button type="button" className="btn btn-ghost" onClick={() => setReportPage((n) => (n + REPORT_SLIDES.length - 1) % REPORT_SLIDES.length)}>Назад</button>
+                <button type="button" className="btn btn-dark" onClick={() => setReportPage((n) => (n + 1) % REPORT_SLIDES.length)}>Дальше</button>
               </div>
             </article>
             <div className="cards-2">
