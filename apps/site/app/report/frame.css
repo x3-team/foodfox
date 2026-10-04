@@ -206,7 +206,7 @@
 .rf-deck { position: relative; height: 380px; }
 .report-page .uml-card {
   position: absolute;
-  width: 400px;
+  width: min(400px, 48%);
   height: 300px;
   min-height: 300px;
   border-radius: 24px;
@@ -216,7 +216,7 @@
   box-shadow: 0 2px 6px rgba(11, 12, 8, 0.06), 0 12px 32px rgba(11, 12, 8, 0.1);
 }
 .report-page .uml-card.low {
-  left: 8px;
+  left: 0;
   top: 48px;
   background: #edf3d9;
   border: 1px solid #4a6b1f;
@@ -225,9 +225,9 @@
   color: #4a6b1f;
 }
 .report-page .uml-card.mid {
-  left: 318px;
+  left: 26%;
   top: 20px;
-  width: 400px;
+  width: min(400px, 48%);
   height: 300px;
   background: #fbf0d8;
   border: 1px solid #8a6416;
@@ -236,7 +236,8 @@
   color: #8a6416;
 }
 .report-page .uml-card.high {
-  left: 616px;
+  left: auto;
+  right: 0;
   top: 40px;
   background: #f8e3de;
   border: 1px solid #a03a22;
@@ -260,7 +261,7 @@
 .report-page .uml-card strong { margin: 0; font-size: 64px; line-height: 68px; letter-spacing: -2px; font-weight: 300; }
 .rf-deck-value small { font-size: 24px; line-height: 28px; font-weight: 300; opacity: 0.7; margin-bottom: 8px; }
 .rf-scale { display: flex; gap: 4px; margin-top: 14px; }
-.rf-scale i { width: 100px; height: 6px; border-radius: 3px; background: rgba(11, 12, 8, 0.1); }
+.rf-scale i { flex: 1; height: 6px; border-radius: 3px; background: rgba(11, 12, 8, 0.1); }
 .uml-card.low .rf-scale i:first-child { background: #4a6b1f; }
 .uml-card.mid .rf-scale i:nth-child(2) { background: #8a6416; }
 .uml-card.high .rf-scale i:nth-child(3) { background: #a03a22; }
