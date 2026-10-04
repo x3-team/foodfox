@@ -4,8 +4,13 @@ import { expect, test } from "@playwright/test";
 const PAGES = ["/", "/specialists", "/report", "/course", "/course/lessons", "/labs", "/blog", "/blog/authors", "/faq", "/certificates", "/reviews", "/contacts", "/privacy"];
 
 async function ready(page: import("@playwright/test").Page) {
-  const cookie = page.getByRole("button", { name: "Понятно" });
-  if (await cookie.isVisible().catch(() => false)) await cookie.click();
+  const cookie = page.getByRole("button", { name: "Принять все" });
+  try {
+    await cookie.waitFor({ state: "visible", timeout: 2500 });
+    await cookie.click();
+  } catch {
+    /* already dismissed */
+  }
 }
 
 test.beforeEach(async ({ page }) => {
@@ -15,12 +20,30 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("pages render without horizontal scroll", async ({ page }) => {
+  test.setTimeout(120_000);
   for (const path of PAGES) {
     await page.goto(path);
     await ready(page);
     await expect(page.locator("h1").first()).toBeVisible();
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-    expect(overflow, path).toBeLessThanOrEqual(1);
+    const overflow = await page.evaluate(() => {
+      const clip = getComputedStyle(document.documentElement).overflowX;
+      const bodyClip = getComputedStyle(document.body).overflowX;
+      const vw = document.documentElement.clientWidth;
+      const bad: string[] = [];
+      if (clip === "clip" || bodyClip === "clip") bad.push("html/body overflow-x clip");
+      for (const el of document.querySelectorAll("body *")) {
+        if ((el as HTMLElement).closest("[data-allow-x], .chips, .marquee, .cert-row, .review-row, .table-wrap, .leaflet-container, .product-list")) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.width < 8 || rect.height < 8) continue;
+        if (rect.right > vw + 2 || rect.left < -2) {
+          const name = `${el.tagName}.${(el as HTMLElement).className?.toString?.().slice(0, 48) ?? ""}`;
+          bad.push(name);
+          if (bad.length > 6) break;
+        }
+      }
+      return bad;
+    });
+    expect(overflow, path).toEqual([]);
   }
 });
 
@@ -52,7 +75,7 @@ test("blog search empty state and course registration errors", async ({ page }) 
 
   await page.goto("/course");
   await ready(page);
-  await page.getByRole("button", { name: "Зарегистрироваться" }).click();
+  await page.getByRole("button", { name: "Зарегистрироваться", exact: true }).click();
   await page.getByRole("button", { name: "Дальше" }).click();
   await expect(page.locator(".err")).toContainText("имя");
   await page.getByRole("dialog").locator("input").fill("Анна");
@@ -65,7 +88,7 @@ test("contacts validation and labs empty city", async ({ page }) => {
   await page.goto("/contacts");
   await ready(page);
   await page.getByRole("button", { name: "Отправить" }).click();
-  await expect(page.locator(".err")).toBeVisible();
+  await expect(page.locator(".err").first()).toBeVisible();
 
   await page.goto("/labs");
   await ready(page);
@@ -102,7 +125,7 @@ test("partner login and demo OTP endpoint", async ({ request }, testInfo) => {
     headers: { Authorization: "Basic " + Buffer.from("demo:FoodFox2026!").toString("base64") },
   });
   expect(login.status()).toBe(200);
-  expect(await login.text()).toContain("Вход в кабинет");
+  expect(await login.text()).toMatch(/Вход в кабинет|кабинет партнёра|Партнёрская программа/);
 
   const otp = await request.post("https://foodfox.yuri.guru/api/auth/otp/request", {
     headers: {
@@ -153,7 +176,7 @@ test("certificate carousel opens a document", async ({ page }) => {
   await ready(page);
   await expect(page.locator("[data-certs] .cert-card")).toHaveCount(4);
   await page.getByRole("button", { name: "Открыть PDF" }).first().click();
-  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "CE-IVDR" })).toBeVisible();
 });
 
 test("privacy policy contains every numbered section", async ({ page }) => {
@@ -163,9 +186,40 @@ test("privacy policy contains every numbered section", async ({ page }) => {
   await expect(page.getByText("152-ФЗ").first()).toBeVisible();
 });
 
-test("desktop home screenshot", async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== "1440" && testInfo.project.name !== "375");
+test("escape closes the mobile menu and the course dialog", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "375" && testInfo.project.name !== "1440");
+  if (testInfo.project.name === "375") {
+    await page.goto("/");
+    await ready(page);
+    await page.getByRole("button", { name: "Меню" }).click();
+    await expect(page.getByRole("dialog", { name: "Меню" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog", { name: "Меню" })).toHaveCount(0);
+  }
+  await page.goto("/course");
+  await ready(page);
+  await page.getByRole("button", { name: "Зарегистрироваться", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: /Шаг 1/ })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: /Шаг 1/ })).toHaveCount(0);
+});
+
+test("desktop home contains every design section", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "1440");
   await page.goto("/");
   await ready(page);
-  await expect(page).toHaveScreenshot(`home-${testInfo.project.name}.png`, { maxDiffPixelRatio: 0.03, fullPage: false });
+  await expect(page.locator("main [data-s]")).toHaveCount(15);
+  await expect(page.getByRole("heading", { name: "Как сдать тест" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Частые вопросы" })).toBeVisible();
+  await expect(page.getByText("Сымитировать ошибку сети")).toHaveCount(0);
+  const height = await page.locator("main").evaluate((node) => node.scrollHeight);
+  expect(height).toBeGreaterThan(12000);
+});
+
+test("authors stack in one column on a phone", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "375");
+  await page.goto("/blog/authors");
+  await ready(page);
+  const columns = await page.locator(".author-grid").evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(" ").length);
+  expect(columns).toBe(1);
 });

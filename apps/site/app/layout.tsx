@@ -22,7 +22,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru">
       <body className={manrope.variable} style={{ fontFamily: "var(--font), Manrope, sans-serif" }}>
-        {children}
+        <a className="skip-link" href="#content">К содержанию</a>
+        <div id="content">{children}</div>
         <CookieBar />
       </body>
     </html>

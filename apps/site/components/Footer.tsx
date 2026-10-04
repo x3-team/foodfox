@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const COLS = [
   {
@@ -46,6 +46,7 @@ const COLS = [
 
 export function Footer() {
   const ref = useRef<HTMLElement>(null);
+  const [open, setOpen] = useState<string | null>(null);
 
   useEffect(() => {
     const node = ref.current;
@@ -83,7 +84,12 @@ export function Footer() {
         <div className="cols">
           {COLS.map((col) => (
             <div key={col.title}>
-              <h3>{col.title}</h3>
+              <h3>
+                <button type="button" className="footer-acc" aria-expanded={open === col.title} onClick={() => setOpen(open === col.title ? null : col.title)}>
+                  {col.title}
+                </button>
+              </h3>
+              <div className={`foot-links${open === col.title ? " is-open" : ""}`}>
               {col.links.map(([label, href]) =>
                 href.startsWith("http") ? (
                   <a key={label} href={href} target="_blank" rel="noreferrer">
@@ -95,6 +101,7 @@ export function Footer() {
                   </Link>
                 ),
               )}
+              </div>
             </div>
           ))}
         </div>

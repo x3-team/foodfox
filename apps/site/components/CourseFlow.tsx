@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 
@@ -23,6 +23,15 @@ export function CoursePage() {
   const [agree, setAgree] = useState(false);
   const [opened, setOpened] = useState(0);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   function next() {
     if (step === 0 && name.trim().length < 2) return setError("Укажите имя");
     if (step === 1 && !email.includes("@")) return setError("Проверьте email");
@@ -36,23 +45,62 @@ export function CoursePage() {
     <>
       <Header />
       <main>
-        <section className="wrap band">
-          <p className="crumbs">Курс для специалистов</p>
-          <h1 className="page-title">Научитесь читать отчёт FOX и применять его в практике</h1>
-          <p className="lead">6 уроков, бесплатно, с сертификатом. Без баллов НМО.</p>
-          <button className="btn btn-dark" style={{ marginTop: 20 }} onClick={() => { setOpen(true); setSent(false); setStep(0); }}>
-            Зарегистрироваться
-          </button>
+        <section className="dark-hero" data-s="k01">
+          <img className="bg" src="/blog/cover-lab.png" alt="" />
+          <div className="shade" />
+          <div className="wrap inner">
+            <p className="crumbs">Курс для специалистов</p>
+            <h1 className="page-title" style={{ color: "white" }}>Научитесь читать отчёт FOX и применять его в практике</h1>
+            <p className="lead" style={{ color: "rgba(248,249,246,.78)" }}>6 уроков, бесплатно, с сертификатом. Без баллов НМО.</p>
+            <button className="btn btn-light" style={{ marginTop: 20 }} onClick={() => { setOpen(true); setSent(false); setStep(0); }}>
+              Зарегистрироваться
+            </button>
+          </div>
         </section>
-        <section className="wrap band">
-          <h2>Программа</h2>
+        <section className="wrap band" data-s="k02">
+          <h2 className="page-title">Для кого курс</h2>
+          <div className="cards-3" style={{ marginTop: 20 }}>
+            {["Гастроэнтерологи", "Дерматологи", "Нутрициологи", "Терапевты", "Эндокринологи", "Педиатры", "Неврологи", "Аллергологи", "Диетологи"].map((item) => (
+              <article className="panel" key={item}><h3>{item}</h3><p>Как читать зоны и говорить о рационе, не подменяя очный приём.</p></article>
+            ))}
+          </div>
+        </section>
+        <section className="wrap band" id="program" data-s="k03">
+          <h2 className="page-title">Программа</h2>
           {LESSONS.map((lesson, index) => (
-            <button className="lesson" key={lesson} onClick={() => setOpened(index)} aria-expanded={opened === index}>
+            <button className="lesson" key={lesson} onClick={() => setOpened(opened === index ? -1 : index)} aria-expanded={opened === index}>
               <span>Урок {index + 1}. {lesson}</span>
               <span>{opened === index ? "−" : "+"}</span>
             </button>
           ))}
           {opened >= 0 && <p className="lead">Урок {opened + 1}: {LESSONS[opened]}. Коротко о том, как это выглядит на приёме.</p>}
+        </section>
+        <section className="wrap band" id="lectors" data-s="k04">
+          <h2 className="page-title">Лекторы</h2>
+          <div className="cards-2">
+            {[
+              ["Светлана Каневская", "Д. м. н., профессор · уроки 1, 2, 6"],
+              ["Алёна Вавилова", "Клинический нутрициолог · урок 3"],
+              ["Ксения Эллинская", "К. м. н., дерматовенеролог · урок 4"],
+              ["Дмитрий Эллинский", "Дерматовенеролог, трихолог · урок 5"],
+            ].map(([name, role]) => <article className="panel" key={name}><h3>{name}</h3><p>{role}</p></article>)}
+          </div>
+        </section>
+        <section className="wrap band" data-s="k05">
+          <h2 className="page-title">Что входит в курс</h2>
+          <div className="cards-3">
+            {["6 видеоуроков", "Конспекты PDF", "Пример отчёта", "Протокол элиминации", "Сертификат", "Бессрочный доступ", "Без баллов НМО"].map((item) => (
+              <article className="panel" key={item}><h3>{item}</h3></article>
+            ))}
+          </div>
+        </section>
+        <section className="wrap band" data-s="k06">
+          <h2 className="page-title">Вопросы о курсе</h2>
+          <p>Баллы НМО курс не начисляет. Доступ открывается по ссылке из письма.</p>
+        </section>
+        <section className="wrap band" data-s="k07">
+          <h2 className="page-title">Начните с регистрации</h2>
+          <button className="btn btn-dark" onClick={() => { setOpen(true); setSent(false); setStep(0); }}>Зарегистрироваться на курс</button>
         </section>
         {open && (
           <div className="modal-back" role="presentation" onClick={() => setOpen(false)}>
@@ -106,12 +154,22 @@ export function LessonsPage() {
               </button>
             ))}
           </div>
-          <div className="player" aria-label="Плеер урока">
-            <div>
-              <p>Урок {current + 1}</p>
-              <strong>{LESSONS[current]}</strong>
-              <p>Субтитры включены. Продолжение с последнего места.</p>
+          <div>
+            <div className="player" aria-label="Плеер урока">
+              <div>
+                <p>Урок {current + 1} из 6 · прогресс {current}/6</p>
+                <strong>{LESSONS[current]}</strong>
+                <p>Субтитры включены. Продолжение с последнего места.</p>
+              </div>
             </div>
+            <h2>Конспект</h2>
+            <p>Короткий конспект урока {current + 1}: зоны, формулировки и то, чего в разговоре нет.</p>
+            <a className="btn btn-ghost" href="/report">Скачать конспект PDF</a>
+            {current < 5 ? (
+              <button className="btn btn-dark" type="button" onClick={() => setCurrent(current + 1)}>Следующий урок</button>
+            ) : (
+              <p>Сертификат откроется после 6/6. Сейчас пройдено {current + 1} из 6.</p>
+            )}
           </div>
         </div>
       </main>

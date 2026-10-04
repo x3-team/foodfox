@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArticleCard } from "@/components/ArticleCard";
+import { AuthorPosts } from "@/components/AuthorPosts";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { authors, articles, authorBySlug } from "@/lib/content";
@@ -48,6 +48,9 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
               {author.lecturer && <span className="tag tag-lime">{author.lecturer}</span>}
               <span className="tag">Эксперт FOX</span>
             </div>
+            <p style={{ marginTop: 16 }}>
+              <a className="btn btn-dark" href="https://t.me/foxfoodxplorer">Подписаться в Telegram</a>
+            </p>
             <div className="columns">
               <div>
                 <h2>Опыт работы</h2>
@@ -70,16 +73,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
             </div>
           </div>
         </section>
-        <section className="wrap related">
-          <div className="related-head">
-            <h2>{posts.length} публикаций</h2>
-          </div>
-          <div className="grid">
-            {posts.slice(0, 6).map((article, index) => (
-              <ArticleCard key={article.slug} article={article} index={index} />
-            ))}
-          </div>
-        </section>
+        <AuthorPosts posts={posts} />
       </main>
       <Footer />
     </>

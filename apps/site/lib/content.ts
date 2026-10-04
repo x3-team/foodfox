@@ -20,6 +20,7 @@ export type Author = {
   experience: Array<{ years: string; text: string }>;
   education: string[];
   topics: string[];
+  listed?: boolean;
 };
 
 export type Block =
@@ -162,6 +163,7 @@ export const authors: Author[] = [
     experience: [{ years: "2015 — н. в.", text: "Гастроэнтеролог" }],
     education: ["Кандидат медицинских наук."],
     topics: ["ЖКТ", "Метод"],
+    listed: false,
   },
   {
     slug: "redaktsiya-fox",
@@ -175,6 +177,7 @@ export const authors: Author[] = [
     experience: [{ years: "2024 — н. в.", text: "Редакция блога FOX Food Xplorer" }],
     education: ["Каждый материал проходит проверку научного редактора перед публикацией."],
     topics: ["Истории", "Отчёт"],
+    listed: false,
   },
 ];
 
@@ -422,7 +425,7 @@ const generated: Article[] = extras.map((row, i) => ({
   synonyms: row[3].includes("лактоза") ? ["молочные продукты", "лактоза"] : undefined,
 }));
 
-export const articles: Article[] = [featured, ...visible, ...generated];
+export const articles: Article[] = [featured, ...visible];
 
 export function authorBySlug(slug: string) {
   return authors.find((a) => a.slug === slug);

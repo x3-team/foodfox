@@ -9,7 +9,7 @@ import { ROLE_FILTERS, articles, authors } from "@/lib/content";
 export function AuthorsBrowser() {
   const [role, setRole] = useState("all");
   const list = useMemo(
-    () => authors.filter((author) => role === "all" || author.roles.includes(role as never)),
+    () => authors.filter((author) => author.listed !== false && (role === "all" || author.roles.includes(role as never))),
     [role],
   );
 

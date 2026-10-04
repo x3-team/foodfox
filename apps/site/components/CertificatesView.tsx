@@ -31,7 +31,15 @@ export function CertificatesView() {
             <img src="/icons/arrow-right.svg" alt="" />
           </button>
         </div>
-        <div className="cert-row" data-certs ref={row}>
+        <section data-s="c-maker">
+          <h2>О производителе</h2>
+          <p>MacroArray Diagnostics (MADx), Вена. Платформа автоматизирует обработку и стандартизирует анализ.</p>
+        </section>
+        <section>
+          <h2>Технология ELISA</h2>
+          <p>Мультиплексный непрямой ELISA: сотни антигенов за один анализ.</p>
+        </section>
+        <div className="cert-row" data-certs data-allow-x ref={row}>
           {DOCS.map(([code, kind, text, size]) => (
             <article className="panel cert-card" key={code}>
               <p className="meta-line">{kind}</p>
