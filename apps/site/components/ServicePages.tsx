@@ -201,6 +201,7 @@ const NETS = ["Все сети", "Ситилаб", "Гемотест", "KDL", "�
 export function LabsPage() {
   const [city, setCity] = useState("Москва");
   const [labView, setLabView] = useState<"list" | "map">("list");
+  const [wide, setWide] = useState(false);
   const [selected, setSelected] = useState(BRANCHES[0].id);
   const [net, setNet] = useState("Все сети");
   const [addr, setAddr] = useState("");
@@ -229,6 +230,14 @@ export function LabsPage() {
     setNet("Все сети");
     setOpenNow(false);
   }, [points]);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1100px)");
+    const apply = () => setWide(query.matches);
+    apply();
+    query.addEventListener("change", apply);
+    return () => query.removeEventListener("change", apply);
+  }, []);
 
   function pickNet(name: string) {
     setNet(name);
@@ -341,9 +350,11 @@ export function LabsPage() {
                     ))}
                   </div>
                 </div>
-                <div className="l03-map">
-                  <LabsMap points={points} selected={selected} onSelect={setSelected} />
-                </div>
+                {(wide || labView === "map") && (
+                  <div className="l03-map">
+                    <LabsMap points={points} selected={selected} onSelect={setSelected} />
+                  </div>
+                )}
               </div>
             )}
             <p className="l-caption">Список и карта связаны: выбранное отделение подсвечивается и на карте.</p>

@@ -47,6 +47,7 @@ export function BlogFeed() {
   const [tagOpen, setTagOpen] = useState(false);
   const [draftTags, setDraftTags] = useState(tags);
   const [leaving, setLeaving] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [skeleton, setSkeleton] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -416,13 +417,16 @@ export function BlogFeed() {
               </button>
             </div>
           ) : (
-            <div className={`grid${leaving ? " is-leaving" : ""}`}>
+            <div className={`grid blog-grid${leaving ? " is-leaving" : ""}${expanded ? " is-more" : ""}`}>
               {pageItems.map((article: Article, index) => (
                 <span key={article.slug} className={leaving ? "is-out-wrap" : undefined} style={{ display: "contents" }}>
                   <ArticleCard article={article} index={index} />
                 </span>
               ))}
             </div>
+          )}
+          {pageItems.length > 3 && !expanded && (
+            <button className="btn btn-ghost blog-more" type="button" onClick={() => setExpanded(true)}>Показать ещё</button>
           )}
           {pageItems.length > 0 && (
             <nav className="pager" aria-label="Страницы">

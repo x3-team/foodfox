@@ -47,12 +47,13 @@ export function Header() {
     const onScroll = () => {
       const y = window.scrollY;
       const mobile = window.matchMedia("(max-width: 1100px)").matches;
+      const hideAfter = mobile ? 80 : 400;
       setScrolled(y > 80);
       if (menu) {
         setHidden(false);
-      } else if (mobile && y > 80 && y > lastY.current + 6) {
+      } else if (y > hideAfter && y > lastY.current + 6) {
         setHidden(true);
-      } else if (!mobile || y < lastY.current - 6 || y < 40) {
+      } else if (y < lastY.current - 6 || y < 40) {
         setHidden(false);
       }
       lastY.current = y;

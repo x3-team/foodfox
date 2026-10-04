@@ -81,6 +81,10 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   [data-s="f01"] h1, .f03-card h2 { font-size: 40px; line-height: 44px; }
   .f01-row, .f02, .f03-card { grid-template-columns: 1fr; }
   .f01-visual { height: 320px; }
-  .f-nav { position: static; }
-  .f03-photo, .f03-photo img { min-height: 0; height: 240px; }
+  .f-nav { position: sticky; top: 64px; z-index: 5; background: #f8f9f6; }
+  .f03-photo, .f03-photo img { min-height: 0; height: 180px; }
+  .f01-visual { height: 220px; }
+  [data-s="f01"] { padding: 24px 0 32px; }
+  [data-s="f02"] { padding: 32px 0; }
+  .f03-card { min-height: 0; padding: 24px; }
 }

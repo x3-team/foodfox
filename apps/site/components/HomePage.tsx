@@ -155,7 +155,9 @@ export function HomePage() {
   const [group, setGroup] = useState(GROUPS[0]);
   const [picked, setPicked] = useState(PRODUCTS[0]);
   const [count, setCount] = useState(0);
-  const [faq, setFaq] = useState<number[]>([0]);
+  const [faq, setFaq] = useState(0);
+  const showsRef = useRef<HTMLElement>(null);
+  const [showOn, setShowOn] = useState(0);
   const [suggest, setSuggest] = useState(false);
   const [reportPage, setReportPage] = useState(0);
   const scaleRef = useRef<HTMLElement>(null);
@@ -245,6 +247,20 @@ export function HomePage() {
     });
     io.observe(node);
     return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const node = showsRef.current;
+    if (!node) return;
+    const onScroll = () => {
+      const rect = node.getBoundingClientRect();
+      const total = Math.max(1, node.offsetHeight - window.innerHeight * 0.5);
+      const progress = Math.min(0.999, Math.max(0, -rect.top / total));
+      setShowOn(Math.min(SHOWS.length - 1, Math.floor(progress * SHOWS.length)));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -429,7 +445,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="shows-band" data-s="s07" id="chto-pokazyvaet">
+        <section className="shows-band" data-s="s07" id="chto-pokazyvaet" ref={showsRef}>
           <div className="orbit" aria-hidden>
             <span className="orbit-ring r1" />
             <span className="orbit-ring r2" />
@@ -442,12 +458,12 @@ export function HomePage() {
             <div className="shows-pin">
               <h2 className="page-title">Что показывает тест</h2>
               <div className="antigen-dots" aria-hidden>
-                {Array.from({ length: 286 }, (_, index) => <i key={index} className={index < 48 ? "is-hot" : ""} />)}
+                {Array.from({ length: 286 }, (_, index) => <i key={index} className={index < 48 ? "is-hot" : ""} style={{ animationDelay: `${index * 8}ms` }} />)}
               </div>
             </div>
             <div className="shows-cards">
               {SHOWS.map(([title, text], index) => (
-                <article className="panel show-card" key={title} style={{ opacity: index === 0 ? 1 : 0.55 }}>
+                <article className={`panel show-card${index === showOn ? " is-on" : ""}`} key={title} style={{ opacity: index === showOn ? 1 : 0.55 }}>
                   <h3>{title}</h3>
                   <p>{text}</p>
                 </article>
@@ -456,7 +472,8 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="wrap band" data-s="s08">
+        <section data-s="s08">
+          <div className="wrap band">
           <h2 className="page-title">Персональная карта реакций</h2>
           <div className="cards-2" style={{ marginTop: 24 }}>
             <article className="panel">
@@ -474,6 +491,7 @@ export function HomePage() {
                 <article className="panel" key={title}><h3>{title}</h3></article>
               ))}
             </div>
+          </div>
           </div>
         </section>
 
@@ -588,7 +606,7 @@ export function HomePage() {
           <div className="cards-4" data-allow-x style={{ marginTop: 24 }}>
             {articles.slice(0, 4).map((article, index) => (
               <Link className="panel sym-card" key={article.slug} href={`/blog/${article.slug}`}>
-                <img src={`/figma/symptoms/s${[7, 12, 10, 6][index]}.png`} alt="" style={{ height: 180, width: "100%", objectFit: "cover", borderRadius: 12 }} />
+                <img src={article.cover} alt="" style={{ height: 180, width: "100%", objectFit: "cover", borderRadius: 12 }} />
                 <h3>{article.title}</h3>
               </Link>
             ))}
@@ -602,10 +620,10 @@ export function HomePage() {
           <h2 className="page-title" style={{ color: "white" }}>Частые вопросы</h2>
           <div className="stack" style={{ marginTop: 20 }}>
             {FAQ.map(([q, a], index) => {
-              const on = faq.includes(index);
+              const on = faq === index;
               return (
               <div key={q} className={`acc${on ? " is-open" : ""}`}>
-                <button type="button" aria-expanded={on} onClick={() => setFaq((current) => on ? current.filter((item) => item !== index) : [...current, index])}>
+                <button type="button" aria-expanded={on} onClick={() => setFaq(on ? -1 : index)}>
                   <strong>{q}</strong>
                 </button>
                 <div className="acc-body"><div><p>{a}</p></div></div>

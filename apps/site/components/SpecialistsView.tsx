@@ -236,19 +236,26 @@ export function SpecialistsView() {
 
   const [turning, setTurning] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
+  const reportRef = useRef(0);
+  const turnTimer = useRef<number | null>(null);
 
   function pickReport(index: number) {
-    if (index < 0 || index >= REPORT.length || index === report) return;
+    const next = ((index % REPORT.length) + REPORT.length) % REPORT.length;
+    if (next === reportRef.current) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
-      setReport(index);
+      reportRef.current = next;
+      setReport(next);
       return;
     }
+    if (turnTimer.current) window.clearTimeout(turnTimer.current);
     setTurning(true);
-    window.setTimeout(() => {
-      setReport(index);
+    turnTimer.current = window.setTimeout(() => {
+      reportRef.current = next;
+      setReport(next);
       setTurning(false);
-    }, 340);
+      turnTimer.current = null;
+    }, 700);
   }
 
   useEffect(() => {
@@ -260,11 +267,19 @@ export function SpecialistsView() {
     node?.addEventListener("mouseenter", enter);
     node?.addEventListener("mouseleave", leave);
     const timer = window.setInterval(() => {
-      if (paused) return;
-      setReport((current) => (current + 1) % REPORT.length);
+      if (paused || turnTimer.current) return;
+      const next = (reportRef.current + 1) % REPORT.length;
+      setTurning(true);
+      turnTimer.current = window.setTimeout(() => {
+        reportRef.current = next;
+        setReport(next);
+        setTurning(false);
+        turnTimer.current = null;
+      }, 700);
     }, 6000);
     return () => {
       window.clearInterval(timer);
+      if (turnTimer.current) window.clearTimeout(turnTimer.current);
       node?.removeEventListener("mouseenter", enter);
       node?.removeEventListener("mouseleave", leave);
     };
@@ -552,7 +567,7 @@ export function SpecialistsView() {
               <h2 className="sp-h2">Лаборатории-партнёры</h2>
               <p className="sp-lead">Выберите лабораторию-партнёр FOX и уточните актуальные условия, стоимость и срок выполнения исследования.</p>
             </div>
-            <div className="sp-labs">
+            <div className="sp-labs" data-allow-x>
               {LABS.map(([name, src]) => (
                 <Link key={name} href="/labs">
                   <img src={src} alt={name} />

@@ -71,15 +71,20 @@ export function SiteOverlays() {
   useEffect(() => {
     const marks = () => {
       const y = window.scrollY + 120;
-      document.querySelectorAll<HTMLElement>(".f-nav a, .pr02 nav a").forEach((link) => {
+      const links = [...document.querySelectorAll<HTMLElement>(".f-nav a, .pr02 nav a")];
+      const active: { link: HTMLElement | null; top: number } = { link: null, top: -1 };
+      links.forEach((link) => link.classList.remove("is-on"));
+      links.forEach((link) => {
         const id = link.getAttribute("href")?.replace("#", "");
         const target = id ? document.getElementById(id) : null;
         if (!target) return;
         const top = target.offsetTop;
-        const next = target.parentElement?.nextElementSibling as HTMLElement | null;
-        const bottom = next ? next.offsetTop : top + target.offsetHeight + 400;
-        link.classList.toggle("is-on", y >= top && y < bottom);
+        if (top <= y && top >= active.top) {
+          active.link = link;
+          active.top = top;
+        }
       });
+      active.link?.classList.add("is-on");
       const progress = document.querySelector<HTMLElement>(".pr-progress");
       if (progress) {
         const max = document.documentElement.scrollHeight - window.innerHeight;
@@ -113,10 +118,142 @@ export function SiteOverlays() {
           <button className="btn btn-dark" type="button" onClick={openBook}>Записаться на тест</button>
         </div>
       )}
-      {book && <LeadModal title="Записаться на тест" kind="book" onClose={() => setBook(false)} />}
+      {book && <BookModal onClose={() => setBook(false)} />}
       {contact && <LeadModal title="Связаться" kind="contact" onClose={() => setContact(false)} />}
       {toast && <p className="fox-toast" role="status">{toast}</p>}
     </>
+  );
+}
+
+const BOOK_CITIES = [
+  {
+    name: "Москва",
+    labs: [
+      { id: "citilab", name: "Ситилаб", count: "126 отделений", href: "https://www.citilab.ru" },
+      { id: "gemotest", name: "Гемотест", count: "86 отделений", href: "https://gemotest.ru" },
+      { id: "kdl", name: "KDL", count: "54 отделения", href: "https://kdl.ru" },
+    ],
+  },
+  {
+    name: "Московская область",
+    labs: [
+      { id: "citilab", name: "Ситилаб", count: "40 отделений", href: "https://www.citilab.ru" },
+      { id: "gemotest", name: "Гемотест", count: "22 отделения", href: "https://gemotest.ru" },
+    ],
+  },
+  { name: "Моздок", labs: [] as { id: string; name: string; count: string; href: string }[] },
+];
+
+function BookModal({ onClose }: { onClose: () => void }) {
+  const [step, setStep] = useState<"city" | "labs" | "redirect" | "empty" | "done">("city");
+  const [query, setQuery] = useState("");
+  const [city, setCity] = useState("");
+  const [lab, setLab] = useState<(typeof BOOK_CITIES)[number]["labs"][number] | null>(null);
+  const [mail, setMail] = useState("");
+  const [mailError, setMailError] = useState("");
+  const matches = BOOK_CITIES.filter((item) => item.name.toLowerCase().includes(query.trim().toLowerCase()));
+  const chosen = BOOK_CITIES.find((item) => item.name === city);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  function goCity() {
+    const hit = BOOK_CITIES.find((item) => item.name.toLowerCase() === (city || query).trim().toLowerCase());
+    const name = hit?.name || query.trim();
+    if (name.length < 2) return;
+    setCity(name);
+    if (!hit || hit.labs.length === 0) setStep("empty");
+    else setStep("labs");
+  }
+
+  return (
+    <div className="modal-back" onClick={onClose}>
+      <div className="modal book-sheet" role="dialog" aria-label="Записаться на тест" data-book-step={step} onClick={(event) => event.stopPropagation()}>
+        <button className="lead-x" type="button" onClick={onClose} aria-label="Закрыть">×</button>
+        {step === "city" && (
+          <div className="book-steps">
+            <p className="meta-line">Шаг 1 — город</p>
+            <h2>Где вам удобно сдать тест?</h2>
+            <p className="lead-note">Подскажем сети, где сдать FOX.</p>
+            <label className="field">
+              Город
+              <input value={query} onChange={(event) => { setQuery(event.target.value); setCity(""); }} placeholder="Москва" aria-label="Город для записи" autoComplete="off" />
+            </label>
+            <div className="book-list">
+              {(query.trim() ? matches : BOOK_CITIES).map((item) => (
+                <button key={item.name} type="button" className={city === item.name ? "is-on" : ""} onClick={() => { setCity(item.name); setQuery(item.name); }}>
+                  <strong>{item.name}</strong>
+                  <span>{item.labs.length ? `${item.labs.reduce((sum, labItem) => sum + parseInt(labItem.count, 10), 0)} отделений` : "пока нет партнёров"}</span>
+                </button>
+              ))}
+            </div>
+            <button className="btn btn-dark" type="button" onClick={goCity}>Продолжить</button>
+          </div>
+        )}
+        {step === "labs" && chosen && (
+          <div className="book-steps">
+            <p className="meta-line">Шаг 2 — сеть</p>
+            <h2>Выберите лабораторию в {chosen.name}</h2>
+            <div className="book-list">
+              {chosen.labs.map((item) => (
+                <button key={item.id} type="button" className="book-lab" onClick={() => { setLab(item); setStep("redirect"); }}>
+                  <strong>{item.name}</strong>
+                  <span>{item.count}</span>
+                </button>
+              ))}
+            </div>
+            <button className="btn btn-ghost" type="button" onClick={() => setStep("city")}>Другой город</button>
+          </div>
+        )}
+        {step === "redirect" && lab && (
+          <div className="book-steps book-go">
+            <p className="meta-line">Переход на сайт сети</p>
+            <h2>Открываем сайт {lab.name}…</h2>
+            <p className="lead-note">Страница теста FOX откроется в новой вкладке. На сайте сети можно выбрать отделение, время и оплатить исследование.</p>
+            <a className="btn btn-dark" href={lab.href} target="_blank" rel="noreferrer">Открыть сайт {lab.name}</a>
+            <button className="btn btn-ghost" type="button" onClick={() => setStep("labs")}>Вернуться к списку</button>
+          </div>
+        )}
+        {step === "empty" && (
+          <form className="book-steps" onSubmit={(event) => {
+            event.preventDefault();
+            if (!mail.includes("@")) {
+              setMailError("Укажите почту");
+              return;
+            }
+            setMailError("");
+            setStep("done");
+          }}>
+            <p className="meta-line">В городе нет партнёров</p>
+            <h2>В {city || "этом городе"} пока нет партнёров</h2>
+            <p className="lead-note">Можно сдать тест в соседнем городе или оставить почту — напишем, когда появится сеть.</p>
+            <label className={`field${mailError ? " is-error" : ""}`}>
+              Почта
+              <input type="email" value={mail} onChange={(event) => setMail(event.target.value)} aria-label="Почта, когда появится тест" aria-invalid={!!mailError} />
+              {mailError && <span className="err">{mailError}</span>}
+            </label>
+            <button className="btn btn-dark" type="submit">Сообщить, когда появится</button>
+          </form>
+        )}
+        {step === "done" && (
+          <div className="book-steps book-go">
+            <span className="book-done" aria-hidden>✓</span>
+            <h2>Готово, мы напишем</h2>
+            <p className="lead-note">Когда тест FOX появится в этом городе, пришлём одно письмо на {mail}. Пока можно почитать, как устроен отчёт.</p>
+            <button className="btn btn-dark" type="button" onClick={onClose}>Закрыть</button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

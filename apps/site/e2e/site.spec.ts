@@ -188,6 +188,8 @@ test("report flips pages and stacks U/mL cards", async ({ page }) => {
 test("labs map stays in sync with the branch list", async ({ page }) => {
   await page.goto("/labs");
   await ready(page);
+  const mapToggle = page.getByRole("button", { name: "Карта", exact: true });
+  if (await mapToggle.isVisible()) await mapToggle.click();
   await expect(page.locator(".leaflet-container")).toBeVisible();
   await page.getByRole("button", { name: /Гемотест/ }).click();
   await expect(page.locator("[data-pin='gem']")).toHaveClass(/is-on/);
@@ -259,6 +261,61 @@ test("labs city changes the branch list", async ({ page }) => {
   await expect(list.getByText("ул. Таганская, 3")).toHaveCount(0);
   await page.getByLabel("Город").fill("нет");
   await expect(page.getByText("партнёров пока нет")).toBeVisible();
+});
+
+test("section entrance changes opacity and transform", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "1440");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  await ready(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const target = page.locator('[data-s="s12"] > h2').first();
+  const before = await target.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return { opacity: Number(style.opacity), transform: style.transform };
+  });
+  expect(before.opacity).toBeLessThan(0.2);
+  expect(before.transform).not.toBe("none");
+  await target.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(900);
+  const after = await target.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return { opacity: Number(style.opacity), transform: style.transform };
+  });
+  expect(after.opacity).toBeGreaterThan(0.9);
+  expect(after.transform).not.toBe(before.transform);
+});
+
+test("escape closes the certificate lightbox", async ({ page }) => {
+  await page.goto("/certificates");
+  await ready(page);
+  await page.getByRole("button", { name: "Открыть PDF" }).first().click();
+  await expect(page.getByRole("dialog", { name: "CE-IVDR" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "CE-IVDR" })).toHaveCount(0);
+});
+
+test("booking modal walks the city and lab steps", async ({ page }) => {
+  await page.goto("/");
+  await ready(page);
+  await page.getByRole("button", { name: "Записаться на тест" }).first().click();
+  const dialog = page.getByRole("dialog", { name: "Записаться на тест" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: /Москва/ }).click();
+  await dialog.getByRole("button", { name: "Продолжить" }).click();
+  await expect(dialog.getByRole("heading", { name: /Выберите лабораторию/ })).toBeVisible();
+  await dialog.getByRole("button", { name: /Ситилаб/ }).click();
+  await expect(dialog.getByRole("heading", { name: /Открываем сайт/ })).toBeVisible();
+});
+
+test("course program sheet opens on a phone", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "375");
+  await page.goto("/course/lessons");
+  await ready(page);
+  const box = await page.locator(".ls-title h1").evaluate((el) => ({ sw: el.scrollWidth, cw: el.clientWidth }));
+  expect(box.sw).toBeLessThanOrEqual(box.cw + 1);
+  await page.getByRole("button", { name: "Программа курса" }).click();
+  await expect(page.getByRole("dialog", { name: "Программа" })).toBeVisible();
 });
 
 test("product card follows the search", async ({ page }) => {

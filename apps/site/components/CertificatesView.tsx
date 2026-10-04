@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 
@@ -14,6 +14,14 @@ const DOCS = [
 
 export function CertificatesView() {
   const [open, setOpen] = useState<string | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
   return (
     <>
       <Header />

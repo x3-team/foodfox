@@ -146,11 +146,20 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 
 @media (max-width: 1099px) {
   [data-s="l01"] h1 { font-size: 40px; line-height: 44px; letter-spacing: -1px; }
-  .l01-row, .l-partners, .l-visit, .l05, .l-split { grid-template-columns: 1fr; height: auto; }
-  .l01-photo { height: 320px; }
+  .l01-row, .l-visit, .l05, .l-split { grid-template-columns: 1fr; height: auto; }
+  .l01-photo { height: 280px; }
+  .l-city-top { flex-direction: column; align-items: stretch; }
+  .l-city-name { width: 100%; flex: none; }
+  .l-city-name input { width: 100%; font-size: 22px; line-height: 26px; }
+  .l-change { align-self: flex-start; white-space: nowrap; }
+  .l-stats { grid-template-columns: 1fr; }
+  .l-partners { grid-template-columns: 1fr 1fr; }
   .l-partners a, .l-visit article { height: auto; min-height: 0; }
   .l-split { min-height: 0; }
+  .l-split.is-list .l03-map { display: none; }
+  .l-split.is-map .l-pane { display: none; }
+  .l-split.is-map .l03-map { display: block; height: 480px; }
   .l03-map { height: 360px; }
-  .l-change { white-space: normal; }
-  [data-s="l02"], [data-s="l04"], [data-s="l05"] { padding: 48px 0; }
+  [data-s="l02"], [data-s="l04"], [data-s="l05"] { padding: 40px 0; }
+  .l-visit { grid-template-columns: 1fr 1fr; }
 }
