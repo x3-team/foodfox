@@ -113,7 +113,7 @@ test.describe.serial("partner cabinet", () => {
     await page.getByRole("button", { name: "Войти" }).click();
     await expect(page).toHaveURL(/\/partner\/home\/?$/);
     await expect(page.getByRole("heading", { name: /Мария/ })).toBeVisible();
-    await expect(page.getByText("KOVALEVA-24").first()).toBeVisible();
+    await expect(page.locator("text=KOVALEVA-24 >> visible=true").first()).toBeVisible();
     await expect(page.getByText("19 200 ₽").first()).toBeVisible();
 
     for (const width of WIDTHS) {
@@ -121,6 +121,7 @@ test.describe.serial("partner cabinet", () => {
       for (const route of CABINET_ROUTES) {
         await page.goto(route);
         await expect(page).toHaveURL(new RegExp(`${route}/?$`));
+        await expect(page.locator("text=KOVALEVA-24 >> visible=true").first()).toBeVisible();
         await noHorizontalScroll(page);
       }
     }
