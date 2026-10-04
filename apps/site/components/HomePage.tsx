@@ -82,7 +82,26 @@ const PRODUCTS: Array<{ name: string; group: string; aka?: string[]; compound?: 
   { name: "Халва", group: "Компоненты БАДов", compound: "Составной продукт: в панели смотрите кунжут, мёд и сахар отдельно." },
 ];
 
-const LABS = ["Ситилаб", "Гемотест", "KDL", "ДНКОМ", "Инвитро", "CMD", "Хеликс", "Гемотест", "Юнилаб"];
+const LABS: Array<[string, string]> = [
+  ["Ситилаб", "citilab"],
+  ["Гемотест", "gemotest"],
+  ["KDL", "kdl"],
+  ["ДНКОМ", "dnkom"],
+  ["Инвитро", "invitro"],
+  ["CMD", "cmd"],
+  ["Хеликс", "helix"],
+  ["Хромолаб", "chromolab"],
+  ["Юнимед", "unimed"],
+];
+
+const REPORT_SLIDES = [
+  ["/report/page-zones.svg", "Сводка зон", "Три уровня IgG на одной странице."],
+  ["/report/page-milk.svg", "Точные значения", "Уровень IgG в U/mL по каждому продукту."],
+  ["/report/page-grain.svg", "Группы продуктов", "13 групп вместо сплошного списка."],
+  ["/report/page-zones.svg", "Рекомендации", "Понятная градация: что убрать в первую очередь."],
+];
+
+let antigenAnimated = false;
 
 const SHOWS = [
   ["286 продуктов", "Весь привычный рацион — от базовых продуктов до редких. За один забор крови."],
@@ -201,15 +220,21 @@ export function HomePage() {
   }, []);
 
   useEffect(() => {
+    if (antigenAnimated) {
+      setCount(286);
+      return;
+    }
     const node = countRef.current;
     if (!node) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
+      antigenAnimated = true;
       setCount(286);
       return;
     }
     const io = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
+      if (!entry.isIntersecting || antigenAnimated) return;
+      antigenAnimated = true;
       const start = performance.now();
       const tick = (now: number) => {
         const t = Math.min(1, (now - start) / 900);
@@ -228,11 +253,19 @@ export function HomePage() {
     if (!row || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let stop = false;
     let paused = false;
-    const id = window.setInterval(() => {
-      if (paused || stop) return;
-      row.scrollBy({ left: 360, behavior: "smooth" });
-      if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 8) row.scrollTo({ left: 0, behavior: "smooth" });
-    }, 4000);
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      if (stop) return;
+      const dt = now - last;
+      last = now;
+      if (!paused) {
+        row.scrollLeft += (dt / 1000) * 48;
+        if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 4) row.scrollLeft = 0;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
     const enter = () => {
       paused = true;
     };
@@ -243,7 +276,7 @@ export function HomePage() {
     row.addEventListener("mouseleave", leave);
     return () => {
       stop = true;
-      window.clearInterval(id);
+      cancelAnimationFrame(raf);
       row.removeEventListener("mouseenter", enter);
       row.removeEventListener("mouseleave", leave);
     };
@@ -258,6 +291,10 @@ export function HomePage() {
       return item.name.toLowerCase().includes(q) || (item.aka ?? []).some((aka) => aka.includes(q));
     });
   }, [query, group]);
+
+  useEffect(() => {
+    if (shown.length && !shown.some((item) => item.name === picked.name)) setPicked(shown[0]);
+  }, [shown, picked.name]);
 
   const compound = useMemo(() => PRODUCTS.find((item) => item.compound && (item.name.toLowerCase().includes(query.trim().toLowerCase()) || query.trim().toLowerCase().includes("халв"))), [query]);
 
@@ -276,7 +313,7 @@ export function HomePage() {
           <img className="bg" src="/blog/cover-lactose.png" alt="" />
           <div className="shade" />
           <div className="wrap inner">
-            <h1 className="page-title" style={{ color: "white", maxWidth: "14ch" }}>
+            <h1 className="page-title" style={{ color: "white", maxWidth: "16em" }}>
               Узнайте, какие продукты не подходят именно вам
             </h1>
             <p className="lead" style={{ color: "rgba(248,249,246,.75)" }}>
@@ -298,8 +335,11 @@ export function HomePage() {
           <p className="meta-line">Тест доступен в лабораториях:</p>
           <div className="marquee" data-allow-x>
             <div>
-              {[...LABS, ...LABS].map((name, index) => (
-                <Link key={`${name}-${index}`} href="/labs">{name}</Link>
+              {[...LABS, ...LABS].map(([name, slug], index) => (
+                <Link key={`${slug}-${index}`} href="/labs">
+                  <img className="lab-logo" src={`/labs/${slug}.svg`} alt="" />
+                  {name}
+                </Link>
               ))}
             </div>
           </div>
@@ -352,11 +392,11 @@ export function HomePage() {
           <h2 className="page-title">Отметьте, что беспокоит вас последние 4 недели</h2>
           <p className="lead">Интерактивный список — не диагноз и не оценка риска. Он поможет собрать мысли перед консультацией.</p>
           <div className="checker-grid">
-            <div>
+            <div className="symptom-groups">
               {SYMPTOMS.map((groupItem) => {
                 const n = groupItem.items.filter((item) => checked.includes(item)).length;
                 return (
-                  <div key={groupItem.id}>
+                  <div className="symptom-group" key={groupItem.id}>
                     <h3>{groupItem.title} <span>{n} из {groupItem.items.length}</span></h3>
                     {groupItem.items.map((item) => (
                       <label className={`check-row${checked.includes(item) ? " is-on" : ""}`} key={item}>
@@ -383,20 +423,30 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="wrap band shows" data-s="s07" id="chto-pokazyvaet">
-          <div className="shows-pin">
-            <h2 className="page-title">Что показывает тест</h2>
-            <div className="dots" aria-hidden>
-              {SHOWS.map((_, index) => <i key={index} />)}
-            </div>
+        <section className="shows-band" data-s="s07" id="chto-pokazyvaet">
+          <div className="orbit" aria-hidden>
+            <span className="orbit-ring r1" />
+            <span className="orbit-ring r2" />
+            <i className="orbit-dot" style={{ left: "14%", top: "22%" }} />
+            <i className="orbit-dot" style={{ left: "22%", top: "68%" }} />
+            <i className="orbit-dot" style={{ right: "30%", top: "18%" }} />
+            <i className="orbit-dot" style={{ right: "12%", bottom: "24%" }} />
           </div>
-          <div className="shows-cards">
-            {SHOWS.map(([title, text], index) => (
-              <article className="panel show-card" key={title} style={{ opacity: index === 0 ? 1 : 0.55 }}>
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </article>
-            ))}
+          <div className="wrap shows">
+            <div className="shows-pin">
+              <h2 className="page-title">Что показывает тест</h2>
+              <div className="dots" aria-hidden>
+                {SHOWS.map((_, index) => <i key={index} />)}
+              </div>
+            </div>
+            <div className="shows-cards">
+              {SHOWS.map(([title, text], index) => (
+                <article className="panel show-card" key={title} style={{ opacity: index === 0 ? 1 : 0.55 }}>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -404,9 +454,10 @@ export function HomePage() {
           <h2 className="page-title">Персональная карта реакций</h2>
           <div className="cards-2" style={{ marginTop: 24 }}>
             <article className="panel">
+              <img className="s08-shot" key={reportPage} src={REPORT_SLIDES[reportPage][0]} alt="" />
               <p className="meta-line">Страница {reportPage + 1} из 4</p>
-              <h3>{["Сводка зон", "Точные значения", "Группы продуктов", "Рекомендации"][reportPage]}</h3>
-              <p>{["Три уровня IgG на одной странице.", "Уровень IgG в U/mL по каждому продукту.", "13 групп вместо сплошного списка.", "Понятная градация: что убрать в первую очередь."][reportPage]}</p>
+              <h3>{REPORT_SLIDES[reportPage][1]}</h3>
+              <p>{REPORT_SLIDES[reportPage][2]}</p>
               <div className="flip-nav">
                 <button type="button" className="btn btn-ghost" onClick={() => setReportPage((n) => (n + 3) % 4)}>Назад</button>
                 <button type="button" className="btn btn-dark" onClick={() => setReportPage((n) => (n + 1) % 4)}>Дальше</button>
@@ -425,7 +476,8 @@ export function HomePage() {
           <div className="cards-3 steps" style={{ marginTop: 24 }}>
             {STEPS.map(([step, title, text]) => (
               <article className="step" key={step}>
-                <div className="step-mask">
+                <div className="step-mask" aria-hidden />
+                <div className="step-copy">
                   <p>{step}</p>
                   <h3>{title}</h3>
                   <p>{text}</p>
@@ -450,17 +502,14 @@ export function HomePage() {
             ))}
           </div>
           <div className="checker-grid">
-            <ul className="product-list">
+            <div className="product-picks" data-allow-x>
               {shown.map((item) => (
-                <li key={item.name}>
-                  <button type="button" className={picked.name === item.name ? "is-on" : ""} onClick={() => setPicked(item)}>
-                    <span>{item.name}</span>
-                    <small>{item.group}</small>
-                  </button>
-                </li>
+                <button type="button" className={picked.name === item.name ? "is-on" : ""} key={item.name} onClick={() => setPicked(item)}>
+                  {item.name}
+                </button>
               ))}
-              {shown.length === 0 && <li>В показанной части панели такого запроса нет. Спросите специалиста.</li>}
-            </ul>
+              {shown.length === 0 && <p>В показанной части панели такого запроса нет. Спросите специалиста.</p>}
+            </div>
             <article className="panel">
               <h3>{picked.name}</h3>
               <p>{picked.group}. В панели это отдельная позиция, не полка целиком.</p>
@@ -471,7 +520,7 @@ export function HomePage() {
         </section>
 
         <section className="austria" data-s="s11" ref={austriaRef}>
-          <img className="parallax" src="/blog/featured-bg.png" alt="" />
+          <img className="parallax" src="/blog/cover-lab.png" alt="" />
           <div className="wrap">
             <h2 className="page-title">Тест разработан в Австрии</h2>
             <p className="lead">FOX разработала компания MacroArray Diagnostics (MADx), Вена. С 2016 года.</p>
@@ -492,9 +541,13 @@ export function HomePage() {
           <h2 className="page-title">Сдайте тест в любой из 1500+ лабораторий</h2>
           <p className="lead">Цена устанавливается лабораторией. Уточняйте на официальном сайте.</p>
           <div className="lab-grid">
-            {["Ситилаб", "Гемотест", "KDL", "ДНКОМ", "Инвитро", "CMD", "Хеликс", "Гемотест", "Юнилаб", "Инвитро"].map((name, index) => (
-              <Link className="lab-tile" key={`${name}-${index}`} href="/labs">{name}</Link>
+            {LABS.map(([name, slug]) => (
+              <Link className="lab-tile" key={slug} href="/labs">
+                <img className="lab-logo" src={`/labs/${slug}.svg`} alt="" />
+                {name}
+              </Link>
             ))}
+            <article className="lab-tile">1500+</article>
           </div>
         </section>
 
@@ -503,6 +556,7 @@ export function HomePage() {
           <div className="review-row" data-allow-x ref={reviewsRef}>
             {[...REVIEWS, ...REVIEWS].map(([name, text], index) => (
               <article className="panel" key={`${name}-${index}`}>
+                <img className="review-shot" src={index % 2 === 0 ? "/blog/author-ksenia.png" : "/blog/author-dmitry.png"} alt="" />
                 <h3>{name}</h3>
                 <p>{text}</p>
               </article>
@@ -523,8 +577,11 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="wrap band" data-s="s15">
-          <h2 className="page-title">Частые вопросы</h2>
+        <section className="faq-band" data-s="s15">
+          <img className="bokeh" src="/blog/cover-symptoms.jpg" alt="" />
+          <div className="shade" />
+          <div className="wrap">
+          <h2 className="page-title" style={{ color: "white" }}>Частые вопросы</h2>
           <div className="stack" style={{ marginTop: 20 }}>
             {FAQ.map(([q, a], index) => (
               <button key={q} className="acc" aria-expanded={faq === index} onClick={() => setFaq(faq === index ? -1 : index)}>
@@ -533,11 +590,12 @@ export function HomePage() {
               </button>
             ))}
           </div>
-          <Link href="/faq">Все вопросы →</Link>
-          <div className="panel" style={{ marginTop: 28 }}>
+          <Link href="/faq" style={{ color: "white" }}>Все вопросы →</Link>
+          <div className="panel" style={{ marginTop: 28, background: "rgba(16,20,0,.55)", color: "white" }}>
             <h2>Остались вопросы?</h2>
             <p>Свяжитесь с нами и мы ответим в ближайшее время.</p>
-            <button className="btn btn-dark" type="button" onClick={() => setAsk(true)}>Связаться</button>
+            <button className="btn btn-light" type="button" onClick={() => setAsk(true)}>Связаться</button>
+          </div>
           </div>
         </section>
       </main>

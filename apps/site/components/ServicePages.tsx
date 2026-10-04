@@ -82,14 +82,23 @@ const BRANCHES: Branch[] = [
   { id: "dnk", lab: "ДНКОМ", address: "ул. Воронцовская, 8", metro: "Таганская · 700 м", hours: "Пн–Сб 8:00–18:00", lat: 55.7348, lng: 37.658 },
 ];
 
+const SPB: Branch[] = [
+  { id: "inv-spb", lab: "Инвитро", address: "Невский пр., 114", metro: "Площадь Восстания · 600 м", hours: "Пн–Сб 8:00–20:00", lat: 59.9311, lng: 30.3609 },
+  { id: "gem-spb", lab: "Гемотест", address: "Лиговский пр., 43", metro: "Площадь Восстания · 350 м", hours: "Пн–Вс 8:00–20:00", lat: 59.928, lng: 30.361 },
+  { id: "helix-spb", lab: "Хеликс", address: "ул. Марата, 22", metro: "Маяковская · 200 м", hours: "Пн–Пт 7:30–19:00", lat: 59.926, lng: 30.355 },
+];
+
+const LABS = ["Ситилаб", "Гемотест", "KDL", "ДНКОМ", "Инвитро", "CMD", "Хеликс", "Хромолаб", "Юнимед"];
+
 export function LabsPage() {
   const [city, setCity] = useState("Москва");
   const [selected, setSelected] = useState(BRANCHES[0].id);
   const [step, setStep] = useState(0);
   const [booked, setBooked] = useState(false);
-  const known = ["москва", "санкт-петербург", "спб"];
-  const empty = city.trim().length > 0 && !known.includes(city.trim().toLowerCase());
-  const current = BRANCHES.find((item) => item.id === selected) ?? BRANCHES[0];
+  const key = city.trim().toLowerCase();
+  const points = key === "санкт-петербург" || key === "спб" || key === "петербург" ? SPB : key === "москва" || key === "" ? BRANCHES : [];
+  const empty = city.trim().length > 0 && points.length === 0;
+  const current = points.find((item) => item.id === selected) ?? points[0] ?? BRANCHES[0];
   useEffect(() => {
     if (step === 0) return;
     const onKey = (event: KeyboardEvent) => {
@@ -101,18 +110,26 @@ export function LabsPage() {
   return (
     <>
       <Header />
-      <main className="wrap band" id="zapis">
-        <h1 className="page-title">Где сдать тест FOX</h1>
-        <p className="lead">Цена устанавливается лабораторией. На сайте её нет.</p>
+      <main id="zapis">
+        <section className="dark-hero" style={{ minHeight: 520 }}>
+          <img className="bg" src="/blog/cover-lab.png" alt="" />
+          <div className="shade" />
+          <div className="wrap inner">
+            <h1 className="page-title" style={{ color: "white" }}>Где сдать тест FOX</h1>
+            <p className="lead" style={{ color: "rgba(248,249,246,.8)" }}>Цена устанавливается лабораторией. На сайте её нет. 1500+ точек в сетях-партнёрах.</p>
+          </div>
+        </section>
+        <section className="wrap band">
         <label className="field">Город
           <input value={city} onChange={(event) => setCity(event.target.value)} aria-label="Город" />
         </label>
         <section>
           <h2>Сети-партнёры</h2>
           <div className="lab-grid">
-            {["Ситилаб", "Гемотест", "KDL", "ДНКОМ", "Инвитро", "CMD", "Хеликс", "Гемотест", "Инвитро"].map((name, index) => (
-              <article className="lab-tile" key={`${name}-${index}`}>{name}</article>
+            {LABS.map((name) => (
+              <article className="lab-tile" key={name}>{name}</article>
             ))}
+            <article className="lab-tile">1500+</article>
           </div>
         </section>
         <section>
@@ -124,7 +141,7 @@ export function LabsPage() {
         ) : (
           <div className="cards-2" style={{ marginTop: 20 }}>
             <div className="stack" data-lab-list>
-              {BRANCHES.map((item) => (
+              {points.map((item) => (
                 <button key={item.id} className="panel" aria-pressed={selected === item.id} onClick={() => setSelected(item.id)}>
                   <h3>{item.lab}</h3>
                   <p>{item.address}</p>
@@ -133,10 +150,11 @@ export function LabsPage() {
                 </button>
               ))}
             </div>
-            <LabsMap points={BRANCHES} selected={selected} onSelect={setSelected} />
+            <LabsMap points={points} selected={selected} onSelect={setSelected} />
           </div>
         )}
         <button className="btn btn-dark" style={{ marginTop: 20 }} onClick={() => setStep(1)}>Записаться на тест</button>
+        </section>
         {step > 0 && (
           <div className="modal-back" onClick={() => setStep(0)}>
             <div className="modal" role="dialog" aria-label="Запись" onClick={(event) => event.stopPropagation()}>
@@ -176,17 +194,24 @@ export function ContactsPage() {
   return (
     <>
       <Header />
-      <main className="wrap band">
-        <h1 className="page-title">Контакты</h1>
+      <main>
+        <section className="dark-hero" style={{ minHeight: 420 }}>
+          <img className="bg" src="/blog/cover-story.png" alt="" />
+          <div className="shade" />
+          <div className="wrap inner">
+            <h1 className="page-title" style={{ color: "white" }}>Контакты</h1>
+          </div>
+        </section>
+        <section className="wrap band">
         <div className="cards-3" style={{ marginTop: 20 }}>
           <article className="panel"><h3>Телефон</h3><p><a href="tel:+74953748305">+7 (495) 374-83-05</a></p></article>
           <article className="panel"><h3>Почта</h3><p><a href="mailto:info@inmunotech.ru">info@inmunotech.ru</a></p></article>
           <article className="panel"><h3>Офис</h3><p>Москва, ул. Таганская, 3</p></article>
         </div>
         <p><a href={PARTNER_LOGIN}>Кабинет партнёра</a></p>
-        <div className="chips" style={{ margin: "16px 0" }}>
+        <div className="who-tabs" role="tablist" aria-label="Тип обращения">
           {["Пациент", "Специалист", "Лаборатория"].map((item) => (
-            <button key={item} type="button" className={`chip${who === item ? " is-active" : ""}`} onClick={() => setWho(item)}>{item}</button>
+            <button key={item} type="button" role="tab" aria-selected={who === item} className={who === item ? "is-active" : ""} onClick={() => setWho(item)}>{item}</button>
           ))}
         </div>
         <p className="lead">
@@ -199,7 +224,7 @@ export function ContactsPage() {
             <label className={`field${errors.name ? " is-error" : ""}`}>Имя<input name="name" aria-invalid={!!errors.name} />{errors.name && <span className="err">{errors.name}</span>}</label>
             <label className={`field${errors.email ? " is-error" : ""}`}>Email<input name="email" type="email" aria-invalid={!!errors.email} />{errors.email && <span className="err">{errors.email}</span>}</label>
             <label className="field">Сообщение<textarea name="text" rows={4} /></label>
-            <label className="check-row"><input type="checkbox" name="agree" /><span>Согласен на обработку данных</span></label>
+            <label className={`check-row${errors.agree ? " is-error" : ""}`}><input type="checkbox" name="agree" /><span>Согласен на обработку данных</span></label>
             {errors.agree && <p className="err" role="alert">{errors.agree}</p>}
             {ok && <p role="status">Сообщение отправлено. Ответим в ближайший рабочий день.</p>}
             <button className="btn btn-dark" style={{ marginTop: 12 }} type="submit">Отправить</button>
@@ -208,6 +233,7 @@ export function ContactsPage() {
             <p style={{ padding: 24 }}>Москва, ул. Таганская, 3</p>
           </div>
         </div>
+        </section>
       </main>
       <Footer />
     </>
@@ -227,9 +253,16 @@ export function ReviewsPage() {
   return (
     <>
       <Header />
-      <main className="wrap band">
-        <h1 className="page-title">Отзывы</h1>
-        <p className="lead">4,9 · истории людей и специалистов. Все отзывы проходят модерацию.</p>
+      <main>
+        <section className="dark-hero" style={{ minHeight: 480 }}>
+          <img className="bg" src="/blog/author-alyona.png" alt="" />
+          <div className="shade" />
+          <div className="wrap inner">
+            <h1 className="page-title" style={{ color: "white" }}>Отзывы</h1>
+            <p className="lead" style={{ color: "rgba(248,249,246,.8)" }}>4,9 · истории людей и специалистов. Все отзывы проходят модерацию.</p>
+          </div>
+        </section>
+        <section className="wrap band">
         <div className="chips" style={{ marginTop: 16 }}>
           {["Все", "Пациенты", "Специалисты"].map((item) => (
             <button key={item} className={`chip${filter === item ? " is-active" : ""}`} type="button" onClick={() => { setFilter(item); setPage(1); }}>{item}</button>
@@ -256,6 +289,7 @@ export function ReviewsPage() {
           {sent && <p role="status">Отзыв отправлен на модерацию.</p>}
           <button className="btn btn-dark" type="submit">Отправить</button>
         </form>
+        </section>
       </main>
       <Footer />
     </>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { ROLE_FILTERS, articles, authors } from "@/lib/content";
+import { ROLE_FILTERS, articles, authors, materialsWord } from "@/lib/content";
 
 export function AuthorsBrowser() {
   const [role, setRole] = useState("all");
@@ -64,7 +64,7 @@ export function AuthorsBrowser() {
                 <h2>{author.name}</h2>
                 <p>{author.role}</p>
                 <div className="tags" style={{ marginTop: 12 }}>
-                  <span className="tag">{articles.filter((item) => item.author === author.slug).length} материалов</span>
+                  <span className="tag">{articles.filter((item) => item.author === author.slug).length} {materialsWord(articles.filter((item) => item.author === author.slug).length)}</span>
                   {author.lecturer && <span className="tag">{author.lecturer}</span>}
                 </div>
               </div>

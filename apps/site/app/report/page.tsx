@@ -1,6 +1,7 @@
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ReportStage } from "@/components/ReportStage";
+import { ReportToc } from "@/components/ReportToc";
 
 export const metadata = { title: "Отчёт FOX: как читать" };
 
@@ -19,15 +20,17 @@ export default function Page() {
     <>
       <Header />
       <main>
-        <section className="wrap band" data-s="r01">
-          <p className="crumbs">Главная / Отчёт FOX: как читать</p>
-          <h1 className="page-title">Как читать отчёт FOX</h1>
-          <p className="lead">Отчёт — не список запретов, а карта реактивности. Зоны, значения в U/mL, anti-CCD и то, что делать после результата.</p>
+        <section className="dark-hero" data-s="r01" style={{ minHeight: 560 }}>
+          <img className="bg" src="/report/page-zones.svg" alt="" />
+          <div className="shade" />
+          <div className="wrap inner">
+            <p className="crumbs">Главная / Отчёт FOX: как читать</p>
+            <h1 className="page-title" style={{ color: "white" }}>Как читать отчёт FOX</h1>
+            <p className="lead" style={{ color: "rgba(248,249,246,.8)" }}>Отчёт — не список запретов, а карта реактивности. Зоны, значения в U/mL, anti-CCD и то, что делать после результата.</p>
+          </div>
         </section>
         <div className="wrap article-grid">
-          <nav className="toc" aria-label="Содержание">
-            {TOC.map(([id, title]) => <a key={id} href={`#${id}`}>{title}</a>)}
-          </nav>
+          <ReportToc items={TOC as Array<[string, string]>} />
           <div>
             <section id="zones">
               <h2>Три зоны реактивности</h2>
@@ -76,7 +79,7 @@ export default function Page() {
           </div>
           <aside className="aside-card report-aside">
             <h2>Пример отчёта</h2>
-            <p>Страницы молочной группы и три зоны. Текст на тёмной подложке.</p>
+            <p>Страницы молочной группы, злаков и сводка трёх зон. Значения читаются на тёмной карточке.</p>
           </aside>
         </div>
       </main>

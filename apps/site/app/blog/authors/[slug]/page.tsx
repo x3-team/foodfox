@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { AuthorPosts } from "@/components/AuthorPosts";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { authors, articles, authorBySlug } from "@/lib/content";
+import { authors, articles, authorBySlug, materialsWord } from "@/lib/content";
 
 export function generateStaticParams() {
   return authors.map((author) => ({ slug: author.slug }));
@@ -44,7 +44,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
             <h1>{author.name}</h1>
             <p className="role">{author.role}</p>
             <div className="tags" style={{ marginTop: 20 }}>
-              <span className="tag">{posts.length} материалов</span>
+              <span className="tag">{posts.length} {materialsWord(posts.length)}</span>
               {author.lecturer && <span className="tag tag-lime">{author.lecturer}</span>}
               <span className="tag">Эксперт FOX</span>
             </div>

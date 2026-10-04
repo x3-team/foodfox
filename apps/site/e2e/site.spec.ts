@@ -51,6 +51,28 @@ test("unknown route is the designed 404", async ({ page }) => {
   await page.goto("/net-takoy-stranicy");
   await ready(page);
   await expect(page.getByRole("heading", { name: "Страница не найдена" })).toBeVisible();
+  await expect(page).toHaveTitle(/Страница не найдена/);
+});
+
+test("dark hero sits under the header", async ({ page }) => {
+  for (const path of ["/", "/specialists", "/course"]) {
+    await page.goto(path);
+    await ready(page);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const overlap = await page.evaluate(() => {
+      const header = document.querySelector(".site-header");
+      const hero = document.querySelector(".dark-hero");
+      if (!header || !hero) return false;
+      const h = header.getBoundingClientRect();
+      const e = hero.getBoundingClientRect();
+      return e.top <= 2 && e.bottom > h.bottom && header.classList.contains("on-dark");
+    });
+    expect(overlap, path).toBe(true);
+  }
+  await page.goto("/course/lessons");
+  await ready(page);
+  const lessonsDark = await page.locator(".site-header").evaluate((node) => node.classList.contains("on-dark"));
+  expect(lessonsDark).toBe(false);
 });
 
 test("header navigation reaches blog and labs", async ({ page }) => {
@@ -136,7 +158,7 @@ test("partner login and demo OTP endpoint", async ({ request }, testInfo) => {
   });
   const body = await otp.json();
   expect([200, 429], JSON.stringify(body)).toContain(otp.status());
-  if (otp.status() === 200) expect(body.demoCode).toBe("1111");
+  if (typeof body.demoCode === "string") expect(body.demoCode).toBe("1111");
 });
 
 test("home has no serious accessibility violations", async ({ page }) => {
@@ -214,6 +236,36 @@ test("desktop home contains every design section", async ({ page }, testInfo) =>
   await expect(page.getByText("Сымитировать ошибку сети")).toHaveCount(0);
   const height = await page.locator("main").evaluate((node) => node.scrollHeight);
   expect(height).toBeGreaterThan(12000);
+});
+
+test("article stays within the phone viewport", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "375");
+  await page.goto("/blog/skrytaya-neperenosimost-laktozy-i-glyutena");
+  await ready(page);
+  const width = await page.evaluate(() => ({
+    sw: document.documentElement.scrollWidth,
+    cw: document.documentElement.clientWidth,
+  }));
+  expect(width.sw).toBeLessThanOrEqual(width.cw + 1);
+});
+
+test("labs city changes the branch list", async ({ page }) => {
+  await page.goto("/labs");
+  await ready(page);
+  const list = page.locator("[data-lab-list]");
+  await expect(list.getByText("ул. Таганская, 3")).toBeVisible();
+  await page.getByLabel("Город").fill("Санкт-Петербург");
+  await expect(list.getByText("Невский пр., 114")).toBeVisible();
+  await expect(list.getByText("ул. Таганская, 3")).toHaveCount(0);
+  await page.getByLabel("Город").fill("нет");
+  await expect(page.getByText("партнёров пока нет")).toBeVisible();
+});
+
+test("product card follows the search", async ({ page }) => {
+  await page.goto("/#products");
+  await ready(page);
+  await page.getByLabel("Поиск продукта").fill("халва");
+  await expect(page.getByRole("heading", { name: "Халва" })).toBeVisible();
 });
 
 test("authors stack in one column on a phone", async ({ page }, testInfo) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 
@@ -141,6 +141,24 @@ export function CoursePage() {
 
 export function LessonsPage() {
   const [current, setCurrent] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    setProgress(0);
+    setPlaying(false);
+    if (videoRef.current) videoRef.current.currentTime = 0;
+  }, [current]);
+  useEffect(() => {
+    const node = videoRef.current;
+    if (!node) return;
+    const onTime = () => {
+      if (!node.duration) return;
+      setProgress(node.currentTime / node.duration);
+    };
+    node.addEventListener("timeupdate", onTime);
+    return () => node.removeEventListener("timeupdate", onTime);
+  }, [current]);
   return (
     <>
       <Header />
@@ -156,10 +174,41 @@ export function LessonsPage() {
           </div>
           <div>
             <div className="player" aria-label="Плеер урока">
-              <div>
-                <p>Урок {current + 1} из 6 · прогресс {current}/6</p>
-                <strong>{LESSONS[current]}</strong>
-                <p>Субтитры включены. Продолжение с последнего места.</p>
+              <video
+                ref={videoRef}
+                className="player-poster"
+                poster="/blog/cover-lab.png"
+                src="/course/lesson-loop.mp4"
+                playsInline
+                onPlay={() => setPlaying(true)}
+                onPause={() => setPlaying(false)}
+              />
+              <div className="player-bar">
+                <button
+                  type="button"
+                  className="btn btn-light"
+                  onClick={() => {
+                    const node = videoRef.current;
+                    if (!node) return;
+                    if (node.paused) void node.play();
+                    else node.pause();
+                  }}
+                >
+                  {playing ? "Пауза" : "Смотреть"}
+                </button>
+                <input
+                  aria-label="Прогресс урока"
+                  type="range"
+                  min={0}
+                  max={1000}
+                  value={Math.round(progress * 1000)}
+                  onChange={(event) => {
+                    const node = videoRef.current;
+                    if (!node?.duration) return;
+                    node.currentTime = (Number(event.target.value) / 1000) * node.duration;
+                  }}
+                />
+                <span>Урок {current + 1}/6</span>
               </div>
             </div>
             <h2>Конспект</h2>

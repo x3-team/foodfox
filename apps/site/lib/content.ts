@@ -163,7 +163,6 @@ export const authors: Author[] = [
     experience: [{ years: "2015 — н. в.", text: "Гастроэнтеролог" }],
     education: ["Кандидат медицинских наук."],
     topics: ["ЖКТ", "Метод"],
-    listed: false,
   },
   {
     slug: "redaktsiya-fox",
@@ -177,7 +176,6 @@ export const authors: Author[] = [
     experience: [{ years: "2024 — н. в.", text: "Редакция блога FOX Food Xplorer" }],
     education: ["Каждый материал проходит проверку научного редактора перед публикацией."],
     topics: ["Истории", "Отчёт"],
-    listed: false,
   },
 ];
 
@@ -335,7 +333,7 @@ const visible: Article[] = [
     category: "specialists",
     tags: ["IgG"],
     minutes: 12,
-    author: "svetlana-kanevskaya",
+    author: "dmitry-ellinskiy",
     cover: "/blog/cover-lab.png",
   },
 ];

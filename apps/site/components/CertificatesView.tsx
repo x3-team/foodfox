@@ -20,9 +20,16 @@ export function CertificatesView() {
   return (
     <>
       <Header />
-      <main className="wrap band">
-        <h1 className="page-title">Сертификаты и документы</h1>
-        <p className="lead">FOX Food Xplorer разработан австрийской компанией MacroArray Diagnostics (MADx). Документы можно открыть или скачать. Формулировки — о производстве и качестве.</p>
+      <main>
+        <section className="dark-hero" style={{ minHeight: 480 }}>
+          <img className="bg" src="/blog/cover-lab.png" alt="" />
+          <div className="shade" />
+          <div className="wrap inner">
+            <h1 className="page-title" style={{ color: "white" }}>Сертификаты и документы</h1>
+            <p className="lead" style={{ color: "rgba(248,249,246,.8)" }}>FOX Food Xplorer разработан австрийской компанией MacroArray Diagnostics (MADx). Документы можно открыть или скачать. Формулировки — о производстве и качестве.</p>
+          </div>
+        </section>
+        <section className="wrap band">
         <div className="flip-nav" style={{ marginTop: 16 }}>
           <button type="button" className="page-btn arrow" aria-label="Предыдущий документ" onClick={() => scroll(-1)}>
             <img src="/icons/arrow-left.svg" alt="" />
@@ -59,6 +66,7 @@ export function CertificatesView() {
             </div>
           </div>
         )}
+        </section>
       </main>
       <Footer />
     </>

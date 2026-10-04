@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ReportStage } from "@/components/ReportStage";
@@ -38,9 +38,35 @@ const PROTOCOL = [
   ["Итоговый рацион", "далее", "То, что не воспроизводит симптомы, возвращают. Триггеры ограничивают индивидуально."],
 ];
 
+const LAB_NAMES: Array<[string, string]> = [
+  ["Ситилаб", "citilab"],
+  ["Гемотест", "gemotest"],
+  ["KDL", "kdl"],
+  ["ДНКОМ", "dnkom"],
+  ["Инвитро", "invitro"],
+  ["CMD", "cmd"],
+  ["Хеликс", "helix"],
+  ["Хромолаб", "chromolab"],
+  ["Юнимед", "unimed"],
+];
+
 export function SpecialistsView() {
   const [area, setArea] = useState(0);
+  const panelRef = useRef<HTMLDivElement>(null);
   const current = AREAS[area];
+  function pickArea(index: number) {
+    const el = panelRef.current;
+    const prev = el?.getBoundingClientRect().height ?? 0;
+    setArea(index);
+    requestAnimationFrame(() => {
+      if (!el) return;
+      const next = el.scrollHeight;
+      el.style.height = `${prev}px`;
+      requestAnimationFrame(() => {
+        el.style.height = `${next}px`;
+      });
+    });
+  }
   return (
     <>
       <Header />
@@ -50,7 +76,7 @@ export function SpecialistsView() {
           <div className="shade" />
           <div className="wrap inner">
             <p className="meta-line">Для врачей и нутрициологов · Платформа MADx · Австрия</p>
-            <h1 className="page-title" style={{ color: "white" }}>Пищеспецифические IgG к 286 антигенам — в одном подробном отчёте</h1>
+            <h1 className="page-title" style={{ color: "white", maxWidth: "18em" }}>Пищеспецифические IgG к 286 антигенам — в одном подробном отчёте</h1>
             <p className="lead" style={{ color: "rgba(248,249,246,.78)" }}>
               FOX исследует иммунную реактивность к 286 продуктам. Один образец крови даёт основу для персональной тактики питания и не заменяет приём.
             </p>
@@ -66,10 +92,10 @@ export function SpecialistsView() {
           <p className="lead">Выберите специализацию — покажем сценарий и то, что даёт отчёт в практике.</p>
           <div className="chips" data-allow-x style={{ marginTop: 16 }}>
             {AREAS.map((item, index) => (
-              <button key={item[0]} className={`chip${area === index ? " is-active" : ""}`} type="button" onClick={() => setArea(index)}>{item[0]}</button>
+              <button key={item[0]} className={`chip${area === index ? " is-active" : ""}`} type="button" onClick={() => pickArea(index)}>{item[0]}</button>
             ))}
           </div>
-          <div className="area-panel" key={current[3]}>
+          <div className="area-panel" ref={panelRef}>
             <h3>{current[1]}</h3>
             <p>{current[2]}</p>
             <p><Link href="/report">Опорный протокол</Link> · <Link href="/course">Урок курса</Link> · <Link href="/blog">Кейсы в блоге</Link></p>
@@ -89,6 +115,9 @@ export function SpecialistsView() {
           <h2 className="page-title">От назначения до готового отчёта — обычно 7–10 дней</h2>
           <p className="lead">Точный срок устанавливает лаборатория.</p>
           <ol className="route">
+            <svg className="route-line" viewBox="0 0 2 100" preserveAspectRatio="none" aria-hidden>
+              <line x1="1" y1="0" x2="1" y2="100" pathLength="1" />
+            </svg>
             {ROUTE.map(([title, text], index) => (
               <li key={title}><span>{index + 1}</span><div><h3>{title}</h3><p>{text}</p></div></li>
             ))}
@@ -129,8 +158,8 @@ export function SpecialistsView() {
         <section className="wrap band" data-s="p08">
           <h2 className="page-title">Лаборатории-партнёры</h2>
           <div className="lab-grid">
-            {["Ситилаб", "Гемотест", "KDL", "ДНКОМ", "Инвитро", "CMD", "Хеликс", "Гемотест", "Инвитро"].map((name, index) => (
-              <a className="lab-tile" key={`${name}-${index}`} href="/labs">Направить пациента · {name}</a>
+            {LAB_NAMES.map(([name, slug]) => (
+              <a className="lab-tile" key={slug} href="/labs"><img className="lab-logo" src={`/labs/${slug}.svg`} alt="" />{name}</a>
             ))}
           </div>
           <Link className="btn btn-ghost" href="/contacts">Стать лабораторией-партнёром</Link>

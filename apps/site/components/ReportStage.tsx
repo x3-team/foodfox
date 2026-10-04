@@ -3,14 +3,14 @@
 import { useState } from "react";
 
 const PAGES = [
-  { title: "Молочная группа", text: "Казеин, молоко и сыворотка — отдельные строки." },
-  { title: "Злаки", text: "Пшеница, рожь и овёс не складываются в один «глютен»." },
-  { title: "Сводка зон", text: "Низкий, средний и повышенный — с названием, не только цветом." },
+  { title: "Молочная группа", text: "Казеин, молоко и сыворотка — отдельные строки.", src: "/report/page-milk.svg" },
+  { title: "Злаки", text: "Пшеница, рожь и овёс не складываются в один «глютен».", src: "/report/page-grain.svg" },
+  { title: "Сводка зон", text: "Низкий, средний и повышенный — с названием, не только цветом.", src: "/report/page-zones.svg" },
 ];
 
 const UML = [
-  { cls: "low", title: "Низкий", value: "< 10 U/mL", text: "Можно оставить в рационе." },
-  { cls: "mid", title: "Средний", value: "10–20 U/mL", text: "Ротация и наблюдение." },
+  { cls: "low", title: "Низкий", value: "< 7,5 U/mL", text: "Можно оставить в рационе." },
+  { cls: "mid", title: "Средний", value: "7,5–20 U/mL", text: "Ротация и наблюдение." },
   { cls: "high", title: "Повышенный", value: "> 20 U/mL", text: "Временное исключение, не запрет навсегда." },
 ];
 
@@ -31,7 +31,7 @@ export function ReportStage() {
     <div>
       <div className="flip" data-report-flip>
         <div className={`flip-page${turn ? " is-turning" : ""}`}>
-          <img src="/blog/cover-report.png" alt="" />
+          <img className="report-shot" key={PAGES[page].src} src={PAGES[page].src} alt="" />
           <div>
             <p>Страница {page + 1} из {PAGES.length}</p>
             <h3>{PAGES[page].title}</h3>

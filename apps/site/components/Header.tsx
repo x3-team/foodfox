@@ -36,7 +36,8 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState(false);
   const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
-  const onDark = !scrolled && (path === "/" || path.startsWith("/specialists") || path.startsWith("/course"));
+  const darkHero = path === "/" || path.startsWith("/specialists") || path === "/course" || path === "/labs" || path === "/faq" || path === "/reviews" || path === "/contacts" || path === "/report" || path === "/certificates";
+  const onDark = !scrolled && darkHero;
   const items = variant === "b2b" ? B2B : variant === "course" ? COURSE : NAV;
 
   useEffect(() => {
@@ -89,7 +90,7 @@ export function Header() {
           </Link>
         )}
         <a className="partner-dot" href={PARTNER_LOGIN} aria-label="Кабинет партнёра">
-          <img src="/icons/arrow-up-right.svg" alt="" />
+          <img src={onDark ? "/icons/user-light.svg" : "/icons/user.svg"} alt="" />
         </a>
         {variant === "site" ? (
           <Link className="btn btn-dark" href="/labs#zapis">Записаться на тест</Link>
