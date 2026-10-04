@@ -94,12 +94,14 @@ export function FaqPage() {
         <section data-s="f02">
           <div className="wrap f02">
             <aside className="f-nav">
+              <div className="f-nav-links">
               <p>Разделы</p>
               {FAQ_NAV.map(([id, title, count]) => (
                 <a key={id} href={`#${id}`} className={nav === id ? "is-on" : ""} onClick={() => setNav(id)}>
                   <span>{title}</span><b>{count}</b>
                 </a>
               ))}
+              </div>
               <article className="f-spec">
                 <h2>Вы врач или нутрициолог?</h2>
                 <p>Материалы для приёма и курс по отчёту — в отдельном разделе.</p>

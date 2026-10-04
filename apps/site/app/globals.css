@@ -1293,7 +1293,7 @@ mark.hit { background: var(--lime); color: inherit; padding: 0 2px; }
   .deck-card { min-height: 280px; top: 72px; }
   .footer { padding-top: 40px; gap: 28px; }
   .sp-portrait { height: 240px; }
-  .f-nav { position: sticky; top: 64px; z-index: 5; background: rgba(248, 249, 246, 0.94); }
+  .f-nav-links { position: sticky; top: 64px; z-index: 5; background: rgba(248, 249, 246, 0.94); }
   .blog-grid:not(.is-more) > :nth-child(n+4) { display: none; }
   .blog-more { display: inline-flex; margin-top: 16px; }
   .report-page .toc {
