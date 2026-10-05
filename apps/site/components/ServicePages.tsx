@@ -111,6 +111,7 @@ export function FaqPage() {
   const [open, setOpen] = useState<string[]>([FAQ_GROUPS[0].items[0][0]]);
   const [q, setQ] = useState("");
   const [nav, setNav] = useState("method");
+  const [showAll, setShowAll] = useState(false);
   const query = q.trim().toLowerCase();
   const groups = FAQ_GROUPS.map((group) => ({
     ...group,
@@ -160,7 +161,7 @@ export function FaqPage() {
               <div className="f-nav-links" data-allow-x>
               <p>Разделы</p>
               {FAQ_NAV.map(([id, title, count]) => (
-                <a key={id} href={`#${id}`} className={nav === id ? "is-on" : ""} onClick={() => setNav(id)}>
+                <a key={id} href={`#${id}`} className={nav === id ? "is-on" : ""} onClick={(event) => { event.preventDefault(); setNav(id); setShowAll(true); window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 0); }}>
                   <span>{title}</span><b>{count}</b>
                 </a>
               ))}
@@ -173,9 +174,9 @@ export function FaqPage() {
             </aside>
             <div className="f-groups">
               {groups.length === 0 && <p role="status">Ничего не нашлось. Сбросьте запрос или напишите нам.</p>}
-              {groups.map((group) => (
-                <section key={group.id} id={group.id} className={!query && group.id !== nav ? "is-parked" : ""}>
-                  <header><h2>{group.title}</h2><span>{group.count}</span></header>
+              {groups.map((group, index) => (
+                <section key={group.id} id={group.id} className={`${!query && group.id !== nav ? "is-parked" : ""} ${!showAll && !query && index > 1 ? "is-rest" : ""}`}>
+                  <header><h2><span className="f-num">{String(index + 1).padStart(2, "0")}</span>{group.title}</h2><span>{group.count}</span></header>
                   {group.items.map(([question, answer]) => {
                     const expanded = open.includes(question);
                     const mark = (text: string) => {
@@ -206,6 +207,9 @@ export function FaqPage() {
                   })}
                 </section>
               ))}
+              {!query && !showAll && (
+                <button type="button" className="btn btn-ghost f-more" onClick={() => setShowAll(true)}>Показать все 39 вопросов</button>
+              )}
             </div>
           </div>
         </section>
@@ -554,30 +558,41 @@ export function ContactsPage() {
         <section data-s="k02">
           <div className="wrap k-cards">
             <article>
-              <h2>Телефон</h2>
-              <a href="tel:+74953748305">+7 (495) 374-83-05</a>
-              <p>Пн–Пт 10:00–19:00 (МСК)</p>
-              <p role="status">{officeOpen ? "Сейчас офис на связи" : "Сейчас офис закрыт — напишите, ответим утром"}</p>
-              <button type="button" className="k-go" onClick={() => { void navigator.clipboard?.writeText("+7 (495) 374-83-05"); window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Номер скопирован" })); }}>Скопировать</button>
-              <a className="k-go" href="tel:+74953748305">Позвонить</a>
+              <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-phone.svg)" }} aria-hidden />
+              <div>
+                <h2>Телефон</h2>
+                <button type="button" className="k-strong" onClick={() => { void navigator.clipboard?.writeText("+7 (495) 374-83-05"); window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Номер скопирован" })); }}>+7 (495) 374-83-05</button>
+                <p>Пн–Пт 10:00–19:00 (МСК)</p>
+                <p role="status">{officeOpen ? "Сейчас офис на связи" : "Сейчас офис закрыт — напишите, ответим утром"}</p>
+                <a className="k-go" href="tel:+74953748305">Позвонить <img src="/icons/arrow-right.svg" alt="" /></a>
+              </div>
             </article>
             <article>
-              <h2>E-mail</h2>
-              <a href="mailto:info@inmunotech.ru">info@inmunotech.ru</a>
-              <p>Для общих вопросов и партнёрства</p>
-              <a className="k-go" href="mailto:info@inmunotech.ru">Написать</a>
+              <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-mail.svg)" }} aria-hidden />
+              <div>
+                <h2>E-mail</h2>
+                <a className="k-value" href="mailto:info@inmunotech.ru">info@inmunotech.ru</a>
+                <p>Для общих вопросов и партнёрства</p>
+                <a className="k-go" href="mailto:info@inmunotech.ru">Написать <img src="/icons/arrow-right.svg" alt="" /></a>
+              </div>
             </article>
             <article>
-              <h2>Адрес</h2>
-              <p className="k-strong">ул. Таганская, 3</p>
-              <p>Офис, не лаборатория</p>
-              <a className="k-go" href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer">Маршрут</a>
+              <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-pin.svg)" }} aria-hidden />
+              <div>
+                <h2>Адрес</h2>
+                <p className="k-strong">ул. Таганская, 3</p>
+                <p>Офис, не лаборатория</p>
+                <a className="k-go" href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer">Маршрут <img src="/icons/arrow-right.svg" alt="" /></a>
+              </div>
             </article>
             <article>
-              <h2>Telegram</h2>
-              <p className="k-strong">@foxfoodxplorer</p>
-              <p>Новости и материалы</p>
-              <a className="k-go" href="https://t.me/foxfoodxplorer" target="_blank" rel="noreferrer">Открыть канал</a>
+              <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-tg.svg)" }} aria-hidden />
+              <div>
+                <h2>Telegram</h2>
+                <p className="k-strong">@foxfoodxplorer</p>
+                <p>Новости и материалы</p>
+                <a className="k-go" href="https://t.me/foxfoodxplorer" target="_blank" rel="noreferrer">Открыть канал <img src="/icons/arrow-right.svg" alt="" /></a>
+              </div>
             </article>
           </div>
         </section>

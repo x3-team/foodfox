@@ -278,7 +278,7 @@ export function ArticleView({ article }: { article: Article }) {
               Все материалы <img src="/icons/arrow-right.svg" alt="" />
             </Link>
           </div>
-          <div className="grid">
+          <div className="grid" data-allow-x>
             {related.map((item, index) => (
               <ArticleCard key={item.slug} article={item} index={index} />
             ))}

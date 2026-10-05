@@ -419,13 +419,13 @@ export function BlogFeed() {
           ) : (
             <div className={`grid blog-grid${leaving ? " is-leaving" : ""}${expanded ? " is-more" : ""}`}>
               {pageItems.map((article: Article, index) => (
-                <span key={article.slug} className={leaving ? "is-out-wrap" : undefined} style={{ display: "contents" }}>
+                <span key={article.slug} className={leaving ? "is-out-wrap" : undefined}>
                   <ArticleCard article={article} index={index} />
                 </span>
               ))}
             </div>
           )}
-          {pageItems.length > 3 && !expanded && (
+          {pageItems.length > 4 && !expanded && (
             <button className="btn btn-ghost blog-more" type="button" onClick={() => setExpanded(true)}>Показать ещё</button>
           )}
           {pageItems.length > 0 && (

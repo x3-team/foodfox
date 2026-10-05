@@ -68,7 +68,6 @@ export default function Page() {
               <section id="s1">
                 <h2>1. Общие положения</h2>
                 <p>{LAW}</p>
-                <p>{LAW}</p>
               </section>
               <section id="s2">
                 <h2>2. Какие данные мы собираем</h2>

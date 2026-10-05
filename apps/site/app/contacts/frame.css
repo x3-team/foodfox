@@ -28,15 +28,18 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 [data-s="k02"] { background: #f8f9f6; padding: 72px 0; }
 .k-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .k-cards article { background: #fff; border: 1px solid rgba(11, 12, 8, 0.1); border-radius: 20px; padding: 24px; min-height: 218px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.k-cards h2 { font-weight: 500; font-size: 16px; display: flex; align-items: center; gap: 10px; }
-.k-cards h2::before { content: ""; width: 36px; height: 36px; border-radius: 99px; background: #e7f551 url("/figma/icons/spec-1.svg") center / 18px no-repeat; flex: 0 0 36px; }
-.k-cards article:nth-child(2) h2::before { background-image: url("/figma/icons/spec-2.svg"); }
-.k-cards article:nth-child(3) h2::before { background-image: url("/figma/icons/spec-3.svg"); }
-.k-cards article:nth-child(4) h2::before { background-image: url("/figma/icons/spec-4.svg"); }
+.k-cards article { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: start; }
+.k-cards h2 { font-weight: 500; font-size: 16px; margin: 0; }
+.k-cards h2::before { content: none; }
+.k-ico { width: 44px; height: 44px; border-radius: 99px; background: #e7f551 center / 18px no-repeat; }
+.k-go { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; line-height: 18px; font-weight: 400; }
+.k-go img { width: 14px; height: 14px; }
+.k-strong { background: none; border: 0; padding: 0; text-align: left; color: #0b0c08; font: inherit; cursor: pointer; }
 .k-cards a { overflow-wrap: anywhere; }
 .k-strong { font-size: 20px; line-height: 24px; }
 .k-cards p { color: rgba(11, 12, 8, 0.65); font-size: 14px; }
-.k-go { margin-top: auto; font-weight: 500; }
+.k-cards article > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.k-go { margin-top: 4px; font-weight: 400; }
 
 [data-s="k03"] { background: #fff; padding: 48px 0 72px; }
 .k03 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: stretch; }
@@ -69,6 +72,9 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   .k-map { min-height: 280px; height: 280px; }
 }
 @media (max-width: 480px) {
+  [data-s="k02"] { padding: 64px 0 68px; }
   .k-cards, .k-routes { grid-template-columns: 1fr; }
-  .k-cards article, .k-routes article { padding: 16px; gap: 6px; }
+  .k-cards { gap: 8px; }
+  .k-cards article, .k-routes article { padding: 14px; gap: 8px; }
+  .k-cards article > div { gap: 2px; }
 }
