@@ -220,13 +220,14 @@
   .ls-open { display: none; }
   .ls-tabs { order: 2; }
   .ls-progress, .ls-tabs, .ls-sticky { display: flex; }
-  .ls-progress { order: 0; align-items: center; gap: 8px; font-size: 13px; }
+  .ls-progress { order: 6; align-items: center; gap: 8px; font-size: 13px; }
   .ls-progress i { flex: 1; height: 4px; background: rgba(11,12,8,.12); border-radius: 99px; overflow: hidden; }
   .ls-progress b { display: block; height: 100%; background: #101400; }
+  .ls-player { order: 0; }
   .ls-title { order: 1; }
-  .ls-player { order: 3; }
+  .ls-actions { order: 2; width: 100%; }
+  .ls-tabs { order: 3; }
   .ls-about { order: 4; }
-  .ls-actions { order: 5; width: 100%; }
   [data-s="k02"] h1, [data-s="k02"] h2, [data-s="k02"] p { overflow-wrap: break-word; max-width: 100%; }
   .kf-final, [data-s="k07"] { background: #f6fbc8; color: #0b0c08; }
   .kf-final > img, [data-s="k07"] .kf-includes-shade { display: none; }
@@ -244,6 +245,6 @@
   .kf-lesson-body > div { width: 100%; }
   .kf-hero-copy h1 { font-size: 40px; line-height: 44px; }
   .kf-final h2 { font-size: 24px; line-height: 28px; }
-  body:has(.ls-layout) .footer { display: none; }
   .kf-acc button { padding: 20px 16px; gap: 12px; min-height: 0; }
 }
+body:has(.ls-layout) .footer { display: none; }

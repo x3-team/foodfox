@@ -55,7 +55,7 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .f-spec h2 { font-size: 20px; line-height: 24px; font-weight: 500; }
 .f-spec a { display: inline-flex; gap: 8px; align-items: center; }
 .f-spec img { width: 16px; height: 16px; }
-.f-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; min-width: 0; }
+.f-groups { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; min-width: 0; }
 .f-groups > section { background: #fff; border-radius: 20px; padding: 20px 24px; border: 1px solid rgba(11, 12, 8, 0.08); }
 .f-groups header { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 0; }
 .f-groups h2 { font-weight: 300; font-size: 24px; line-height: 28px; }
@@ -67,7 +67,7 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .f-answer { padding: 0; display: grid; grid-template-rows: 0fr; }
 .f-answer > div { display: flex; flex-direction: column; gap: 12px; padding: 0; }
 article.is-open .f-answer > div { padding-bottom: 12px; }
-.f-groups > section { scroll-margin-top: 140px; }
+.f-groups > section { scroll-margin-top: calc(var(--header) + 16px); }
 .f-answer p { font-size: 16px; line-height: 22px; max-width: 760px; }
 .f-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .f-actions button { height: 32px; border-radius: 999px; border: 1px solid rgba(11, 12, 8, 0.15); background: #fff; padding: 0 12px; }

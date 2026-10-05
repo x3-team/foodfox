@@ -638,6 +638,10 @@ export function HomePage() {
                 <span className="btn btn-ghost">Сдать в {name}</span>
               </Link>
             ))}
+            <Link className="lab-tile lab-tile-all" href="/labs">
+              <strong>1500+</strong>
+              <span>Все на карте</span>
+            </Link>
           </div>
         </section>
 

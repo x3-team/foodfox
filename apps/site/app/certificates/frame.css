@@ -21,6 +21,7 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
 .c-facts li { display: flex; flex-direction: column; gap: 4px; min-width: 140px; }
 .c-facts span { color: rgba(11, 12, 8, 0.65); font-size: 14px; }
 .c-stack { position: relative; height: 460px; }
+.c-stack img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .c-stack span, .c-stack em {
   position: absolute; display: block; background: #fff; border-radius: 8px;
   box-shadow: 0 24px 64px -8px rgba(11, 12, 8, 0.16), 0 4px 12px rgba(11, 12, 8, 0.08);
@@ -39,8 +40,8 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
 .c02 header p { color: rgba(11, 12, 8, 0.65); max-width: 720px; }
 .c-docs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .cert-card { min-width: 0; height: 520px; background: #fff; border: 1px solid rgba(11, 12, 8, 0.1); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-.c-paper { height: 220px; border-radius: 0; background: #d7d8cd; display: grid; place-items: center; color: transparent; position: relative; overflow: hidden; }
-.c-paper::before { content: ""; width: 140px; height: 186px; background: #fff; border-radius: 4px; box-shadow: 0 8px 24px rgba(11, 12, 8, 0.12); transform: rotate(-6deg); }
+.c-paper { height: 220px; border-radius: 12px; background: #d7d8cd center / cover no-repeat; display: grid; place-items: center; color: transparent; position: relative; overflow: hidden; }
+.c-paper::before { content: none; }
 .cert-card h3 { font-weight: 500; font-size: 22px; line-height: 26px; }
 .cert-card p, .cert-card span { color: rgba(11, 12, 8, 0.65); font-size: 14px; line-height: 18px; }
 .cert-card button { margin-top: auto; height: 44px; border-radius: 999px; border: 0; background: #0b0c08; color: #f8f9f6; }

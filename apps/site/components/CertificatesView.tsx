@@ -41,10 +41,8 @@ export function CertificatesView() {
                 </ul>
               </div>
               <div className="c-stack" aria-hidden="true">
+                <img src="/figma/certificates/stack.png" alt="" />
                 <p>4 документа · PDF</p>
-                <span />
-                <span />
-                <em>CE · IVDR 2017/746</em>
               </div>
             </div>
           </div>
@@ -57,9 +55,9 @@ export function CertificatesView() {
               <p>Формулировки — о производстве и качестве. Нажмите, чтобы открыть PDF в просмотрщике.</p>
             </header>
             <div className="c-docs" data-certs data-allow-x>
-              {DOCS.map(([code, kind, text, size]) => (
+              {DOCS.map(([code, kind, text, size], index) => (
                 <article className="cert-card" key={code}>
-                  <div className="c-paper" aria-hidden="true"><b>{code}</b></div>
+                  <div className="c-paper" aria-hidden="true" style={{ backgroundImage: `url(/figma/certificates/doc-${index + 1}.png)` }}><b>{code}</b></div>
                   <p>{kind}</p>
                   <h3>{code}</h3>
                   <p>{text}</p>

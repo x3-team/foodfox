@@ -461,7 +461,7 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
         });
         return stuck.length === 0;
       }, undefined, { timeout: 4000 }).catch(() => undefined);
-      const problems = await page.evaluate(() => {
+      const problems = await page.evaluate(async () => {
         const parse = (value: string) => {
           const match = value.match(/rgba?\(([^)]+)\)/);
           if (!match) return null;
@@ -482,23 +482,79 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
           const lo = Math.min(l1, l2);
           return (hi + 0.05) / (lo + 0.05);
         };
-        const bgOf = (el: HTMLElement) => {
-          const layers: { rgb: number[]; a: number }[] = [];
-          let node: HTMLElement | null = el;
+        const cache = new Map<string, HTMLImageElement | null>();
+        const loadImage = (src: string) => new Promise<HTMLImageElement | null>((resolve) => {
+          if (cache.has(src)) { resolve(cache.get(src) ?? null); return; }
+          const img = new Image();
+          img.onload = () => { cache.set(src, img); resolve(img); };
+          img.onerror = () => { cache.set(src, null); resolve(null); };
+          img.src = src;
+        });
+        const sample = (img: HTMLImageElement, box: DOMRect, x: number, y: number) => {
+          const scale = Math.max(box.width / img.naturalWidth, box.height / img.naturalHeight);
+          const dw = img.naturalWidth * scale;
+          const dh = img.naturalHeight * scale;
+          const sx = (x - (box.left + (box.width - dw) / 2)) / scale;
+          const sy = (y - (box.top + (box.height - dh) / 2)) / scale;
+          if (sx < 0 || sy < 0 || sx >= img.naturalWidth || sy >= img.naturalHeight) return null;
+          const canvas = document.createElement("canvas");
+          canvas.width = 1;
+          canvas.height = 1;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          if (!ctx) return null;
+          try {
+            ctx.drawImage(img, sx, sy, 1, 1, 0, 0, 1, 1);
+            const data = ctx.getImageData(0, 0, 1, 1).data;
+            return { rgb: [data[0], data[1], data[2]], a: data[3] / 255 };
+          } catch {
+            return null;
+          }
+        };
+        const mix = (base: number[], layer: { rgb: number[]; a: number }) => base.map((channel, index) => layer.rgb[index] * layer.a + channel * (1 - layer.a));
+        const bgOf = async (el: HTMLElement) => {
+          const rect = el.getBoundingClientRect();
+          const x = rect.left + Math.max(6, Math.min(rect.width - 6, rect.width / 2));
+          const y = rect.top + Math.max(4, Math.min(rect.height - 4, 12));
+          const host = el.closest(".article-cta, .aside-card, .cta, .featured, .footer, .faq-band, [data-s]");
+          const photo = host?.querySelector("img.bokeh, img.bg, img.parallax");
+          if (photo && photo.naturalWidth) {
+            const pixel = sample(photo, photo.getBoundingClientRect(), x, y);
+            let acc = pixel && pixel.a > 0.2 ? pixel.rgb : [16, 20, 0];
+            const shade = host?.querySelector(".shade");
+            const shadeColor = shade ? parse(getComputedStyle(shade).backgroundColor) : null;
+            if (shadeColor && shadeColor.a > 0.05) acc = mix(acc, shadeColor);
+            return acc;
+          }
+          let node = el;
           while (node) {
             const style = getComputedStyle(node);
+            const url = (style.backgroundImage || "").match(/url\(["']?([^"')]+)/);
+            if (url) {
+              const loaded = await loadImage(url[1]);
+              let acc = [16, 20, 0];
+              if (loaded) {
+                const pixel = sample(loaded, node.getBoundingClientRect(), x, y);
+                if (pixel && pixel.a > 0.2) acc = pixel.rgb;
+              }
+              const before = parse(getComputedStyle(node, "::before").backgroundColor);
+              if (before && before.a > 0.05) acc = mix(acc, before);
+              return acc;
+            }
+            if ((style.backgroundImage || "").includes("gradient")) {
+              const stops = [...style.backgroundImage.matchAll(/rgba?\([^)]+\)/g)].map((item) => parse(item[0])).filter(Boolean);
+              if (stops.length) {
+                return stops.reduce((sum, stop) => sum.map((channel, index) => channel + stop.rgb[index]), [0, 0, 0]).map((channel) => channel / stops.length);
+              }
+            }
             const color = parse(style.backgroundColor);
-            if (style.backgroundImage && style.backgroundImage !== "none") return null;
-            if (color && color.a > 0.02) layers.push(color);
-            if (color && color.a >= 0.92) break;
+            if (color && color.a >= 0.92) return color.rgb;
+            if (color && color.a > 0.04) {
+              const parent = await bgOf(node.parentElement || document.body);
+              return mix(parent, color);
+            }
             node = node.parentElement;
           }
-          let acc = [248, 249, 246];
-          for (let i = layers.length - 1; i >= 0; i -= 1) {
-            const layer = layers[i];
-            acc = acc.map((channel, index) => layer.rgb[index] * layer.a + channel * (1 - layer.a));
-          }
-          return acc;
+          return [248, 249, 246];
         };
         const issues: string[] = [];
         document.querySelectorAll<HTMLElement>("[data-s]").forEach((section) => {
@@ -512,24 +568,24 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
             if (opacity < 0.15) issues.push(`opacity ${section.getAttribute("data-s")} ${opacity.toFixed(2)}`);
           });
         });
-        const nodes = document.querySelectorAll<HTMLElement>("h1,h2,h3,p,a,button,li,span");
-        nodes.forEach((el) => {
-          if (issues.length > 8) return;
+        const nodes = [...document.querySelectorAll("h1,h2,h3,p,a,button,li,span")];
+        for (const el of nodes) {
+          if (issues.length > 8) break;
           const style = getComputedStyle(el);
-          if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) < 0.9) return;
-          if (el.closest("[data-allow-x], .marquee, .leaflet-container, .cookie, .m04, .site-header, .mobile-menu, .fox-toast")) return;
-          if (el.closest("button[disabled], .btn[disabled]")) return;
+          if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) < 0.9) continue;
+          if (el.closest("[data-allow-x], .marquee, .leaflet-container, .cookie, .m04, .site-header, .mobile-menu, .fox-toast")) continue;
+          if (el.closest("button[disabled], .btn[disabled]")) continue;
           const text = (el.innerText || "").trim();
-          if (text.length < 2 || el.children.length > 2) return;
+          if (text.length < 2 || el.children.length > 2) continue;
           const box = el.getBoundingClientRect();
-          if (box.width < 8 || box.height < 8) return;
+          if (box.width < 8 || box.height < 8) continue;
           const fill = parse(style.color);
-          const bg = bgOf(el);
-          if (!fill || fill.a < 0.5 || !bg) return;
+          const bg = await bgOf(el);
+          if (!fill || fill.a < 0.5 || !bg) continue;
           const ink = fill.rgb.map((channel, index) => channel * fill.a + bg[index] * (1 - fill.a));
           const ratio = contrast(ink, bg);
           if (ratio < 3) issues.push(`${ratio.toFixed(2)} «${text.slice(0, 42)}»`);
-        });
+        }
         return issues.slice(0, 8);
       });
       expect(problems, `${path} @ ${width}`).toEqual([]);
@@ -541,6 +597,20 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
   await page.getByRole("button", { name: "Карта", exact: true }).click();
   const mapHeight = await page.locator(".leaflet-container").evaluate((el) => el.getBoundingClientRect().height);
   expect(mapHeight).toBeGreaterThan(200);
+  for (const width of [1100, 768, 390, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/blog/skrytaya-neperenosimost-laktozy-i-glyutena");
+    await ready(page);
+    const hit = await page.evaluate(() => {
+      const h1 = document.querySelector("main h1");
+      if (!h1) return false;
+      h1.scrollIntoView({ block: "center" });
+      const rect = h1.getBoundingClientRect();
+      const node = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return node === h1 || h1.contains(node);
+    });
+    expect(hit, `article h1 @ ${width}`).toBe(true);
+  }
 });
 
 test("authors stack in one column on a phone", async ({ page }, testInfo) => {

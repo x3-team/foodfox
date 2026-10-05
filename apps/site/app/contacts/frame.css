@@ -69,7 +69,6 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   .k-map { min-height: 280px; height: 280px; }
 }
 @media (max-width: 480px) {
-  .k-cards, .k-routes { grid-template-columns: 1fr 1fr; }
-  .k-cards article, .k-routes article { padding: 12px; gap: 6px; }
-  .k-cards h2, .k-routes h3 { font-size: 14px; line-height: 18px; }
+  .k-cards, .k-routes { grid-template-columns: 1fr; }
+  .k-cards article, .k-routes article { padding: 16px; gap: 6px; }
 }

@@ -93,33 +93,59 @@ export function SiteOverlays() {
   }, [path]);
 
   useEffect(() => {
+    let lockHref = "";
+    let lockUntil = 0;
+    const onClick = (event: MouseEvent) => {
+      const link = (event.target as HTMLElement | null)?.closest?.(".f-nav a, .pr02 nav a");
+      if (!link) return;
+      lockHref = link.getAttribute("href") || "";
+      lockUntil = performance.now() + 900;
+    };
     const marks = () => {
       const header = document.querySelector(".site-header")?.getBoundingClientRect().height ?? 72;
-      const y = window.scrollY + header + 16;
-      const links = [...document.querySelectorAll<HTMLElement>(".f-nav a, .pr02 nav a")];
-      const active: { link: HTMLElement | null; top: number } = { link: null, top: -1 };
-      links.forEach((link) => link.classList.remove("is-on"));
-      links.forEach((link) => {
+      const y = window.scrollY + header + 28;
+      const links = [...document.querySelectorAll<HTMLAnchorElement>(".f-nav a, .pr02 nav a")];
+      const visible = links.filter((link) => {
         const id = link.getAttribute("href")?.replace("#", "");
         const target = id ? document.getElementById(id) : null;
-        if (!target || target.classList.contains("is-parked") || target.offsetHeight < 8) return;
-        const top = target.getBoundingClientRect().top + window.scrollY;
-        if (top <= y && top >= active.top) {
-          active.link = link;
-          active.top = top;
-        }
+        return !!target && target.offsetHeight >= 8;
       });
-      active.link?.classList.add("is-on");
+      links.forEach((link) => link.classList.remove("is-on"));
       const progress = document.querySelector<HTMLElement>(".pr-progress");
       if (progress) {
         const max = document.documentElement.scrollHeight - window.innerHeight;
         const pct = max <= 0 ? 0 : Math.min(100, Math.round((window.scrollY / max) * 100));
         progress.textContent = `Прочитано ${pct}%`;
       }
+      if (lockHref && performance.now() < lockUntil) {
+        links.find((link) => link.getAttribute("href") === lockHref)?.classList.add("is-on");
+        return;
+      }
+      const atEnd = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 8;
+      if (atEnd && visible.length) {
+        visible[visible.length - 1].classList.add("is-on");
+        return;
+      }
+      const active: { link: HTMLAnchorElement | null; top: number } = { link: null, top: -1 };
+      visible.forEach((link) => {
+        const id = link.getAttribute("href")?.replace("#", "") ?? "";
+        const target = document.getElementById(id);
+        if (!target) return;
+        const top = target.getBoundingClientRect().top + window.scrollY;
+        if (top <= y && top >= active.top) {
+          active.link = link;
+          active.top = top;
+        }
+      });
+      (active.link ?? visible[0])?.classList.add("is-on");
     };
     marks();
+    document.addEventListener("click", onClick);
     window.addEventListener("scroll", marks, { passive: true });
-    return () => window.removeEventListener("scroll", marks);
+    return () => {
+      document.removeEventListener("click", onClick);
+      window.removeEventListener("scroll", marks);
+    };
   }, [path]);
 
   useEffect(() => {

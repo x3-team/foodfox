@@ -107,7 +107,8 @@ export function ArticleView({ article }: { article: Article }) {
   const [progress, setProgress] = useState(0);
   const [toast, setToast] = useState(false);
   const [copied, setCopied] = useState(false);
-  const related = articles.filter((item) => item.slug !== article.slug && item.category === article.category).slice(0, 3);
+  const sameCategory = articles.filter((item) => item.slug !== article.slug && item.category === article.category);
+  const related = [...sameCategory, ...articles.filter((item) => item.slug !== article.slug && item.category !== article.category)].slice(0, 4);
   const more = articles.filter((item) => item.author === author.slug && item.slug !== article.slug).slice(0, 3);
 
   useEffect(() => {
