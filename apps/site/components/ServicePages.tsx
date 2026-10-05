@@ -563,7 +563,10 @@ export function ContactsPage() {
                 <p className="fx-lead">Вопросы о сайте, документах и партнёрстве. Дистанционную медицинскую интерпретацию отчёта не делаем.</p>
                 <p className="k-note">Офис — не лаборатория: анализы здесь не берут. Где сдать тест — на странице <Link href="/labs">/labs</Link>.</p>
               </div>
-              <img src="/figma/contacts/hero.jpg" alt="" />
+              <div className="k-hero-photo">
+                <img src="/figma/contacts/hero.jpg" alt="" />
+                <p className="k-hero-card">Сейчас открыто · Москва, ул. Таганская, 3</p>
+              </div>
             </div>
           </div>
         </section>
@@ -623,8 +626,10 @@ export function ContactsPage() {
                 {who === "Специалист" && "Курс, протокол и пример отчёта — в разделе для специалистов."}
                 {who === "Лаборатория" && <>Подключение сети: обучение персонала и материалы для пациентов. <a href={PARTNER_LOGIN}>Кабинет партнёра</a></>}
               </p>
-              <label className={`field${errors.name ? " is-error" : ""}`}>Имя<input name="name" aria-invalid={!!errors.name} />{errors.name && <span className="err">{errors.name}</span>}</label>
-              <label className={`field${errors.email ? " is-error" : ""}`}>E-mail или телефон<input name="email" aria-invalid={!!errors.email} />{errors.email && <span className="err">{errors.email}</span>}</label>
+              <div className="k-fields">
+                <label className={`field${errors.name ? " is-error" : ""}`}>Имя<input name="name" aria-invalid={!!errors.name} />{errors.name && <span className="err">{errors.name}</span>}</label>
+                <label className={`field${errors.email ? " is-error" : ""}`}>E-mail или телефон<input name="email" aria-invalid={!!errors.email} />{errors.email && <span className="err">{errors.email}</span>}</label>
+              </div>
               <label className="field">Сообщение<textarea name="text" rows={4} maxLength={500} /></label>
               <label className={`check-row${errors.agree ? " is-error" : ""}`}><input type="checkbox" name="agree" /><span>Согласен на обработку персональных данных по 152-ФЗ и с политикой конфиденциальности</span></label>
               {errors.agree && <p className="err" role="alert">{errors.agree}</p>}
@@ -638,6 +643,7 @@ export function ContactsPage() {
               <div>
                 <h2>Офис Инмунотех</h2>
                 <p>Москва, ул. Таганская, 3 · 5 минут от м. Марксистская</p>
+                <a className="btn btn-dark k-route" href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer">Построить маршрут</a>
               </div>
             </aside>
           </div>
@@ -648,21 +654,25 @@ export function ContactsPage() {
             <h2>Быстрее, чем письмо: готовые маршруты</h2>
             <div className="k-routes">
               <article>
+                <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-pin.svg)" }} aria-hidden />
                 <h3>Пациентам</h3>
                 <p>Где сдать тест, как читать отчёт, как найти специалиста</p>
                 <Link href="/faq">В FAQ <img src="/icons/arrow-right.svg" alt="" /></Link>
               </article>
               <article>
+                <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-phone.svg)" }} aria-hidden />
                 <h3>Специалистам</h3>
                 <p>Материалы для приёма, курс, вопросы по интерпретации</p>
                 <Link href="/specialists">Специалистам <img src="/icons/arrow-right.svg" alt="" /></Link>
               </article>
               <article>
+                <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-mail.svg)" }} aria-hidden />
                 <h3>Лабораториям и клиникам</h3>
                 <p>Стать партнёром FOX, подключить тест в свою сеть</p>
                 <a href="#k-form">Оставить заявку <img src="/icons/arrow-right.svg" alt="" /></a>
               </article>
               <article>
+                <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-tg.svg)" }} aria-hidden />
                 <h3>Прессе и партнёрам</h3>
                 <p>Комментарии экспертов, материалы, логотипы</p>
                 <a href="mailto:info@inmunotech.ru">Написать <img src="/icons/arrow-right.svg" alt="" /></a>
@@ -711,13 +721,17 @@ export function ReviewsPage() {
               <div>
                 <h1>Отзывы</h1>
                 <p className="fx-lead">Истории людей, которые сдали тест FOX, и специалистов, которые разбирают отчёт на приёме. Публикуем после модерации.</p>
-                <p className="v-rate"><b>4,9</b><span className="v-stars" aria-hidden="true">★★★★★</span><span className="v-rate-note">312 отзывов</span></p>
-                <p className="v-meta">312 отзывов после модерации</p>
-                <p className="v-avatars">
-                  <span><img src="/figma/reviews/r1.png" alt="" /><img src="/figma/reviews/r2.png" alt="" /><img src="/figma/reviews/r3.png" alt="" /><img src="/figma/reviews/r4.png" alt="" /></span>
-                  +48
-                </p>
-                <p>из них 48 — от врачей и нутрициологов</p>
+                <div className="v-rate-card">
+                  <p className="v-rate"><b>4,9</b><span className="v-stars" aria-hidden="true">★★★★★</span></p>
+                  <div className="v-rate-side">
+                    <p className="v-rate-note">312 отзывов</p>
+                    <p className="v-avatars">
+                      <span><img src="/figma/reviews/r1.png" alt="" /><img src="/figma/reviews/r2.png" alt="" /><img src="/figma/reviews/r3.png" alt="" /><img src="/figma/reviews/r4.png" alt="" /></span>
+                      +48
+                    </p>
+                    <p className="v-rate-foot">из них 48 — от врачей и нутрициологов</p>
+                  </div>
+                </div>
               </div>
               <div className="v-collage">
                 <img src="/figma/reviews/hero-a.jpg" alt="" />

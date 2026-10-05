@@ -375,14 +375,9 @@
   .rf-deck { height: auto; display: grid; gap: 8px; }
   .report-page .uml-card strong { font-size: 32px; line-height: 36px; }
   .report-page .uml-card { min-height: 0; padding: 16px; }
-  .rf-actions { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
-  .rf-actions article { min-width: 0; }
-  .rf-actions p {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+  .rf-actions { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .rf-actions article { min-width: 0; max-width: 100%; }
+  .rf-actions h3, .rf-actions p { overflow-wrap: break-word; max-width: 100%; }
   .rf-sheet, .rf-sheet img { height: 420px; }
   .rf-viewer { min-height: 0; }
   .rf-ccd img { width: 100%; height: 220px; min-height: 0; }

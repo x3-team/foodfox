@@ -17,12 +17,17 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
 [data-s="c01"] { padding: 36px 0 48px; }
 .c01-row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 40px; align-items: center; }
 [data-s="c01"] h1 { font-weight: 300; font-size: 64px; line-height: 68px; letter-spacing: -2px; max-width: 720px; margin: 12px 0; }
-.c-facts { list-style: none; display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0 0; padding: 0; }
+.c-facts { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 20px 0 0; padding: 0; }
 .c-facts li {
-  display: flex; flex-direction: column; gap: 4px; min-width: 160px;
+  display: flex; flex-direction: column; gap: 4px; min-width: 0;
   background: #fff; border-radius: 16px; padding: 16px 18px;
   box-shadow: 0 8px 24px rgba(11, 12, 8, 0.08);
 }
+.c-facts li::before {
+  content: ""; width: 28px; height: 28px; border-radius: 99px; margin-bottom: 8px;
+  background: #e7f551 url("/figma/icons/check.svg") center / 14px no-repeat;
+}
+.c-facts b { font-weight: 300; font-size: 20px; line-height: 24px; }
 .c-facts span { color: rgba(11, 12, 8, 0.65); font-size: 14px; }
 .c-stack { position: relative; height: 460px; }
 .c-stack img { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -88,5 +93,6 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
   .c-stack em { left: 16%; top: 28px; width: 48%; height: 180px; }
   .c03 img, .c04 img { height: 180px; }
   [data-s="c01"], [data-s="c03"], [data-s="c04"] { padding-top: 32px; padding-bottom: 32px; }
+  .c-facts { grid-template-columns: 1fr; }
   .c-facts li, .c04 li { padding: 12px 14px; }
 }

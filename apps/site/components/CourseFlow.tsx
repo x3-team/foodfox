@@ -613,13 +613,15 @@ export function LessonsPage() {
               >
                 Отметить как просмотренный
               </button>
-              <a className="ls-quiet" href="/report">Конспект урока PDF</a>
-              {current < 5 ? (
-                <button type="button" className="text-link" onClick={() => setCurrent(current + 1)}>
-                  Следующий урок
-                  <img src="/icons/arrow-right.svg" alt="" width={16} height={16} />
-                </button>
-              ) : null}
+              <div className="ls-pair">
+                <a className="ls-quiet" href="/report">Конспект PDF</a>
+                {current < 5 ? (
+                  <button type="button" className="text-link" onClick={() => setCurrent(current + 1)}>
+                    Следующий
+                    <img src="/icons/arrow-right.svg" alt="" width={16} height={16} />
+                  </button>
+                ) : null}
+              </div>
             </div>
             <div className="ls-tabs" role="tablist" aria-label="Материалы урока">
               <button type="button" className={tab === "about" ? "is-on" : ""} onClick={() => setTab("about")}>Об уроке</button>
@@ -642,8 +644,8 @@ export function LessonsPage() {
             </div>
           </div>
           <button type="button" className="ls-sticky" aria-label="Программа курса" onClick={() => setSheet(true)}>
-            <span>Программа</span>
-            <strong>урок {current + 1} из 6</strong>
+            <span>Программа · урок {current + 1} из 6</span>
+            <strong>Далее: {current < 5 ? LESSONS[current + 1].short : "сертификат"}</strong>
           </button>
         </section>
       </main>
