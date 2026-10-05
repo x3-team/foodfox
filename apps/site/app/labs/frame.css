@@ -105,7 +105,7 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .l03 { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
 .l-more, .l-caption, .l-empty { font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
 .l-empty { font-size: 20px; line-height: 24px; color: #0b0c08; }
-.l-split { display: grid; grid-template-columns: minmax(0, 460px) minmax(0, 1fr); min-height: 760px; height: 760px; border-radius: 24px; overflow: hidden; border: 1px solid rgba(11, 12, 8, 0.1); background: #fff; }
+.l-split { display: grid; grid-template-columns: minmax(0, 460px) minmax(0, 1fr); min-height: 0; height: auto; border-radius: 24px; overflow: hidden; border: 1px solid rgba(11, 12, 8, 0.1); background: #fff; }
 .l-pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 16px; gap: 12px; }
 .l-pane .search { width: 100%; }
 .l-found { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: rgba(11, 12, 8, 0.65); }

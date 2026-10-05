@@ -109,9 +109,9 @@ const SHOWS = [
 ];
 
 const STEPS = [
-  ["ШАГ 1", "Выбрать лабораторию", "Тест есть в 9 федеральных сетях. Цену устанавливает лаборатория."],
-  ["ШАГ 2", "Сдать кровь", "Без подготовки, без диеты накануне, голодать не нужно."],
-  ["ШАГ 3", "Получить отчёт", "Через 7–10 дней. Сам анализ занимает около трёх часов."],
+  ["ШАГ 1", "Выбрать лабораторию", "Тест есть в 9 федеральных сетях. Цену устанавливает лаборатория", "/figma/symptoms/s1.png"],
+  ["ШАГ 2", "Сдать один анализ", "Без подготовки, без диеты накануне, голодать не нужно", "/figma/symptoms/s4.png"],
+  ["ШАГ 3", "Получить результаты", "Через 7–10 дней. Сам анализ занимает около трёх часов", "/figma/symptoms/s5.png"],
 ];
 
 const FAQ = [
@@ -338,7 +338,7 @@ export function HomePage() {
             <p className="lead" style={{ color: "rgba(248,249,246,.75)" }}>
               Персональный тест питания против болей в животе, вздутия, акне и других симптомов.
             </p>
-            <div style={{ display: "flex", gap: 8, marginTop: 20, flexWrap: "wrap" }}>
+            <div className="hero-actions">
               <button className="btn btn-light" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
               <Link className="btn btn-ghost" href="/report" style={{ color: "white", borderColor: "rgba(248,249,246,.35)" }}>Пример отчёта</Link>
             </div>
@@ -376,7 +376,7 @@ export function HomePage() {
 
         <section className="wrap deck" ref={deckRef} data-deck data-s="s04">
           {DECK.map(([title, text], index) => (
-            <article className="deck-card" key={title} style={{ top: 96 + index * 12 }}>
+            <article className="deck-card" key={title} style={{ top: 80 + index * 12 }}>
               <h2>{title}</h2>
               <p>{text}</p>
             </article>
@@ -385,22 +385,25 @@ export function HomePage() {
 
         <section className="symptom-band" data-s="s05">
           <div className="wrap">
-            <h2 className="page-title" style={{ color: "white" }}>Симптомы, при которых стоит обсудить тест со специалистом</h2>
-            <div className="cards-4" data-allow-x style={{ marginTop: 28 }}>
+            <h2 className="page-title">Симптомы, при которых стоит обсудить тест со специалистом</h2>
+            <div className="cards-4 sym-row" data-allow-x>
               {[
-                ["Кожные реакции", "Высыпания, экзема, дерматиты и зуд", "/figma/symptoms/s7.png"],
-                ["Проблемы с ЖКТ", "Вздутие, газообразование, диарея, тошнота, спазмы", "/figma/symptoms/s12.png"],
-                ["Самочувствие", "Усталость, слабость, тяжесть после еды, сон", "/figma/symptoms/s10.png"],
-                ["Вес и отёчность", "Трудно снизить вес, стойкая отёчность, отёки лица", "/figma/symptoms/s6.png"],
-              ].map(([title, text, src]) => (
-                <article className="sym-card" key={title}>
-                  <img src={src} alt="" />
-                  <h3>{title}</h3>
-                  <p>{text}</p>
+                ["Кожные реакции", ["Высыпания", "Экзема", "Дерматиты и зуд"], "/figma/symptoms/skin.png"],
+                ["Проблемы с ЖКТ", ["Вздутие живота", "Газообразование", "Диарея", "Тошнота", "Спазмы или боли"], "/figma/symptoms/gut.png"],
+                ["Самочувствие", ["Хроническая усталость", "Общая слабость", "Тяжесть после еды", "Нарушения сна", "Упадок сил", "Перепады настроения"], "/figma/symptoms/well.png"],
+                ["Вес и отёчность", ["Трудно снизить вес", "Стойкая отёчность", "Отёки лица по утрам", "Колебания веса"], "/figma/symptoms/s6.png"],
+              ].map(([title, chips, src]) => (
+                <article className="sym-card" key={title as string}>
+                  <img src={src as string} alt="" />
+                  <div className="sym-shade" />
+                  <h3>{title as string}</h3>
+                  <div className="sym-chips">
+                    {(chips as string[]).map((chip) => <span key={chip}>{chip}</span>)}
+                  </div>
                 </article>
               ))}
             </div>
-            <p className="lead" style={{ color: "rgba(248,249,246,.7)" }}>
+            <p className="sym-note">
               Тест также обсуждают со специалистом при аутоиммунных заболеваниях — как часть комплексной работы с питанием. Тест не ставит диагноз.
             </p>
           </div>
@@ -446,26 +449,33 @@ export function HomePage() {
         </section>
 
         <section className="shows-band" data-s="s07" id="chto-pokazyvaet" ref={showsRef}>
-          <div className="orbit" aria-hidden>
-            <span className="orbit-ring r1" />
-            <span className="orbit-ring r2" />
-            <i className="orbit-dot" style={{ left: "14%", top: "22%" }} />
-            <i className="orbit-dot" style={{ left: "22%", top: "68%" }} />
-            <i className="orbit-dot" style={{ right: "30%", top: "18%" }} />
-            <i className="orbit-dot" style={{ right: "12%", bottom: "24%" }} />
-          </div>
           <div className="wrap shows">
             <div className="shows-pin">
-              <h2 className="page-title">Что показывает тест</h2>
-              <div className="antigen-dots" aria-hidden>
-                {Array.from({ length: 286 }, (_, index) => <i key={index} className={index < 48 ? "is-hot" : ""} style={{ animationDelay: `${index * 8}ms` }} />)}
-              </div>
+              <h2 className="page-title">Что показывает<br />тест FOX</h2>
+              <p className="lead">Определяет уровень иммуноглобулина G к каждому продукту из панели: чем выше значение, тем заметнее реакция организма на этот продукт</p>
+              <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
             </div>
             <div className="shows-cards">
               {SHOWS.map(([title, text], index) => (
-                <article className={`panel show-card${index === showOn ? " is-on" : ""}`} key={title} style={{ opacity: index === showOn ? 1 : 0.55 }}>
+                <article className={`show-card${index === showOn ? " is-on" : ""}`} key={title} hidden={index !== showOn}>
                   <h3>{title}</h3>
                   <p>{text}</p>
+                  {index === 0 && (
+                    <div className="antigen-dots" aria-hidden>
+                      {Array.from({ length: 286 }, (_, dot) => <i key={dot} className={dot % 17 === 0 ? "is-hot" : ""} style={{ animationDelay: `${dot * 8}ms` }} />)}
+                    </div>
+                  )}
+                  {index === 2 && (
+                    <ul className="igg-levels">
+                      <li><i className="low" />Низкий уровень IgG</li>
+                      <li><i className="mid" />Средний уровень IgG</li>
+                      <li><i className="high" />Повышенный уровень IgG</li>
+                    </ul>
+                  )}
+                  <svg className="orbit-svg" viewBox="0 0 120 120" aria-hidden>
+                    <circle className="orbit-ring" cx="60" cy="60" r="46" />
+                    <circle className="orbit-ring r2" cx="60" cy="60" r="28" />
+                  </svg>
                 </article>
               ))}
             </div>
@@ -497,9 +507,9 @@ export function HomePage() {
 
         <section className="wrap band" id="kak-sdat" data-s="s09">
           <h2 className="page-title">Как сдать тест</h2>
-          <div className="cards-3 steps" style={{ marginTop: 24 }}>
-            {STEPS.map(([step, title, text]) => (
-              <article className="step" key={step}>
+          <div className="cards-3 steps">
+            {STEPS.map(([step, title, text, src]) => (
+              <article className="step" key={step} style={{ backgroundImage: `url(${src})` }}>
                 <div className="step-mask" aria-hidden />
                 <div className="step-copy">
                   <p>{step}</p>
@@ -509,6 +519,7 @@ export function HomePage() {
               </article>
             ))}
           </div>
+          <p style={{ textAlign: "center", marginTop: 28 }}><button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button></p>
         </section>
 
         <section className="wrap band" id="products" data-s="s10" ref={countRef}>
@@ -578,10 +589,9 @@ export function HomePage() {
             {LABS.map(([name, slug]) => (
               <Link className="lab-tile" key={slug} href="/labs">
                 <img className="lab-logo" src={slug} alt="" />
-                {name}
+                <span className="btn btn-ghost">Сдать в {name}</span>
               </Link>
             ))}
-            <article className="lab-tile">1500+</article>
           </div>
         </section>
 
@@ -590,10 +600,11 @@ export function HomePage() {
           <div className="review-row" data-allow-x ref={reviewsRef}>
             <div className="review-track">
             {[...REVIEWS, ...REVIEWS].map(([name, text], index) => (
-              <article className="panel" key={`${name}-${index}`}>
+              <article className="review-card" key={`${name}-${index}`}>
+                <p className="review-stars" aria-label="5 из 5">★★★★★</p>
                 <img className="review-shot" src={`/figma/reviews/r${(index % 8) + 1}.png`} alt="" />
-                <h3>{name}</h3>
                 <p>{text}</p>
+                <h3>{name}</h3>
               </article>
             ))}
             </div>

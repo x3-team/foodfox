@@ -171,7 +171,7 @@ export function BlogFeed() {
     <>
       <Header />
       <main>
-        <section className="wrap hero">
+        <section className="wrap hero" data-s="b01">
           <p className="crumbs rise">
             <Link href="/blog">Главная</Link>
             <span className="sep">/</span>
@@ -193,7 +193,7 @@ export function BlogFeed() {
           </div>
         </section>
 
-        <section className="wrap filters" aria-label="Фильтры">
+        <section className="wrap filters" data-s="b02" aria-label="Фильтры">
           <div className="filter-row">
             <div className="chips" role="tablist" aria-label="Категории">
               {CATEGORIES.map((item) => (
@@ -394,7 +394,7 @@ export function BlogFeed() {
           </div>
         </div>
 
-        <section className="wrap grid-section" id="feed" ref={gridRef}>
+        <section className="wrap grid-section" data-s="b03" id="feed" ref={gridRef}>
           {skeleton ? (
             <SkeletonGrid />
           ) : pageItems.length === 0 ? (
@@ -456,7 +456,7 @@ export function BlogFeed() {
           )}
         </section>
 
-        <section className="wrap cta-band">
+        <section className="wrap cta-band" data-s="b04">
           <article className="cta" ref={ctaRef}>
             <img className="bokeh" src="/blog/footer-bokeh.png" alt="" />
             <div className="shade" />

@@ -325,6 +325,60 @@ test("product card follows the search", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Халва" })).toBeVisible();
 });
 
+test("scrolled header shrinks to 72px", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "1440");
+  await page.goto("/faq");
+  await ready(page);
+  await page.evaluate(() => window.scrollTo(0, 140));
+  const box = await page.locator(".site-header").evaluate((el) => el.getBoundingClientRect().height);
+  expect(box).toBe(72);
+});
+
+test("faq section links point at real groups", async ({ page }) => {
+  await page.goto("/faq");
+  await ready(page);
+  const missing = await page.locator(".f-nav a").evaluateAll((links) =>
+    links
+      .map((link) => link.getAttribute("href")?.replace("#", "") || "")
+      .filter((id) => !document.getElementById(id)),
+  );
+  expect(missing).toEqual([]);
+});
+
+test("booking waitlist posts the lead", async ({ page }) => {
+  await page.goto("/");
+  await ready(page);
+  const posted = page.waitForRequest((request) => request.url().includes("/api/lead") && request.method() === "POST");
+  await page.getByRole("button", { name: "Записаться на тест" }).first().click();
+  const dialog = page.getByRole("dialog", { name: "Записаться на тест" });
+  await dialog.getByRole("button", { name: /Моздок/ }).click();
+  await dialog.getByRole("button", { name: "Продолжить" }).click();
+  await expect(dialog.getByRole("heading", { name: /Моздоке/ })).toBeVisible();
+  await dialog.getByLabel("Почта, когда появится тест").fill("a@b.c");
+  await dialog.getByRole("checkbox").check();
+  await dialog.getByRole("button", { name: "Сообщить, когда появится" }).click();
+  await posted;
+  await expect(dialog.getByRole("heading", { name: "Готово, мы напишем" })).toBeVisible();
+});
+
+test("course sheet closes on escape", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "375");
+  await page.goto("/course/lessons");
+  await ready(page);
+  await page.getByRole("button", { name: "Программа курса" }).click();
+  await expect(page.getByRole("dialog", { name: "Программа" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Программа" })).toHaveCount(0);
+});
+
+test("privacy scroll spy follows the section in view", async ({ page }) => {
+  await page.goto("/privacy");
+  await ready(page);
+  await page.locator("#s4").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(200);
+  await expect(page.locator(".pr02 nav a.is-on")).toHaveAttribute("href", "#s4");
+});
+
 test("authors stack in one column on a phone", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "375");
   await page.goto("/blog/authors");

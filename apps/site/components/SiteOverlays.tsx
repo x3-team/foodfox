@@ -56,16 +56,27 @@ export function SiteOverlays() {
       nodes.forEach((node) => node.classList.add("is-in"));
       return;
     }
+    const mark = () => {
+      const limit = window.scrollY + window.innerHeight * 0.92;
+      nodes.forEach((node) => {
+        if (node.getBoundingClientRect().top + window.scrollY <= limit) node.classList.add("is-in");
+      });
+    };
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) entry.target.classList.add("is-in");
         });
       },
-      { threshold: 0.18 },
+      { rootMargin: "0px 0px -15% 0px", threshold: 0 },
     );
     nodes.forEach((node) => io.observe(node));
-    return () => io.disconnect();
+    mark();
+    window.addEventListener("scroll", mark, { passive: true });
+    return () => {
+      io.disconnect();
+      window.removeEventListener("scroll", mark);
+    };
   }, [path]);
 
   useEffect(() => {
@@ -78,7 +89,7 @@ export function SiteOverlays() {
         const id = link.getAttribute("href")?.replace("#", "");
         const target = id ? document.getElementById(id) : null;
         if (!target) return;
-        const top = target.offsetTop;
+        const top = target.getBoundingClientRect().top + window.scrollY;
         if (top <= y && top >= active.top) {
           active.link = link;
           active.top = top;
@@ -144,6 +155,16 @@ const BOOK_CITIES = [
   { name: "Моздок", labs: [] as { id: string; name: string; count: string; href: string }[] },
 ];
 
+const CITY_CASE: Record<string, string> = {
+  Москва: "Москве",
+  "Московская область": "Московской области",
+  Моздок: "Моздоке",
+};
+
+function inCity(name: string) {
+  return CITY_CASE[name] || name;
+}
+
 function BookModal({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<"city" | "labs" | "redirect" | "empty" | "done">("city");
   const [query, setQuery] = useState("");
@@ -151,8 +172,11 @@ function BookModal({ onClose }: { onClose: () => void }) {
   const [lab, setLab] = useState<(typeof BOOK_CITIES)[number]["labs"][number] | null>(null);
   const [mail, setMail] = useState("");
   const [mailError, setMailError] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [sending, setSending] = useState(false);
   const matches = BOOK_CITIES.filter((item) => item.name.toLowerCase().includes(query.trim().toLowerCase()));
   const chosen = BOOK_CITIES.find((item) => item.name === city);
+  const nearby = BOOK_CITIES.filter((item) => item.name !== city && item.labs.length > 0);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -201,55 +225,100 @@ function BookModal({ onClose }: { onClose: () => void }) {
         )}
         {step === "labs" && chosen && (
           <div className="book-steps">
+            <p className="book-progress" aria-hidden><i style={{ width: "40%" }} /></p>
             <p className="meta-line">Шаг 2 — сеть</p>
-            <h2>Выберите лабораторию в {chosen.name}</h2>
-            <div className="book-list">
+            <h2>Выберите лабораторию в {inCity(chosen.name)}</h2>
+            <div className="book-list" role="radiogroup" aria-label="Сеть лабораторий">
               {chosen.labs.map((item) => (
-                <button key={item.id} type="button" className="book-lab" onClick={() => { setLab(item); setStep("redirect"); }}>
-                  <strong>{item.name}</strong>
-                  <span>{item.count}</span>
+                <button key={item.id} type="button" role="radio" aria-checked={lab?.id === item.id} className={`book-lab${lab?.id === item.id ? " is-on" : ""}`} onClick={() => { setLab(item); setStep("redirect"); }}>
+                  <img src={`/figma/labs/${item.id}.svg`} alt="" width={88} height={28} />
+                  <span><strong>{item.name}</strong><small>{item.count}</small></span>
+                  <i className="book-radio" />
                 </button>
               ))}
             </div>
+            <button className="btn btn-dark" type="button" disabled={!lab} onClick={() => lab && setStep("redirect")}>Перейти на сайт {lab?.name || "сети"}</button>
             <button className="btn btn-ghost" type="button" onClick={() => setStep("city")}>Другой город</button>
           </div>
         )}
         {step === "redirect" && lab && (
           <div className="book-steps book-go">
-            <p className="meta-line">Переход на сайт сети</p>
+            <p className="book-progress" aria-hidden><i style={{ width: "60%" }} /></p>
+            <p className="meta-line">Шаг 3 — переход на сайт сети</p>
+            <div className="book-logos">
+              <img src="/icons/logo-dark.svg" alt="FOX" width={72} height={32} />
+              <span />
+              <img src={`/figma/labs/${lab.id}.svg`} alt="" width={96} height={32} />
+            </div>
             <h2>Открываем сайт {lab.name}…</h2>
             <p className="lead-note">Страница теста FOX откроется в новой вкладке. На сайте сети можно выбрать отделение, время и оплатить исследование.</p>
-            <a className="btn btn-dark" href={lab.href} target="_blank" rel="noreferrer">Открыть сайт {lab.name}</a>
+            <a className="btn btn-dark" href={lab.href} target="_blank" rel="noreferrer">Перейти на сайт {lab.name}</a>
             <button className="btn btn-ghost" type="button" onClick={() => setStep("labs")}>Вернуться к списку</button>
           </div>
         )}
         {step === "empty" && (
-          <form className="book-steps" onSubmit={(event) => {
+          <form className="book-steps" onSubmit={async (event) => {
             event.preventDefault();
             if (!mail.includes("@")) {
               setMailError("Укажите почту");
               return;
             }
+            if (!consent) {
+              setMailError("Нужно согласие на обработку данных");
+              return;
+            }
             setMailError("");
-            setStep("done");
+            if (!navigator.onLine) {
+              setMailError("Не удалось отправить");
+              return;
+            }
+            setSending(true);
+            try {
+              const response = await fetch("/api/lead", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ kind: "book-wait", city, contact: mail }),
+              });
+              if (!response.ok) throw new Error("fail");
+              setStep("done");
+            } catch {
+              setMailError("Не удалось отправить");
+            } finally {
+              setSending(false);
+            }
           }}>
-            <p className="meta-line">В городе нет партнёров</p>
-            <h2>В {city || "этом городе"} пока нет партнёров</h2>
+            <p className="book-progress" aria-hidden><i style={{ width: "80%" }} /></p>
+            <p className="meta-line">Шаг 4 — в городе нет партнёров</p>
+            <h2>В {inCity(city || "этом городе")} пока нет партнёров</h2>
             <p className="lead-note">Можно сдать тест в соседнем городе или оставить почту — напишем, когда появится сеть.</p>
-            <label className={`field${mailError ? " is-error" : ""}`}>
+            <div className="book-list">
+              {nearby.map((item) => (
+                <button key={item.name} type="button" onClick={() => { setCity(item.name); setQuery(item.name); setStep("labs"); }}>
+                  <strong>{item.name}</strong>
+                  <span>{item.labs.reduce((sum, labItem) => sum + parseInt(labItem.count, 10), 0)} отделений</span>
+                </button>
+              ))}
+            </div>
+            <label className={`field${mailError && !mail.includes("@") ? " is-error" : ""}`}>
               Почта
               <input type="email" value={mail} onChange={(event) => setMail(event.target.value)} aria-label="Почта, когда появится тест" aria-invalid={!!mailError} />
-              {mailError && <span className="err">{mailError}</span>}
             </label>
-            <button className="btn btn-dark" type="submit">Сообщить, когда появится</button>
+            <label className="book-consent">
+              <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
+              Согласен на обработку персональных данных
+            </label>
+            {mailError && <span className="err">{mailError}</span>}
+            <button className={`btn btn-dark${sending ? " is-loading" : ""}`} type="submit" disabled={sending}>Сообщить, когда появится</button>
           </form>
         )}
         {step === "done" && (
           <div className="book-steps book-go">
+            <p className="book-progress" aria-hidden><i style={{ width: "100%" }} /></p>
             <span className="book-done" aria-hidden>✓</span>
             <h2>Готово, мы напишем</h2>
-            <p className="lead-note">Когда тест FOX появится в этом городе, пришлём одно письмо на {mail}. Пока можно почитать, как устроен отчёт.</p>
-            <button className="btn btn-dark" type="button" onClick={onClose}>Закрыть</button>
+            <p className="lead-note">Когда тест FOX появится в {inCity(city || "этом городе")}, пришлём одно письмо на {mail}.</p>
+            <a className="btn btn-dark" href="/report">Как читать отчёт</a>
+            <button className="btn btn-ghost" type="button" onClick={onClose}>Закрыть</button>
           </div>
         )}
       </div>

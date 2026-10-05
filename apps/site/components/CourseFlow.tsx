@@ -467,11 +467,22 @@ export function LessonsPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const lesson = LESSONS[current];
 
+  const [tab, setTab] = useState<"about" | "files" | "ask">("about");
+
   useEffect(() => {
     setProgress(0);
     setPlaying(false);
     if (videoRef.current) videoRef.current.currentTime = 0;
   }, [current]);
+
+  useEffect(() => {
+    if (!sheet) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSheet(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [sheet]);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -498,16 +509,33 @@ export function LessonsPage() {
       <Header />
       <main>
         <section data-s="l01" className="ls-layout">
+          <div className="ls-progress" aria-label={`Прогресс курса, урок ${current + 1} из 6`}>
+            <span>Прогресс курса</span>
+            <i><b style={{ width: `${((current + 1) / 6) * 100}%` }} /></i>
+            <strong>{current + 1} из 6</strong>
+          </div>
           <button type="button" className="btn btn-ghost ls-open" onClick={() => setSheet(true)}>Программа курса</button>
           {sheet && (
             <div className="modal-back" onClick={() => setSheet(false)}>
               <div className="modal ls-sheet" role="dialog" aria-label="Программа" onClick={(event) => event.stopPropagation()}>
                 <h2>Программа</h2>
-                {LESSONS.map((item, index) => (
-                  <button key={item.title} type="button" className="ls-item" onClick={() => { setCurrent(index); setSheet(false); }}>
-                    <strong>{item.short}</strong>
-                  </button>
-                ))}
+                <p className="meta-line">2 из 6</p>
+                {LESSONS.map((item, index) => {
+                  const state = index === current ? "current" : done.includes(index) ? "done" : "next";
+                  return (
+                    <button key={item.title} type="button" className={`ls-item is-${state}`} onClick={() => { setCurrent(index); setSheet(false); }}>
+                      <span className="ls-badge">{state === "done" ? "✓" : index + 1}</span>
+                      <span>
+                        <strong>{item.short}</strong>
+                        <small>{item.minutes} мин{state === "current" ? " · смотрите сейчас" : state === "done" ? " · просмотрено" : ""}</small>
+                      </span>
+                    </button>
+                  );
+                })}
+                <div className="ls-cert">
+                  <strong>Сертификат</strong>
+                  <p>Станет доступен после всех шести уроков · {passed} из 6</p>
+                </div>
               </div>
             </div>
           )}
@@ -593,9 +621,14 @@ export function LessonsPage() {
                 </button>
               ) : null}
             </div>
+            <div className="ls-tabs" role="tablist" aria-label="Материалы урока">
+              <button type="button" className={tab === "about" ? "is-on" : ""} onClick={() => setTab("about")}>Об уроке</button>
+              <button type="button" className={tab === "files" ? "is-on" : ""} onClick={() => setTab("files")}>Материалы</button>
+              <button type="button" className={tab === "ask" ? "is-on" : ""} onClick={() => setTab("ask")}>Вопрос</button>
+            </div>
             <div className="ls-about">
-              <p className="ls-kicker">О чём этот урок</p>
-              <p>{lesson.about ?? lesson.content}</p>
+              <p className="ls-kicker">{tab === "files" ? "Материалы" : tab === "ask" ? "Вопрос лектору" : "О чём этот урок"}</p>
+              <p>{tab === "ask" ? "Напишите вопрос к этому уроку — лектор ответит в кабинете курса." : lesson.about ?? lesson.content}</p>
               <div className="ls-tags">
                 <span>Конспект PDF</span>
                 <span>Задать вопрос лектору</span>
@@ -608,6 +641,10 @@ export function LessonsPage() {
               </div>
             </div>
           </div>
+          <button type="button" className="ls-sticky" onClick={() => setSheet(true)}>
+            <span>Программа</span>
+            <strong>урок {current + 1} из 6</strong>
+          </button>
         </section>
       </main>
       <Footer />

@@ -296,6 +296,8 @@
   padding: 24px 28px;
 }
 .sp-table article.is-odd { background: #fff; }
+.sp-table article { transition: background 120ms ease; }
+.sp-table article:hover { background: #f2f2f2; }
 .sp-table article > span {
   width: 36px;
   height: 36px;
@@ -649,9 +651,14 @@
   .sp-step { min-height: 0; }
   .sp-args, .sp-steps, .sp-experts, .sp-labs {
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     overflow-x: auto;
     gap: 12px;
   }
+  .sp-sheet, .sp-sheet.is-front { aspect-ratio: auto; max-height: 420px; overflow: hidden; }
+  .sp-portrait { height: 160px; }
+  [data-s="p09"] img, .sp-course img { max-height: 180px; object-fit: cover; }
   .sp-args > *, .sp-steps > *, .sp-experts > *, .sp-labs > * {
     flex: 0 0 86%;
   }

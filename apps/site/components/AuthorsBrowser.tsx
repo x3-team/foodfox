@@ -17,7 +17,7 @@ export function AuthorsBrowser() {
     <>
       <Header />
       <main>
-        <section className="wrap authors-head">
+        <section className="wrap authors-head" data-s="au01">
           <p className="crumbs">
             <Link href="/blog">Главная</Link>
             <span className="sep">/</span>
@@ -54,7 +54,7 @@ export function AuthorsBrowser() {
             </p>
           </div>
         </section>
-        <section className="wrap author-grid">
+        <section className="wrap author-grid" data-s="au02">
           {list.map((author) => (
             <Link key={author.slug} href={`/blog/authors/${author.slug}`} className="author-card">
               <div className="shot">
@@ -71,7 +71,7 @@ export function AuthorsBrowser() {
             </Link>
           ))}
         </section>
-        <section className="wrap cta-band">
+        <section className="wrap cta-band" data-s="au03">
           <article className="cta">
             <img className="bokeh" src="/blog/footer-bokeh.png" alt="" />
             <div className="shade" />
