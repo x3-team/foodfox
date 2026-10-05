@@ -14,7 +14,7 @@
   --chip: rgba(0, 0, 0, 0.1);
   --glass: rgba(255, 255, 255, 0.1);
   --overlay: rgba(33, 37, 29, 0.72);
-  --overlay-footer: rgba(33, 37, 29, 0.55);
+  --overlay-footer: rgba(16, 20, 0, 0.78);
   --overlay-cta: rgba(33, 37, 29, 0.7);
   --shadow: 0 2px 8px rgba(11, 12, 8, 0.06);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -1760,6 +1760,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   body [data-s="s11"] .page-title,
   body [data-s="s11"] .aus-copy,
   body [data-s="s11"] .aus-copy p { color: #f8f9f6; }
+  body [data-s="s11"] .aus-copy { background: rgba(16, 20, 0, 0.72); }
   body [data-s="s01"] h1,
   body [data-s="s01"] .lead { color: #f8f9f6; }
   body [data-s="s01"] .lead { color: rgba(248, 249, 246, 0.86); }
@@ -1822,7 +1823,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   .step-mask, .step:hover .step-mask { clip-path: inset(0 100% 0 0); opacity: 0; transition: none; }
 }
 .footer, .cta, .featured, .article-cta, .aside-card { background-color: #101400; }
-.article-cta .shade { background: rgba(11, 12, 8, 0.78); }
+.article-cta .shade, .aside-card .shade { background: rgba(11, 12, 8, 0.78); }
 @media (min-width: 1101px) {
   [data-s="s15"].faq-band::before {
     content: "";
@@ -1875,5 +1876,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   body .e01-copy > p,
   body [data-s="k02"] .kf-head > p,
   body .sp-lead { font-size: 16px; line-height: 22px; }
-  body .who-tabs { flex-wrap: nowrap; overflow-x: auto; }
+  body .who-tabs { flex-wrap: nowrap; min-width: 0; }
+  body .who-tabs button { flex: 1 1 0; min-width: 0; padding: 0 6px; white-space: nowrap; font-size: 13px; }
 }

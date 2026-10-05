@@ -429,7 +429,7 @@ test("privacy scroll spy follows the section in view", async ({ page }) => {
 
 test("text stays readable and sections stay visible", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "1440");
-  test.setTimeout(240_000);
+  test.setTimeout(420_000);
   const paths = [...PAGES, "/blog/skrytaya-neperenosimost-laktozy-i-glyutena", "/blog/authors/kseniya-ellinskaya", "/net-takoy-stranicy"];
   const widths = [390, 768, 1100, 1440];
   for (const width of widths) {
@@ -491,6 +491,7 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
           img.src = src;
         });
         const sample = (img: HTMLImageElement, box: DOMRect, x: number, y: number) => {
+          if (x < box.left || y < box.top || x > box.right || y > box.bottom) return null;
           const scale = Math.max(box.width / img.naturalWidth, box.height / img.naturalHeight);
           const dw = img.naturalWidth * scale;
           const dh = img.naturalHeight * scale;
@@ -511,6 +512,13 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
           }
         };
         const mix = (base: number[], layer: { rgb: number[]; a: number }) => base.map((channel, index) => layer.rgb[index] * layer.a + channel * (1 - layer.a));
+        const veil = (style: CSSStyleDeclaration) => {
+          const solid = parse(style.backgroundColor);
+          if (solid && solid.a > 0.05) return solid;
+          const stops = [...(style.backgroundImage || "").matchAll(/rgba?\([^)]+\)/g)].map((item) => parse(item[0])).filter(Boolean);
+          if (!stops.length) return null;
+          return stops.reduce((best, stop) => (stop.a > best.a ? stop : best));
+        };
         const bgOf = async (el: HTMLElement) => {
           const rect = el.getBoundingClientRect();
           const x = rect.left + Math.max(6, Math.min(rect.width - 6, rect.width / 2));
@@ -519,11 +527,27 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
           const photo = host?.querySelector("img.bokeh, img.bg, img.parallax");
           if (photo && photo.naturalWidth) {
             const pixel = sample(photo, photo.getBoundingClientRect(), x, y);
-            let acc = pixel && pixel.a > 0.2 ? pixel.rgb : [16, 20, 0];
-            const shade = host?.querySelector(".shade");
-            const shadeColor = shade ? parse(getComputedStyle(shade).backgroundColor) : null;
-            if (shadeColor && shadeColor.a > 0.05) acc = mix(acc, shadeColor);
-            return acc;
+            if (pixel && pixel.a > 0.2) {
+              let acc = pixel.rgb;
+              const shade = host?.querySelector<HTMLElement>(".shade");
+              const shadeStyle = shade ? getComputedStyle(shade) : null;
+              const shadeBox = shade?.getBoundingClientRect();
+              const shadeColor = shadeStyle && shadeStyle.display !== "none" && shadeBox && x >= shadeBox.left && y >= shadeBox.top && x <= shadeBox.right && y <= shadeBox.bottom
+                ? veil(shadeStyle)
+                : null;
+              if (shadeColor && shadeColor.a > 0.05) acc = mix(acc, shadeColor);
+              const before = veil(getComputedStyle(host, "::before"));
+              if (before && before.a > 0.05) acc = mix(acc, before);
+              const layers = [];
+              let node = el;
+              while (node && node !== host) {
+                const color = veil(getComputedStyle(node));
+                if (color && color.a > 0.05) layers.push(color);
+                node = node.parentElement;
+              }
+              for (let i = layers.length - 1; i >= 0; i -= 1) acc = mix(acc, layers[i]);
+              return acc;
+            }
           }
           let node = el;
           while (node) {
@@ -531,18 +555,23 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
             const url = (style.backgroundImage || "").match(/url\(["']?([^"')]+)/);
             if (url) {
               const loaded = await loadImage(url[1]);
-              let acc = [16, 20, 0];
-              if (loaded) {
-                const pixel = sample(loaded, node.getBoundingClientRect(), x, y);
-                if (pixel && pixel.a > 0.2) acc = pixel.rgb;
+              const box = node.getBoundingClientRect();
+              const pixel = loaded && x >= box.left && y >= box.top && x <= box.right && y <= box.bottom
+                ? sample(loaded, box, x, y)
+                : null;
+              if (pixel && pixel.a > 0.2) {
+                let acc = pixel.rgb;
+                const before = veil(getComputedStyle(node, "::before"));
+                if (before && before.a > 0.05) acc = mix(acc, before);
+                return acc;
               }
-              const before = parse(getComputedStyle(node, "::before").backgroundColor);
-              if (before && before.a > 0.05) acc = mix(acc, before);
-              return acc;
             }
-            if ((style.backgroundImage || "").includes("gradient")) {
+            const clip = `${style.backgroundClip} ${style.getPropertyValue("-webkit-background-clip")}`;
+            if ((style.backgroundImage || "").includes("gradient") && !clip.includes("text")) {
               const stops = [...style.backgroundImage.matchAll(/rgba?\([^)]+\)/g)].map((item) => parse(item[0])).filter(Boolean);
-              if (stops.length) {
+              const ink = parse(style.color);
+              const textFill = stops.length > 0 && ink && stops.every((stop) => stop.a > 0.9 && stop.rgb.every((channel, index) => Math.abs(channel - ink.rgb[index]) < 3));
+              if (stops.length && !textFill) {
                 return stops.reduce((sum, stop) => sum.map((channel, index) => channel + stop.rgb[index]), [0, 0, 0]).map((channel) => channel / stops.length);
               }
             }
