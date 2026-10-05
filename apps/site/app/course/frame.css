@@ -243,7 +243,9 @@
   .ls-main { order: 1; }
   .kf-lesson-body { flex-direction: column; }
   .kf-lesson-body > div { width: 100%; }
-  .kf-hero-copy h1 { font-size: 40px; line-height: 44px; }
+  .kf-hero-copy h1 { font-size: 40px; line-height: 44px; max-width: 100%; }
+  .kf-hero-row, .kf-hero-copy, .kf-hero-cta { min-width: 0; max-width: 100%; }
+  .kf-hero-cta { flex-wrap: wrap; gap: 12px; }
   .kf-final h2 { font-size: 24px; line-height: 28px; }
   .kf-acc button { padding: 20px 16px; gap: 12px; min-height: 0; }
 }

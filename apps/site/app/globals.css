@@ -1824,13 +1824,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   [data-s="s15"] .acc,
   [data-s="s15"] .stack { text-align: left; margin-left: 0; margin-right: 0; }
   [data-s="s15"] .s15-grid { justify-items: start; width: 100%; }
-  [data-s="s10"].band, [data-s="s10"] { padding: 44px 0; gap: 12px; }
+  [data-s="s10"].band, [data-s="s10"] { padding: 24px 0; gap: 8px; }
   [data-s="s10"] .s10-head { display: block; }
   [data-s="s10"] .count-line strong { font-size: 48px; line-height: 1; letter-spacing: -1px; }
   [data-s="s10"] .search { height: 48px; }
-  [data-s="s10"] .checker-grid { gap: 12px; margin-top: 8px; }
-  [data-s="s10"] .product-picks { flex-wrap: nowrap; }
+  [data-s="s10"] .checker-grid { gap: 12px; margin-top: 8px; min-width: 0; }
+  [data-s="s10"] .product-picks { flex-wrap: nowrap; min-width: 0; max-width: 100%; overflow-x: auto; }
   [data-s="s10"] .product-picks button { flex: 0 0 auto; padding: 8px 12px; }
+  [data-s="s10"] .panel { padding: 16px; min-width: 0; max-width: 100%; }
   [data-s="s10"] .panel p { font-size: 14px; line-height: 18px; }
 }
 
