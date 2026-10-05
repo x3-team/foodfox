@@ -55,7 +55,8 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .f-spec h2 { font-size: 20px; line-height: 24px; font-weight: 500; }
 .f-spec a { display: inline-flex; gap: 8px; align-items: center; }
 .f-spec img { width: 16px; height: 16px; }
-.f-groups { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.f-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; min-width: 0; }
+.f-groups > section { background: #fff; border-radius: 20px; padding: 20px 24px; border: 1px solid rgba(11, 12, 8, 0.08); }
 .f-groups header { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 0; }
 .f-groups h2 { font-weight: 300; font-size: 24px; line-height: 28px; }
 .f-groups header span, .f-actions { color: rgba(11, 12, 8, 0.65); font-size: 14px; }
@@ -111,6 +112,6 @@ article.is-open .f-answer > div { padding-bottom: 12px; }
   .f03-photo, .f03-photo img { height: 120px; }
   .f-groups article > button { padding: 8px 0; }
   .f-actions { display: none; }
-  .f-groups { gap: 0; }
+  .f-groups { gap: 0; grid-template-columns: 1fr; }
   .f-answer { padding: 0; }
 }

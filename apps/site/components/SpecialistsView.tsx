@@ -316,8 +316,8 @@ export function SpecialistsView() {
             <div className="sp-specs">
               {[0, 1].map((row) => (
                 <div className="sp-spec-row" key={row}>
-                  {HERO_TILES.slice(row * 3, row * 3 + 3).map(([title, text]) => (
-                    <article className="sp-tile" key={title}>
+                  {HERO_TILES.slice(row * 3, row * 3 + 3).map(([title, text], index) => (
+                    <article className={`sp-tile${row * 3 + index >= 4 ? " is-extra" : ""}`} key={title}>
                       <span className="sp-bar" />
                       <h2>{title}</h2>
                       <p>{text}</p>

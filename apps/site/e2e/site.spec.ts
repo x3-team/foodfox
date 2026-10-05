@@ -427,6 +427,122 @@ test("privacy scroll spy follows the section in view", async ({ page }) => {
   await expect(page.locator(".pr02 nav a.is-on")).toHaveAttribute("href", "#s4");
 });
 
+test("text stays readable and sections stay visible", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "1440");
+  test.setTimeout(240_000);
+  const paths = [...PAGES, "/blog/skrytaya-neperenosimost-laktozy-i-glyutena", "/blog/authors/kseniya-ellinskaya", "/net-takoy-stranicy"];
+  const widths = [390, 768, 1100, 1440];
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of paths) {
+      await page.goto(path);
+      await ready(page);
+      await page.evaluate(async () => {
+        const step = Math.max(240, window.innerHeight * 0.8);
+        const max = document.documentElement.scrollHeight;
+        for (let y = 0; y <= max; y += step) {
+          window.scrollTo(0, y);
+          await new Promise((resolve) => setTimeout(resolve, 16));
+        }
+        window.scrollTo(0, max);
+      });
+      await page.waitForFunction(() => {
+        const stuck: string[] = [];
+        document.querySelectorAll<HTMLElement>("[data-s]").forEach((section) => {
+          if (section.offsetHeight < 8 || getComputedStyle(section).display === "none") return;
+          const kids = section.classList.contains("wrap")
+            ? [...section.children]
+            : [...(section.querySelector(":scope > .wrap")?.children ?? section.children)];
+          kids.forEach((kid) => {
+            const node = kid as HTMLElement;
+            if (node.offsetHeight < 8 || getComputedStyle(node).display === "none" || node.classList.contains("deck-card")) return;
+            if (Number(getComputedStyle(node).opacity) < 0.15) stuck.push(section.getAttribute("data-s") || "");
+          });
+        });
+        return stuck.length === 0;
+      }, undefined, { timeout: 4000 }).catch(() => undefined);
+      const problems = await page.evaluate(() => {
+        const parse = (value: string) => {
+          const match = value.match(/rgba?\(([^)]+)\)/);
+          if (!match) return null;
+          const parts = match[1].split(",").map((part) => Number.parseFloat(part.trim()));
+          return { rgb: parts.slice(0, 3), a: parts.length > 3 ? parts[3] : 1 };
+        };
+        const lum = (rgb: number[]) => {
+          const c = rgb.map((channel) => {
+            const v = channel / 255;
+            return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+          });
+          return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+        };
+        const contrast = (a: number[], b: number[]) => {
+          const l1 = lum(a);
+          const l2 = lum(b);
+          const hi = Math.max(l1, l2);
+          const lo = Math.min(l1, l2);
+          return (hi + 0.05) / (lo + 0.05);
+        };
+        const bgOf = (el: HTMLElement) => {
+          const layers: { rgb: number[]; a: number }[] = [];
+          let node: HTMLElement | null = el;
+          while (node) {
+            const style = getComputedStyle(node);
+            const color = parse(style.backgroundColor);
+            if (style.backgroundImage && style.backgroundImage !== "none") return null;
+            if (color && color.a > 0.02) layers.push(color);
+            if (color && color.a >= 0.92) break;
+            node = node.parentElement;
+          }
+          let acc = [248, 249, 246];
+          for (let i = layers.length - 1; i >= 0; i -= 1) {
+            const layer = layers[i];
+            acc = acc.map((channel, index) => layer.rgb[index] * layer.a + channel * (1 - layer.a));
+          }
+          return acc;
+        };
+        const issues: string[] = [];
+        document.querySelectorAll<HTMLElement>("[data-s]").forEach((section) => {
+          const style = getComputedStyle(section);
+          if (style.display === "none" || style.visibility === "hidden") return;
+          if (section.offsetHeight < 1) issues.push(`flat ${section.getAttribute("data-s")}`);
+          const kids = [...(section.querySelector(":scope > .wrap")?.children ?? section.children)] as HTMLElement[];
+          kids.forEach((kid) => {
+            if (kid.offsetHeight < 8 || getComputedStyle(kid).display === "none" || kid.classList.contains("deck-card")) return;
+            const opacity = Number(getComputedStyle(kid).opacity);
+            if (opacity < 0.15) issues.push(`opacity ${section.getAttribute("data-s")} ${opacity.toFixed(2)}`);
+          });
+        });
+        const nodes = document.querySelectorAll<HTMLElement>("h1,h2,h3,p,a,button,li,span");
+        nodes.forEach((el) => {
+          if (issues.length > 8) return;
+          const style = getComputedStyle(el);
+          if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) < 0.9) return;
+          if (el.closest("[data-allow-x], .marquee, .leaflet-container, .cookie, .m04, .site-header, .mobile-menu, .fox-toast")) return;
+          if (el.closest("button[disabled], .btn[disabled]")) return;
+          const text = (el.innerText || "").trim();
+          if (text.length < 2 || el.children.length > 2) return;
+          const box = el.getBoundingClientRect();
+          if (box.width < 8 || box.height < 8) return;
+          const fill = parse(style.color);
+          const bg = bgOf(el);
+          if (!fill || fill.a < 0.5 || !bg) return;
+          const ink = fill.rgb.map((channel, index) => channel * fill.a + bg[index] * (1 - fill.a));
+          const ratio = contrast(ink, bg);
+          if (ratio < 3) issues.push(`${ratio.toFixed(2)} «${text.slice(0, 42)}»`);
+        });
+        return issues.slice(0, 8);
+      });
+      expect(problems, `${path} @ ${width}`).toEqual([]);
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/labs");
+  await ready(page);
+  await page.getByRole("button", { name: "Карта", exact: true }).click();
+  const mapHeight = await page.locator(".leaflet-container").evaluate((el) => el.getBoundingClientRect().height);
+  expect(mapHeight).toBeGreaterThan(200);
+});
+
 test("authors stack in one column on a phone", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "375");
   await page.goto("/blog/authors");

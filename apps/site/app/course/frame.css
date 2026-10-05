@@ -141,7 +141,7 @@
 .kf-faq p { margin: 0 0 20px; max-width: 760px; color: #5c5e57; font-size: 16px; line-height: 20px; }
 .kf-faq p[hidden] { display: none; }
 
-.kf-final-in { position: relative; z-index: 1; min-height: 0; box-sizing: border-box; padding: 96px 0; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; justify-content: center; }
+.kf-final-in { position: relative; z-index: 1; min-height: 0; box-sizing: border-box; padding: 96px 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px; justify-content: center; }
 .kf-bar { width: 64px; height: 4px; border-radius: 2px; background: var(--lime); }
 .kf-final h2, .kf-final p { max-width: min(640px, 100%); overflow-wrap: normal; hyphens: manual; }
 .kf-final p { margin: 0; font-size: 20px; line-height: 24px; color: rgba(248, 249, 246, 0.8); }
@@ -223,8 +223,15 @@
   .ls-progress { order: 0; align-items: center; gap: 8px; font-size: 13px; }
   .ls-progress i { flex: 1; height: 4px; background: rgba(11,12,8,.12); border-radius: 99px; overflow: hidden; }
   .ls-progress b { display: block; height: 100%; background: #101400; }
-  .ls-title, .ls-player, .ls-actions { order: 1; }
-  .ls-about { order: 3; }
+  .ls-title { order: 1; }
+  .ls-player { order: 3; }
+  .ls-about { order: 4; }
+  .ls-actions { order: 5; width: 100%; }
+  [data-s="k02"] h1, [data-s="k02"] h2, [data-s="k02"] p { overflow-wrap: break-word; max-width: 100%; }
+  .kf-final, [data-s="k07"] { background: #f6fbc8; color: #0b0c08; }
+  .kf-final > img, [data-s="k07"] .kf-includes-shade { display: none; }
+  .kf-final h2, .kf-final p, .kf-final span, .kf-disclaimer { color: #0b0c08 !important; }
+  .kf-final-in { align-items: flex-start; text-align: left; }
   .ls-tabs { gap: 8px; }
   .ls-tabs button { height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(11,12,8,.12); background: #fff; }
   .ls-tabs button.is-on { background: #101400; color: #f8f9f6; }
@@ -236,6 +243,7 @@
   .kf-lesson-body { flex-direction: column; }
   .kf-lesson-body > div { width: 100%; }
   .kf-hero-copy h1 { font-size: 40px; line-height: 44px; }
-  .kf-final h2 { font-size: 32px; line-height: 36px; }
+  .kf-final h2 { font-size: 24px; line-height: 28px; }
+  body:has(.ls-layout) .footer { display: none; }
   .kf-acc button { padding: 20px 16px; gap: 12px; min-height: 0; }
 }

@@ -95,14 +95,14 @@ export function SiteOverlays() {
   useEffect(() => {
     const marks = () => {
       const header = document.querySelector(".site-header")?.getBoundingClientRect().height ?? 72;
-      const y = window.scrollY + header + 88;
+      const y = window.scrollY + header + 16;
       const links = [...document.querySelectorAll<HTMLElement>(".f-nav a, .pr02 nav a")];
       const active: { link: HTMLElement | null; top: number } = { link: null, top: -1 };
       links.forEach((link) => link.classList.remove("is-on"));
       links.forEach((link) => {
         const id = link.getAttribute("href")?.replace("#", "");
         const target = id ? document.getElementById(id) : null;
-        if (!target) return;
+        if (!target || target.classList.contains("is-parked") || target.offsetHeight < 8) return;
         const top = target.getBoundingClientRect().top + window.scrollY;
         if (top <= y && top >= active.top) {
           active.link = link;

@@ -693,15 +693,38 @@
     align-items: center; padding: 12px 0;
   }
   [data-s="p03"] .sp-arg-visual { width: 96px; height: 96px; overflow: hidden; }
-  .sp-tile p { font-size: 14px; line-height: 18px; }
+  .sp-tile p { font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.72); display: block; }
+  [data-s="p01"] .sp-arrow-light { color: #0b0c08; }
+  [data-s="p01"] .sp-arrow-light img { filter: brightness(0); }
+  [data-s="p03"] .sp-args { flex-direction: column; overflow: visible; }
+  [data-s="p03"] .sp-args > * { flex: 1 1 auto; width: 100%; max-width: none; }
+  [data-s="p03"] .sp-arg { display: flex; flex-direction: column; align-items: stretch; width: 100%; }
+  [data-s="p03"] .sp-arg > div { width: 100%; min-width: 0; }
 }
 
 @media (max-width: 480px) {
-  .sp-spec-row { grid-template-columns: 1fr 1fr; }
-  .sp-tile { min-height: 72px; padding: 12px; }
-  .sp-tile p { display: none; }
-  .sp-tile h2 { font-size: 16px; line-height: 20px; }
+  .sp-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sp-spec-row { display: contents; }
+  .sp-tile.is-extra { display: none; }
+  [data-s="p01"] .sp-tile {
+    min-height: 132px;
+    padding: 14px;
+    background: #101400;
+    color: #f8f9f6;
+    border-color: transparent;
+  }
+  [data-s="p01"] .sp-tile h2 { font-size: 16px; line-height: 20px; color: #f8f9f6; }
+  [data-s="p01"] .sp-tile p { display: block; color: rgba(248, 249, 246, 0.78); font-size: 13px; line-height: 16px; }
   [data-s="p01"] .sp-lead-inv, [data-s="p01"] .sp-body-inv { font-size: 15px; line-height: 20px; }
+}
+
+@media (min-width: 1101px) {
+  [data-s="p04"] {
+    background-image: linear-gradient(180deg, rgba(16, 20, 0, 0.55), rgba(16, 20, 0, 0.78)), url("/figma/specialists/hero.jpeg");
+    background-size: cover;
+    background-position: center;
+  }
+  [data-s="p08"] { background: #efe6d4; }
 }
 
 @media (max-width: 720px) {

@@ -23,13 +23,16 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .k01-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: 40px; align-items: center; }
 [data-s="k01"] h1 { font-weight: 300; font-size: 64px; line-height: 68px; letter-spacing: -2px; margin: 12px 0; }
 .k01-row img { width: 100%; height: 420px; object-fit: cover; border-radius: 24px; }
-.k-note { margin-top: 16px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+.k-note { display: inline-flex; width: fit-content; margin-top: 16px; background: #e7f551; color: #0b0c08; border-radius: 999px; padding: 8px 14px; font-size: 14px; line-height: 18px; }
 
 [data-s="k02"] { background: #f8f9f6; padding: 72px 0; }
 .k-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .k-cards article { background: #fff; border: 1px solid rgba(11, 12, 8, 0.1); border-radius: 20px; padding: 24px; min-height: 218px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .k-cards h2 { font-weight: 500; font-size: 16px; display: flex; align-items: center; gap: 10px; }
-.k-cards h2::before { content: ""; width: 36px; height: 36px; border-radius: 99px; background: #e7f551; flex: 0 0 36px; }
+.k-cards h2::before { content: ""; width: 36px; height: 36px; border-radius: 99px; background: #e7f551 url("/figma/icons/spec-1.svg") center / 18px no-repeat; flex: 0 0 36px; }
+.k-cards article:nth-child(2) h2::before { background-image: url("/figma/icons/spec-2.svg"); }
+.k-cards article:nth-child(3) h2::before { background-image: url("/figma/icons/spec-3.svg"); }
+.k-cards article:nth-child(4) h2::before { background-image: url("/figma/icons/spec-4.svg"); }
 .k-cards a { overflow-wrap: anywhere; }
 .k-strong { font-size: 20px; line-height: 24px; }
 .k-cards p { color: rgba(11, 12, 8, 0.65); font-size: 14px; }
@@ -64,4 +67,9 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   .k01-row img { height: 220px; }
   .k-cards article, .k-routes article { min-height: 0; }
   .k-map { min-height: 280px; height: 280px; }
+}
+@media (max-width: 480px) {
+  .k-cards, .k-routes { grid-template-columns: 1fr 1fr; }
+  .k-cards article, .k-routes article { padding: 12px; gap: 6px; }
+  .k-cards h2, .k-routes h3 { font-size: 14px; line-height: 18px; }
 }

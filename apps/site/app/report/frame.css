@@ -149,7 +149,7 @@
   width: fit-content;
 }
 .rf-zone-green .rf-level { color: #5e7d3e; border: 1px solid rgba(94, 125, 62, 0.4); }
-.rf-zone-yellow .rf-level { color: #d9b441; border: 1px solid rgba(217, 180, 65, 0.4); }
+.rf-zone-yellow .rf-level { color: #6a4e0a; border: 1px solid rgba(106, 78, 10, 0.45); }
 .rf-zone-red .rf-level { color: #c8452e; border: 1px solid rgba(200, 69, 46, 0.4); }
 .rf-zone p { color: #5c5e57; font-size: 16px; line-height: 20px; }
 .rf-note {
@@ -334,6 +334,7 @@
 .rf-faq-item p[hidden] { display: none; }
 
 .rf-cta {
+  background-color: #101400;
   position: relative;
   overflow: hidden;
   border-radius: 24px;
@@ -344,7 +345,8 @@
   padding: 56px 40px;
   box-sizing: border-box;
 }
-.rf-cta img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.rf-cta > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.rf-cta .text-link img, .rf-cta .rf-light-link img { position: static; inset: auto; width: 16px; height: 16px; object-fit: contain; }
 .rf-cta-shade { position: absolute; inset: 0; background: rgba(16, 20, 0, 0.72); }
 .rf-cta-copy { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; max-width: 760px; }
 .rf-cta h2 { color: #f8f9f6; font-size: 32px; line-height: 36px; }

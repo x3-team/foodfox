@@ -161,6 +161,7 @@ export function HomePage() {
   const [suggest, setSuggest] = useState(false);
   const [reportPage, setReportPage] = useState(0);
   const [chipsOpen, setChipsOpen] = useState(false);
+  const [openGroup, setOpenGroup] = useState("gut");
   const scaleRef = useRef<HTMLElement>(null);
   const deckRef = useRef<HTMLElement>(null);
   const countRef = useRef<HTMLElement>(null);
@@ -425,8 +426,12 @@ export function HomePage() {
               {SYMPTOMS.map((groupItem) => {
                 const n = groupItem.items.filter((item) => checked.includes(item)).length;
                 return (
-                  <div className="symptom-group" key={groupItem.id}>
-                    <h3>{groupItem.title} <span>{n} из {groupItem.items.length}</span></h3>
+                  <div className={`symptom-group${openGroup === groupItem.id ? " is-open" : ""}`} key={groupItem.id}>
+                    <h3>
+                      <button type="button" onClick={() => setOpenGroup(openGroup === groupItem.id ? "" : groupItem.id)}>
+                        {groupItem.title} <span>{n} из {groupItem.items.length}</span>
+                      </button>
+                    </h3>
                     {groupItem.items.map((item) => (
                       <label className={`check-row${checked.includes(item) ? " is-on" : ""}`} key={item}>
                         <input type="checkbox" checked={checked.includes(item)} onChange={() => toggle(item)} />
@@ -541,6 +546,7 @@ export function HomePage() {
           <div className="cards-3 steps">
             {STEPS.map(([step, title, text], index) => (
               <article className={`step ${index === 0 ? "is-green" : "is-paper"}`} key={step}>
+                <div className="step-mask" aria-hidden />
                 <div className="step-copy">
                   <p>{step}</p>
                   <h3>{title}</h3>
@@ -640,14 +646,14 @@ export function HomePage() {
           <div className="review-row" data-allow-x ref={reviewsRef}>
             <div className="review-track">
             {[0, 1].flatMap((copy) => [
-              <article className="review-card is-photo" key={`photo-a-${copy}`}><img src="/figma/reviews/r1.png" alt="" /></article>,
               <article className="review-card" key={`${REVIEWS[0][0]}-${copy}`}>
                 <p className="review-stars" aria-label="5 из 5">★★★★★</p>
                 <p>{REVIEWS[0][1]}</p>
                 <img className="review-avatar" src="/figma/reviews/r2.png" alt="" />
                 <h3>{REVIEWS[0][0]}</h3>
               </article>,
-              <article className="review-card is-photo" key={`photo-b-${copy}`}><img src="/figma/reviews/r5.png" alt="" /></article>,
+              <article className="review-card is-photo is-oval" key={`photo-a-${copy}`}><img src="/figma/reviews/r1.png" alt="" /></article>,
+              <article className="review-card is-photo is-video" key={`photo-b-${copy}`}><img src="/figma/reviews/r5.png" alt="" /><span>Смотреть</span></article>,
               <article className="review-card" key={`${REVIEWS[1][0]}-${copy}`}>
                 <p className="review-stars" aria-label="5 из 5">★★★★★</p>
                 <p>{REVIEWS[1][1]}</p>

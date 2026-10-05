@@ -289,6 +289,7 @@ export function LabsPage() {
     return blob.includes(addr.trim().toLowerCase());
   });
   const nearest = points[0];
+  const selectedLab = shown.find((item) => item.id === selected) ?? shown[0];
 
   useEffect(() => {
     setSelected(points[0]?.id ?? "");
@@ -422,6 +423,13 @@ export function LabsPage() {
                 {(wide || labView === "map") && (
                   <div className="l03-map">
                     <LabsMap points={points} selected={selected} onSelect={setSelected} />
+                    {selectedLab && (
+                      <article className="l-map-card">
+                        <h3>{selectedLab.lab}</h3>
+                        <p>{selectedLab.address}</p>
+                        <p>{selectedLab.metro}</p>
+                      </article>
+                    )}
                   </div>
                 )}
               </div>
@@ -664,7 +672,7 @@ export function ReviewsPage() {
   const [topic, setTopic] = useState("");
   const [page, setPage] = useState(1);
   const cards = REVIEWS.filter((item) => (filter === "Все" || item.who === filter || item.kind === filter) && (!topic || item.tag === topic));
-  const slice = cards.slice((page - 1) * 8, page * 8);
+  const slice = cards.slice((page - 1) * 7, page * 7);
   return (
     <>
       <Header />
@@ -717,7 +725,7 @@ export function ReviewsPage() {
                 <select aria-label="Сначала новые" defaultValue="new"><option value="new">Сначала новые</option></select>
               </label>
             </div>
-            <p className="v-shown">Показано {Math.min(8, cards.length)} из 312</p>
+            <p className="v-shown">Показано {Math.min(7, cards.length)} из 312</p>
             <div className="v-grid">
               {slice.map((item) => item.video ? (
                 <article key={item.id} className="rev rev-video" style={{ backgroundImage: `url(${item.photo})` }}>

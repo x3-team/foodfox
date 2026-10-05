@@ -60,6 +60,7 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
 .c03 dl, .c04 ol { display: flex; flex-wrap: wrap; gap: 16px; margin: 24px 0 0; padding: 0; list-style: none; }
 .c03 dl div, .c04 li { display: flex; flex-direction: column; gap: 4px; min-width: 140px; }
 .c03 b, .c04 b { font-weight: 300; font-size: 32px; line-height: 36px; }
+[data-s="c05"] { min-height: 400px; }
 .c05 { display: flex; flex-direction: column; gap: 20px; }
 .c05 ol { list-style: none; margin: 0; padding: 8px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; position: relative; }
 .c05 ol::before { content: ""; position: absolute; left: 0; right: 0; top: 62px; height: 1px; background: rgba(11, 12, 8, 0.3); }

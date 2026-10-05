@@ -114,7 +114,8 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 [data-lab-list] article.is-on { background: #f6fbc8; box-shadow: inset 4px 0 0 #e7f551; }
 [data-lab-list] h3 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
 [data-lab-list] p { color: rgba(11, 12, 8, 0.65); font-size: 14px; line-height: 18px; }
-.l03-map { min-width: 0; min-height: 0; height: 100%; }
+.l03-map { min-width: 0; min-height: 0; height: 100%; position: relative; }
+.l-map-card { display: none; }
 .l03-map .leaflet-map { height: 100%; min-height: 320px; border: 0; border-radius: 0; }
 
 [data-s="l04"] { background: #21251d; color: #f8f9f6; padding: 96px 0; }
@@ -181,6 +182,47 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   .l-split.is-list { border: 0; background: transparent; }
   .l-found, .l-caption, .l-more { display: none; }
   .l-pane { padding: 0; gap: 8px; }
-  .l-split.is-map .l03-map { position: fixed; inset: 0; z-index: 40; height: 100vh; width: 100vw; }
+  [data-s="l03"] h2 { display: none; }
+  .l03 > header { display: flex; flex-direction: column; gap: 8px; }
+  .l-mode { order: -1; align-self: flex-start; }
+  .l-split.is-map {
+    display: block;
+    position: relative;
+    height: calc(100dvh - 168px);
+    min-height: 420px;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+  .l-split.is-map .l03-map,
+  .l-split.is-map .leaflet-map,
+  .l-split.is-map .leaflet-container {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: 100%;
+    min-height: 420px;
+  }
+  [data-s="l03"] .l-split.is-map,
+  [data-s="l03"].is-in .wrap > .l-split.is-map {
+    transform: none !important;
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  .l-map-card {
+    display: block;
+    position: fixed;
+    z-index: 800;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    background: #fff;
+    color: #0b0c08;
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  }
+  .l-map-card h3 { margin: 0 0 4px; font-size: 16px; font-weight: 500; }
+  .l-map-card p { margin: 0; color: rgba(11, 12, 8, 0.7); font-size: 14px; line-height: 18px; }
   body:has([data-s="l03"]) .footer { display: none; }
 }

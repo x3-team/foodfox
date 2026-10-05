@@ -8,10 +8,10 @@ import { ROLE_FILTERS, articles, authors, materialsWord } from "@/lib/content";
 
 export function AuthorsBrowser() {
   const [role, setRole] = useState("all");
-  const list = useMemo(
-    () => authors.filter((author) => author.listed !== false && (role === "all" || author.roles.includes(role as never))),
-    [role],
-  );
+  const list = useMemo(() => {
+    const filtered = authors.filter((author) => author.listed !== false && (role === "all" || author.roles.includes(role as never)));
+    return [...filtered].sort((a, b) => Number(b.slug === "svetlana-kanevskaya") - Number(a.slug === "svetlana-kanevskaya"));
+  }, [role]);
 
   return (
     <>
