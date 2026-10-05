@@ -9,7 +9,8 @@
 .pr-short { background: #fff; border-radius: 24px; padding: 24px; border: 1px solid rgba(11, 12, 8, 0.08); }
 .pr-short h2 { font-weight: 500; font-size: 20px; margin-bottom: 12px; }
 .pr-short ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.pr-short li { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.pr-short li { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding-left: 44px; position: relative; }
+.pr-short li::before { content: ""; position: absolute; left: 0; top: 2px; width: 32px; height: 32px; border-radius: 99px; background: #e7f551; }
 .pr-short span { color: rgba(11, 12, 8, 0.65); font-size: 14px; line-height: 18px; }
 
 [data-s="pr02"] { padding: 24px 0 64px; }
@@ -29,6 +30,7 @@
 .pr-cookie button, .pr-actions .btn { white-space: normal; }
 .pr-rights { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .pr-rights li { display: flex; gap: 10px; align-items: center; background: #fff; border-radius: 12px; padding: 12px; }
+.pr-rights b { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 99px; background: #e7f551; font-weight: 500; flex: 0 0 36px; }
 .pr-op { background: #fff; border-radius: 20px; padding: 24px; border: 1px solid rgba(11, 12, 8, 0.08); display: flex; flex-direction: column; gap: 8px; }
 .pr-op h3 { margin: 0; font-weight: 500; font-size: 24px; }
 

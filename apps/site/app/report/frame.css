@@ -296,7 +296,7 @@
 .rf-actions h3 { font-weight: 300; font-size: 24px; line-height: 28px; letter-spacing: -0.5px; }
 .rf-actions p { color: #5c5e57; font-size: 16px; line-height: 20px; }
 
-.rf-limits { padding: 32px 0; }
+.rf-limits { padding: 32px; background: #f6d7d2; border-radius: 24px; }
 .rf-limits-lead { font-size: 16px; line-height: 24px; color: #5c5e57; min-height: 24px; }
 .rf-limits ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; min-height: 186px; align-content: flex-start; }
 .rf-limits li {

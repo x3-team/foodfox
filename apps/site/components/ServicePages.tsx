@@ -410,7 +410,11 @@ export function LabsPage() {
                         <h3>{item.lab}</h3>
                         <p>{item.address}</p>
                         <p>{item.metro}</p>
-                        <p>{item.hours}</p>
+                        <p className="l-badge">Открыто · {item.hours}</p>
+                        <div className="l-actions" onClick={(event) => event.stopPropagation()}>
+                          <a className="btn btn-dark" href={PARTNERS.find((partner) => partner.name === item.lab || (item.lab === "Инвитро" && partner.name === "INVITRO"))?.href ?? "/labs"} target="_blank" rel="noreferrer">Сдать здесь</a>
+                          <a className="btn btn-ghost" href={`https://yandex.ru/maps/?text=${encodeURIComponent(`${item.address}, ${city}`)}`} target="_blank" rel="noreferrer">Маршрут</a>
+                        </div>
                       </article>
                     ))}
                   </div>

@@ -66,11 +66,13 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .v-pages button { width: 40px; height: 40px; border-radius: 99px; border: 1px solid rgba(11, 12, 8, 0.15); background: #fff; }
 .v-pages button.is-on { background: #0b0c08; color: #fff; }
 
-[data-s="v03"] { background: #fff; padding: 72px 0; }
+[data-s="v03"] { background: #f8f9f6; padding: 72px 0; }
 .v03 { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 40px; }
 .v03 h2 { font-weight: 300; font-size: 40px; line-height: 44px; margin-bottom: 16px; }
 .v03 ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
-.v03 li { display: flex; flex-direction: column; gap: 4px; }
+.v03 li { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: 10px; row-gap: 4px; align-items: start; }
+.v03 li::before { content: "✓"; grid-row: 1 / span 2; width: 28px; height: 28px; border-radius: 99px; background: #e7f551; display: grid; place-items: center; font-size: 14px; }
+.v03 form { background: #fff; border-radius: 24px; padding: 28px; border: 1px solid rgba(11, 12, 8, 0.08); box-shadow: 0 8px 24px rgba(11, 12, 8, 0.06); }
 .v03 li span { color: rgba(11, 12, 8, 0.65); }
 .v-hint { font-size: 14px; color: rgba(11, 12, 8, 0.65); margin-top: 8px; }
 

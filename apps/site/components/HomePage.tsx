@@ -160,6 +160,7 @@ export function HomePage() {
   const [showOn, setShowOn] = useState(0);
   const [suggest, setSuggest] = useState(false);
   const [reportPage, setReportPage] = useState(0);
+  const [chipsOpen, setChipsOpen] = useState(false);
   const scaleRef = useRef<HTMLElement>(null);
   const deckRef = useRef<HTMLElement>(null);
   const countRef = useRef<HTMLElement>(null);
@@ -205,6 +206,7 @@ export function HomePage() {
           card.style.transform = `scale(${1 - 0.06 * amount})`;
           card.style.filter = `blur(${3 * amount}px)`;
           card.style.opacity = String(1 - 0.45 * amount);
+          card.style.borderRadius = `${32 - 8 * amount}px`;
         });
       }
       if (!reduce && austriaRef.current) {
@@ -371,6 +373,8 @@ export function HomePage() {
               ))}
             </h2>
           </div>
+          <img className="scale-bubbles" src="/figma/home/bubbles.svg" alt="" />
+          <p className="scale-note">¹ Оценка распространённости пищевой непереносимости. Источник — ссылка на исследование (предоставит клиент)</p>
         </section>
 
         <section className="wrap deck" ref={deckRef} data-deck data-s="s04">
@@ -479,7 +483,7 @@ export function HomePage() {
             </div>
             <div className="shows-cards">
               {SHOWS.map(([title, text], index) => (
-                <article className={`show-card${index === showOn ? " is-on" : ""}`} key={title} hidden={index !== showOn}>
+                <article className={`show-card${index === showOn ? " is-on" : " is-off"}`} key={title}>
                   <h3>{title}</h3>
                   <p>{text}</p>
                   {index === 0 && (
@@ -505,34 +509,38 @@ export function HomePage() {
         </section>
 
         <section data-s="s08">
-          <div className="wrap band">
-          <h2 className="page-title">Персональная карта реакций</h2>
-          <div className="cards-2" style={{ marginTop: 24 }}>
-            <article className="panel">
-              <img className="s08-shot" key={reportPage} src={REPORT_SLIDES[reportPage][0]} alt="" />
-              <p className="meta-line">Страница {reportPage + 1} из {REPORT_SLIDES.length}</p>
-              <h3>{REPORT_SLIDES[reportPage][1]}</h3>
-              <p>{REPORT_SLIDES[reportPage][2]}</p>
-              <div className="flip-nav">
-                <button type="button" className="btn btn-ghost" onClick={() => setReportPage((n) => (n + REPORT_SLIDES.length - 1) % REPORT_SLIDES.length)}>Назад</button>
-                <button type="button" className="btn btn-dark" onClick={() => setReportPage((n) => (n + 1) % REPORT_SLIDES.length)}>Дальше</button>
+          <div className="wrap">
+            <article className="s08-card">
+              <div className="s08-copy">
+                <h2>Получите персональную карту реакций на 286 продуктов</h2>
+                <p>Уровень IgG по каждому продукту, разложенный по тринадцати категориям еды. Из отчёта видно, что убрать из рациона в первую очередь, а что трогать не нужно</p>
+                <Link className="btn btn-light" href="/report">Пример результата</Link>
+              </div>
+              <div className="s08-stack">
+                <button type="button" className="s08-nav prev" aria-label="Предыдущая страница отчёта" onClick={() => setReportPage((n) => (n + REPORT_SLIDES.length - 1) % REPORT_SLIDES.length)} />
+                <img src="/figma/report/p2.png" alt="" />
+                <img src="/figma/report/p4.png" alt="" />
+                <img className="s08-shot" key={reportPage} src={REPORT_SLIDES[reportPage][0]} alt="" />
+                <button type="button" className="s08-nav next" aria-label="Следующая страница отчёта" onClick={() => setReportPage((n) => (n + 1) % REPORT_SLIDES.length)} />
+              </div>
+              <div className="s08-glass">
+                {[
+                  ["Точные значения", "Уровень IgG в U/mL по каждому продукту"],
+                  ["Индивидуальные рекомендации", "Как исключить триггерные продукты из рациона"],
+                  ["Понятная градация", "Сразу видно, что убрать в первую очередь"],
+                ].map(([title, text]) => (
+                  <article key={title}><h3>{title}</h3><p>{text}</p></article>
+                ))}
               </div>
             </article>
-            <div className="cards-2">
-              {["Точные значения", "Индивидуальные рекомендации", "Понятная градация", "Один забор"].map((title) => (
-                <article className="panel" key={title}><h3>{title}</h3></article>
-              ))}
-            </div>
-          </div>
           </div>
         </section>
 
         <section className="wrap band" id="kak-sdat" data-s="s09">
           <h2 className="page-title">Как сдать тест</h2>
           <div className="cards-3 steps">
-            {STEPS.map(([step, title, text, src]) => (
-              <article className="step" key={step} style={{ backgroundImage: `url(${src})` }}>
-                <div className="step-mask" aria-hidden />
+            {STEPS.map(([step, title, text], index) => (
+              <article className={`step ${index === 0 ? "is-green" : "is-paper"}`} key={step}>
                 <div className="step-copy">
                   <p>{step}</p>
                   <h3>{title}</h3>
@@ -567,10 +575,11 @@ export function HomePage() {
           )}
           </div>
           {compound?.compound && query.trim().length >= 2 && <p className="hint">{compound.compound}</p>}
-          <div className="chips" data-allow-x style={{ marginTop: 16 }}>
+          <div className={`chips${chipsOpen ? " is-open" : ""}`} data-allow-x style={{ marginTop: 16 }}>
             {GROUPS.map((item) => (
               <button key={item} className={`chip${group === item ? " is-active" : ""}`} type="button" onClick={() => setGroup(item)}>{item}</button>
             ))}
+            <button className="chip chip-more" type="button" onClick={() => setChipsOpen(true)}>Показать ещё</button>
           </div>
           <div className="checker-grid">
             <div className="product-picks" data-allow-x>
@@ -591,18 +600,22 @@ export function HomePage() {
         </section>
 
         <section className="austria" data-s="s11" ref={austriaRef}>
-          <img className="parallax" src="/figma/austria/a1.png" alt="" />
-          <div className="wrap">
+          <div className="aus-copy">
             <h2 className="page-title">Тест разработан в Австрии</h2>
-            <p className="lead">FOX разработала компания MacroArray Diagnostics (MADx), Вена. С 2016 года.</p>
-            <div className="cards-4" data-allow-x style={{ marginTop: 24 }}>
+            <p>FOX — продукт венской компании MacroArray Diagnostics, основанной в 2016 году и специализирующейся на аллергодиагностике. Первый CE-маркированный IVD-продукт компания вывела на рынок в августе 2017.</p>
+            <p>В основе — иммуноферментный анализ (ELISA), общепринятая стандартная лабораторная процедура. В России и СНГ тест представляет МФК Инмунотех.</p>
+            <Link className="btn btn-light" href="/certificates">Сертификаты</Link>
+          </div>
+          <div className="aus-photo">
+            <img className="parallax" src="/figma/austria/a1.png" alt="" />
+            <div className="aus-cards">
               {[
-                ["CE-IVDR", "Европейский стандарт для медизделий in vitro диагностики", "/certificates"],
-                ["ISO 13485", "Качество медицинских изделий", "/certificates"],
-                ["ISO 9001", "Система менеджмента качества", "/certificates"],
-                ["MADx", "С 2016 года. Вена, Австрия", "/certificates"],
-              ].map(([title, text, href]) => (
-                <Link className="panel" key={title} href={href}><h3>{title}</h3><p>{text}</p></Link>
+                ["CE-IVDR", "Европейский стандарт для медизделий in vitro диагностики"],
+                ["ISO 13485", "Качество медицинских изделий"],
+                ["ISO 9001", "Система менеджмента качества"],
+                ["MADx", "С 2016 года. Вена, Австрия"],
+              ].map(([title, text]) => (
+                <Link key={title} href="/certificates"><h3>{title}</h3><p>{text}</p></Link>
               ))}
             </div>
           </div>
@@ -610,6 +623,7 @@ export function HomePage() {
 
         <section className="wrap band" data-s="s12">
           <h2 className="page-title">Сдайте тест в любой из 1500+ лабораторий</h2>
+          <p className="s12-count" aria-hidden>1500+</p>
           <p className="lead">Цена устанавливается лабораторией. Уточняйте на официальном сайте.</p>
           <div className="lab-grid">
             {LABS.map(([name, slug]) => (
@@ -625,55 +639,67 @@ export function HomePage() {
           <h2 className="page-title">Отзывы наших клиентов</h2>
           <div className="review-row" data-allow-x ref={reviewsRef}>
             <div className="review-track">
-            {[...REVIEWS, ...REVIEWS].map(([name, text], index) => (
-              <article className="review-card" key={`${name}-${index}`}>
+            {[0, 1].flatMap((copy) => [
+              <article className="review-card is-photo" key={`photo-a-${copy}`}><img src="/figma/reviews/r1.png" alt="" /></article>,
+              <article className="review-card" key={`${REVIEWS[0][0]}-${copy}`}>
                 <p className="review-stars" aria-label="5 из 5">★★★★★</p>
-                <img className="review-shot" src={`/figma/reviews/r${(index % 8) + 1}.png`} alt="" />
-                <p>{text}</p>
-                <h3>{name}</h3>
-              </article>
-            ))}
+                <p>{REVIEWS[0][1]}</p>
+                <img className="review-avatar" src="/figma/reviews/r2.png" alt="" />
+                <h3>{REVIEWS[0][0]}</h3>
+              </article>,
+              <article className="review-card is-photo" key={`photo-b-${copy}`}><img src="/figma/reviews/r5.png" alt="" /></article>,
+              <article className="review-card" key={`${REVIEWS[1][0]}-${copy}`}>
+                <p className="review-stars" aria-label="5 из 5">★★★★★</p>
+                <p>{REVIEWS[1][1]}</p>
+                <h3>{REVIEWS[1][0]}</h3>
+              </article>,
+            ])}
             </div>
           </div>
           <Link className="text-link" href="/reviews">Все отзывы <img src="/icons/arrow-right.svg" alt="" /></Link>
         </section>
 
-        <section className="wrap band" data-s="s14">
-          <h2 className="page-title">Блог</h2>
-          <div className="cards-4" data-allow-x style={{ marginTop: 24 }}>
-            {articles.slice(0, 4).map((article, index) => (
-              <Link className="panel sym-card" key={article.slug} href={`/blog/${article.slug}`}>
-                <img src={article.cover} alt="" style={{ height: 180, width: "100%", objectFit: "cover", borderRadius: 12 }} />
-                <h3>{article.title}</h3>
-              </Link>
-            ))}
+        <section className="blog-band" data-s="s14">
+          <div className="wrap">
+            <h2 className="page-title">Больше полезного в нашем блоге</h2>
+            <div className="cards-4 blog-home" data-allow-x>
+              {articles.slice(0, 4).map((article) => (
+                <Link className="blog-home-card" key={article.slug} href={`/blog/${article.slug}`}>
+                  <img src={article.cover} alt="" />
+                  <h3>{article.title}</h3>
+                  <p>{article.excerpt}</p>
+                </Link>
+              ))}
+            </div>
+            <Link className="btn btn-dark" href="/blog">Перейти в блог</Link>
           </div>
         </section>
 
         <section className="faq-band" data-s="s15">
-          <img className="bokeh" src="/figma/symptoms/s7.png" alt="" />
-          <div className="shade" />
-          <div className="wrap">
-          <h2 className="page-title" style={{ color: "white" }}>Частые вопросы</h2>
-          <div className="stack" style={{ marginTop: 20 }}>
-            {FAQ.map(([q, a], index) => {
-              const on = faq === index;
-              return (
-              <div key={q} className={`acc${on ? " is-open" : ""}`}>
-                <button type="button" aria-expanded={on} onClick={() => setFaq(on ? -1 : index)}>
-                  <strong>{q}</strong>
-                </button>
-                <div className="acc-body"><div><p>{a}</p></div></div>
+          <div className="wrap s15-grid">
+            <h2 className="page-title">Частые вопросы</h2>
+            <div>
+              <div className="stack">
+                {FAQ.map(([q, a], index) => {
+                  const on = faq === index;
+                  return (
+                  <div key={q} className={`acc${on ? " is-open" : ""}`}>
+                    <button type="button" aria-expanded={on} onClick={() => setFaq(on ? -1 : index)}>
+                      <strong>{q}</strong>
+                    </button>
+                    <div className="acc-body"><div><p>{a}</p></div></div>
+                  </div>
+                  );
+                })}
               </div>
-              );
-            })}
+              <Link href="/faq">Все вопросы →</Link>
+            </div>
           </div>
-          <Link href="/faq" style={{ color: "white" }}>Все вопросы →</Link>
-          <div className="s15-glass">
-            <h2>Остались вопросы?</h2>
+          <div className="s15-cta">
+            <h2 className="s15-desk">Остались вопросы?</h2>
+            <h2 className="s15-mob">Не нашли ответ?</h2>
             <p>Свяжитесь с нами и мы ответим в ближайшее время.</p>
-            <button className="btn btn-light" type="button" onClick={() => window.dispatchEvent(new Event("fox:contact"))}>Связаться</button>
-          </div>
+            <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:contact"))}>Связаться</button>
           </div>
         </section>
       </main>

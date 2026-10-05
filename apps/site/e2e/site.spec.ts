@@ -289,6 +289,45 @@ test("section entrance changes opacity and transform", async ({ page }, testInfo
   expect(after.transform).not.toBe(before.transform);
 });
 
+test("scrolled pages leave no section at opacity 0", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "1440" && testInfo.project.name !== "375");
+  test.setTimeout(180_000);
+  const paths = [...PAGES, "/blog/skrytaya-neperenosimost-laktozy-i-glyutena", "/blog/authors/kseniya-ellinskaya", "/net-takoy-stranicy"];
+  for (const path of paths) {
+    await page.goto(path);
+    await ready(page);
+    await page.evaluate(async () => {
+      const step = Math.max(240, window.innerHeight * 0.7);
+      const max = document.documentElement.scrollHeight;
+      for (let y = 0; y <= max; y += step) {
+        window.scrollTo(0, y);
+        await new Promise((resolve) => setTimeout(resolve, 40));
+      }
+      window.scrollTo(0, max);
+    });
+    // riseY is 600ms plus a stagger of 80ms per child, so a short wait still sees opacity 0.
+    await page.waitForFunction(() => {
+      const stuck: string[] = [];
+      document.querySelectorAll<HTMLElement>("[data-s]").forEach((section) => {
+        if (section.offsetHeight < 8 || getComputedStyle(section).display === "none") return;
+        const kids = section.classList.contains("wrap")
+          ? [...section.children]
+          : [...(section.querySelector(":scope > .wrap")?.children ?? section.children)];
+        kids.forEach((kid) => {
+          const node = kid as HTMLElement;
+          if (node.offsetHeight < 8 || getComputedStyle(node).display === "none") return;
+          if (Number(getComputedStyle(node).opacity) < 0.9) stuck.push(section.getAttribute("data-s") || "");
+        });
+      });
+      (window as unknown as { __opacityStuck?: string[] }).__opacityStuck = stuck.slice(0, 8);
+      return stuck.length === 0;
+    }, undefined, { timeout: 5000 }).catch(async () => {
+      const stuck = await page.evaluate(() => (window as unknown as { __opacityStuck?: string[] }).__opacityStuck ?? ["timeout"]);
+      expect(stuck, path).toEqual([]);
+    });
+  }
+});
+
 test("escape closes the certificate lightbox", async ({ page }) => {
   await page.goto("/certificates");
   await ready(page);

@@ -51,15 +51,11 @@ export function SiteOverlays() {
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const nodes = [...document.querySelectorAll<HTMLElement>("[data-s]")];
-    if (reduce) {
-      nodes.forEach((node) => node.classList.add("is-in"));
-      return;
-    }
+    const seen = new Set<Element>();
     const mark = () => {
       const limit = window.scrollY + window.innerHeight * 0.92;
-      nodes.forEach((node) => {
-        if (node.getBoundingClientRect().top + window.scrollY <= limit) node.classList.add("is-in");
+      document.querySelectorAll<HTMLElement>("[data-s]:not(.is-in)").forEach((node) => {
+        if (reduce || node.getBoundingClientRect().top + window.scrollY <= limit) node.classList.add("is-in");
       });
     };
     const io = new IntersectionObserver(
@@ -70,18 +66,36 @@ export function SiteOverlays() {
       },
       { rootMargin: "0px 0px -15% 0px", threshold: 0 },
     );
-    nodes.forEach((node) => io.observe(node));
-    mark();
+    const observeNew = () => {
+      document.querySelectorAll<HTMLElement>("[data-s]").forEach((node) => {
+        if (seen.has(node)) return;
+        seen.add(node);
+        if (reduce) node.classList.add("is-in");
+        else io.observe(node);
+      });
+      mark();
+    };
+    observeNew();
+    const mo = new MutationObserver(observeNew);
+    mo.observe(document.body, { childList: true, subtree: true });
+    const poll = window.setInterval(observeNew, 200);
+    const stop = window.setTimeout(() => window.clearInterval(poll), 2500);
     window.addEventListener("scroll", mark, { passive: true });
+    window.addEventListener("resize", mark);
     return () => {
       io.disconnect();
+      mo.disconnect();
+      window.clearInterval(poll);
+      window.clearTimeout(stop);
       window.removeEventListener("scroll", mark);
+      window.removeEventListener("resize", mark);
     };
   }, [path]);
 
   useEffect(() => {
     const marks = () => {
-      const y = window.scrollY + 120;
+      const header = document.querySelector(".site-header")?.getBoundingClientRect().height ?? 72;
+      const y = window.scrollY + header + 88;
       const links = [...document.querySelectorAll<HTMLElement>(".f-nav a, .pr02 nav a")];
       const active: { link: HTMLElement | null; top: number } = { link: null, top: -1 };
       links.forEach((link) => link.classList.remove("is-on"));

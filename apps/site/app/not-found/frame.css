@@ -25,13 +25,16 @@
 [data-s="e02"] { padding: 24px 0 64px; }
 .e02 h2 { font-weight: 300; font-size: 32px; line-height: 36px; margin-bottom: 20px; }
 .e-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.e-tiles a { display: flex; flex-direction: column; gap: 8px; min-height: 140px; background: #fff; border-radius: 20px; padding: 20px; border: 1px solid rgba(11, 12, 8, 0.08); color: inherit; min-width: 0; }
+.e-tiles a { position: relative; display: flex; flex-direction: column; gap: 8px; min-height: 140px; background: #fff; border-radius: 20px; padding: 20px 48px 20px 64px; border: 1px solid rgba(11, 12, 8, 0.08); color: inherit; min-width: 0; }
+.e-tiles a::before { content: ""; position: absolute; left: 16px; top: 20px; width: 36px; height: 36px; border-radius: 99px; background: #e7f551; }
+.e-tiles a::after { content: "→"; position: absolute; right: 16px; top: 24px; font-size: 18px; }
 .e-tiles h3 { font-weight: 500; font-size: 20px; }
 .e-tiles p { color: rgba(11, 12, 8, 0.65); }
 
 @media (max-width: 1099px) {
   [data-s="e01"] h1:not(.e-a11y) { font-size: 40px; line-height: 44px; }
   .e01, .e-tiles { grid-template-columns: 1fr; }
+  .e-plate { order: -1; }
   .e01 > img, .e-plate img { height: 160px; }
   .e-tiles a { min-height: 0; padding: 14px; }
   .e-four { font-size: 72px; }
