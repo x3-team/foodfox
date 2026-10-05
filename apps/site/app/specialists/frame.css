@@ -716,8 +716,8 @@
   }
   [data-s="p03"] .sp-arg-visual { grid-row: 1 / span 3; width: 96px; height: 96px; overflow: hidden; }
   [data-s="p03"] .sp-arg .sp-kicker,
-  [data-s="p03"] .sp-arg .sp-note,
   [data-s="p03"] .sp-practice { display: none; }
+  [data-s="p03"] .sp-arg .sp-note { display: block; margin: 0; }
   [data-s="p03"] .sp-arg p { font-size: 14px; line-height: 18px; margin: 0; }
   [data-s="p03"] .sp-arg h3 { margin-top: 0; font-size: 14px; line-height: 18px; font-weight: 500; }
   [data-s="p05"] .sp-proto-head { display: contents; }

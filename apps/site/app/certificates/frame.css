@@ -19,17 +19,14 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
 [data-s="c01"] h1 { font-weight: 300; font-size: 64px; line-height: 68px; letter-spacing: -2px; max-width: 720px; margin: 12px 0; }
 .c-facts { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 20px 0 0; padding: 0; }
 .c-facts li {
-  display: flex; flex-direction: column; gap: 4px; min-width: 0;
-  background: #fff; border-radius: 16px; padding: 16px 18px;
+  display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: 8px; row-gap: 2px; align-items: center;
+  min-width: 0; background: #fff; border-radius: 16px; padding: 16px 18px;
   box-shadow: 0 8px 24px rgba(11, 12, 8, 0.08);
 }
 .c-facts li::before { content: none; }
-.c-fact-ico {
-  width: 28px; height: 28px; box-sizing: border-box; margin-bottom: 8px;
-  padding: 7px; border-radius: 99px; background: #e7f551; object-fit: contain;
-}
-.c-facts b { font-weight: 300; font-size: 20px; line-height: 24px; }
-.c-facts span { color: rgba(11, 12, 8, 0.65); font-size: 14px; }
+.c-fact-ico { width: 16px; height: 16px; grid-row: 1; object-fit: contain; }
+.c-facts b { grid-column: 2; grid-row: 1; font-weight: 500; font-size: 16px; line-height: 20px; }
+.c-facts span { grid-column: 2; color: rgba(11, 12, 8, 0.65); font-size: 14px; line-height: 18px; }
 .c-stack { position: relative; height: 460px; }
 .c-stack img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .c-stack span, .c-stack em {
