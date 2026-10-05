@@ -228,9 +228,9 @@ function BookModal({ onClose }: { onClose: () => void }) {
             <p className="book-progress" aria-hidden><i style={{ width: "40%" }} /></p>
             <p className="meta-line">Шаг 2 — сеть</p>
             <h2>Выберите лабораторию в {inCity(chosen.name)}</h2>
-            <div className="book-list" role="radiogroup" aria-label="Сеть лабораторий">
+            <div className="book-list" aria-label="Сеть лабораторий">
               {chosen.labs.map((item) => (
-                <button key={item.id} type="button" role="radio" aria-checked={lab?.id === item.id} className={`book-lab${lab?.id === item.id ? " is-on" : ""}`} onClick={() => { setLab(item); setStep("redirect"); }}>
+                <button key={item.id} type="button" aria-pressed={lab?.id === item.id} className={`book-lab${lab?.id === item.id ? " is-on" : ""}`} onClick={() => { setLab(item); setStep("redirect"); }}>
                   <img src={`/figma/labs/${item.id}.svg`} alt="" width={88} height={28} />
                   <span><strong>{item.name}</strong><small>{item.count}</small></span>
                   <i className="book-radio" />

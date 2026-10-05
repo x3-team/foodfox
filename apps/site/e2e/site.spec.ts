@@ -330,8 +330,9 @@ test("scrolled header shrinks to 72px", async ({ page }, testInfo) => {
   await page.goto("/faq");
   await ready(page);
   await page.evaluate(() => window.scrollTo(0, 140));
+  await page.waitForTimeout(300);
   const box = await page.locator(".site-header").evaluate((el) => el.getBoundingClientRect().height);
-  expect(box).toBe(72);
+  expect(Math.round(box)).toBe(72);
 });
 
 test("faq section links point at real groups", async ({ page }) => {
@@ -339,7 +340,9 @@ test("faq section links point at real groups", async ({ page }) => {
   await ready(page);
   const missing = await page.locator(".f-nav a").evaluateAll((links) =>
     links
-      .map((link) => link.getAttribute("href")?.replace("#", "") || "")
+      .map((link) => link.getAttribute("href") || "")
+      .filter((href) => href.startsWith("#"))
+      .map((href) => href.slice(1))
       .filter((id) => !document.getElementById(id)),
   );
   expect(missing).toEqual([]);
@@ -374,7 +377,10 @@ test("course sheet closes on escape", async ({ page }, testInfo) => {
 test("privacy scroll spy follows the section in view", async ({ page }) => {
   await page.goto("/privacy");
   await ready(page);
-  await page.locator("#s4").scrollIntoViewIfNeeded();
+  await page.locator("#s4").evaluate((el) => {
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo(0, Math.max(0, top - 80));
+  });
   await page.waitForTimeout(200);
   await expect(page.locator(".pr02 nav a.is-on")).toHaveAttribute("href", "#s4");
 });

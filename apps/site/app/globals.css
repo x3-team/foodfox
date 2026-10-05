@@ -62,6 +62,7 @@ main:has(> .dark-hero) { padding-top: 0; }
   border-bottom: 1px solid transparent;
   transition: background 200ms var(--ease), box-shadow 200ms var(--ease), border-color 200ms var(--ease), height 200ms var(--ease), color 200ms var(--ease), transform 280ms var(--ease);
 }
+.site-header { box-sizing: border-box; }
 .site-header.is-scrolled {
   height: 72px;
   background: rgba(248, 249, 246, 0.92);
@@ -1093,8 +1094,6 @@ th { font-size: 14px; line-height: 18px; color: var(--ink-65); font-weight: 400;
 @keyframes dotIn { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: none; } }
 .show-card { transition: opacity 300ms var(--ease), transform 300ms var(--ease); }
 .show-card.is-on { opacity: 1; transform: translateY(-4px); }
-.orbit-ring.r1 { width: 280px; height: 280px; right: 8%; top: 12%; }
-.orbit-ring.r2 { width: 160px; height: 160px; right: 18%; bottom: 10%; }
 .orbit-dot { position: absolute; width: 10px; height: 10px; border-radius: 99px; background: #e7f551; }
 .shows-band .page-title, .shows-band h3 { color: white; }
 .shows-band .show-card { background: rgba(16,20,0,.35); color: white; border-color: rgba(248,249,246,.16); }
@@ -1283,6 +1282,7 @@ th { font-size: 14px; line-height: 18px; color: var(--ink-65); font-weight: 400;
 .shows-band .show-card { background: #bbbb91; color: #f8f9f6; border: 0; }
 .shows-pin .lead { max-width: 345px; }
 .shows-cards { display: flex; justify-content: flex-end; }
+.show-card[hidden] { display: none !important; }
 .show-card {
   position: relative; width: min(438px, 100%); background: #bbbb91; color: #f8f9f6;
   border-radius: 8px; padding: 24px 24px 48px; min-height: 560px; overflow: hidden;
@@ -1364,8 +1364,11 @@ mark.hit { background: var(--lime); color: inherit; padding: 0 2px; }
   .symptom-band { padding: 48px 0; }
   .symptom-band .page-title { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; margin-bottom: 24px; }
   .sym-card { height: 420px; flex: 0 0 78%; }
+  .shows, .shows-pin, .shows-cards, .show-card { min-width: 0; max-width: 100%; }
   .shows { min-height: 0; grid-template-columns: 1fr; }
   .shows-pin { min-height: 0; gap: 16px; }
+  .show-card { width: 100%; }
+  .orbit-svg { display: none; }
   .shows-pin .page-title, .shows-band .page-title { font-size: 36px; line-height: 40px; }
   .show-card { min-height: 420px; }
   .step { min-height: 280px; }
