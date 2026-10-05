@@ -952,7 +952,8 @@ th { font-size: 14px; line-height: 18px; color: var(--ink-65); font-weight: 400;
   .toc, .aside { position: static; }
   .columns, .faq-layout { grid-template-columns: 1fr; }
   .columns li { grid-template-columns: 1fr; }
-  .article-top h1, .prose, .profile h1, .featured h2 { overflow-wrap: normal; hyphens: manual; }
+  .article-top h1, .prose, .profile h1, .featured h2 { overflow-wrap: break-word; hyphens: manual; }
+  .article-top h1 { font-size: 32px; line-height: 36px; max-width: 100%; }
   .article-grid, .profile, .prose, .columns { min-width: 0; }
   .filter-row { display: flex; flex-direction: column; align-items: stretch; }
   .tools { order: -1; width: 100%; }
