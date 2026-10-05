@@ -696,6 +696,7 @@ export function HomePage() {
                   <div key={q} className={`acc${on ? " is-open" : ""}`}>
                     <button type="button" aria-expanded={on} onClick={() => setFaq(on ? -1 : index)}>
                       <strong>{q}</strong>
+                      <img className="acc-chevron" src="/icons/chevron-down.svg" alt="" width={16} height={16} />
                     </button>
                     <div className="acc-body"><div><p>{a}</p></div></div>
                   </div>

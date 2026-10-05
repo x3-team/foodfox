@@ -112,6 +112,18 @@ export function FaqPage() {
   const [q, setQ] = useState("");
   const [nav, setNav] = useState("method");
   const [showAll, setShowAll] = useState(false);
+  useEffect(() => {
+    const openHash = () => {
+      const id = window.location.hash.replace("#", "");
+      if (!FAQ_GROUPS.some((group) => group.id === id)) return;
+      setShowAll(true);
+      setNav(id);
+      window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 0);
+    };
+    openHash();
+    window.addEventListener("hashchange", openHash);
+    return () => window.removeEventListener("hashchange", openHash);
+  }, []);
   const query = q.trim().toLowerCase();
   const groups = FAQ_GROUPS.map((group) => ({
     ...group,

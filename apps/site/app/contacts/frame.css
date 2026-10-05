@@ -64,6 +64,34 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .k-routes img { width: 16px; height: 16px; }
 .k-routes article:first-child { background: #f6fbc8; border-color: transparent; }
 
+@media (min-width: 1101px) {
+  .k-cards article { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .k-cards .k-strong,
+  .k-cards a.k-value,
+  .k-cards p.k-strong { font-size: 20px; line-height: 24px; color: #0b0c08; }
+  .k-note {
+    display: block;
+    width: auto;
+    max-width: 520px;
+    background: #efe6d4;
+    border-radius: 16px;
+    padding: 16px 20px;
+    font-size: 16px;
+    line-height: 22px;
+  }
+  .k03 .who-tabs {
+    width: fit-content;
+    gap: 4px;
+    margin: 16px 0;
+    padding: 4px;
+    border: 1px solid rgba(11, 12, 8, 0.1);
+    border-radius: 999px;
+    background: #fff;
+  }
+  .k03 .who-tabs button { height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; }
+  .k03 .who-tabs button.is-active { background: #0b0c08; color: #f8f9f6; border-bottom-color: transparent; }
+}
+
 @media (max-width: 1099px) {
   [data-s="k01"] h1 { font-size: 40px; line-height: 44px; }
   .k01-row, .k-cards, .k03, .k-routes { grid-template-columns: 1fr; }

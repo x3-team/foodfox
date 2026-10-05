@@ -271,7 +271,7 @@ export function ArticleView({ article }: { article: Article }) {
             </aside>
           </div>
         </article>
-        <section className="wrap related">
+        <section className="wrap related article-related">
           <div className="related-head">
             <h2>Также рекомендуем</h2>
             <Link className="text-link" href="/blog">

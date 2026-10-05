@@ -43,4 +43,5 @@
   [data-s="pr01"] h1 { font-size: 36px; line-height: 40px; }
   .pr-short ul, .pr02, .pr-rights { grid-template-columns: 1fr; }
   .pr02 aside { position: static; }
+  body .pr-body aside.pr-call > p { font-size: 20px; line-height: 24px; }
 }
