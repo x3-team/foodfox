@@ -255,11 +255,15 @@
   }
   .ls-sticky {
     display: flex; flex-direction: column; position: static; order: 5; align-items: stretch;
-    width: 100%; background: #101400; color: #f8f9f6; border-radius: 16px;
+    width: 100%; background: #fff; color: #0b0c08; border-radius: 16px;
+    border: 1px solid rgba(11, 12, 8, 0.08);
     padding: 10px 14px; margin-top: 4px; gap: 8px; font-size: 14px; line-height: 18px;
+    box-shadow: 0 8px 24px rgba(11, 12, 8, 0.06);
   }
-  .ls-sticky span, .ls-sticky strong { font-size: 14px; line-height: 18px; font-weight: 400; }
-  .ls-sticky-rule { display: block; height: 1px; width: 100%; margin: 1px 0; background: rgba(248, 249, 246, 0.55); }
+  .ls-sticky span, .ls-sticky strong { font-size: 14px; line-height: 18px; font-weight: 400; color: #0b0c08; }
+  .ls-sticky span { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .ls-sticky-chev { width: 16px; height: 16px; transform: rotate(180deg); }
+  .ls-sticky-rule { display: block; height: 1px; width: 100%; margin: 1px 0; background: rgba(11, 12, 8, 0.12); }
   .ls-main { order: 1; }
   .kf-lesson-body { flex-direction: column; }
   .kf-lesson-body > div { width: 100%; }

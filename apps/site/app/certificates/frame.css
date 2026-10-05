@@ -19,14 +19,18 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
 [data-s="c01"] h1 { font-weight: 300; font-size: 64px; line-height: 68px; letter-spacing: -2px; max-width: 720px; margin: 12px 0; }
 .c-facts { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 20px 0 0; padding: 0; }
 .c-facts li {
-  display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: 8px; row-gap: 2px; align-items: center;
-  min-width: 0; background: #fff; border-radius: 16px; padding: 16px 18px;
+  display: grid; grid-template-columns: 18px minmax(0, 1fr); column-gap: 10px; row-gap: 0; align-items: center;
+  min-width: 0; background: #fff; border-radius: 16px; padding: 8px 14px; box-sizing: border-box;
   box-shadow: 0 8px 24px rgba(11, 12, 8, 0.08);
 }
 .c-facts li::before { content: none; }
-.c-fact-ico { width: 16px; height: 16px; grid-row: 1; object-fit: contain; }
-.c-facts b { grid-column: 2; grid-row: 1; font-weight: 500; font-size: 16px; line-height: 20px; }
-.c-facts span { grid-column: 2; color: rgba(11, 12, 8, 0.65); font-size: 14px; line-height: 18px; }
+.c-fact-ico { width: 18px; height: 18px; grid-row: 1 / span 2; object-fit: contain; }
+.c-facts b { grid-column: 2; grid-row: 1; font-weight: 300; font-size: 20px; line-height: 22px; }
+.c-facts span { grid-column: 2; grid-row: 2; color: rgba(11, 12, 8, 0.65); font-size: 13px; line-height: 16px; white-space: nowrap; }
+@media (min-width: 1101px) {
+  .c-facts li { height: 58px; }
+  .c-stack > p { display: none; }
+}
 .c-stack { position: relative; height: 460px; }
 .c-stack img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .c-stack span, .c-stack em {
@@ -40,6 +44,9 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
 .c-stack span:first-of-type { left: 150px; top: 70px; transform: rotate(2deg); width: 260px; height: 340px; }
 .c-stack em { left: 108px; top: 110px; width: 260px; height: 340px; transform: rotate(2deg); display: block; font-style: normal; }
 .c-stack p { position: relative; z-index: 1; display: inline-flex; background: #0b0c08; color: #fff; border-radius: 999px; padding: 8px 12px; font-size: 14px; }
+@media (min-width: 1101px) {
+  .c-stack p { display: none; }
+}
 
 [data-s="c02"] { padding: 64px 0; }
 .c02 { display: flex; flex-direction: column; gap: 24px; }

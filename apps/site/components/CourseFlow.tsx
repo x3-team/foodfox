@@ -652,7 +652,7 @@ export function LessonsPage() {
             </div>
           </div>
           <button type="button" className="ls-sticky" aria-label="Программа курса" onClick={() => setSheet(true)}>
-            <span>Программа · урок {current + 1} из 6</span>
+            <span>Программа · урок {current + 1} из 6<img className="ls-sticky-chev" src="/icons/chevron-down.svg" alt="" width={16} height={16} /></span>
             <i className="ls-sticky-rule" aria-hidden="true" />
             <strong>Далее: {current < 5 ? LESSONS[current + 1].short : "сертификат"}</strong>
           </button>

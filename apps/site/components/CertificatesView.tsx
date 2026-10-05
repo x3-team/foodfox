@@ -35,9 +35,9 @@ export function CertificatesView() {
                 <h1>Сертификаты и документы</h1>
                 <p className="fx-lead">FOX Food Xplorer производит австрийская MacroArray Diagnostics. Ниже — документы о качестве и регистрации, без обещаний эффективности для конкретного человека.</p>
                 <ul className="c-facts">
-                  <li><img className="c-fact-ico" src="/figma/icons/copy.svg" alt="" width={16} height={16} /><b>CE-IVDR</b><span>европейская маркировка IVD</span></li>
-                  <li><img className="c-fact-ico" src="/figma/icons/copy.svg" alt="" width={16} height={16} /><b>ISO 13485</b><span>система качества изделий</span></li>
-                  <li><img className="c-fact-ico" src="/figma/icons/copy.svg" alt="" width={16} height={16} /><b>РУ РФ</b><span>обращение на территории России</span></li>
+                  <li><img className="c-fact-ico" src="/figma/icons/file.svg" alt="" width={18} height={18} /><b>CE-IVDR</b><span>медизделие для IVD в ЕС</span></li>
+                  <li><img className="c-fact-ico" src="/figma/icons/file.svg" alt="" width={18} height={18} /><b>ISO 13485</b><span>качество производства</span></li>
+                  <li><img className="c-fact-ico" src="/figma/icons/file.svg" alt="" width={18} height={18} /><b>РУ РФ</b><span>обращение в России</span></li>
                 </ul>
               </div>
               <div className="c-stack" aria-hidden="true">
