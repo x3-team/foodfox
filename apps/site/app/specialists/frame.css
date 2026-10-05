@@ -732,19 +732,22 @@
     overflow: hidden;
   }
   [data-s="p01"].dark-hero img.bg {
-    position: relative;
-    inset: auto;
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
-    height: 220px;
+    height: 100%;
     max-width: none;
     object-fit: cover;
-    object-position: center 22%;
+    object-position: 78% top;
     animation: none;
     transform: none;
   }
-  [data-s="p01"] .shade { display: none; }
-  [data-s="p01"].dark-hero .inner { position: relative; z-index: 2; padding: 16px 0 24px; }
+  [data-s="p01"] .shade {
+    display: block;
+    background: linear-gradient(180deg, rgba(11, 12, 8, 0.05) 0%, rgba(11, 12, 8, 0.28) 18%, rgba(11, 12, 8, 0.82) 34%, rgba(11, 12, 8, 0.92) 100%);
+  }
+  [data-s="p01"].dark-hero .inner { position: relative; z-index: 2; padding: 200px 0 24px; }
   [data-s="p01"] .sp-pills span:first-child { background: #e7f551; color: #0b0c08; border-color: transparent; }
   [data-s="p01"] .sp-pills span:last-child { background: #21251d; color: #f8f9f6; border-color: transparent; }
   [data-s="p01"] .sp-cta { flex-direction: column; align-items: stretch; }
