@@ -570,6 +570,7 @@ export function HomePage() {
           <label className="search">
             <img src="/icons/search.svg" alt="" />
             <input data-hotkey value={query} onChange={(event) => { setQuery(event.target.value); setSuggest(true); }} onFocus={() => setSuggest(true)} placeholder="Например, казеин, гречка или солея" aria-label="Поиск продукта" />
+            <button className="s10-find" type="button">Найти</button>
           </label>
           {suggest && query.trim().length >= 2 && (
             <div className="suggest-list" role="listbox">
@@ -600,7 +601,7 @@ export function HomePage() {
               <h3>{picked.name}</h3>
               <p>{picked.group}. В панели это отдельная позиция, не полка целиком.</p>
               <p>Исключать продукт и подбирать замены стоит только вместе со специалистом — чтобы рацион оставался полноценным.</p>
-              <p className="meta-line">Показано {PRODUCTS.length} из 286 · полный состав панели уточняет лаборатория</p>
+              <p className="meta-line">Показано {Math.min(14, shown.length)} из 286 · полный состав панели уточняет лаборатория</p>
             </article>
           </div>
         </section>

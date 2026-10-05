@@ -426,7 +426,10 @@ export function BlogFeed() {
             </div>
           )}
           {pageItems.length > 4 && !expanded && (
-            <button className="btn btn-ghost blog-more" type="button" onClick={() => setExpanded(true)}>Показать ещё</button>
+            <button className="btn blog-more" type="button" onClick={() => setExpanded(true)}>Показать ещё</button>
+          )}
+          {pageItems.length > 0 && (
+            <p className="blog-shown">Показано {expanded || pageItems.length <= 4 ? pageItems.length : Math.min(4, pageItems.length)} из {gridArticles.length}</p>
           )}
           {pageItems.length > 0 && (
             <nav className="pager" aria-label="Страницы">

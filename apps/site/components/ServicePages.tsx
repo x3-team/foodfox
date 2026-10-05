@@ -711,7 +711,7 @@ export function ReviewsPage() {
               <div>
                 <h1>Отзывы</h1>
                 <p className="fx-lead">Истории людей, которые сдали тест FOX, и специалистов, которые разбирают отчёт на приёме. Публикуем после модерации.</p>
-                <p className="v-rate"><b>4.8</b><span className="v-stars" aria-hidden="true">★★★★★</span></p>
+                <p className="v-rate"><b>4,9</b><span className="v-stars" aria-hidden="true">★★★★★</span><span className="v-rate-note">312 отзывов</span></p>
                 <p className="v-meta">312 отзывов после модерации</p>
                 <p className="v-avatars">
                   <span><img src="/figma/reviews/r1.png" alt="" /><img src="/figma/reviews/r2.png" alt="" /><img src="/figma/reviews/r3.png" alt="" /><img src="/figma/reviews/r4.png" alt="" /></span>

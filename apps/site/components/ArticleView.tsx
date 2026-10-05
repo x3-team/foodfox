@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -107,6 +107,8 @@ export function ArticleView({ article }: { article: Article }) {
   const [progress, setProgress] = useState(0);
   const [toast, setToast] = useState(false);
   const [copied, setCopied] = useState(false);
+  const railRef = useRef<HTMLDivElement>(null);
+  const [slide, setSlide] = useState(0);
   const sameCategory = articles.filter((item) => item.slug !== article.slug && item.category === article.category);
   const related = [...sameCategory, ...articles.filter((item) => item.slug !== article.slug && item.category !== article.category)].slice(0, 4);
   const more = articles.filter((item) => item.author === author.slug && item.slug !== article.slug).slice(0, 3);
@@ -129,6 +131,28 @@ export function ArticleView({ article }: { article: Article }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [article.slug]);
+
+  useEffect(() => {
+    const node = railRef.current;
+    if (!node) return;
+    const onScroll = () => {
+      const cards = [...node.children] as HTMLElement[];
+      if (!cards.length) return;
+      let best = 0;
+      let dist = Infinity;
+      cards.forEach((card, index) => {
+        const delta = Math.abs(card.offsetLeft - node.scrollLeft);
+        if (delta < dist) {
+          dist = delta;
+          best = index;
+        }
+      });
+      setSlide(best);
+    };
+    onScroll();
+    node.addEventListener("scroll", onScroll, { passive: true });
+    return () => node.removeEventListener("scroll", onScroll);
+  }, [article.slug, related.length]);
 
   async function copyLink() {
     try {
@@ -278,9 +302,15 @@ export function ArticleView({ article }: { article: Article }) {
               Все материалы <img src="/icons/arrow-right.svg" alt="" />
             </Link>
           </div>
-          <div className="grid" data-allow-x>
+          <div className="grid" data-allow-x ref={railRef}>
             {related.map((item, index) => (
               <ArticleCard key={item.slug} article={item} index={index} />
+            ))}
+          </div>
+          <p className="related-count">{slide + 1} / {related.length}</p>
+          <div className="related-dots" aria-hidden="true">
+            {related.map((item, index) => (
+              <i key={item.slug} className={index === slide ? "is-on" : ""} />
             ))}
           </div>
         </section>

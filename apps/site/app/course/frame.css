@@ -213,18 +213,18 @@
   .kf-includes-in { padding: 40px 0; gap: 24px; }
   .ls-main { gap: 12px; }
   .ls-player { height: 249px; }
-  .ls-actions { min-height: 0; width: 100%; flex-direction: column; align-items: stretch; }
-  .ls-actions .btn-dark { width: 100%; justify-content: center; }
-  .ls-actions .ls-quiet, .ls-actions .text-link { display: inline-flex; }
+  .ls-actions { min-height: 0; width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .ls-actions .btn-dark { flex: 1 1 100%; width: auto; justify-content: center; }
+  .ls-actions .ls-quiet, .ls-actions .text-link { display: inline-flex; flex: 1 1 auto; justify-content: center; }
   .ls-about { min-height: 0; padding: 16px; max-height: none; overflow: visible; }
   .ls-open { display: none; }
   .ls-tabs { order: 2; }
   .ls-progress, .ls-tabs, .ls-sticky { display: flex; }
-  .ls-progress { order: 6; align-items: center; gap: 8px; font-size: 13px; }
+  .ls-progress { order: -1; width: 100%; align-items: center; gap: 8px; font-size: 14px; }
   .ls-progress i { flex: 1; height: 4px; background: rgba(11,12,8,.12); border-radius: 99px; overflow: hidden; }
   .ls-progress b { display: block; height: 100%; background: #101400; }
-  .ls-player { order: 0; }
-  .ls-title { order: 1; }
+  .ls-title { order: 0; }
+  .ls-player { order: 1; }
   .ls-actions { order: 2; width: 100%; }
   .ls-tabs { order: 3; }
   .ls-about { order: 4; }
@@ -233,9 +233,10 @@
   .kf-final > img, [data-s="k07"] .kf-includes-shade { display: none; }
   .kf-final h2, .kf-final p, .kf-final span, .kf-disclaimer { color: #0b0c08 !important; }
   .kf-final-in { align-items: flex-start; text-align: left; }
-  .ls-tabs { gap: 8px; }
-  .ls-tabs button { height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(11,12,8,.12); background: #fff; }
+  .ls-tabs { gap: 0; width: 100%; padding: 4px; border-radius: 999px; background: #e4e5dc; }
+  .ls-tabs button { flex: 1; height: 36px; padding: 0 8px; border-radius: 999px; border: 0; background: transparent; font-size: 14px; line-height: 18px; }
   .ls-tabs button.is-on { background: #101400; color: #f8f9f6; }
+  body .kf-aud-foot span:last-child { font-size: 14px; line-height: 18px; }
   .ls-sticky {
     display: flex; position: sticky; bottom: 0; order: 5; justify-content: space-between;
     background: #101400; color: #f8f9f6; border-radius: 16px; padding: 14px 16px; margin-top: 12px;
