@@ -848,7 +848,10 @@ th { font-size: 14px; line-height: 18px; color: var(--ink-65); font-weight: 400;
 .burger span:nth-child(1) { top: 15px; }
 .burger span:nth-child(2) { top: 21px; }
 .burger span:nth-child(3) { top: 27px; }
+.site-header:has(.mobile-menu) { z-index: 90; }
 .site-header:has(.mobile-menu) .burger { color: #fff; }
+body:has(.ls-layout) .m04 { display: none; }
+body:has(.mobile-menu) .ls-sticky { display: none !important; }
 .burger.is-x span:nth-child(1) { top: 21px; transform: rotate(45deg); }
 .burger.is-x span:nth-child(2) { opacity: 0; }
 .burger.is-x span:nth-child(3) { top: 21px; transform: rotate(-45deg); }

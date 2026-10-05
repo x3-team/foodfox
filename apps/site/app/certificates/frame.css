@@ -28,7 +28,7 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
 .c-facts b { grid-column: 2; grid-row: 1; font-weight: 300; font-size: 20px; line-height: 22px; }
 .c-facts span { grid-column: 2; grid-row: 2; color: rgba(11, 12, 8, 0.65); font-size: 13px; line-height: 16px; white-space: nowrap; }
 @media (min-width: 1101px) and (max-width: 1329px) {
-  .c-facts span { white-space: normal; overflow-wrap: anywhere; font-size: 11px; line-height: 14px; }
+  .c-facts span { white-space: normal; overflow-wrap: anywhere; font-size: 13px; line-height: 16px; }
   .c-facts li { height: auto; min-height: 58px; align-items: start; padding-top: 10px; padding-bottom: 10px; }
 }
 @media (min-width: 1330px) {
@@ -95,7 +95,7 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
 .c05 b { font-weight: 300; font-size: 32px; line-height: 36px; order: 0; }
 .c05 span { order: 2; }
 
-@media (max-width: 1099px) {
+@media (max-width: 1100px) {
   [data-s="c01"] h1 { font-size: 40px; line-height: 44px; }
   .c01-row, .c-docs, .c03, .c04, .c05 ol { grid-template-columns: 1fr; }
   .cert-card { height: auto; }
@@ -105,16 +105,16 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
   .c-stack em { left: 16%; top: 28px; width: 48%; height: 180px; }
   .c03 img, .c04 img { height: 180px; }
   [data-s="c01"], [data-s="c03"], [data-s="c04"] { padding-top: 32px; padding-bottom: 32px; }
-  .c-facts { grid-template-columns: 1fr; }
+  .c-facts { grid-template-columns: 1fr; gap: 8px; }
   .c-facts li, .c04 li { padding: 8px 14px; }
   [data-s="c01"] .c-facts li {
     display: flex; flex-direction: row; align-items: center; gap: 10px;
-    height: 56px; min-height: 56px; box-sizing: border-box;
+    height: 58px; min-height: 58px; box-sizing: border-box;
   }
   [data-s="c01"] .c-fact-ico { flex: 0 0 18px; width: 18px; height: 18px; grid-row: auto; }
   [data-s="c01"] .c-facts b {
     flex: 0 0 auto; grid-column: unset; grid-row: unset;
-    font-weight: 300; font-size: 16px; line-height: 20px;
+    font-weight: 300; font-size: 24px; line-height: 28px;
   }
   [data-s="c01"] .c-facts span {
     flex: 1 1 auto; min-width: 0; grid-column: unset; grid-row: unset;

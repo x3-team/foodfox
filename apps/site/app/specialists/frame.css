@@ -768,6 +768,7 @@
   .sp-spec-row { display: contents; }
 }
 @media (max-width: 480px) {
+  [data-s="p09"] .sp-bar { width: 40px; max-width: 40px; }
   .sp-sec, .sp-report { padding: 16px 0; }
   .sp-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .sp-spec-row { display: contents; }

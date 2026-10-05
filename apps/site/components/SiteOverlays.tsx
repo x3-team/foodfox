@@ -37,8 +37,9 @@ export function SiteOverlays() {
   useEffect(() => {
     const onScroll = () => {
       const mobile = window.matchMedia("(max-width: 1100px)").matches;
+      const onLesson = path.startsWith("/course/lessons");
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      setBar(mobile && max > 80 && window.scrollY / max > 0.3);
+      setBar(mobile && !onLesson && max > 80 && window.scrollY / max > 0.3);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
