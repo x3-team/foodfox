@@ -72,6 +72,10 @@ export function Header() {
   }, [path]);
 
   useEffect(() => {
+    if (menu) setHidden(false);
+  }, [menu]);
+
+  useEffect(() => {
     document.body.style.overflow = menu ? "hidden" : "";
     if (!menu) return;
     const onKey = (event: KeyboardEvent) => {
@@ -118,7 +122,19 @@ export function Header() {
         ) : (
           <Link className="btn btn-dark" href="/course">Зарегистрироваться на курс</Link>
         )}
-        <button className={`burger${menu ? " is-x" : ""}`} aria-label="Меню" aria-expanded={menu} aria-controls="mobile-menu" onClick={() => setMenu((value) => !value)}>
+        <button
+          className={`burger${menu ? " is-x" : ""}`}
+          aria-label="Меню"
+          aria-expanded={menu}
+          aria-controls="mobile-menu"
+          onClick={() => {
+            setMenu((value) => {
+              const next = !value;
+              if (next) setHidden(false);
+              return next;
+            });
+          }}
+        >
           <span />
           <span />
           <span />

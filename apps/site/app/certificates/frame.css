@@ -123,3 +123,7 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
     overflow: hidden; text-overflow: ellipsis;
   }
 }
+
+@media (max-width: 374px) {
+  [data-s="c01"] .c-facts b { font-size: 20px; line-height: 24px; }
+}

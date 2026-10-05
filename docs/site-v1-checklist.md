@@ -1,3 +1,11 @@
+# FOX Food Xplorer — audit v17
+
+Правки после live d201003.
+
+- Меню после скролла: у шапки с открытым меню сняты `backdrop-filter` / `transform`, чтобы `.mobile-menu` на весь viewport.
+- P09: полоска 40 px на ≤480 (после правила 1100).
+- Сертификаты ≤374: title 20 px, чтобы подпись не резалась на 360.
+
 # FOX Food Xplorer — audit v16
 
 Правки после live 8ad0d5e.
