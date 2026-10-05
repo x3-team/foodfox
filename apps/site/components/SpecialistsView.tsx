@@ -335,7 +335,7 @@ export function SpecialistsView() {
               <h2 className="sp-h2">Где FOX дополняет работу специалиста</h2>
               <p className="sp-lead">Выберите свою специализацию — покажем клинические сценарии и то, что даёт отчёт именно в вашей практике.</p>
             </div>
-            <div className="sp-tabs" role="tablist" aria-label="Специализации">
+            <div className="sp-tabs" role="tablist" aria-label="Специализации" data-allow-x>
               {AREAS.map((item, index) => (
                 <button
                   key={item.slug}
