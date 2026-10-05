@@ -207,8 +207,15 @@
   .ls-open { order: 2; }
   .ls-title { min-height: 0; }
   .ls-title h1 { font-size: 28px; line-height: 32px; letter-spacing: -0.4px; overflow-wrap: anywhere; }
-  .ls-player { height: 220px; }
-  .ls-about { min-height: 0; padding: 16px; }
+  .kf-band { padding: 40px 0; }
+  .kf-includes-in { padding: 40px 0; gap: 24px; }
+  .ls-main { gap: 12px; }
+  .ls-player { height: 249px; }
+  .ls-actions { min-height: 0; }
+  .ls-actions .ls-quiet, .ls-actions .text-link { display: none; }
+  .ls-about { min-height: 0; padding: 16px; max-height: 250px; overflow: hidden; }
+  .ls-tags, .ls-after { display: none; }
+  .ls-open { display: none; }
   .ls-progress, .ls-tabs, .ls-sticky { display: flex; }
   .ls-progress { order: 0; align-items: center; gap: 8px; font-size: 13px; }
   .ls-progress i { flex: 1; height: 4px; background: rgba(11,12,8,.12); border-radius: 99px; overflow: hidden; }

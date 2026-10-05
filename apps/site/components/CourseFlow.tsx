@@ -641,7 +641,7 @@ export function LessonsPage() {
               </div>
             </div>
           </div>
-          <button type="button" className="ls-sticky" onClick={() => setSheet(true)}>
+          <button type="button" className="ls-sticky" aria-label="Программа курса" onClick={() => setSheet(true)}>
             <span>Программа</span>
             <strong>урок {current + 1} из 6</strong>
           </button>

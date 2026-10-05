@@ -121,6 +121,9 @@ test("contacts validation and labs empty city", async ({ page }) => {
 test("faq accordion and internal links are not broken", async ({ page, request }) => {
   await page.goto("/faq");
   await ready(page);
+  if ((page.viewportSize()?.width ?? 1440) < 1100) {
+    await page.locator(".f-nav a[href='#prep']").click();
+  }
   await page.getByRole("button", { name: /голодать/ }).click();
   await expect(page.getByText("Специальной подготовки")).toBeVisible();
 

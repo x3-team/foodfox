@@ -32,6 +32,7 @@
 @media (max-width: 1099px) {
   [data-s="e01"] h1:not(.e-a11y) { font-size: 40px; line-height: 44px; }
   .e01, .e-tiles { grid-template-columns: 1fr; }
-  .e01 > img, .e-plate img { height: 220px; }
+  .e01 > img, .e-plate img { height: 160px; }
+  .e-tiles a { min-height: 0; padding: 14px; }
   .e-four { font-size: 72px; }
 }

@@ -663,8 +663,34 @@
     flex: 0 0 86%;
   }
   .sp-portrait { height: 200px; }
-  .sp-sec, .sp-report { padding: 36px 0; }
+  .sp-sec, .sp-report { padding: 28px 0; }
   [data-s="p01"] h1 { font-size: 34px; line-height: 38px; }
+  [data-s="p01"].dark-hero .inner { padding-bottom: 24px; }
+  .sp-portrait { height: 220px; }
+  [data-s="p02"] .area-panel { max-height: 536px; overflow: hidden; }
+  [data-s="p04"] .sp-step { max-height: 490px; }
+  [data-s="p05"] .sp-table article { padding: 10px 0; }
+  [data-s="p06"] .sp-sheet, [data-s="p06"] .sp-sheet.is-front { max-height: 480px; }
+  [data-s="p07"] .sp-experts article { max-height: 620px; }
+  [data-s="p08"] .sp-labs a { min-height: 96px; }
+  [data-s="p09"] .sp-course { max-height: 412px; overflow: hidden; }
+  .sp-spec-row { grid-template-columns: 1fr 1fr; }
+  .sp-tile, .sp-spec-row:first-child .sp-tile, .sp-spec-row:last-child .sp-tile { min-height: 0; padding: 14px; }
+  .sp-hero-copy { display: flex; flex-direction: column; gap: 10px; }
+  .sp-tabs { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
+  .sp-absent { display: none; }
+  .sp-anatomy { gap: 16px; }
+  .sp-anatomy-copy { gap: 12px; }
+  .sp-proto-head { gap: 8px; }
+  [data-s="p03"] .sp-arg {
+    display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px;
+    align-items: center; padding: 12px 0;
+  }
+  [data-s="p03"] .sp-arg-visual { width: 96px; height: 96px; overflow: hidden; }
+  [data-s="p03"] .sp-arg > div:nth-child(n+3) { display: none; }
+  [data-s="p05"] .sp-table p, [data-s="p05"] .sp-lead { display: none; }
+  .sp-body-inv { display: none; }
+  .sp-tile p { font-size: 14px; line-height: 18px; }
 }
 
 @media (max-width: 720px) {

@@ -174,7 +174,7 @@ export function FaqPage() {
             <div className="f-groups">
               {groups.length === 0 && <p role="status">Ничего не нашлось. Сбросьте запрос или напишите нам.</p>}
               {groups.map((group) => (
-                <section key={group.id} id={group.id}>
+                <section key={group.id} id={group.id} className={!query && group.id !== nav ? "is-parked" : ""}>
                   <header><h2>{group.title}</h2><span>{group.count}</span></header>
                   {group.items.map(([question, answer]) => {
                     const expanded = open.includes(question);

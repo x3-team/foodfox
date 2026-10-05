@@ -93,4 +93,20 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   [data-s="f01"] { padding: 24px 0 32px; }
   [data-s="f02"] { padding: 32px 0; }
   .f03-card { min-height: 0; padding: 24px; }
+  .f-groups > section.is-parked { display: none; }
+  .f01-visual { height: 96px; }
+  .f01-visual article, .f01-expert { display: none; }
+  [data-s="f01"] { padding: 0 0 8px; }
+  [data-s="f01"] h1 { font-size: 36px; line-height: 40px; letter-spacing: -1px; }
+  .fx-lead { font-size: 16px; line-height: 20px; }
+  .f-nav-links > p { display: none; }
+  .f-spec { display: none; }
+  [data-s="f02"] { padding: 8px 0 16px; }
+  [data-s="f03"] { padding: 8px 0 24px; }
+  .f03-card h2 { font-size: 32px; line-height: 36px; }
+  .f03-photo, .f03-photo img { height: 120px; }
+  .f-groups article > button { padding: 8px 0; }
+  .f-actions { display: none; }
+  .f-groups { gap: 0; }
+  .f-answer { padding-bottom: 8px; }
 }

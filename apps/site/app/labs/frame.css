@@ -160,6 +160,17 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   .l-split.is-map .l-pane { display: none; }
   .l-split.is-map .l03-map { display: block; height: 480px; }
   .l03-map { height: 360px; }
-  [data-s="l02"], [data-s="l04"], [data-s="l05"] { padding: 40px 0; }
+  [data-s="l02"], [data-s="l04"], [data-s="l05"] { display: none; }
+  .l01-photo, .l-stats, .l-note, .fx-lead, .fx-eye { display: none; }
+  [data-s="l01"] { padding: 0; }
+  [data-s="l01"] .crumbs { display: none; }
+  .l-city { padding: 8px 0; }
+  [data-s="l01"] h1 { font-size: 32px; line-height: 36px; }
+  [data-s="l03"] { padding: 8px 0 0; }
+  .l-split.is-list { border: 0; background: transparent; }
+  [data-lab-list] article { padding: 4px 0; }
+  .l-found { display: none; }
+  .l-caption, .l-more { display: none; }
+  .l-pane { padding: 0; gap: 8px; }
   .l-visit { grid-template-columns: 1fr 1fr; }
 }

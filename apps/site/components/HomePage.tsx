@@ -322,7 +322,6 @@ export function HomePage() {
   }
 
   const ready = checked.length >= 2;
-  const lead = SYMPTOMS.map((item) => ({ ...item, n: item.items.filter((label) => checked.includes(label)).length })).sort((a, b) => b.n - a.n)[0];
 
   return (
     <>
@@ -332,20 +331,20 @@ export function HomePage() {
           <img className="bg" src="/blog/cover-lactose.png" alt="" />
           <div className="shade" />
           <div className="wrap inner">
-            <h1 className="page-title" style={{ color: "white", maxWidth: "16em" }}>
-              Узнайте, какие продукты не подходят именно вам
-            </h1>
-            <p className="lead" style={{ color: "rgba(248,249,246,.75)" }}>
-              Персональный тест питания против болей в животе, вздутия, акне и других симптомов.
-            </p>
-            <div className="hero-actions">
-              <button className="btn btn-light" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
-              <Link className="btn btn-ghost" href="/report" style={{ color: "white", borderColor: "rgba(248,249,246,.35)" }}>Пример отчёта</Link>
+            <div className="hero-top">
+              <h1>Узнайте, какие продукты<br />не подходят именно вам</h1>
+              <div className="hero-side">
+                <p className="lead">Персональный тест питания против болей в животе, вздутия, акне и других симптомов</p>
+                <div className="hero-actions">
+                  <button className="btn btn-light" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
+                  <Link className="btn btn-ghost" href="/report">Пример отчёта</Link>
+                </div>
+              </div>
             </div>
             <div className="facts">
               <div><strong>1 сеанс</strong><span>сдачи крови</span></div>
-              <div><strong>286</strong><span>продуктов</span></div>
-              <div><strong>7–10</strong><span>дней до результата</span></div>
+              <div><strong>286 продуктов</strong><span>покажет тест</span></div>
+              <div><strong>7–10 дней</strong><span>до результата</span></div>
             </div>
           </div>
         </section>
@@ -410,9 +409,13 @@ export function HomePage() {
         </section>
 
         <section className="wrap band checker" id="checker" data-s="s06">
-          <p className="meta-line">Чекер симптомов · около минуты</p>
-          <h2 className="page-title">Отметьте, что беспокоит вас последние 4 недели</h2>
-          <p className="lead">Интерактивный список — не диагноз и не оценка риска. Он поможет собрать мысли перед консультацией.</p>
+          <div className="s06-head">
+            <div>
+              <p className="meta-line">Чекер симптомов · около минуты</p>
+              <h2 className="page-title">Отметьте, что беспокоит вас последние 4 недели</h2>
+            </div>
+            <p className="lead">Интерактивный список — не диагноз и не оценка риска. Он поможет собрать мысли перед консультацией и понять, с какого специалиста удобно начать разговор.</p>
+          </div>
           <div className="checker-grid">
             <div className="symptom-groups">
               {SYMPTOMS.map((groupItem) => {
@@ -431,19 +434,38 @@ export function HomePage() {
               })}
             </div>
             <aside className="panel checker-card checker-dark">
-              <div className="checker-bars" aria-hidden>
-                {SYMPTOMS.map((item) => <i key={item.id} className={item.items.some((label) => checked.includes(label)) ? "is-on" : ""} />)}
+              <div className="checker-top">
+                <p>Ваш список</p>
+                <span>{checked.length === 0 ? "пока пусто" : `${checked.length} отмечено`}</span>
               </div>
-              <h3>{ready ? `С чего начать: ${lead.specialist}` : checked.length === 1 ? "Отметьте ещё один признак" : "Пока ничего не отмечено"}</h3>
-              <p>{ready ? "Нутрициолог подключается следом. Это не диагноз и не оценка риска." : "Порог — два признака. До него кнопка списка неактивна."}</p>
-              {ready && (
-                <div>
-                  <h3>Что взять на приём</h3>
-                  <ul>{checked.map((item) => <li key={item}>{item}</li>)}</ul>
-                </div>
-              )}
+              <h3>{ready ? "С этим списком удобно начать разговор со специалистом" : checked.length === 1 ? "Отметьте ещё один признак" : "Пока ничего не отмечено"}</h3>
+              <div className="checker-meters">
+                {SYMPTOMS.map((item) => {
+                  const n = item.items.filter((label) => checked.includes(label)).length;
+                  return (
+                    <p key={item.id}>
+                      <span>{item.title.replace("Общее самочувствие", "Самочувствие")}</span>
+                      <i><b style={{ width: `${(n / item.items.length) * 100}%` }} /></i>
+                      <em>{n}/{item.items.length}</em>
+                    </p>
+                  );
+                })}
+              </div>
+              <p className="checker-kicker">С чего можно начать</p>
+              <ul className="checker-specs">
+                <li><strong>Гастроэнтеролог</strong><small>ЖКТ</small></li>
+                <li><strong>Дерматолог</strong><small>Кожа</small></li>
+                <li><strong>Нутрициолог</strong><small>Питание и самочувствие</small></li>
+              </ul>
+              <div className="checker-bring">
+                <p className="checker-kicker">Что взять на приём</p>
+                <ul>
+                  {(ready ? checked : ["Этот список — в PDF или на телефоне", "Результат теста FOX, если уже сдавали", "Дневник питания за 1–2 недели"]).map((item) => <li key={item}>{item}</li>)}
+                </ul>
+              </div>
               <button className="btn btn-dark" type="button" disabled={!ready} onClick={() => pdf(checked)}>Скачать список</button>
-              <Link className="btn btn-ghost" href="/labs">Где сдать тест</Link>
+              <Link className="btn btn-ghost" href="/labs">Найти лабораторию рядом</Link>
+              <p className="checker-fine">Чекер не ставит диагноз и не заменяет приём врача. Тест FOX интерпретирует специалист.</p>
             </aside>
           </div>
         </section>
@@ -523,11 +545,15 @@ export function HomePage() {
         </section>
 
         <section className="wrap band" id="products" data-s="s10" ref={countRef}>
-          <h2 className="page-title">Продукты, которые исследует FOX</h2>
-          <p className="lead">Самый частый вопрос перед тестом — «а мой продукт там есть?»</p>
-          <p className="count-line"><strong data-antigen-count>{count}</strong> пищевых антигенов из 13 групп · один забор крови</p>
+          <div className="s10-head">
+            <div>
+              <h2 className="page-title">Продукты, которые исследует FOX</h2>
+              <p className="lead">Самый частый вопрос перед тестом — «а мой продукт там есть?». Найдите его в составе панели за пару секунд.</p>
+            </div>
+            <p className="count-line"><strong data-antigen-count>{count}</strong><span>пищевых антигенов из 13 групп · один забор крови</span></p>
+          </div>
           <div className="suggest">
-          <label className="search" style={{ marginTop: 20, width: "min(640px, 100%)" }}>
+          <label className="search">
             <img src="/icons/search.svg" alt="" />
             <input data-hotkey value={query} onChange={(event) => { setQuery(event.target.value); setSuggest(true); }} onFocus={() => setSuggest(true)} placeholder="Например, казеин, гречка или солея" aria-label="Поиск продукта" />
           </label>

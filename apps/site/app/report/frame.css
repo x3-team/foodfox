@@ -374,4 +374,9 @@
   .rf-sheet, .rf-sheet img { height: 420px; }
   .rf-viewer { min-height: 0; }
   .rf-ccd img { width: 100%; height: 220px; min-height: 0; }
+  .rf-hero-in { padding: 16px 0 24px; gap: 16px; }
+  .rf-sheet, .rf-sheet img { height: 160px; }
+  .rf-after { padding: 20px; }
+  .rf-paper { height: 200px; }
+  .rf-paper img, .rf-paper-back { height: 180px; }
 }
