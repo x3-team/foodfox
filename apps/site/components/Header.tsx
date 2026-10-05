@@ -36,12 +36,22 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [mobileNav, setMobileNav] = useState(false);
   const lastY = useRef(0);
   const lessons = path.startsWith("/course/lessons");
   const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
   const darkHero = path === "/" || path.startsWith("/specialists") || path === "/course" || path === "/labs" || path === "/faq" || path === "/reviews" || path === "/contacts" || path === "/report" || path === "/certificates";
-  const onDark = !scrolled && darkHero && !lessons;
+  const homeMobileHero = path === "/" && mobileNav;
+  const onDark = !scrolled && darkHero && !lessons && !homeMobileHero;
   const items = variant === "b2b" ? B2B : variant === "course" ? COURSE : NAV;
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1100px)");
+    const syncMobile = () => setMobileNav(mq.matches);
+    syncMobile();
+    mq.addEventListener("change", syncMobile);
+    return () => mq.removeEventListener("change", syncMobile);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => {
@@ -89,7 +99,9 @@ export function Header() {
   }, [menu]);
 
   return (
-    <header className={`site-header${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}${onDark ? " on-dark" : ""} header-${variant}`}>
+    <header
+      className={`site-header${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}${onDark ? " on-dark" : ""}${homeMobileHero && !scrolled && !menu ? " is-home-top" : ""} header-${variant}`}
+    >
       <div className="header-left">
         <Link href="/" className="logo" aria-label="FOX Food Xplorer">
           <img src={onDark ? "/icons/logo-light.svg" : "/icons/logo-dark.svg"} alt="" />
@@ -123,7 +135,7 @@ export function Header() {
           <Link className="btn btn-dark" href="/course">Зарегистрироваться на курс</Link>
         )}
         <button
-          className={`burger${menu ? " is-x" : ""}`}
+          className={`menu-capsule burger${menu ? " is-x" : ""}`}
           aria-label="Меню"
           aria-expanded={menu}
           aria-controls="mobile-menu"
@@ -135,9 +147,12 @@ export function Header() {
             });
           }}
         >
-          <span />
-          <span />
-          <span />
+          <span className="menu-capsule-label">Меню</span>
+          <span className="menu-capsule-burger" aria-hidden>
+            <span />
+            <span />
+            <span />
+          </span>
         </button>
       </div>
       {menu && (

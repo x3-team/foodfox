@@ -30,7 +30,7 @@ export function CookieBar() {
     setOpen(false);
     setSettings(false);
     setToast(true);
-    window.setTimeout(() => setToast(false), 2200);
+    window.setTimeout(() => setToast(false), 1600);
   }
 
   return (

@@ -330,24 +330,33 @@ export function HomePage() {
     <>
       <Header />
       <main>
-        <section className="dark-hero" data-s="s01">
-          <img className="bg" src="/blog/cover-lactose.png" alt="" />
-          <div className="shade" />
+        <section className="dark-hero home-hero" data-s="s01">
+          <div className="hero-media">
+            <img className="bg" src="/blog/cover-lactose.png" alt="" />
+          </div>
+          <div className="shade" aria-hidden />
           <div className="wrap inner">
             <div className="hero-top">
               <h1>Узнайте, какие продукты<br />не подходят именно вам</h1>
               <div className="hero-side">
                 <p className="lead">Персональный тест питания против болей в животе, вздутия, акне и других симптомов</p>
                 <div className="hero-actions">
-                  <button className="btn btn-light" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
-                  <Link className="btn btn-ghost" href="/report">Пример отчёта</Link>
+                  <button className="btn btn-light" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>
+                    Записаться на тест +
+                  </button>
+                  <Link className="hero-report-link" href="/report">
+                    Пример отчёта
+                  </Link>
+                  <Link className="btn btn-ghost hero-report-btn" href="/report">
+                    Пример отчёта
+                  </Link>
                 </div>
               </div>
             </div>
             <div className="facts">
               <div><strong>1 сеанс</strong><span>сдачи крови</span></div>
-              <div><strong>286 продуктов</strong><span>покажет тест</span></div>
-              <div><strong>7–10 дней</strong><span>до результата</span></div>
+              <div><strong>286</strong><span>продуктов</span></div>
+              <div><strong>7–10</strong><span>дней</span></div>
             </div>
           </div>
         </section>

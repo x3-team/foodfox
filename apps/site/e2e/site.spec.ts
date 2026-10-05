@@ -59,14 +59,18 @@ test("dark hero sits under the header", async ({ page }) => {
     await page.goto(path);
     await ready(page);
     await page.evaluate(() => window.scrollTo(0, 0));
-    const overlap = await page.evaluate(() => {
+    const overlap = await page.evaluate((route) => {
       const header = document.querySelector(".site-header");
       const hero = document.querySelector(".dark-hero");
       if (!header || !hero) return false;
       const h = header.getBoundingClientRect();
       const e = hero.getBoundingClientRect();
+      const mobile = window.matchMedia("(max-width: 1100px)").matches;
+      if (route === "/" && mobile) {
+        return e.top <= 2 && header.classList.contains("is-home-top");
+      }
       return e.top <= 2 && e.bottom > h.bottom && header.classList.contains("on-dark");
-    });
+    }, path);
     expect(overlap, path).toBe(true);
   }
   await page.goto("/course/lessons");
