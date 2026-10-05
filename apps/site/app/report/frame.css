@@ -375,7 +375,8 @@
   .rf-deck { height: auto; display: grid; gap: 8px; }
   .report-page .uml-card strong { font-size: 32px; line-height: 36px; }
   .report-page .uml-card { min-height: 0; padding: 16px; }
-  .rf-actions { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .rf-actions { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  .rf-actions article { min-width: 0; }
   .rf-actions p {
     display: -webkit-box;
     -webkit-line-clamp: 3;
