@@ -23,9 +23,10 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
   background: #fff; border-radius: 16px; padding: 16px 18px;
   box-shadow: 0 8px 24px rgba(11, 12, 8, 0.08);
 }
-.c-facts li::before {
-  content: ""; width: 28px; height: 28px; border-radius: 99px; margin-bottom: 8px;
-  background: #e7f551 url("/figma/icons/check.svg") center / 14px no-repeat;
+.c-facts li::before { content: none; }
+.c-fact-ico {
+  width: 28px; height: 28px; box-sizing: border-box; margin-bottom: 8px;
+  padding: 7px; border-radius: 99px; background: #e7f551; object-fit: contain;
 }
 .c-facts b { font-weight: 300; font-size: 20px; line-height: 24px; }
 .c-facts span { color: rgba(11, 12, 8, 0.65); font-size: 14px; }

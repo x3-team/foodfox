@@ -106,8 +106,8 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   body .v-collage p,
   body .v-rate-foot,
   body .rev-promo p,
-  body [data-s="v03"] li b,
-  body [data-s="v03"] .check-row span { font-size: 14px; line-height: 18px; }
+  body [data-s="v03"] ul > li > b,
+  body [data-s="v03"] form .check-row > span { font-size: 14px; line-height: 18px; }
   .v-rate-card { width: 100%; padding: 16px 18px; gap: 16px; }
   .v-rate b { font-size: 48px; line-height: 52px; }
 }

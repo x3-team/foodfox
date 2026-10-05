@@ -194,6 +194,7 @@
 .ls-progress, .ls-tabs, .ls-sticky { display: none; }
 .ls-kicker, .ls-after span { margin: 0; font-size: 14px; line-height: 18px; font-weight: 500; color: #5c5e57; }
 .ls-about > p { margin: 0; font-size: 16px; line-height: 20px; }
+.ls-about-mob { display: none; }
 .ls-tags { display: flex; flex-wrap: wrap; gap: 8px; }
 .ls-tags span { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: rgba(0, 0, 0, 0.1); font-size: 14px; line-height: 18px; }
 .ls-after { border-top: 1px solid rgba(11, 12, 8, 0.3); padding-top: 20px; display: flex; flex-direction: column; gap: 8px; }
@@ -212,8 +213,8 @@
   .ls-title h1 { font-size: 28px; line-height: 32px; letter-spacing: -0.4px; overflow-wrap: normal; hyphens: manual; }
   .kf-band { padding: 40px 0; }
   .kf-includes-in { padding: 40px 0; gap: 24px; }
-  .ls-main { gap: 12px; }
-  .ls-player { height: 249px; }
+  .ls-main { gap: 8px; }
+  .ls-player { height: 236px; }
   .ls-actions { min-height: 0; width: 100%; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 8px; }
   .ls-actions .btn-dark { width: 100%; justify-content: center; }
   .ls-pair { display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
@@ -244,16 +245,21 @@
   body .kf-lesson-body p { font-size: 14px; line-height: 18px; }
   .ls-about .ls-kicker, .ls-tags { display: none; }
   .ls-about {
-    background: transparent; padding: 0; gap: 12px; min-height: 0;
+    background: transparent; padding: 0; gap: 8px; min-height: 0;
   }
-  .ls-about > p { background: #d7d8cd; border-radius: 16px; padding: 16px; }
+  .ls-about > p { background: #d7d8cd; border-radius: 16px; padding: 12px 14px; }
+  .ls-about-desk { display: none; }
+  .ls-about-mob { display: inline; }
   .ls-after {
-    background: #f6fbc8; border: 0; border-radius: 16px; padding: 16px; margin: 0;
+    background: #f6fbc8; border: 0; border-radius: 16px; padding: 12px 14px; margin: 0;
   }
   .ls-sticky {
-    display: flex; position: static; order: 5; justify-content: space-between; align-items: center;
-    width: 100%; background: #101400; color: #f8f9f6; border-radius: 16px; padding: 14px 16px; margin-top: 12px;
+    display: flex; flex-direction: column; position: static; order: 5; align-items: stretch;
+    width: 100%; background: #101400; color: #f8f9f6; border-radius: 16px;
+    padding: 10px 14px; margin-top: 4px; gap: 8px; font-size: 14px; line-height: 18px;
   }
+  .ls-sticky span, .ls-sticky strong { font-size: 14px; line-height: 18px; font-weight: 400; }
+  .ls-sticky-rule { display: block; height: 1px; width: 100%; background: rgba(248, 249, 246, 0.28); }
   .ls-main { order: 1; }
   .kf-lesson-body { flex-direction: column; }
   .kf-lesson-body > div { width: 100%; }

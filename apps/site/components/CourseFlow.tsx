@@ -91,6 +91,7 @@ const LESSONS = [
     content: "Чем отсроченные иммунологические реакции отличаются от IgE-аллергии, целиакии и лактазной недостаточности. Что показывает пищеспецифический IgG внутри одного отчёта.",
     after: "Сможете понятным языком объяснить пациенту механизмы пищевых реакций и роль IgG.",
     about: "Чем отсроченные иммунологические реакции отличаются от IgE-аллергии, целиакии, лактазной недостаточности и других неиммунных реакций на пищу. Какую роль играют пищеспецифические IgG и почему результат нельзя трактовать отдельно от клинической картины.",
+    aboutMob: "Чем отсроченные иммунологические реакции отличаются от IgE-аллергии, целиакии и лактазной недостаточности. Как объяснить пациенту роль IgG.",
   },
   {
     title: "Что такое FOX Food Xplorer",
@@ -630,7 +631,14 @@ export function LessonsPage() {
             </div>
             <div className="ls-about">
               <p className="ls-kicker">{tab === "files" ? "Материалы" : tab === "ask" ? "Вопрос лектору" : "О чём этот урок"}</p>
-              <p>{tab === "ask" ? "Напишите вопрос к этому уроку — лектор ответит в кабинете курса." : lesson.about ?? lesson.content}</p>
+              <p>
+                {tab === "ask" ? "Напишите вопрос к этому уроку — лектор ответит в кабинете курса." : (
+                  <>
+                    <span className="ls-about-desk">{lesson.about ?? lesson.content}</span>
+                    <span className="ls-about-mob">{"aboutMob" in lesson && lesson.aboutMob ? lesson.aboutMob : lesson.about ?? lesson.content}</span>
+                  </>
+                )}
+              </p>
               <div className="ls-tags">
                 <span>Конспект PDF</span>
                 <span>Задать вопрос лектору</span>
@@ -645,6 +653,7 @@ export function LessonsPage() {
           </div>
           <button type="button" className="ls-sticky" aria-label="Программа курса" onClick={() => setSheet(true)}>
             <span>Программа · урок {current + 1} из 6</span>
+            <i className="ls-sticky-rule" aria-hidden="true" />
             <strong>Далее: {current < 5 ? LESSONS[current + 1].short : "сертификат"}</strong>
           </button>
         </section>

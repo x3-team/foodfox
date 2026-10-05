@@ -2053,4 +2053,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     width: 6px; height: 6px; border-radius: 99px; background: rgba(11, 12, 8, 0.28); display: block;
   }
   .article-related .related-dots i.is-on { width: 18px; background: #0b0c08; }
+  body [data-s="v03"] ul > li > b,
+  body [data-s="v03"] form .check-row > span { font-size: 14px; line-height: 18px; }
 }
