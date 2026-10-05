@@ -1,3 +1,10 @@
+# FOX Food Xplorer — audit v18
+
+Правки после live 6488494.
+
+- `.mobile-menu > * { flex-shrink: 0 }`, CTA кнопки фиксированно 48 px на коротких экранах.
+- Меню: `scroll-padding-top` против наезда на ✕; P09 bar 4 px на ≤480.
+
 # FOX Food Xplorer — audit v17
 
 Правки после live d201003.

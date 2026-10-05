@@ -864,9 +864,11 @@ body:has(.mobile-menu) .ls-sticky { display: none !important; }
 .mobile-menu {
   position: fixed; inset: 0; background: #101400; color: white; z-index: 70;
   display: flex; flex-direction: column; gap: 4px; padding: 88px 20px 40px; overflow: auto;
+  scroll-padding-top: 88px;
   clip-path: circle(0% at calc(100% - 36px) 36px);
   animation: menu-open 320ms cubic-bezier(.65, 0, .35, 1) forwards;
 }
+.mobile-menu > * { flex-shrink: 0; }
 .mobile-menu a, .menu-close {
   font-size: 28px; line-height: 36px; font-weight: 300; padding: 8px 0; color: white;
   display: flex; justify-content: space-between; align-items: center;
@@ -886,6 +888,10 @@ body:has(.mobile-menu) .ls-sticky { display: none !important; }
   align-self: flex-start;
   margin-top: 12px;
   width: auto;
+  flex-shrink: 0;
+  min-height: 48px;
+  height: 48px;
+  box-sizing: border-box;
 }
 @keyframes menu-open { to { clip-path: circle(150% at calc(100% - 36px) 36px); } }
 .band { padding: 72px 0; }
