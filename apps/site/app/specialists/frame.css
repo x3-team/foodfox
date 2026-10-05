@@ -763,7 +763,9 @@
   [data-s="p01"] .sp-arrow-light img { filter: none; }
   [data-s="p01"] h1 { font-size: 28px; line-height: 32px; }
   [data-s="p02"] .area-panel.sp-panel { padding: 12px; gap: 8px; }
-  [data-s="p02"] .sp-related > img { height: 96px; }
+  [data-s="p02"] .sp-related > img { height: 200px; border-radius: 16px; }
+  [data-s="p02"] .sp-related a:nth-of-type(n+2) { display: none; }
+  [data-s="p02"] .sp-related .sp-note { display: none; }
   [data-s="p02"] .sp-gives { padding: 10px; }
   [data-s="p02"] .sp-panel-copy h3 { font-size: 24px; line-height: 28px; }
   [data-s="p02"] .sp-panel-copy > p { font-size: 16px; line-height: 22px; }
@@ -796,7 +798,7 @@
   [data-s="p09"] .sp-lectors img { width: 40px; height: 40px; max-height: 40px; flex: 0 0 40px; }
   [data-s="p01"] { overflow: hidden; }
   [data-s="p01"] img.bg { left: 0; width: 100%; max-width: 100%; animation: none; transform: none; }
-  .sp-portrait { height: 96px; }
+  .sp-portrait { height: 280px; }
   [data-s="p01"] .sp-tile {
     min-height: 68px;
     padding: 12px 14px;
@@ -807,7 +809,19 @@
   }
   [data-s="p01"] .sp-tile h2 { font-size: 14px; line-height: 18px; color: #f8f9f6; }
   [data-s="p01"] .sp-tile p { display: none; }
-  [data-s="p03"] .sp-practice { padding: 8px 10px; margin-top: 4px; }
+  [data-s="p03"] .sp-practice { display: none; }
+  [data-s="p03"] .sp-arg { padding: 16px 0; }
+  [data-s="p03"] .sp-arg-visual { width: 72px; height: 72px; }
+  [data-s="p05"] .sp-compliance { display: none; }
+  [data-s="p09"] .sp-cta .sp-arrow { display: none; }
+  [data-s="p09"] .sp-lectors { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px; }
+  [data-s="p09"] .sp-lectors > div { width: auto; padding: 0; }
+  [data-s="p09"] .sp-lectors > div span { display: none; }
+  [data-s="p09"] .sp-lectors img { width: 32px; height: 32px; max-height: 32px; flex: 0 0 32px; margin-left: -8px; border-radius: 99px; border: 2px solid #f6fbc8; }
+  [data-s="p09"] .sp-lectors img:first-of-type { margin-left: 0; }
+  [data-s="p09"] .sp-lectors > p { font-size: 0; line-height: 0; }
+  [data-s="p09"] .sp-lectors > p::after { content: "4 лектора · врачи и нутрициологи"; font-size: 14px; line-height: 18px; font-weight: 400; }
+  [data-s="p09"] .sp-lectors strong { display: none; }
   [data-s="p01"] .sp-lead-inv, [data-s="p01"] .sp-body-inv { font-size: 16px; line-height: 22px; }
 }
 
@@ -822,8 +836,9 @@
 
 @media (max-width: 720px) {
   [data-s="p01"] h1 { font-size: 34px; line-height: 38px; }
-  .sp-table article { grid-template-columns: 36px minmax(0, 1fr); }
-  .sp-table b { grid-column: 2; justify-self: start; }
+  .sp-table article { grid-template-columns: 36px minmax(0, 1fr) auto; gap: 8px 12px; padding: 18px 16px; align-items: center; }
+  .sp-table b { grid-column: auto; justify-self: end; font-size: 13px; line-height: 16px; }
+  .sp-table h3 { font-size: 18px; line-height: 22px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -86,5 +86,7 @@ html.is-scrolled [data-s="c01"]::before { display: none; }
   .c-stack span { left: 8px; top: 16px; width: 46%; height: 180px; }
   .c-stack span:first-of-type { left: 28%; top: 8px; width: 48%; height: 190px; }
   .c-stack em { left: 16%; top: 28px; width: 48%; height: 180px; }
-  .c03 img, .c04 img { height: 220px; }
+  .c03 img, .c04 img { height: 180px; }
+  [data-s="c01"], [data-s="c03"], [data-s="c04"] { padding-top: 32px; padding-bottom: 32px; }
+  .c-facts li, .c04 li { padding: 12px 14px; }
 }

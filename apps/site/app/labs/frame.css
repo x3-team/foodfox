@@ -158,6 +158,7 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   .l-partners a, .l-visit article { height: auto; min-height: 0; }
   .l-split { min-height: 0; }
   .l-split.is-list .l03-map { display: none; }
+  .l-split.is-list [data-lab-list] { max-height: 560px; }
   .l-split.is-map .l-pane { display: none; }
   .l-split.is-map .l03-map { display: block; height: 480px; }
   .l03-map { height: 360px; }
