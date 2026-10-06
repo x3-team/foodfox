@@ -41,8 +41,8 @@ export function Header() {
   const lessons = path.startsWith("/course/lessons");
   const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
   const darkHero = path === "/" || path.startsWith("/specialists") || path === "/course" || path === "/labs" || path === "/faq" || path === "/reviews" || path === "/contacts" || path === "/report" || path === "/certificates";
-  const homeMobileHero = path === "/" && mobileNav;
-  const onDark = !scrolled && darkHero && !lessons && !homeMobileHero;
+  const homeMobileStack = path === "/" && mobileNav;
+  const onDark = !scrolled && darkHero && !lessons && !homeMobileStack;
   const items = variant === "b2b" ? B2B : variant === "course" ? COURSE : NAV;
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export function Header() {
 
   return (
     <header
-      className={`site-header${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}${onDark ? " on-dark" : ""}${homeMobileHero && !scrolled && !menu ? " is-home-overlay" : ""} header-${variant}`}
+      className={`site-header${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}${onDark ? " on-dark" : ""}${homeMobileStack && !scrolled && !menu ? " is-home-top" : ""} header-${variant}`}
     >
       <div className="header-left">
         <Link href="/" className="logo" aria-label="FOX Food Xplorer">

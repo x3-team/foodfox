@@ -332,7 +332,10 @@ export function HomePage() {
       <main>
         <section className="dark-hero home-hero" data-s="s01">
           <div className="hero-media">
-            <img className="bg" src="/blog/cover-lactose.png" alt="" />
+            <picture>
+              <source media="(max-width: 1100px)" srcSet="/figma/home/hero-photo-mobile.jpg" />
+              <img className="bg" src="/blog/cover-lactose.png" alt="" />
+            </picture>
           </div>
           <div className="shade" aria-hidden />
           <div className="wrap inner">
@@ -341,8 +344,9 @@ export function HomePage() {
               <div className="hero-side">
                 <p className="lead">Персональный тест питания против болей в животе, вздутия, акне и других симптомов</p>
                 <div className="hero-actions">
-                  <button className="btn btn-light" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>
-                    Записаться на тест +
+                  <button className="btn btn-light hero-book-btn" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>
+                    <span>Записаться на тест</span>
+                    <span className="hero-book-plus" aria-hidden>+</span>
                   </button>
                   <Link className="hero-report-link" href="/report">
                     Пример отчёта
@@ -356,7 +360,7 @@ export function HomePage() {
             <div className="facts">
               <div><strong>1 сеанс</strong><span>сдачи крови</span></div>
               <div><strong>286</strong><span>продуктов</span></div>
-              <div><strong>7–10</strong><span>дней</span></div>
+              <div><strong>7–10</strong><span className="facts-lines"><span>дней до</span><span>результата</span></span></div>
             </div>
           </div>
         </section>
