@@ -295,10 +295,10 @@ S14 короче фрейма: карточки в один ряд, без ли�
 
 ## Audit v19 (P0 home hero ≤1100)
 
-- Главная `/` ≤1100: hero **100dvh**, фото на весь экран, текст/CTA/факты **поверх** нижнего градиента (не отдельный блок под фото); `--home-hero-copy-gap` +24–40px воздуха над H1.
-- Шапка `.is-home-overlay` поверх фото (лого + капсула «Меню»).
-- Cookie: задержка 4.2s на мобиле, компактная полоска `.cookie-sheet`.
-- Склейки: `/opt/cursor/artifacts/frames/v19/` (`compare-hero-390/375`, `live-hero-*-{nocookie,cookie}`, `metrics-overlay.json`).
+- Главная `/` ≤1100: **стек** как home-390 — белая шапка `.is-home-top`, фото **436/390×100vw** (`hero-photo-mobile.jpg`), тёмная панель `s15-bg` с текстом **слева**; зазор фото→H1 `--home-copy-gap` ~32px на 390.
+- CTA: прямоугольная кнопка + «+» справа; факты белые, подписи серые, колонки влево; «дней до / результата» в 2 строки.
+- Cookie: задержка 4.2s, `.cookie-sheet`.
+- Референс: `public/figma/home/references/figma-home-top1000.png`; склейки `/opt/cursor/artifacts/frames/v19/`.
 
 Сравнение с Figma `BgW10eEDt4u0udy0qlKuy0`, «Дизайн v1». Высоты ниже — `document.documentElement.scrollHeight` всей страницы, вместе с шапкой и подвалом. Старые строки «секции совпали» относились к зашитым `height` и не считаются совпадением с макетом.
 

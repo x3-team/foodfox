@@ -1771,7 +1771,10 @@ mark.hit { background: var(--lime); color: inherit; padding: 0 2px; }
     align-items: stretch;
     justify-content: flex-start;
     box-sizing: border-box;
-    background: #101400 url("/figma/home/s15-bg.jpg") center top / cover no-repeat;
+    background:
+      linear-gradient(180deg, rgba(16, 20, 0, 0.58) 0%, rgba(16, 20, 0, 0.82) 100%),
+      url("/figma/home/s15-bg.jpg") center top / cover no-repeat;
+    background-color: #101400;
   }
   [data-s="s01"] .hero-top {
     display: flex;
