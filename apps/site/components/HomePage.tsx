@@ -333,6 +333,11 @@ export function HomePage() {
         <section className="dark-hero home-hero" data-s="s01">
           <div className="hero-media">
             <picture>
+              <source
+                media="(max-width: 1100px)"
+                srcSet="/figma/home/hero-photo-mobile.webp"
+                type="image/webp"
+              />
               <source media="(max-width: 1100px)" srcSet="/figma/home/hero-photo-mobile.jpg" />
               <img className="bg" src="/blog/cover-lactose.png" alt="" />
             </picture>
@@ -340,7 +345,14 @@ export function HomePage() {
           <div className="shade" aria-hidden />
           <div className="wrap inner">
             <div className="hero-top">
-              <h1>Узнайте, какие продукты<br />не подходят именно вам</h1>
+              <h1>
+                <span className="hero-h1-mobile">Узнайте, какие продукты не подходят именно вам</span>
+                <span className="hero-h1-desktop">
+                  Узнайте, какие продукты
+                  <br />
+                  не подходят именно вам
+                </span>
+              </h1>
               <div className="hero-side">
                 <p className="lead">Персональный тест питания против болей в животе, вздутия, акне и других симптомов</p>
                 <div className="hero-actions">
