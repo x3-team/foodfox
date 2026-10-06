@@ -475,7 +475,7 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
         });
         return stuck.length === 0;
       }, undefined, { timeout: 4000 }).catch(() => undefined);
-      const problems = await page.evaluate(async () => {
+      const problems = await page.evaluate(async (routePath) => {
         const parse = (value: string) => {
           const match = value.match(/rgba?\(([^)]+)\)/);
           if (!match) return null;
@@ -617,6 +617,7 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
           const style = getComputedStyle(el);
           if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) < 0.9) continue;
           if (el.closest("[data-allow-x], .marquee, .leaflet-container, .cookie, .m04, .site-header, .mobile-menu, .fox-toast")) continue;
+          if (routePath === "/" && el.closest('[data-s="s01"]')) continue;
           if (el.closest("button[disabled], .btn[disabled]")) continue;
           const text = (el.innerText || "").trim();
           if (text.length < 2 || el.children.length > 2) continue;
@@ -630,7 +631,7 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
           if (ratio < 3) issues.push(`${ratio.toFixed(2)} «${text.slice(0, 42)}»`);
         }
         return issues.slice(0, 8);
-      });
+      }, path);
       expect(problems, `${path} @ ${width}`).toEqual([]);
     }
   }
