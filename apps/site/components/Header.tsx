@@ -100,7 +100,7 @@ export function Header() {
 
   return (
     <header
-      className={`site-header${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}${onDark ? " on-dark" : ""}${homeMobileHero && !scrolled && !menu ? " is-home-top" : ""} header-${variant}`}
+      className={`site-header${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}${onDark ? " on-dark" : ""}${homeMobileHero && !scrolled && !menu ? " is-home-overlay" : ""} header-${variant}`}
     >
       <div className="header-left">
         <Link href="/" className="logo" aria-label="FOX Food Xplorer">

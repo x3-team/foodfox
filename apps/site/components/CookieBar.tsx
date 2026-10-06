@@ -12,7 +12,9 @@ export function CookieBar() {
 
   useEffect(() => {
     if (localStorage.getItem("fox-cookie")) return;
-    const timer = window.setTimeout(() => setOpen(true), 800);
+    const mobile = window.matchMedia("(max-width: 1100px)").matches;
+    const delay = mobile ? 4200 : 800;
+    const timer = window.setTimeout(() => setOpen(true), delay);
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -36,16 +38,24 @@ export function CookieBar() {
   return (
     <>
       {open && (
-        <div className="cookie" role="dialog" aria-label="Cookie">
-          <img src="/icons/pin.svg" alt="" width={28} height={28} />
-          <div>
+        <div className="cookie cookie-sheet" role="dialog" aria-label="Cookie">
+          <img className="cookie-pin" src="/icons/pin.svg" alt="" width={28} height={28} />
+          <div className="cookie-copy">
             <strong>Cookie</strong>
-            <p>Нужные cookie держат сайт. Аналитику можно не включать.</p>
+            <p>
+              Нужные cookie держат сайт.{" "}
+              <button type="button" className="cookie-inline" onClick={() => setSettings(true)}>
+                Настроить
+              </button>
+            </p>
           </div>
           <div className="cookie-actions">
-            <button className="btn btn-dark" type="button" onClick={() => save({ necessary: true, analytics: true })}>Принять все</button>
-            <button className="btn btn-ghost" type="button" onClick={() => save({ necessary: true, analytics: false })}>Только необходимые</button>
-            <button className="btn btn-ghost" type="button" onClick={() => setSettings(true)}>Настроить</button>
+            <button className="btn btn-dark" type="button" onClick={() => save({ necessary: true, analytics: true })}>
+              Принять все
+            </button>
+            <button className="btn btn-ghost cookie-necessary" type="button" onClick={() => save({ necessary: true, analytics: false })}>
+              Только необходимые
+            </button>
           </div>
         </div>
       )}

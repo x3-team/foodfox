@@ -67,7 +67,9 @@ test("dark hero sits under the header", async ({ page }) => {
       const e = hero.getBoundingClientRect();
       const mobile = window.matchMedia("(max-width: 1100px)").matches;
       if (route === "/" && mobile) {
-        return e.top <= 2 && header.classList.contains("is-home-top");
+        const lab = document.querySelector(".lab-marquee");
+        const labBelow = !lab || lab.getBoundingClientRect().top >= window.innerHeight - 1;
+        return e.top <= 2 && header.classList.contains("is-home-overlay") && labBelow;
       }
       return e.top <= 2 && e.bottom > h.bottom && header.classList.contains("on-dark");
     }, path);
