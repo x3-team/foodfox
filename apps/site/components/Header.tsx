@@ -70,6 +70,12 @@ export function Header() {
   };
   useDialog(menuRef, () => setMenu(false), menu && !closing);
   const lessons = path.startsWith("/course/lessons");
+  const [lessonN, setLessonN] = useState(2);
+  useEffect(() => {
+    const onLesson = (event: Event) => setLessonN(Number((event as CustomEvent<number>).detail) || 1);
+    window.addEventListener("fox:lesson", onLesson);
+    return () => window.removeEventListener("fox:lesson", onLesson);
+  }, []);
   const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
   const darkHero = path === "/" || path.startsWith("/specialists") || path === "/labs" || path === "/faq" || path === "/reviews" || path === "/contacts" || path === "/certificates";
   const homeMobileStack = path === "/" && mobileNav;
@@ -147,11 +153,20 @@ export function Header() {
             <img src="/icons/download.svg" alt="" />
           </Link>
         )}
-        <a className="partner-dot" href={PARTNER_LOGIN} aria-label="Кабинет партнёра">
+        {lessons ? (
+          <span className="lesson-progress" aria-label={`Пройдено ${lessonN} из 6 уроков`}>
+            {lessonN} из 6 уроков
+            <i><b style={{ width: `${(lessonN / 6) * 100}%` }} /></i>
+          </span>
+        ) : null}
+        <a className={`partner-dot${lessons ? " is-lessons" : ""}`} href={PARTNER_LOGIN} aria-label="Кабинет партнёра">
           <img src={onDark ? "/icons/user-light.svg" : "/icons/user.svg"} alt="" />
         </a>
         {lessons ? (
-          <span className="cabinet-pill">Кабинет курса</span>
+          <span className="cabinet-pill my-lessons">
+            <img src="/figma/course/my-avatar.webp" alt="" width={32} height={32} />
+            Мои уроки
+          </span>
         ) : variant === "site" ? (
           <>
             {/* Figma Header (1069:409): «Пример результата» + one button; white on the transparent state. */}

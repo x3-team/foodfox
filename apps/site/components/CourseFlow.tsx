@@ -525,6 +525,9 @@ export function LessonsPage() {
   }
 
   const passed = Math.max(done.length, current + 1);
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("fox:lesson", { detail: current + 1 }));
+  }, [current]);
 
   return (
     <>
@@ -533,8 +536,8 @@ export function LessonsPage() {
         <section data-s="l01" className="ls-layout">
           <div className="ls-progress" aria-label={`Прогресс курса, урок ${current + 1} из 6`}>
             <span>Прогресс курса</span>
-            <i><b style={{ width: `${((current + 1) / 6) * 100}%` }} /></i>
             <strong>{current + 1} из 6</strong>
+            <i><b style={{ width: `${((current + 1) / 6) * 100}%` }} /></i>
           </div>
           <button type="button" className="btn btn-ghost ls-open" onClick={() => setSheet(true)}>Программа курса</button>
           {sheet && (
@@ -592,7 +595,7 @@ export function LessonsPage() {
           </aside>
           <div className="ls-main">
             <div className="ls-title">
-              <p>Урок {current + 1} · {lesson.lecturer}</p>
+              <p>Урок {current + 1} · {lesson.lecturer}<span className="ls-min"> · {lesson.minutes} мин</span></p>
               <h1>{lesson.title}</h1>
             </div>
             <div className="ls-player" aria-label="Плеер урока">
@@ -600,18 +603,21 @@ export function LessonsPage() {
                 <video
                   ref={videoRef}
                   className="player-poster"
-                  poster="/figma/course/player-poster.jpg"
+                  poster="/figma/course/lesson-poster.webp"
                   src="/course/lesson-loop.mp4"
                   playsInline
                   onPlay={() => setPlaying(true)}
                   onPause={() => setPlaying(false)}
                 />
+                {!playing && <img className="ls-poster" src="/figma/course/lesson-poster.webp" alt="" />}
                 <button type="button" className="ls-play" onClick={toggle} aria-label={playing ? "Пауза" : "Смотреть"}>
                   <img src="/figma/icons/play.svg" alt="" width={24} height={24} />
                 </button>
               </div>
               <div className="ls-controls">
-                <button type="button" className="ls-ctrl" onClick={toggle}>{playing ? "Пауза" : "Смотреть"}</button>
+                <button type="button" className="ls-ctrl" onClick={toggle} aria-label={playing ? "Пауза" : "Смотреть"}>
+                  <img src="/figma/icons/play-light.svg" alt="" width={20} height={20} />
+                </button>
                 <input
                   aria-label="Прогресс урока"
                   type="range"
@@ -625,6 +631,8 @@ export function LessonsPage() {
                   }}
                 />
                 <span>00:00 / {lesson.clock}</span>
+                <span className="ls-chip">CC</span>
+                <span className="ls-chip">1×</span>
               </div>
             </div>
             <div className="ls-actions">
@@ -636,10 +644,10 @@ export function LessonsPage() {
                 Отметить как просмотренный
               </button>
               <div className="ls-pair">
-                <a className="ls-quiet" href="/report">Конспект PDF</a>
+                <a className="ls-quiet" href="/report">{"Конспект"}<span className="ls-d">{"\u00a0урока"}</span>{"\u00a0PDF"}</a>
                 {current < 5 ? (
                   <button type="button" className="text-link" onClick={() => setCurrent(current + 1)}>
-                    Следующий
+                    Следующий<span className="ls-d">&nbsp;урок</span>
                     <img src="/icons/arrow-right.svg" alt="" width={16} height={16} />
                   </button>
                 ) : null}
