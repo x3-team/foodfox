@@ -123,8 +123,22 @@ test("blog search empty state and course registration errors", async ({ page }) 
 test("contacts validation and labs empty city", async ({ page }) => {
   await page.goto("/contacts");
   await ready(page);
-  await page.getByRole("button", { name: "Отправить" }).click();
-  await expect(page.locator(".err").first()).toBeVisible();
+  const form = page.locator("#k-form");
+  const send = form.getByRole("button", { name: "Отправить" });
+  await expect(send).toBeDisabled();
+  await form.getByRole("checkbox", { name: /Согласен/ }).check();
+  await send.click();
+  await expect(form.locator(".err").first()).toBeVisible();
+  await form.getByLabel("E-mail или телефон").fill("anna@clinic");
+  await form.getByLabel("Имя").focus();
+  await expect(form.getByText("Укажите e-mail целиком")).toBeVisible();
+  await form.getByLabel("Имя").fill("Анна");
+  await form.getByLabel("E-mail или телефон").fill("anna@clinic.ru");
+  await form.getByLabel("Вопрос").fill("Как подготовиться к сдаче теста?");
+  const posted = page.waitForRequest((request) => request.url().includes("/api/lead") && request.method() === "POST");
+  await send.click();
+  await posted;
+  await expect(page.getByRole("heading", { name: "Вопрос отправлен" })).toBeVisible();
 
   await page.goto("/labs");
   await ready(page);
@@ -208,7 +222,7 @@ test("labs map stays in sync with the branch list", async ({ page }) => {
   const mapToggle = page.getByRole("button", { name: "Карта", exact: true });
   if (await mapToggle.isVisible()) await mapToggle.click();
   await expect(page.locator(".leaflet-container")).toBeVisible();
-  await page.getByRole("button", { name: /Гемотест/ }).click();
+  await page.getByRole("button", { name: "Гемотест", exact: true }).click();
   await expect(page.locator("[data-pin='gem']")).toHaveClass(/is-on/);
 });
 
@@ -357,10 +371,15 @@ test("booking modal walks the city and lab steps", async ({ page }) => {
   await page.getByRole("button", { name: "Записаться на тест" }).first().click();
   const dialog = page.getByRole("dialog", { name: "Записаться на тест" });
   await expect(dialog).toBeVisible();
-  await dialog.getByRole("button", { name: /Москва/ }).click();
+  await expect(dialog.getByText("Шаг 1 из 2")).toBeVisible();
+  await dialog.getByRole("option", { name: /Москва/ }).click();
   await dialog.getByRole("button", { name: "Продолжить" }).click();
   await expect(dialog.getByRole("heading", { name: /Выберите лабораторию/ })).toBeVisible();
-  await dialog.getByRole("button", { name: /Ситилаб/ }).click();
+  await dialog.getByRole("radio", { name: /Ситилаб/ }).click();
+  await page.context().route(/^https:\/\/citilab\.ru/, (route) => route.fulfill({ status: 200, body: "ok" }));
+  const popup = page.waitForEvent("popup");
+  await dialog.getByRole("button", { name: "Перейти на сайт Ситилаб" }).click();
+  expect((await popup).url()).toContain("utm_source=foxfood");
   await expect(dialog.getByRole("heading", { name: /Открываем сайт/ })).toBeVisible();
 });
 
@@ -410,10 +429,10 @@ test("booking waitlist posts the lead", async ({ page }) => {
   const posted = page.waitForRequest((request) => request.url().includes("/api/lead") && request.method() === "POST");
   await page.getByRole("button", { name: "Записаться на тест" }).first().click();
   const dialog = page.getByRole("dialog", { name: "Записаться на тест" });
-  await dialog.getByRole("button", { name: /Моздок/ }).click();
+  await dialog.getByRole("option", { name: /Моздок/ }).click();
   await dialog.getByRole("button", { name: "Продолжить" }).click();
   await expect(dialog.getByRole("heading", { name: /Моздоке/ })).toBeVisible();
-  await dialog.getByLabel("Почта, когда появится тест").fill("a@b.c");
+  await dialog.getByLabel("Почта, когда появится тест").fill("a@b.ru");
   await dialog.getByRole("checkbox").check();
   await dialog.getByRole("button", { name: "Сообщить, когда появится" }).click();
   await posted;
@@ -616,7 +635,7 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
           if (issues.length > 8) break;
           const style = getComputedStyle(el);
           if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) < 0.9) continue;
-          if (el.closest("[data-allow-x], .marquee, .leaflet-container, .cookie, .m04, .site-header, .mobile-menu, .fox-toast")) continue;
+          if (el.closest("[data-allow-x], .marquee, .leaflet-container, .cookie, .m04, .site-header, .mobile-menu, .fox-toasts")) continue;
           if (routePath === "/" && el.closest('[data-s="s01"]')) continue;
           if (el.closest("button[disabled], .btn[disabled]")) continue;
           const text = (el.innerText || "").trim();

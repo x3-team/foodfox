@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { prefersReducedMotion, useDialog } from "@/components/useDialog";
 
 export const NAV = [
   { href: "/specialists", label: "Для специалистов" },
@@ -35,9 +36,33 @@ export function Header() {
   const path = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const [menu, setMenu] = useState(false);
+  const [menu, setMenuOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
   const lastY = useRef(0);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const swipe = useRef<number | null>(null);
+  // G06: closing plays the opening in reverse for 200мс before the panel unmounts.
+  const setMenu = (next: boolean | ((value: boolean) => boolean)) => {
+    const value = typeof next === "function" ? next(menu) : next;
+    if (value) {
+      setClosing(false);
+      setMenuOpen(true);
+      setHidden(false);
+      return;
+    }
+    if (!menu) return;
+    if (prefersReducedMotion()) {
+      setMenuOpen(false);
+      return;
+    }
+    setClosing(true);
+    window.setTimeout(() => {
+      setClosing(false);
+      setMenuOpen(false);
+    }, 200);
+  };
+  useDialog(menuRef, () => setMenu(false), menu && !closing);
   const lessons = path.startsWith("/course/lessons");
   const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
   const darkHero = path === "/" || path.startsWith("/specialists") || path === "/course" || path === "/labs" || path === "/faq" || path === "/reviews" || path === "/contacts" || path === "/report" || path === "/certificates";
@@ -78,24 +103,12 @@ export function Header() {
   }, [scrolled]);
 
   useEffect(() => {
-    setMenu(false);
+    setMenuOpen(false);
+    setClosing(false);
   }, [path]);
 
   useEffect(() => {
     if (menu) setHidden(false);
-  }, [menu]);
-
-  useEffect(() => {
-    document.body.style.overflow = menu ? "hidden" : "";
-    if (!menu) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenu(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
-    };
   }, [menu]);
 
   return (
@@ -139,15 +152,9 @@ export function Header() {
           aria-label="Меню"
           aria-expanded={menu}
           aria-controls="mobile-menu"
-          onClick={() => {
-            setMenu((value) => {
-              const next = !value;
-              if (next) setHidden(false);
-              return next;
-            });
-          }}
+          onClick={() => setMenu(!menu || closing)}
         >
-          <span className="menu-capsule-label">Меню</span>
+          <span className="menu-capsule-label">{menu && !closing ? "Закрыть" : "Меню"}</span>
           <span className="menu-capsule-burger" aria-hidden>
             <span />
             <span />
@@ -156,17 +163,41 @@ export function Header() {
         </button>
       </div>
       {menu && (
-        <div id="mobile-menu" className="mobile-menu" role="dialog" aria-label="Меню">
+        <div
+          id="mobile-menu"
+          ref={menuRef}
+          className={`mobile-menu${closing ? " is-closing" : ""}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Меню"
+          onTouchStart={(event) => {
+            swipe.current = event.touches[0]?.clientY ?? null;
+          }}
+          onTouchEnd={(event) => {
+            const start = swipe.current;
+            swipe.current = null;
+            const end = event.changedTouches[0]?.clientY ?? start;
+            // G06: a swipe up closes the menu when the list is not scrolled.
+            if (start !== null && end !== null && start - end > 60 && (menuRef.current?.scrollTop ?? 0) <= 0) setMenu(false);
+          }}
+        >
+          {/* G06: items cascade from 120мс with a 30мс step; the bottom block comes last, +80мс. */}
           {NAV.map((item, index) => (
-            <Link key={item.href} href={item.href} style={{ animationDelay: `${80 + index * 45}ms` }} aria-current={path.startsWith(item.href) ? "page" : undefined}>
+            <Link key={item.href} href={item.href} style={{ animationDelay: `${120 + index * 30}ms` }} aria-current={path.startsWith(item.href) ? "page" : undefined}>
               {item.label} <img src="/icons/arrow-right-light.svg" alt="" />
             </Link>
           ))}
-          <a href={PARTNER_LOGIN} style={{ animationDelay: "460ms" }}>Кабинет партнёра</a>
-          <a href="tel:+74953748305" style={{ animationDelay: "500ms" }}>+7 (495) 374-83-05</a>
-          <a href="https://t.me/foxfoodxplorer" style={{ animationDelay: "540ms" }}>Telegram</a>
-          <button className="btn btn-light" type="button" style={{ animationDelay: "580ms" }} onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:contact")); }}>Связаться</button>
-          <button className="btn btn-light" type="button" style={{ animationDelay: "620ms" }} onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:book")); }}>Записаться на тест</button>
+          {[
+            <a key="partner" href={PARTNER_LOGIN}>Кабинет партнёра</a>,
+            <a key="tel" href="tel:+74953748305">+7 (495) 374-83-05</a>,
+            <a key="tg" href="https://t.me/foxfoodxplorer">Telegram</a>,
+            <button key="contact" className="btn btn-light" type="button" onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:contact")); }}>Связаться</button>,
+            <button key="book" className="btn btn-light" type="button" onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:book")); }}>Записаться на тест</button>,
+          ].map((node, index) => (
+            <span key={node.key} className="mobile-menu-foot" style={{ animationDelay: `${120 + (NAV.length - 1) * 30 + 80 + index * 30}ms` }}>
+              {node}
+            </span>
+          ))}
         </div>
       )}
     </header>

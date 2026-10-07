@@ -720,9 +720,23 @@ export function HomePage() {
                   const on = faq === index;
                   return (
                   <div key={q} className={`acc${on ? " is-open" : ""}`}>
-                    <button type="button" aria-expanded={on} onClick={() => setFaq(on ? -1 : index)}>
+                    <button
+                      type="button"
+                      aria-expanded={on}
+                      onClick={(event) => {
+                        setFaq(on ? -1 : index);
+                        // G16: when a lower item opens, keep its question on screen.
+                        if (!on) {
+                          const row = event.currentTarget;
+                          window.setTimeout(() => {
+                            const top = row.getBoundingClientRect().top;
+                            if (top < 80 || top > window.innerHeight - 160) row.scrollIntoView({ block: "center", behavior: "smooth" });
+                          }, 320);
+                        }
+                      }}
+                    >
                       <strong>{q}</strong>
-                      <img className="acc-chevron" src="/icons/chevron-down.svg" alt="" width={16} height={16} />
+                      <span className="acc-plus" aria-hidden />
                     </button>
                     <div className="acc-body"><div><p>{a}</p></div></div>
                   </div>

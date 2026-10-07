@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header, PARTNER_LOGIN } from "@/components/Header";
 import { LabsMap, type Branch } from "@/components/LabsMap";
+import { LeadForm } from "@/components/LeadForm";
+import { PARTNERS, withUtm } from "@/lib/labs";
 
 const FAQ_GROUPS: Array<{ id: string; title: string; count: string; items: Array<[string, string]> }> = [
   {
@@ -112,9 +114,32 @@ export function FaqPage() {
   const [q, setQ] = useState("");
   const [nav, setNav] = useState("method");
   const [showAll, setShowAll] = useState(false);
+  const [flash, setFlash] = useState("");
+  const [debounced, setDebounced] = useState("");
+  useEffect(() => {
+    // F01: search filters without reload, debounce 200мс, then a smooth scroll to the first match.
+    const id = window.setTimeout(() => setDebounced(q), 200);
+    return () => window.clearTimeout(id);
+  }, [q]);
+  useEffect(() => {
+    if (debounced.trim().length < 2) return;
+    const hit = document.querySelector<HTMLElement>(".f-groups mark.hit");
+    hit?.closest("article")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [debounced]);
   useEffect(() => {
     const openHash = () => {
       const id = window.location.hash.replace("#", "");
+      // F02: every question is an anchor — the link opens the page with the answer expanded and a 1.2 s lime highlight.
+      const qa = FAQ_GROUPS.flatMap((group) => group.items.map((item, index) => ({ id: `${group.id}-${index + 1}`, question: item[0], group: group.id }))).find((item) => item.id === id);
+      if (qa) {
+        setShowAll(true);
+        setNav(qa.group);
+        setOpen((current) => (current.includes(qa.question) ? current : [...current, qa.question]));
+        setFlash(qa.id);
+        window.setTimeout(() => setFlash(""), 1200);
+        window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
+        return;
+      }
       if (!FAQ_GROUPS.some((group) => group.id === id)) return;
       setShowAll(true);
       setNav(id);
@@ -124,7 +149,8 @@ export function FaqPage() {
     window.addEventListener("hashchange", openHash);
     return () => window.removeEventListener("hashchange", openHash);
   }, []);
-  const query = q.trim().toLowerCase();
+  const query = debounced.trim().toLowerCase();
+  const CHIP_QUERY: Record<string, string> = { "Критика IgG": "критикуют", Подготовка: "готовиться", Детям: "детям", Сроки: "дней", Цена: "стоит" };
   const groups = FAQ_GROUPS.map((group) => ({
     ...group,
     items: group.items.filter((item) => item.join(" ").toLowerCase().includes(query)),
@@ -149,8 +175,8 @@ export function FaqPage() {
                   <button className="btn btn-dark" type="submit">Найти</button>
                 </form>
                 <div className="chips">
-                  {["Критика IgG", "Подготовка", "Детям", "Сроки", "Цена"].map((item) => (
-                    <button key={item} className="chip" type="button" onClick={() => setQ(item === "Критика IgG" ? "критикуют" : item === "Подготовка" ? "готовиться" : item === "Детям" ? "детям" : item === "Сроки" ? "дней" : "стоит")}>{item}</button>
+                  {Object.entries(CHIP_QUERY).map(([item, term]) => (
+                    <button key={item} className={`chip${q === term ? " is-active" : ""}`} aria-pressed={q === term} type="button" onClick={() => setQ(q === term ? "" : term)}>{item}</button>
                   ))}
                 </div>
               </div>
@@ -191,6 +217,7 @@ export function FaqPage() {
                   <header><h2><span className="f-num">{String(index + 1).padStart(2, "0")}</span>{group.title}</h2><span>{group.count}</span></header>
                   {group.items.map(([question, answer]) => {
                     const expanded = open.includes(question);
+                    const anchor = `${group.id}-${FAQ_GROUPS.find((item) => item.id === group.id)!.items.findIndex((item) => item[0] === question) + 1}`;
                     const mark = (text: string) => {
                       if (query.length < 2) return text;
                       const i = text.toLowerCase().indexOf(query);
@@ -198,7 +225,7 @@ export function FaqPage() {
                       return <>{text.slice(0, i)}<mark className="hit">{text.slice(i, i + query.length)}</mark>{text.slice(i + query.length)}</>;
                     };
                     return (
-                      <article key={question} className={expanded ? "is-open" : ""}>
+                      <article key={question} id={anchor} className={`${expanded ? "is-open" : ""}${flash === anchor ? " is-flash" : ""}`}>
                         <button type="button" aria-expanded={expanded} onClick={() => setOpen((current) => expanded ? current.filter((item) => item !== question) : [...current, question])}>
                           <strong>{mark(question)}</strong>
                           <img src="/icons/chevron-down.svg" alt="" />
@@ -207,10 +234,21 @@ export function FaqPage() {
                           <div>
                             <p>{mark(answer)}</p>
                             <div className="f-actions">
-                              <span>Ссылка на ответ</span>
+                              <button
+                                type="button"
+                                className="f-link"
+                                onClick={() => {
+                                  const url = `${window.location.origin}${window.location.pathname}#${anchor}`;
+                                  void navigator.clipboard?.writeText(url);
+                                  window.history.replaceState(null, "", `#${anchor}`);
+                                  window.dispatchEvent(new CustomEvent("fox:toast", { detail: { text: "Ссылка скопирована", duration: 2500 } }));
+                                }}
+                              >
+                                Ссылка на ответ
+                              </button>
                               <span>Ответ помог?</span>
-                              <button type="button">Да</button>
-                              <button type="button">Нет</button>
+                              <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Спасибо, учтём" }))}>Да</button>
+                              <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Спасибо — напишите нам, чего не хватило" }))}>Нет</button>
                             </div>
                           </div>
                         </div>
@@ -265,17 +303,6 @@ const SPB: Branch[] = [
 
 const EMPTY: Branch[] = [];
 
-const PARTNERS = [
-  { name: "Ситилаб", logo: "/figma/labs/citilab.svg", count: "86 отделений", here: true, href: "https://citilab.ru" },
-  { name: "Гемотест", logo: "/figma/labs/gemotest.svg", count: "140 отделений", here: true, href: "https://gemotest.ru" },
-  { name: "KDL", logo: "/figma/labs/kdl.svg", count: "54 отделения", here: true, href: "https://kdl.ru" },
-  { name: "ДНКОМ", logo: "/figma/labs/dnkom.svg", count: "17 отделений", here: true, href: "https://dnkom.ru" },
-  { name: "INVITRO", logo: "/figma/labs/invitro.svg", count: "128 отделений", here: true, href: "https://www.invitro.ru" },
-  { name: "CMD", logo: "/figma/labs/cmd.svg", count: "41 отделение", here: true, href: "https://cmd-online.ru" },
-  { name: "CHROMOLAB", logo: "/figma/labs/chromolab.png", count: "23 отделения", here: true, href: "https://chromolab.ru" },
-  { name: "Хеликс", logo: "/figma/labs/helix.svg", count: "32 отделения", here: true, href: "https://helix.ru" },
-  { name: "Юнимед", logo: "/figma/labs/unimed.svg", count: "Нет в вашем городе", here: false, href: "#l05" },
-];
 
 const NETS = ["Все сети", "Ситилаб", "Гемотест", "KDL", "ДНКОМ"];
 
@@ -289,7 +316,10 @@ export function LabsPage() {
   const [openNow, setOpenNow] = useState(false);
   const [more, setMore] = useState(false);
   const [mail, setMail] = useState("");
+  const [mailError, setMailError] = useState("");
   const [told, setTold] = useState(false);
+  const [sendingMail, setSendingMail] = useState(false);
+  const [flash, setFlash] = useState("");
   const key = city.trim().toLowerCase();
   const points = useMemo(() => {
     if (key === "санкт-петербург" || key === "спб" || key === "петербург") return SPB;
@@ -320,6 +350,40 @@ export function LabsPage() {
     query.addEventListener("change", apply);
     return () => query.removeEventListener("change", apply);
   }, []);
+
+  // L03: a click on a pin scrolls the list to the branch and tints it lime for 1.2 s.
+  // Stable identity: LabsMap rebuilds the Leaflet map whenever onSelect changes.
+  const pickFromMap = useCallback((id: string) => {
+    setSelected(id);
+    setFlash(id);
+    window.setTimeout(() => setFlash((current) => (current === id ? "" : current)), 1200);
+    const row = document.querySelector<HTMLElement>(`[data-lab-list] [data-branch="${id}"]`);
+    const list = row?.closest<HTMLElement>("[data-lab-list]");
+    if (row && list && list.scrollHeight > list.clientHeight) list.scrollTo({ top: row.offsetTop - list.offsetTop, behavior: "smooth" });
+    else row?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, []);
+
+  async function notify(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const value = mail.trim();
+    const error = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value) ? "" : value ? "Проверьте e-mail: нужен адрес вида name@mail.ru" : "Укажите e-mail";
+    setMailError(error);
+    if (error) return;
+    setSendingMail(true);
+    try {
+      const response = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ kind: "city-wait", city, contact: value }),
+      });
+      if (!response.ok) throw new Error("fail");
+      setTold(true);
+    } catch {
+      window.dispatchEvent(new CustomEvent("fox:toast", { detail: { text: "Нет соединения — попробуйте ещё раз", type: "error" } }));
+    } finally {
+      setSendingMail(false);
+    }
+  }
 
   function pickNet(name: string) {
     setNet(name);
@@ -382,14 +446,25 @@ export function LabsPage() {
               <p className="l-legend"><i className="on" />есть в вашем городе <i />пока нет — покажем ближайшие города</p>
             </header>
             <div className="l-partners">
-              {PARTNERS.map((item) => (
-                <a key={item.name} className={item.here ? "" : "is-away"} href={item.href} {...(item.here ? { target: "_blank", rel: "noreferrer" } : {})}>
-                  <img src={item.logo} alt="" />
-                  <strong>{item.name}</strong>
-                  <span><i />{item.count}</span>
-                  <em>{item.here ? "Сдать тест на сайте сети" : "Смотреть города"} <img src="/icons/arrow-up-right.svg" alt="" /></em>
-                </a>
-              ))}
+              {PARTNERS.map((item) =>
+                item.here ? (
+                  // L02: a network card opens the booking modal straight on step 2 with this network.
+                  <button key={item.name} type="button" onClick={() => window.dispatchEvent(new CustomEvent("fox:book", { detail: { lab: item.name } }))}>
+                    <img src={item.logo} alt="" />
+                    <strong>{item.name}</strong>
+                    <span><i />{item.count}</span>
+                    <em>Сдать тест на сайте сети <img src="/icons/arrow-up-right.svg" alt="" /></em>
+                  </button>
+                ) : (
+                  // L02: Unavailable — 50%, «Нет в вашем городе», no hover and no hand cursor; the action leads to the nearest cities.
+                  <div key={item.name} className="is-away" aria-disabled="true">
+                    <img src={item.logo} alt="" />
+                    <strong>{item.name}</strong>
+                    <span className="l-away-badge">Нет в вашем городе</span>
+                    <a href="#l05">Смотреть города <img src="/icons/arrow-right.svg" alt="" /></a>
+                  </div>
+                ),
+              )}
             </div>
           </div>
         </section>
@@ -423,13 +498,13 @@ export function LabsPage() {
                   <p className="l-found"><span>Найдено {shown.length} {shown.length === 1 ? "отделение" : "отделений"}</span><span>Сначала ближайшие</span></p>
                   <div data-lab-list>
                     {shown.map((item) => (
-                      <article key={item.id} className={selected === item.id ? "is-on" : ""} onClick={() => setSelected(item.id)}>
+                      <article key={item.id} data-branch={item.id} className={`${selected === item.id ? "is-on" : ""}${flash === item.id ? " is-flash" : ""}`} onClick={() => setSelected(item.id)}>
                         <h3>{item.lab}</h3>
                         <p>{item.address}</p>
                         <p>{item.metro}</p>
                         <p className="l-badge">Открыто · {item.hours}</p>
                         <div className="l-actions" onClick={(event) => event.stopPropagation()}>
-                          <a className="btn btn-dark" href={PARTNERS.find((partner) => partner.name === item.lab || (item.lab === "Инвитро" && partner.name === "INVITRO"))?.href ?? "/labs"} target="_blank" rel="noreferrer">Сдать здесь</a>
+                          <a className="btn btn-dark" href={withUtm(PARTNERS.find((partner) => partner.name === item.lab || (item.lab === "Инвитро" && partner.name === "INVITRO"))?.href ?? "https://foodfox.yuri.guru/labs", "labs_branch")} target="_blank" rel="noreferrer">Сдать здесь</a>
                           <a className="btn btn-ghost" href={`https://yandex.ru/maps/?text=${encodeURIComponent(`${item.address}, ${city}`)}`} target="_blank" rel="noreferrer">Маршрут</a>
                         </div>
                       </article>
@@ -438,7 +513,7 @@ export function LabsPage() {
                 </div>
                 {(wide || labView === "map") && (
                   <div className="l03-map">
-                    <LabsMap points={points} selected={selected} onSelect={setSelected} />
+                    <LabsMap points={points} selected={selected} onSelect={pickFromMap} />
                     {selectedLab && (
                       <article className="l-map-card">
                         <h3>{selectedLab.lab}</h3>
@@ -492,11 +567,32 @@ export function LabsPage() {
               <div>
                 <h2>Вашего города нет в списке?</h2>
                 <p>Оставьте почту — напишем один раз, когда тест FOX появится в вашем городе. Без рассылок.</p>
-                <form onSubmit={(event) => { event.preventDefault(); if (mail.includes("@")) setTold(true); }}>
-                  <input type="email" value={mail} onChange={(event) => setMail(event.target.value)} placeholder="Ваш e-mail" aria-label="Почта для уведомления" />
-                  <button className="btn btn-dark" type="submit">Сообщить, когда появится</button>
-                </form>
-                {told && <p role="status">Записали. Напишем один раз, когда сеть появится.</p>}
+                {/* L05: validation on blur with the message under the field; after sending the form crossfades into the confirmation. */}
+                <div className="l05-swap" key={told ? "done" : "form"}>
+                  {told ? (
+                    <p role="status" className="l05-done">Сообщим, когда откроется отделение. Напишем один раз на {mail.trim()}.</p>
+                  ) : (
+                    <form onSubmit={notify} noValidate>
+                      <label className={`field l05-field${mailError ? " is-error" : ""}`}>
+                        <input
+                          type="email"
+                          value={mail}
+                          readOnly={sendingMail}
+                          onChange={(event) => {
+                            setMail(event.target.value);
+                            if (mailError) setMailError(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(event.target.value.trim()) ? "" : mailError);
+                          }}
+                          onBlur={() => mail.trim() && setMailError(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail.trim()) ? "" : "Проверьте e-mail: нужен адрес вида name@mail.ru")}
+                          placeholder="Ваш e-mail"
+                          aria-label="Почта для уведомления"
+                          aria-invalid={!!mailError}
+                        />
+                        <span className={`lf-err${mailError ? " is-on" : ""}`}><span className="err">{mailError}</span></span>
+                      </label>
+                      <button className={`btn btn-dark${sendingMail ? " is-loading" : ""}`} type="submit" disabled={sendingMail}>Сообщить, когда появится</button>
+                    </form>
+                  )}
+                </div>
                 <p className="l-fine">Нажимая кнопку, вы соглашаетесь на одно письмо по 152-ФЗ. Отписка — ответом на него.</p>
               </div>
               <aside>
@@ -516,38 +612,7 @@ export function LabsPage() {
   );
 }
 
-const WHO = ["Пациент", "Специалист", "Лаборатория"] as const;
-
 export function ContactsPage() {
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [ok, setOk] = useState(false);
-  const [who, setWho] = useState<(typeof WHO)[number]>("Пациент");
-  const [shake, setShake] = useState(false);
-  const [net, setNet] = useState(false);
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const next: Record<string, string> = {};
-    const contact = String(data.get("email") || "").trim();
-    if (String(data.get("name") || "").trim().length < 2) next.name = "Укажите имя";
-    if (!contact.includes("@") && contact.replace(/\D/g, "").length < 10) next.email = "Укажите e-mail или телефон";
-    if (!data.get("agree")) next.agree = "Нужно согласие";
-    setErrors(next);
-    if (Object.keys(next).length) {
-      setShake(true);
-      window.setTimeout(() => setShake(false), 450);
-      setOk(false);
-      setNet(false);
-      return;
-    }
-    if (!navigator.onLine) {
-      setNet(true);
-      setOk(false);
-      return;
-    }
-    setNet(false);
-    setOk(true);
-  }
   // The page is prerendered at build time, so the office status is read after
   // hydration; computing it during render made /contacts mismatch (React #418)
   // whenever the build and the visit fell on different sides of 10:00 / 19:00.
@@ -619,31 +684,18 @@ export function ContactsPage() {
         </section>
         <section data-s="k03">
           <div className="wrap k03">
-            <form id="k-form" className={shake ? "is-shake" : ""} onSubmit={submit} noValidate>
-              <h2>Задать вопрос</h2>
-              <p>Выберите, кто вы — так письмо попадёт к нужному сотруднику.</p>
-              <div className="who-tabs" role="tablist" aria-label="Тип обращения">
-                {WHO.map((item) => (
-                  <button key={item} type="button" role="tab" aria-selected={who === item} className={who === item ? "is-active" : ""} onClick={() => setWho(item)}>{item}</button>
-                ))}
-              </div>
-              <p className="k-who">
-                {who === "Пациент" && "Запись на тест идёт через лабораторию. Здесь можно задать вопрос о сайте и документах."}
-                {who === "Специалист" && "Курс, протокол и пример отчёта — в разделе для специалистов."}
-                {who === "Лаборатория" && <>Подключение сети: обучение персонала и материалы для пациентов. <a href={PARTNER_LOGIN}>Кабинет партнёра</a></>}
-              </p>
-              <div className="k-fields">
-                <label className={`field${errors.name ? " is-error" : ""}`}>Имя<input name="name" aria-invalid={!!errors.name} />{errors.name && <span className="err">{errors.name}</span>}</label>
-                <label className={`field${errors.email ? " is-error" : ""}`}>E-mail или телефон<input name="email" aria-invalid={!!errors.email} />{errors.email && <span className="err">{errors.email}</span>}</label>
-              </div>
-              <label className="field">Сообщение<textarea name="text" rows={4} maxLength={500} /></label>
-              <label className={`check-row${errors.agree ? " is-error" : ""}`}><input type="checkbox" name="agree" /><span>Согласен на обработку персональных данных по 152-ФЗ и с политикой конфиденциальности</span></label>
-              {errors.agree && <p className="err" role="alert">{errors.agree}</p>}
-              {net && <p className="err" role="alert">Не удалось отправить. Проверьте соединение и попробуйте ещё раз.</p>}
-              {ok && <p role="status">Сообщение отправлено. Ответим в ближайший рабочий день.</p>}
-              <button className="btn btn-dark" type="submit">Отправить</button>
-              <p className="k-hint">Отвечаем в течение 1 рабочего дня</p>
-            </form>
+            <LeadForm
+              variant="page"
+              title="Задать вопрос"
+              subtitle="Выберите, кто вы — так письмо попадёт к нужному сотруднику. Отвечаем в течение 1 рабочего дня."
+              whoHint={(who) => (
+                <>
+                  {who === "Пациент" && "Запись на тест идёт через лабораторию. Здесь можно задать вопрос о сайте и документах."}
+                  {who === "Специалист" && "Курс, протокол и пример отчёта — в разделе для специалистов."}
+                  {who === "Лаборатория" && <>Подключение сети: обучение персонала и материалы для пациентов. <a href={PARTNER_LOGIN}>Кабинет партнёра</a></>}
+                </>
+              )}
+            />
             <aside className="k-map">
               <LabsMap points={[{ id: "office", lab: "Офис", address: "ул. Таганская, 3", metro: "Марксистская", hours: "Пн–Пт 10–19", lat: 55.7406, lng: 37.653 }]} selected="office" onSelect={() => undefined} />
               <div>
