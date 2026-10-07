@@ -58,11 +58,19 @@ export function CertificatesView() {
               {DOCS.map(([code, kind, text, size], index) => (
                 <article className="cert-card" key={code}>
                   <div className="c-paper" aria-hidden="true" style={{ backgroundImage: `url(/figma/certificates/doc-${index + 1}.png)` }}><b>{code}</b></div>
-                  <p>{kind}</p>
-                  <h3>{code}</h3>
-                  <p>{text}</p>
-                  <span>{size}</span>
-                  <button type="button" onClick={() => setOpen(code)}>Открыть PDF</button>
+                  {/* Doc / Card (1275:449): badge, title, text, actions row «Открыть PDF ↗ · PDF · size · download». */}
+                  <div className="cert-body">
+                    <p className="cert-kind">{kind}</p>
+                    <h3>{code}</h3>
+                    <p>{text}</p>
+                    <div className="cert-actions">
+                      <button type="button" className="cert-open" onClick={() => setOpen(code)}>Открыть PDF <img src="/icons/arrow-up-right.svg" alt="" /></button>
+                      <span>{size}</span>
+                      {/\d/.test(size) && (
+                        <button type="button" className="cert-dl" aria-label={`Скачать ${code}`} onClick={() => setOpen(code)}><img src="/icons/download.svg" alt="" /></button>
+                      )}
+                    </div>
+                  </div>
                 </article>
               ))}
             </div>
@@ -72,32 +80,39 @@ export function CertificatesView() {
         <section data-s="c03">
           <div className="wrap c03">
             <div>
-              <p className="fx-kicker">О производителе</p>
+              <p className="fx-kicker c03-kicker"><img src="/icons/building-light.svg" alt="" />О производителе</p>
               <h2>MacroArray Diagnostics</h2>
-              <p>Австрийская компания, с 2016 года разрабатывает лабораторные системы для мультиплексного анализа. В России тест FOX представляет МФК Инмунотех.</p>
+              <p>Австрийская компания, с 2016 года создаёт лабораторные тесты, оборудование и программы для обработки результатов. В России и СНГ тест представляет МФК Инмунотех.</p>
               <dl>
                 <div><b>2016</b><span>основание в Вене</span></div>
                 <div><b>286</b><span>пищевых антигенов</span></div>
                 <div><b>1500+</b><span>лабораторий в РФ</span></div>
               </dl>
             </div>
-            <img src="/figma/certificates/madx.jpg" alt="" />
+            <div className="c03-visual">
+              <img src="/figma/certificates/madx.jpg" alt="" />
+              <p className="c03-pin"><img src="/icons/pin-light.svg" alt="" />Вена, Австрия</p>
+              <p className="c03-rep"><span><img src="/icons/building-dark.svg" alt="" /></span><span><b>МФК Инмунотех</b><small>официальный представитель в РФ и СНГ</small></span></p>
+            </div>
           </div>
         </section>
 
         <section data-s="c04">
           <div className="wrap c04">
             <div>
-              <p className="fx-kicker">Технология</p>
+              <p className="fx-kicker c04-kicker">Технология</p>
               <h2>ELISA — стандартная лабораторная процедура</h2>
-              <p>Мультиплексный непрямой ELISA: сотни антигенов смотрят в одном анализе крови. Это процедура лаборатории, а не домашний тест.</p>
+              <p>FOX основан на иммуноферментном анализе — общепринятой лабораторной процедуре. За одно исследование тест измеряет уровень пищеспецифических IgG к 286 антигенам.</p>
               <ol>
-                <li><b>01</b><span>Образец крови</span></li>
-                <li><b>02</b><span>286 антигенов</span></li>
-                <li><b>03</b><span>Отчёт</span></li>
+                <li><b>01</b><span>Образец крови</span><small>Из вены, в лаборатории-партнёре</small></li>
+                <li><b>02</b><span>286 антигенов</span><small>Уровень IgG — за одно исследование</small></li>
+                <li><b>03</b><span>Отчёт</span><small>Три зоны и значения в U/mL</small></li>
               </ol>
             </div>
-            <img src="/figma/certificates/elisa.jpg" alt="" />
+            <div className="c04-visual">
+              <img src="/figma/certificates/elisa.jpg" alt="" />
+              <p className="c04-ccd"><b><i />Anti-CCD-контроль</b><span>в каждой пробе — исключает ложные сигналы от углеводных детерминант</span></p>
+            </div>
           </div>
         </section>
 
