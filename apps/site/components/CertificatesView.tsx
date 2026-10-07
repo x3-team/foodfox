@@ -122,7 +122,7 @@ export function CertificatesView() {
               <h2>История FOX</h2>
               <p>От лаборатории в Вене до партнёрской сети по всей России.</p>
             </header>
-            <ol>
+            <ol data-allow-x aria-label="История FOX">
               <li><b>2016</b><span>Основание MADx, Вена</span></li>
               <li><b>2017</b><span>Первый CE-маркированный IVD-продукт</span></li>
               {/* TODO: год расширения панели до 286 антигенов — уточнить у клиента */}

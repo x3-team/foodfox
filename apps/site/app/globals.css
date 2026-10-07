@@ -3949,3 +3949,15 @@ body [data-s="v02"] .rev.is-pro > p span { background: #0b0c08; color: #f8f9f6; 
   body [data-s="v02"] .v-grid > :nth-child(n+4) { order: 2; }
   body [data-s="v02"] .v-grid > .rev-promo { order: 1; }
 }
+/* /certificates C05 mobile: horizontal history timeline (Figma 1332:8699). The line is drawn per item with ::after so text nodes keep a flat background. */
+@media (max-width: 767px) {
+  body [data-s="c05"] .c05 ol { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; margin: 0 -20px; padding: 0 20px 4px; scroll-padding: 0 20px; scroll-snap-type: x proximity; }
+  body [data-s="c05"] .c05 ol::-webkit-scrollbar { display: none; }
+  body [data-s="c05"] .c05 ol::before { display: none; }
+  body [data-s="c05"] .c05 li { flex: 0 0 240px; padding-right: 20px; position: relative; isolation: isolate; scroll-snap-align: start; }
+  body [data-s="c05"] .c05 li::after { content: ""; position: absolute; left: 0; right: 0; top: 53.5px; height: 1px; background: rgba(11, 12, 8, 0.3); z-index: -1; }
+  body [data-s="c05"] .c05 li:last-child::after { right: 20px; }
+  body [data-s="c05"] .c05 li::before { position: relative; z-index: 1; }
+  body [data-s="c05"] .c05 b { font-size: 32px; line-height: 36px; }
+  body [data-s="c05"] .c05 span { font-size: 16px; line-height: 20px; }
+}
