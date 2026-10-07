@@ -99,6 +99,14 @@ function Blocks({ blocks }: { blocks: Block[] }) {
   );
 }
 
+const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+// «12 августа 2026» → «12.08.2026» (mobile meta line in 1313:5686).
+function dotDate(value: string) {
+  const [day, month, year] = value.split(" ");
+  const index = MONTHS.indexOf(month);
+  return index < 0 ? value : `${day.padStart(2, "0")}.${String(index + 1).padStart(2, "0")}.${year}`;
+}
+
 export function ArticleView({ article }: { article: Article }) {
   const author = authorBySlug(article.author)!;
   const headings = article.blocks?.filter((block) => block.type === "h2") ?? [];
@@ -109,6 +117,7 @@ export function ArticleView({ article }: { article: Article }) {
   const [copied, setCopied] = useState(false);
   const railRef = useRef<HTMLDivElement>(null);
   const [slide, setSlide] = useState(0);
+  const [tocOpen, setTocOpen] = useState(false);
   const sameCategory = articles.filter((item) => item.slug !== article.slug && item.category === article.category);
   const related = [...sameCategory, ...articles.filter((item) => item.slug !== article.slug && item.category !== article.category)].slice(0, 4);
   const more = articles.filter((item) => item.author === author.slug && item.slug !== article.slug).slice(0, 3);
@@ -126,6 +135,7 @@ export function ArticleView({ article }: { article: Article }) {
       }
       const marker = [...nodes].reverse().find((node) => node.getBoundingClientRect().top < 160);
       if (marker) setActive(marker.id);
+      else if (nodes[0]) setActive(nodes[0].id);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -167,6 +177,8 @@ export function ArticleView({ article }: { article: Article }) {
   }
 
   const lead = article.excerpt;
+  const tocItems = headings.flatMap((block) => (block.type === "h2" ? [block] : []));
+  const tocIndex = Math.max(0, tocItems.findIndex((block) => block.id === active));
 
   return (
     <>
@@ -175,6 +187,30 @@ export function ArticleView({ article }: { article: Article }) {
         <span style={{ transform: `scaleX(${progress})` }} />
       </div>
       <main>
+        {/* Mobile frame 1313:5686: collapsed sticky contents bar under the progress line. */}
+        {useToc && (
+          <div className={`art-toc-m${tocOpen ? " is-open" : ""}`}>
+            <button type="button" aria-expanded={tocOpen} onClick={() => setTocOpen((value) => !value)}>
+              <span>
+                <small>Содержание · {tocIndex + 1} из {tocItems.length}</small>
+                <strong>{tocItems[tocIndex]?.text}</strong>
+              </span>
+              <img src="/icons/chevron-down.svg" alt="" />
+            </button>
+            {tocOpen && (
+              <nav aria-label="Содержание статьи">
+                {headings.map(
+                  (block) =>
+                    block.type === "h2" && (
+                      <a key={block.id} href={`#${block.id}`} className={active === block.id ? "is-active" : ""} onClick={() => setTocOpen(false)}>
+                        {block.text}
+                      </a>
+                    ),
+                )}
+              </nav>
+            )}
+          </div>
+        )}
         <article>
           <header className="wrap article-top">
             <p className="crumbs rise">
@@ -187,7 +223,8 @@ export function ArticleView({ article }: { article: Article }) {
             <div className="article-meta rise rise-d1">
               <span className="tag">{categoryLabel(article.category)}</span>
               <span className="tag">~{article.minutes} минут чтения</span>
-              <span className="tag">Обновлено {UPDATED}</span>
+              <span className="tag art-date-tag">Обновлено {UPDATED}</span>
+              <span className="art-date-m">Обновлено {dotDate(UPDATED)}</span>
             </div>
             <h1 className="rise rise-d2">{article.title}</h1>
             <Link href={`/blog/authors/${author.slug}`} className="author rise rise-d3">
@@ -248,7 +285,7 @@ export function ArticleView({ article }: { article: Article }) {
               )}
               <aside className="disclaimer">
                 <p>
-                  <strong style={{ color: "var(--ink)" }}>Дисклеймер. </strong>
+                  <strong style={{ color: "var(--ink)" }}>Дисклеймер<span className="d-only">.</span> </strong>
                   {DISCLAIMER}
                 </p>
               </aside>
