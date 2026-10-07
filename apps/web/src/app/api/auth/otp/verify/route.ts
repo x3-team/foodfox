@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Неверный код" }, { status: 400 });
     }
 
-    const session = await verifyPhoneOtp(phone, code);
+    const session = await verifyPhoneOtp(phone, code, body.intent === "partner");
     if (!session) {
       return NextResponse.json(
         { error: "Код неверный или истёк" },

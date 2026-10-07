@@ -70,7 +70,7 @@ test("garbage entries are dropped instead of matching everything", () => {
   });
 });
 
-test("partner demo uses its own code and is not the client number", () => {
+test("partner demo shares the app demo number and code", () => {
   const savedPhone = process.env.FOX_PARTNER_DEMO_PHONE;
   const savedOtp = process.env.FOX_PARTNER_DEMO_OTP;
   delete process.env.FOX_PARTNER_DEMO_PHONE;
@@ -79,10 +79,10 @@ test("partner demo uses its own code and is not the client number", () => {
     withEnv(
       { FOX_DEMO_PHONES: "79251111111,79991234567", FOX_DEMO_OTP: "1111" },
       () => {
-        assert.equal(demoCodeFor("79990001122"), "2026");
-        assert.equal(isPartnerDemoPhone("79990001122"), true);
         assert.equal(demoCodeFor("79251111111"), "1111");
-        assert.equal(isPartnerDemoPhone("79251111111"), false);
+        assert.equal(isPartnerDemoPhone("79251111111"), true);
+        assert.equal(isPartnerDemoPhone("79991234567"), false);
+        assert.equal(demoCodeFor("79990001122"), null);
         assert.equal(demoCodeFor("79000000001"), null);
       },
     );
@@ -99,8 +99,8 @@ test("otp response includes demoCode only in demo mode and only when a code exis
   delete process.env.FOX_DEMO_MODE;
   try {
     assert.equal(isDemoMode(), false);
-    for (const code of [null, "2026", "1111"]) {
-      const body = otpRequestPayload("79990001122", 42000, code);
+    for (const code of [null, "1111"]) {
+      const body = otpRequestPayload("79251111111", 42000, code);
       assert.equal("demoCode" in body, false);
     }
   } finally {
@@ -112,7 +112,6 @@ test("otp response includes demoCode only in demo mode and only when a code exis
     assert.equal(isDemoMode(), true);
     const hidden = otpRequestPayload("79000000001", 42000, null);
     assert.equal("demoCode" in hidden, false);
-    assert.equal(otpRequestPayload("79990001122", 42000, "2026").demoCode, "2026");
     assert.equal(otpRequestPayload("79251111111", 42000, "1111").demoCode, "1111");
   });
 });

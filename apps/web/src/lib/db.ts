@@ -377,10 +377,16 @@ export async function requestPhoneOtp(phone: string): Promise<{
   return { resendAfterMs: OTP_RESEND_MS, demoCode: demo };
 }
 
-/** Verify a code and return the session, creating the client on first login. */
+/**
+ * Verify a code and return the session, creating the client on first login.
+ * `partnerIntent` (the partner-cabinet login) on the partner demo number gives
+ * this session the partner role without storing it: the number is shared with
+ * the mobile app demo, whose plain login must stay a client.
+ */
 export async function verifyPhoneOtp(
   phone: string,
   code: string,
+  partnerIntent = false,
 ): Promise<SessionData | null> {
   await ensureSchema();
   const p = requirePool();
@@ -415,7 +421,7 @@ export async function verifyPhoneOtp(
      WHERE u.phone = $1 LIMIT 1`,
     [phone],
   );
-  const partnerDemo = isPartnerDemoPhone(phone);
+  const partnerDemo = partnerIntent && isPartnerDemoPhone(phone);
 
   if (existing.rows[0]) {
     const u = existing.rows[0];
@@ -424,11 +430,6 @@ export async function verifyPhoneOtp(
     if (partnerDemo) {
       role = "partner";
       displayName = "Мария Ковалёва";
-      await p.query(`UPDATE users SET role = 'partner' WHERE id = $1`, [u.id]);
-      await p.query(`UPDATE clients SET display_name = $2 WHERE id = $1`, [
-        u.client_id,
-        displayName,
-      ]);
     }
     trackEvent(p, u.client_id as string, "user_logged_in", { method: "phone" });
     return {
@@ -443,14 +444,15 @@ export async function verifyPhoneOtp(
   const role: UserRole = partnerDemo ? "partner" : "client";
   const displayName = partnerDemo ? "Мария Ковалёва" : "Клиент";
 
+  // Stored as a client either way; the partner role lives in this session only.
   const user = await p.query(
-    `INSERT INTO users (phone, email, role) VALUES ($1, $2, $3) RETURNING id`,
-    [phone, `${phone}@phone.foodfox`, role],
+    `INSERT INTO users (phone, email, role) VALUES ($1, $2, 'client') RETURNING id`,
+    [phone, `${phone}@phone.foodfox`],
   );
   const client = await p.query(
     `INSERT INTO clients (user_id, display_name, privacy_consent_at)
      VALUES ($1, $2, now()) RETURNING id`,
-    [user.rows[0].id, displayName],
+    [user.rows[0].id, "Клиент"],
   );
   const clientId = client.rows[0].id as string;
 

@@ -83,21 +83,30 @@ test.describe.serial("partner cabinet", () => {
     await expect(page.getByRole("heading", { name: "Вход в кабинет" })).toBeVisible();
   });
 
-  test("client demo cannot open the partner cabinet", async ({ page }) => {
+  test("the shared demo number stays a client in a plain (app) login", async ({ page }) => {
     const requested = await requestOtp(page, "+7 925 111-11-11");
+    expect(requested.ok()).toBeTruthy();
+    const verified = await page.request.post("/api/auth/otp/verify", {
+      data: { phone: "+7 925 111-11-11", code: "1111" },
+    });
+    expect(verified.ok()).toBeTruthy();
+    const body = (await verified.json()) as { user?: { role?: string } };
+    expect(body.user?.role).toBe("client");
+  });
+
+  test("client demo cannot open the partner cabinet", async ({ page }) => {
+    const requested = await requestOtp(page, "+7 999 123-45-67");
     expect(requested.ok()).toBeTruthy();
     const payload = (await requested.json()) as { demoCode?: string };
     expect(payload.demoCode).toBeUndefined();
 
     const verified = await page.request.post("/api/auth/otp/verify", {
-      data: { phone: "+7 925 111-11-11", code: "1111", intent: "partner" },
+      data: { phone: "+7 999 123-45-67", code: "1111", intent: "partner" },
     });
     expect(verified.status()).toBe(403);
-
-    await page.goto("/partner/home");
-    await expect(page).toHaveURL(/\/partner\/?(\?.*)?$/);
-    await expect(page.getByText(/клиент/i)).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Мария/ })).toHaveCount(0);
+    // A 403 sets no session, so the cabinet stays closed to this client.
+    const home = await page.request.get("/partner/home", { maxRedirects: 0 });
+    expect(home.status()).toBe(307);
   });
 
   test("demo auto-login opens the cabinet from a plain /partner visit", async ({ page }) => {
@@ -111,7 +120,7 @@ test.describe.serial("partner cabinet", () => {
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(LOGIN);
-    await page.getByLabel("Телефон").fill("+7 999 000-11-22");
+    await page.getByLabel("Телефон").fill("8 925 111-11-11");
 
     const askForCode = async () => {
       const pending = page.waitForResponse(
@@ -132,7 +141,7 @@ test.describe.serial("partner cabinet", () => {
     const payload = (await requested.json()) as { demoCode?: string };
     expect(payload.demoCode).toBeUndefined();
 
-    await page.getByLabel("Код из СМС").fill("2026");
+    await page.getByLabel("Код из СМС").fill("1111");
     await page.getByRole("button", { name: "Войти" }).click();
     await expect(page).toHaveURL(/\/partner\/home\/?$/);
     await expect(page.getByRole("heading", { name: /Мария/ })).toBeVisible();

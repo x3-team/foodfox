@@ -31,9 +31,13 @@ export function hashOtp(phone: string, code: string): string {
   return createHash("sha256").update(`${secret}:${phone}:${code}`).digest("hex");
 }
 
-/** Partner-cabinet demo. Distinct from the client demo so a client OTP cannot enter. */
-export const PARTNER_DEMO_PHONE_DEFAULT = "79990001122";
-export const PARTNER_DEMO_OTP_DEFAULT = "2026";
+/**
+ * Partner-cabinet demo: the same number and code as the mobile app demo, so
+ * one test account opens both. The partner role is granted per login (verify
+ * with intent "partner"), never stored, so the mobile client login on this
+ * number stays a client. See verifyPhoneOtp in lib/db.ts.
+ */
+export const PARTNER_DEMO_PHONE_DEFAULT = "79251111111";
 
 export function partnerDemoPhone(): string {
   return (
@@ -61,7 +65,8 @@ export function isDemoMode(): boolean {
  */
 export function demoCodeFor(phone: string): string | null {
   if (isPartnerDemoPhone(phone)) {
-    return process.env.FOX_PARTNER_DEMO_OTP ?? PARTNER_DEMO_OTP_DEFAULT;
+    // Defaults to the client demo code: the number is shared with the app.
+    return process.env.FOX_PARTNER_DEMO_OTP ?? process.env.FOX_DEMO_OTP ?? "1111";
   }
   // Normalise the configured list the same way the caller's number was
   // normalised. Operators write these by hand in .env and reasonably reach for

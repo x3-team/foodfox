@@ -10,11 +10,11 @@
  * One visit without it: open /partner?manual=1 (logout goes there too).
  *
  * The phone and code must match the server's partner demo account
- * (lib/otp.ts: FOX_PARTNER_DEMO_PHONE / FOX_PARTNER_DEMO_OTP defaults). If the
+ * (lib/otp.ts: FOX_PARTNER_DEMO_PHONE / FOX_DEMO_OTP defaults). If the
  * server overrides them, auto-login fails and the form stays usable by hand.
  */
 const flag = (process.env.NEXT_PUBLIC_PARTNER_DEMO_AUTOLOGIN ?? "").trim().toLowerCase();
 
 export const PARTNER_DEMO_AUTOLOGIN = !["0", "false", "no", "off"].includes(flag);
-export const PARTNER_DEMO_AUTOLOGIN_PHONE = "79990001122";
-export const PARTNER_DEMO_AUTOLOGIN_CODE = "2026";
+export const PARTNER_DEMO_AUTOLOGIN_PHONE = "79251111111";
+export const PARTNER_DEMO_AUTOLOGIN_CODE = "1111";
