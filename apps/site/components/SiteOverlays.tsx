@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
 import { LeadForm } from "@/components/LeadForm";
@@ -195,8 +196,22 @@ export function SiteOverlays() {
     <>
       {barEligible && (
         <div className={`m04${bar ? " is-on" : ""}`} role="region" aria-label="Записаться на тест" aria-hidden={!bar}>
-          <p className="m04-copy"><b>286 продуктов</b><small>отчёт за 7–10 дней</small></p>
-          <button className="btn btn-dark" type="button" onClick={openBook} tabIndex={bar ? 0 : -1}>Записаться</button>
+          {path.startsWith("/specialists") ? (
+            <>
+              <p className="m04-copy"><b>Курс для специалистов</b><small>бесплатно · сертификат</small></p>
+              <Link className="btn btn-dark" href="/course" tabIndex={bar ? 0 : -1}>Доступ</Link>
+            </>
+          ) : path === "/course" ? (
+            <>
+              <p className="m04-copy"><b>Курс бесплатно</b><small>6 уроков · ≈ 90 минут</small></p>
+              <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:course"))} tabIndex={bar ? 0 : -1}>Доступ</button>
+            </>
+          ) : (
+            <>
+              <p className="m04-copy"><b>286 продуктов</b><small>отчёт за 7–10 дней</small></p>
+              <button className="btn btn-dark" type="button" onClick={openBook} tabIndex={bar ? 0 : -1}>Записаться</button>
+            </>
+          )}
         </div>
       )}
       {book && <BookModal initialLab={book.lab} onClose={() => setBook(null)} />}

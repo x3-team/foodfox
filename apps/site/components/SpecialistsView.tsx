@@ -206,15 +206,15 @@ const EXPERTS = [
 ];
 
 const LABS: Array<[string, string]> = [
-  ["Ситилаб", "/figma/labs/citilab.svg"],
-  ["Гемотест", "/figma/labs/gemotest.svg"],
-  ["KDL", "/figma/labs/kdl.svg"],
-  ["ДНКОМ", "/figma/labs/dnkom.svg"],
-  ["Инвитро", "/figma/labs/invitro.svg"],
-  ["CMD", "/figma/labs/cmd.svg"],
-  ["Хеликс", "/figma/labs/helix.svg"],
-  ["Хромолаб", "/figma/labs/chromolab.png"],
-  ["Юнимед", "/figma/labs/unimed.svg"],
+  ["Ситилаб", "/figma/labs/fig/citilab.png"],
+  ["Гемотест", "/figma/labs/fig/gemotest.png"],
+  ["KDL", "/figma/labs/fig/kdl.png"],
+  ["ДНКОМ", "/figma/labs/fig/dnkom.png"],
+  ["Инвитро", "/figma/labs/fig/invitro.png"],
+  ["CMD", "/figma/labs/fig/cmd.png"],
+  ["Хеликс", "/figma/labs/fig/helix.png"],
+  ["Хромолаб", "/figma/labs/fig/chromolab.png"],
+  ["Юнимед", "/figma/labs/fig/unimed.png"],
 ];
 
 const LECTURERS = [
@@ -236,6 +236,7 @@ const HERO_TILES: Array<[string, string, string, string]> = [
 export function SpecialistsView() {
   const [area, setArea] = useState(0);
   const [report, setReport] = useState(0);
+  const [expert, setExpert] = useState(0);
   const panelRef = useRef<HTMLDivElement>(null);
   const current = AREAS[area];
 
@@ -324,6 +325,7 @@ export function SpecialistsView() {
       <main>
         <section className="dark-hero" data-s="p01">
           <img className="bg" src="/figma/specialists/hero.jpeg" alt="" />
+          <img className="sp-hero-m" src="/figma/specialists/hero-m.webp" alt="" />
           <div className="shade" />
           <div className="wrap inner">
             <div className="sp-hero-copy">
@@ -333,7 +335,8 @@ export function SpecialistsView() {
               </div>
               <h1>Пищеспецифические IgG к 286 антигенам — в одном подробном отчёте</h1>
               <p className="sp-lead-inv">
-                FOX Food Xplorer исследует иммунную реактивность к 286 продуктам и пищевым компонентам. Один образец крови позволяет одновременно оценить широкую панель и получить основу для персональной тактики питания.
+                <span className="is-desk">FOX Food Xplorer исследует иммунную реактивность к 286 продуктам и пищевым компонентам. Один образец крови позволяет одновременно оценить широкую панель и получить основу для персональной тактики питания.</span>
+                <span className="is-mob">Один образец крови — иммунная реактивность к 286 продуктам и пищевым компонентам. Опора для работы с ЖКТ, кожей и функциональными жалобами.</span>
               </p>
               <p className="sp-body-inv">
                 FOX можно использовать в комплексной работе с пациентами с функциональными жалобами ЖКТ, кожными проявлениями, головными болями и другими состояниями, при которых специалист предполагает связь самочувствия с рационом.
@@ -342,7 +345,8 @@ export function SpecialistsView() {
                 <Link className="btn btn-light" href="/report">Скачать пример отчёта</Link>
                 <Link className="sp-arrow sp-arrow-light" href="/labs">
                   Найти лабораторию-партнёра
-                  <img src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
+                  <img className="is-desk" src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
+                  <img className="is-mob sp-plus" src="/figma/home/checker/plus.svg" alt="" width={16} height={16} />
                 </Link>
               </div>
             </div>
@@ -366,7 +370,7 @@ export function SpecialistsView() {
           </div>
         </section>
 
-        <section className="sp-sec" data-s="p02">
+        <section className="sp-sec" id="areas" data-s="p02">
           <div className="wrap sp-stack-48">
             <div className="sp-head">
               <h2 className="sp-h2">Где FOX дополняет работу специалиста</h2>
@@ -429,7 +433,7 @@ export function SpecialistsView() {
           </div>
         </section>
 
-        <section className="sp-sec sp-white" data-s="p03">
+        <section className="sp-sec sp-white" id="method" data-s="p03">
           <div className="wrap sp-stack-40">
             <h2 className="sp-h2 sp-narrow">Почему специалисты выбирают FOX</h2>
             <div className="sp-args" data-allow-x>
@@ -460,11 +464,11 @@ export function SpecialistsView() {
           </div>
         </section>
 
-        <section className="sp-sec sp-dark" data-s="p04">
+        <section className="sp-sec sp-dark" id="route" data-s="p04">
           <div className="wrap sp-stack-48">
             <div className="sp-head sp-head-tight">
-              <h2 className="sp-h2">От назначения до готового отчёта — обычно 7–10 дней</h2>
-              <p className="sp-lead-inv">Точный срок устанавливает лаборатория, которая проводит исследование.</p>
+              <h2 className="sp-h2"><span className="is-desk">От назначения до готового отчёта — обычно 7–10 дней</span><span className="is-mob">От назначения до отчёта — обычно 7–10 дней</span></h2>
+              <p className="sp-lead-inv"><span className="is-desk">Точный срок устанавливает лаборатория, которая проводит исследование.</span><span className="is-mob">Точный срок устанавливает лаборатория.</span></p>
             </div>
             <div className="sp-timeline">
               <svg className="sp-route-line" viewBox="0 0 100 2" preserveAspectRatio="none" aria-hidden>
@@ -489,7 +493,7 @@ export function SpecialistsView() {
           </div>
         </section>
 
-        <section className="sp-sec" data-s="p05">
+        <section className="sp-sec" id="protocol" data-s="p05">
           <div className="wrap sp-stack-40">
             <div className="sp-proto-head">
               <div className="sp-head sp-head-tight">
@@ -525,14 +529,14 @@ export function SpecialistsView() {
           </div>
         </section>
 
-        <section className="sp-sec sp-report" data-s="p06">
+        <section className="sp-sec sp-report" id="report" data-s="p06">
           <div className="wrap sp-stack-72">
             <div className="sp-anatomy">
               <div className="sp-anatomy-copy">
                 <p className="sp-eyebrow"><i />Анатомия отчёта · 4 раздела</p>
-                <h2>Отчёт FOX — структурированная основа для консультации</h2>
+                <h2><span className="is-desk">Отчёт FOX — структурированная основа для консультации</span><span className="is-mob">Отчёт FOX — основа для консультации</span></h2>
                 <p className="sp-lead-inv">Один отчёт — четыре уровня чтения. Листайте разделы: страница переворачивается, а на отчёте подсвечивается нужная зона.</p>
-                <div className="sp-report-tabs">
+                <div className="sp-report-tabs" data-allow-x>
                   {REPORT.map((item, index) => (
                     <button
                       key={item.title}
@@ -542,18 +546,19 @@ export function SpecialistsView() {
                     >
                       <span>{String(index + 1).padStart(2, "0")}</span>
                       <span>
-                        <strong>{item.title}</strong>
+                        <strong><span className="is-desk">{item.title}</span><span className="is-mob">{["Сводка", "Значения", "Семейства", "Контроль"][index]}</span></strong>
                         {report === index && item.text ? <em>{item.text}</em> : null}
                         {report === index ? <i /> : null}
                       </span>
                     </button>
                   ))}
                 </div>
-                <div className="sp-cta">
+                <div className="sp-cta sp-report-cta">
                   <Link className="btn btn-light" href="/report">Скачать пример отчёта</Link>
                   <Link className="sp-arrow sp-arrow-light" href="/report">
-                    Как читать отчёт
-                    <img src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
+                    <span className="is-desk">Как читать отчёт</span><span className="is-mob">Подробно: как читать отчёт</span>
+                    <img className="is-desk" src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
+                    <img className="is-mob" src="/figma/home/checker/plus.svg" alt="" width={16} height={16} />
                   </Link>
                 </div>
               </div>
@@ -585,8 +590,12 @@ export function SpecialistsView() {
                 </div>
               </div>
             </div>
+            <div className="sp-active is-mob-block" aria-live="polite">
+              <h3>{REPORT[report].title}</h3>
+              {REPORT[report].text ? <p>{REPORT[report].text}</p> : null}
+            </div>
             <div className="sp-absent">
-              <h3>Чего в отчёте нет — и почему</h3>
+              <h3><span className="is-desk">Чего в отчёте нет — и почему</span><span className="is-mob">Чего в отчёте нет</span></h3>
               <p className="sp-lead">FOX предоставляет лабораторный профиль пищеспецифических IgG, но не заменяет клиническое решение специалиста.</p>
               <div className="sp-negatives">
                 {["Нет диагноза", "Нет назначения препаратов", "Нет универсального меню", "Не оценка риска анафилаксии"].map((label) => (
@@ -603,10 +612,17 @@ export function SpecialistsView() {
           </div>
         </section>
 
-        <section className="sp-sec" data-s="p07">
+        <section className="sp-sec" id="experts" data-s="p07">
           <div className="wrap sp-stack-48">
-            <h2 className="sp-h2 sp-narrow">Наши эксперты</h2>
-            <div className="sp-experts" data-allow-x>
+            <div className="sp-experts-head">
+              <h2 className="sp-h2 sp-narrow">Наши эксперты</h2>
+              <span className="sp-count is-mob">{expert + 1} / {EXPERTS.length}</span>
+            </div>
+            <div className="sp-experts" data-allow-x onScroll={(event) => {
+              const row = event.currentTarget;
+              const card = row.querySelector<HTMLElement>("article");
+              setExpert(Math.min(EXPERTS.length - 1, Math.round(row.scrollLeft / ((card?.offsetWidth ?? 290) + 12))));
+            }}>
               {EXPERTS.map((person) => (
                 <article key={person.name}>
                   <div className="sp-portrait">
@@ -624,10 +640,13 @@ export function SpecialistsView() {
                 </article>
               ))}
             </div>
+            <div className="sp-dots-m is-mob-block" aria-hidden>
+              {EXPERTS.map((person, index) => <i key={person.name} className={expert === index ? "is-on" : ""} />)}
+            </div>
           </div>
         </section>
 
-        <section className="sp-sec sp-grey" data-s="p08">
+        <section className="sp-sec sp-grey" id="labs" data-s="p08">
           <div className="wrap sp-stack-40">
             <div className="sp-head sp-head-tight">
               <h2 className="sp-h2">Лаборатории-партнёры</h2>
@@ -647,17 +666,18 @@ export function SpecialistsView() {
                 </Link>
               ))}
             </div>
+            <Link className="btn btn-dark sp-labs-m" href="/labs">Направить пациента</Link>
             <div className="sp-partner">
               <div>
                 <h3>Стать лабораторией-партнёром</h3>
-                <p>Отдельный вход для сетей и клиник: условия подключения, обучение персонала и материалы для пациентов.</p>
+                <p><span className="is-desk">Отдельный вход для сетей и клиник: условия подключения, обучение персонала и материалы для пациентов.</span><span className="is-mob">Условия подключения, обучение персонала и материалы для пациентов.</span></p>
               </div>
-              <Link href="/contacts">Оставить заявку</Link>
+              <Link href="/contacts">Оставить заявку<img className="is-mob" src="/icons/arrow-right.svg" alt="" width={16} height={16} /></Link>
             </div>
           </div>
         </section>
 
-        <section className="sp-sec sp-white" data-s="p09">
+        <section className="sp-sec sp-white" id="course" data-s="p09">
           <div className="wrap">
             <div className="sp-course">
               <div className="sp-course-copy">

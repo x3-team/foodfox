@@ -15,12 +15,16 @@ export const NAV = [
   { href: "/blog", label: "Блог" },
 ];
 
+// Figma Header / B2B (1120:3114): anchors of /specialists + «Пациентам →» switch on the right.
 const B2B = [
-  { href: "/", label: "Пациентам" },
-  { href: "/labs", label: "Куда направить" },
-  { href: "/report", label: "Отчёт" },
-  { href: "/course", label: "Курс" },
-  { href: "/certificates", label: "Сертификаты" },
+  { href: "/specialists#method", label: "О методе" },
+  { href: "/specialists#areas", label: "Области применения" },
+  { href: "/specialists#route", label: "Маршрут" },
+  { href: "/specialists#protocol", label: "Протокол" },
+  { href: "/specialists#report", label: "Отчёт" },
+  { href: "/specialists#experts", label: "Эксперты" },
+  { href: "/specialists#course", label: "Курс" },
+  { href: "/specialists#labs", label: "Лаборатории" },
 ];
 
 const COURSE = [
@@ -128,6 +132,12 @@ export function Header() {
         </nav>
       </div>
       <div className="header-right">
+        {variant === "b2b" && (
+          <Link className="b2b-switch" href="/">
+            Пациентам
+            <img src="/icons/arrow-right.svg" alt="" />
+          </Link>
+        )}
         {variant === "site" && (
           <Link className="example-link" href="/report">
             Пример результата

@@ -203,6 +203,13 @@ function useRegistration() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  useEffect(() => {
+    // M04 «Доступ» on a phone (Figma CTA bar on /course).
+    const onCourse = () => { setOpen(true); setSent(false); setStep(0); setError(""); };
+    window.addEventListener("fox:course", onCourse);
+    return () => window.removeEventListener("fox:course", onCourse);
+  }, []);
+
   function start() {
     setOpen(true);
     setSent(false);
