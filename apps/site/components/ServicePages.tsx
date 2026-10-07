@@ -548,8 +548,14 @@ export function ContactsPage() {
     setNet(false);
     setOk(true);
   }
-  const moscowHour = (new Date().getUTCHours() + 3) % 24;
-  const officeOpen = moscowHour >= 10 && moscowHour < 19;
+  // The page is prerendered at build time, so the office status is read after
+  // hydration; computing it during render made /contacts mismatch (React #418)
+  // whenever the build and the visit fell on different sides of 10:00 / 19:00.
+  const [officeOpen, setOfficeOpen] = useState(true);
+  useEffect(() => {
+    const moscowHour = (new Date().getUTCHours() + 3) % 24;
+    setOfficeOpen(moscowHour >= 10 && moscowHour < 19);
+  }, []);
   return (
     <>
       <Header />
