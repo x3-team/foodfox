@@ -46,8 +46,8 @@ echo "    HELI_BASE_URL:    ${HELI_BASE_URL:-<code default>}"
 echo "    HELI_CHAT_MODEL:  ${HELI_CHAT_MODEL:-<code default>}"
 echo "    FOX_DEMO_PHONES:  ${FOX_DEMO_PHONES:-<code default>}"
 echo "    FOX_DEMO_OTP:     ${FOX_DEMO_OTP:-<code default>}"
-echo "    FOX_PARTNER_DEMO_PHONE: ${FOX_PARTNER_DEMO_PHONE:-<code default 79990001122>}"
-echo "    FOX_PARTNER_DEMO_OTP:   ${FOX_PARTNER_DEMO_OTP:-<code default 2026>}"
+echo "    FOX_PARTNER_DEMO_PHONE: ${FOX_PARTNER_DEMO_PHONE:-<code default 79251111111>}"
+echo "    FOX_PARTNER_DEMO_OTP:   ${FOX_PARTNER_DEMO_OTP:-<FOX_DEMO_OTP or 1111>}"
 echo "    FOX_DEMO_MODE:    ${FOX_DEMO_MODE:-off}"
 
 echo "==> Build Next.js"
@@ -77,3 +77,7 @@ case "$HEALTH" in
     exit 1
     ;;
 esac
+
+# Live nginx site: no basic auth, noindex header; nginx -t gates the reload.
+echo "==> Nginx"
+bash "$APP_ROOT/deploy/vps/nginx-apply.sh"

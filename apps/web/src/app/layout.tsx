@@ -12,6 +12,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "FoodFox — FOX Food Xplorer",
   description: "Персональный план питания по результатам FOX IgG",
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({

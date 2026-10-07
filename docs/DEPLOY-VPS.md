@@ -18,21 +18,14 @@ Render и Supabase **не нужны**.
 ```bash
 cd /var/www/foodfox
 git pull
-export FOODFOX_AUTH_USER=demo
-export FOODFOX_AUTH_PASS='ваш-секретный-пароль'
 sudo bash deploy/vps/setup-foodfox-subdomain.sh
 ```
 
 - URL: **https://foodfox.yuri.guru/upload**
-- Доступ: nginx **Basic Auth**
+- Доступ: открыт, без Basic Auth. Индексация закрыта: `X-Robots-Tag: noindex, nofollow` (nginx и Next.js), `robots.txt` с `Disallow: /`, meta robots noindex
 - Приложение на `127.0.0.1:3030`, снаружи только через поддомен
 
-Сменить пароль:
-
-```bash
-sudo htpasswd /etc/nginx/.htpasswd-foodfox demo
-sudo systemctl reload nginx
-```
+Живой nginx-конфиг поддомена приводит к этому виду `deploy/vps/nginx-apply.sh` при каждом деплое (`update.sh`): убирает `auth_basic`, добавляет `X-Robots-Tag`, проверяет `nginx -t` и делает reload; при ошибке возвращает прежний файл (копии в `/var/backups/nginx-foodfox/`).
 
 ## Быстрый старт (отдельный домен)
 

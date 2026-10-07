@@ -6,7 +6,7 @@
 **Ветка разработки:** `cursor/mvp-web-prototype-5e5b`  
 **PR:** #1 (draft)  
 **Версия в репо:** `0.3.0`  
-**Демо:** https://foodfox.yuri.guru (nginx Basic Auth: `demo` / `FoodFox2026!`)  
+**Демо:** https://foodfox.yuri.guru (открыт без пароля, закрыт от индексации)  
 **Демо-аккаунт приложения:** `demo@foodfox.local` / `DemoFox2026!`
 
 ---
