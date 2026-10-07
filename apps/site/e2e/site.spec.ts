@@ -101,6 +101,13 @@ test("dark hero sits under the header", async ({ page }) => {
   await ready(page);
   const lessonsDark = await page.locator(".site-header").evaluate((node) => node.classList.contains("on-dark"));
   expect(lessonsDark).toBe(false);
+  // Figma: these pages keep the light header bar above the grey hero.
+  for (const path of ["/labs", "/faq", "/reviews", "/contacts", "/certificates"]) {
+    await page.goto(path);
+    await ready(page);
+    const dark = await page.locator(".site-header").evaluate((node) => node.classList.contains("on-dark"));
+    expect(dark, path).toBe(false);
+  }
 });
 
 test("header navigation reaches blog and labs", async ({ page }) => {

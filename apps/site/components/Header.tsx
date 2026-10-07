@@ -77,7 +77,7 @@ export function Header() {
     return () => window.removeEventListener("fox:lesson", onLesson);
   }, []);
   const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
-  const darkHero = path === "/" || path.startsWith("/specialists") || path === "/faq" || path === "/reviews" || path === "/contacts" || path === "/certificates";
+  const darkHero = path === "/" || path.startsWith("/specialists");
   const homeMobileStack = path === "/" && mobileNav;
   const onDark = !scrolled && darkHero && !lessons && !homeMobileStack;
   const items = variant === "b2b" ? B2B : variant === "course" ? COURSE : NAV;
