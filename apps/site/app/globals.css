@@ -3678,3 +3678,25 @@ body [data-s="l03"] [data-lab-list] .l-actions .btn-ghost { border-color: transp
   body [data-s="l03"] [data-lab-list] article.is-on { background: #fff; box-shadow: none; }
   body [data-s="l03"] [data-lab-list] .l-hours { display: none; }
 }
+
+/* ===== /blog sweep (Figma mobile list) ===== */
+@media (max-width: 767px) {
+  body [data-s="b01"] .crumbs, body [data-s="b01"] .intro-links { display: none; }
+  body [data-s="b01"].hero { padding-top: 24px; padding-bottom: 0; }
+  body [data-s="b01"] .hero-row { gap: 8px; }
+  body [data-s="b02"].filters { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px 12px; }
+  body [data-s="b02"] .filter-row, body [data-s="b02"] .tools { display: contents; }
+  body [data-s="b02"] .search-wrap { grid-column: 1 / -1; order: 1; }
+  body [data-s="b02"] .chips { grid-column: 1 / -1; order: 2; }
+  body [data-s="b02"] .meta-line { grid-column: 1; order: 3; margin: 0; }
+  body [data-s="b02"] .tag-wrap { grid-column: 2; order: 3; }
+  body .featured-slot .featured .tags .tag-dark, body .featured-slot .featured .lead, body .featured-slot .featured .author { display: none; }
+  body .featured-slot .featured .featured-bg, body .featured-slot .featured .featured-shade { display: none; }
+  body .featured-slot .featured { background: #21251d; }
+  body [data-s="b02"] .meta-line, body [data-s="b02"] .tag-wrap { grid-row: 3; }
+  body .featured-slot .featured .featured-copy { padding: 20px 16px; gap: 16px; }
+  body .featured-slot .featured .tag-lime { white-space: nowrap; }
+  body .featured-slot .featured .tag-lime img { display: none; }
+  body [data-s="b03"].grid-section { padding-top: 32px; }
+  body [data-s="b03"] .blog-grid .card-cover { height: 296px; }
+}

@@ -340,7 +340,8 @@ export function BlogFeed() {
             </div>
           </div>
           <p className="meta-line">
-            <span>{countLabel}</span>
+            {/* Mobile frame shows only «N материалов»; the update date stays on desktop. */}
+            <span>{countLabel.split(" · обновлено")[0]}{countLabel.includes(" · обновлено") && <span className="d-only"> · обновлено{countLabel.split(" · обновлено")[1]}</span>}</span>
             {filtersOn && (
               <button
                 onClick={() => {
@@ -368,7 +369,7 @@ export function BlogFeed() {
                   <div>
                     <div className="tags">
                       <span className="tag tag-lime">
-                        <img src="/icons/pin.svg" alt="" /> Закреплено
+                        <img src="/icons/pin.svg" alt="" /> Закреплено<span className="m-only">&nbsp;· редакция советует</span>
                       </span>
                       <span className="tag tag-dark">~{featured.minutes} минут</span>
                       <span className="tag tag-dark">{categoryLabel(featured.category)}</span>
