@@ -3613,3 +3613,68 @@ body [data-s="l01"] .ls-chip { display: inline-flex; align-items: center; height
   body [data-s="l01"] .ls-progress { margin-bottom: -32px; }
   body [data-s="l01"] .ls-player { margin-bottom: 12px; }
 }
+
+/* ===== /labs sweep (Figma 1247:87 desktop, 1261:1099 mobile) ===== */
+/* Desktop header is light now: the dark gradient under it is gone. */
+body section.dark-hero.fx-hero::before { display: none; }
+body .l-mode-m, body .l-count { display: none; }
+/* Branch / Item: network caps + open badge, address 20, metro dot + hours, actions 48. */
+body [data-s="l03"] [data-lab-list] { gap: 0; }
+body [data-s="l03"] [data-lab-list] article {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px 8px; position: relative;
+  padding: 20px 24px; border: 0; border-bottom: 1px solid rgba(11, 12, 8, 0.1); border-radius: 0; background: #fff; box-shadow: none;
+}
+body [data-s="l03"] [data-lab-list] article.is-on { background: #f6fbc8; box-shadow: inset 4px 0 0 #0b0c08; }
+body [data-s="l03"] [data-lab-list] article.is-flash { background: rgba(231, 245, 81, 0.55); }
+body [data-s="l03"] [data-lab-list] article > * { grid-column: 1 / -1; margin: 0; }
+body [data-s="l03"] [data-lab-list] article > h3 { grid-column: 1; font-size: 12px; line-height: 16px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(11, 12, 8, 0.65); }
+body [data-s="l03"] [data-lab-list] article > .l-open { grid-column: 2; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: #edf3d9; color: #4a6b1f; font-size: 12px; line-height: 16px; letter-spacing: 0.2px; }
+body [data-s="l03"] [data-lab-list] .l-open i { width: 6px; height: 6px; border-radius: 99px; background: #4a6b1f; flex: 0 0 6px; }
+body [data-s="l03"] [data-lab-list] .l-addr { font-size: 20px; line-height: 24px; color: #0b0c08; }
+body [data-s="l03"] [data-lab-list] .l-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+body [data-s="l03"] [data-lab-list] .l-metro, body [data-s="l03"] [data-lab-list] .l-hours { display: flex; align-items: center; gap: 6px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+body [data-s="l03"] [data-lab-list] .l-metro::before { content: ""; width: 8px; height: 8px; border-radius: 99px; background: #8c5c33; flex: 0 0 8px; }
+body [data-s="l03"] [data-lab-list] .l-hours img { width: 14px; height: 14px; }
+body [data-s="l03"] [data-lab-list] .l-actions { display: flex; gap: 8px; margin: 0; }
+body [data-s="l03"] [data-lab-list] .l-actions .btn { height: 48px; padding: 12px 16px; border-radius: 4px; font-size: 16px; line-height: 20px; }
+body [data-s="l03"] [data-lab-list] .l-actions .btn-ghost { border-color: transparent; background: transparent; }
+@media (min-width: 1100px) {
+  body [data-s="l03"] .l03 > header { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  body [data-s="l03"] .l03 > header .l-more { flex: 1 0 100%; }
+  body [data-s="l03"] .l-nets { flex-wrap: nowrap; }
+  body [data-s="l03"] .l-nets .chip { height: 44px; padding: 0 16px; font-size: 16px; line-height: 20px; border: 1px solid rgba(11, 12, 8, 0.1); background: transparent; }
+  body [data-s="l03"] .l-nets .chip.is-active { background: #101400; border-color: #101400; color: #f8f9f6; }
+  body [data-s="l03"] .l-split { grid-template-columns: 480px minmax(0, 1fr); height: 760px; }
+  body [data-s="l03"] .l-pane { padding: 0; gap: 0; border-right: 1px solid rgba(11, 12, 8, 0.1); }
+  body [data-s="l03"] .l-pane .search { margin: 20px 24px 10px; width: auto; }
+  body [data-s="l03"] .l-found { padding: 0 24px 16px; border-bottom: 1px solid rgba(11, 12, 8, 0.1); }
+}
+@media (max-width: 480px) {
+  body [data-s="l01"].fx-hero { padding: 16px 0 20px; }
+  body [data-s="l01"] .l01, body [data-s="l01"] .l01-copy { gap: 14px; }
+  body [data-s="l01"] h1 { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; font-weight: 300; }
+  body [data-s="l01"] .l-city { padding: 10px 14px; border-radius: 14px; box-shadow: none; gap: 0; }
+  body [data-s="l01"] .l-city-top { gap: 10px; }
+  body [data-s="l01"] .l-pin { width: 32px; height: 32px; flex: 0 0 32px; }
+  body [data-s="l01"] .l-pin img { width: 14px; height: 14px; }
+  body [data-s="l01"] .l-city-name input { font-size: 16px; line-height: 20px; font-weight: 400; letter-spacing: 0; }
+  body [data-s="l01"] .l-change { align-self: center; height: auto; padding: 0; border: 0; background: transparent; gap: 10px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+  body [data-s="l01"] .l-change img { width: 14px; height: 14px; opacity: 0.65; }
+  body [data-s="l01"] .l-mode-m { display: flex; height: 46px; padding: 4px; border-radius: 999px; background: rgba(0, 0, 0, 0.1); }
+  body [data-s="l01"] .l-mode-m button { flex: 1 1 0; border: 0; border-radius: 999px; background: transparent; font: inherit; font-size: 14px; line-height: 18px; font-weight: 500; color: rgba(11, 12, 8, 0.65); cursor: pointer; }
+  body [data-s="l01"] .l-mode-m button.is-active { background: #fff; color: #0b0c08; }
+  body [data-s="l03"] .l03 > header .l-mode { display: none; }
+  body [data-s="l03"] { padding: 0; }
+  body [data-s="l03"] .l03, body [data-s="l03"] .l03 > header { gap: 0; }
+  body [data-s="l03"] .l-nets { flex-wrap: nowrap; overflow-x: auto; gap: 8px; margin: 0 -20px; padding: 12px 20px; scrollbar-width: none; }
+  body [data-s="l03"] .l-nets .chip { flex: 0 0 auto; height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(11, 12, 8, 0.1); background: transparent; color: #0b0c08; font-size: 16px; line-height: 20px; }
+  body [data-s="l03"] .l-nets .chip.is-active { background: #101400; border-color: #101400; color: #f8f9f6; }
+  body [data-s="l03"] .l-more { padding: 0 0 8px; }
+  body [data-s="l03"] .l-pane { gap: 0; }
+  body [data-s="l03"] .l-pane .search { display: none; }
+  body [data-s="l03"] .l-count { display: block; padding: 0 0 8px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+  body [data-s="l03"] .l-split.is-list { overflow: visible; }
+  body [data-s="l03"] .l-split.is-list [data-lab-list] { margin: 0 -20px; overflow: visible; max-height: none; }
+  body [data-s="l03"] [data-lab-list] article.is-on { background: #fff; box-shadow: none; }
+  body [data-s="l03"] [data-lab-list] .l-hours { display: none; }
+}

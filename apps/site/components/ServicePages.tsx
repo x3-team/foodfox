@@ -304,6 +304,14 @@ const SPB: Branch[] = [
 const EMPTY: Branch[] = [];
 
 
+// «Пн–Пт 7:30–20:00 · …» → «20:00»; «Открыто до 19:00» → «19:00»; «Пн–Пт 10–19» → «19:00».
+function closesAt(hours: string) {
+  const until = hours.match(/до (\d{1,2}:\d{2})/);
+  if (until) return until[1];
+  const range = hours.match(/\d{1,2}(?::\d{2})?–(\d{1,2})(?::(\d{2}))?/);
+  return range ? `${range[1]}:${range[2] ?? "00"}` : "";
+}
+
 const NETS = ["Все сети", "Ситилаб", "Гемотест", "KDL", "ДНКОМ"];
 
 export function LabsPage() {
@@ -402,7 +410,7 @@ export function LabsPage() {
             <div className="l01-row">
               <div className="l01-copy">
                 <p className="fx-eye"><i />8 федеральных сетей · 1 500+ отделений по России</p>
-                <h1>Где сдать тест FOX</h1>
+                <h1>Где сдать тест<span className="d-only"> FOX</span></h1>
                 <p className="fx-lead">Выберите город — покажем сети-партнёры и ближайшие отделения. Цену, срок и правила подготовки устанавливает лаборатория — уточняйте на её официальном сайте.</p>
                 <article className="l-city">
                   <div className="l-city-top">
@@ -412,7 +420,7 @@ export function LabsPage() {
                       <input value={city} onChange={(event) => setCity(event.target.value)} aria-label="Город" />
                     </div>
                     <button type="button" className="l-change" onClick={() => document.querySelector<HTMLInputElement>("[aria-label='Город']")?.focus()}>
-                      Изменить город <img src="/icons/chevron-down.svg" alt="" />
+                      Изменить<span className="d-only">&nbsp;город</span> <img src="/icons/chevron-down.svg" alt="" />
                     </button>
                   </div>
                   <div className="l-stats">
@@ -421,6 +429,11 @@ export function LabsPage() {
                     <p><b>7–10 дней</b><span>до готового отчёта</span></p>
                   </div>
                 </article>
+                {/* Mobile frame 1261:1099: the list/map toggle sits in the grey top block. */}
+                <div className="l-mode-m" role="tablist" aria-label="Вид отделений">
+                  <button type="button" className={labView === "list" ? "is-active" : ""} onClick={() => setLabView("list")}>Список</button>
+                  <button type="button" className={labView === "map" ? "is-active" : ""} onClick={() => setLabView("map")}>Карта</button>
+                </div>
                 <p className="l-note">Цена на сайте FOX не публикуется: она зависит от региона и сети.</p>
               </div>
               <div className="l01-photo">
@@ -495,14 +508,18 @@ export function LabsPage() {
                     <img src="/icons/search.svg" alt="" />
                     <input value={addr} onChange={(event) => setAddr(event.target.value)} placeholder="Адрес, метро или сеть" aria-label="Адрес, метро или сеть" />
                   </label>
+                  <p className="l-count">{net === "Все сети" && !openNow && !addr.trim() && points === BRANCHES ? "128 отделений" : `${shown.length} ${shown.length === 1 ? "отделение" : shown.length > 1 && shown.length < 5 ? "отделения" : "отделений"}`} · сначала ближайшие</p>
                   <p className="l-found"><span>Найдено {shown.length} {shown.length === 1 ? "отделение" : "отделений"}</span><span>Сначала ближайшие</span></p>
                   <div data-lab-list>
                     {shown.map((item) => (
                       <article key={item.id} data-branch={item.id} className={`${selected === item.id ? "is-on" : ""}${flash === item.id ? " is-flash" : ""}`} onClick={() => setSelected(item.id)}>
-                        <h3>{item.lab}</h3>
-                        <p>{item.address}</p>
-                        <p>{item.metro}</p>
-                        <p className="l-badge">Открыто · {item.hours}</p>
+                        <h3>{item.lab === "Инвитро" ? "INVITRO" : item.lab}</h3>
+                        <p className="l-open"><i />Открыто до {closesAt(item.hours)}</p>
+                        <p className="l-addr">{item.address}</p>
+                        <div className="l-meta">
+                          <p className="l-metro">{item.metro}</p>
+                          <p className="l-hours"><img src="/icons/clock.svg" alt="" />{item.hours}</p>
+                        </div>
                         <div className="l-actions" onClick={(event) => event.stopPropagation()}>
                           <a className="btn btn-dark" href={withUtm(PARTNERS.find((partner) => partner.name === item.lab || (item.lab === "Инвитро" && partner.name === "INVITRO"))?.href ?? "https://foodfox.yuri.guru/labs", "labs_branch")} target="_blank" rel="noreferrer">Сдать здесь</a>
                           <a className="btn btn-ghost" href={`https://yandex.ru/maps/?text=${encodeURIComponent(`${item.address}, ${city}`)}`} target="_blank" rel="noreferrer">Маршрут</a>
