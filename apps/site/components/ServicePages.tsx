@@ -766,7 +766,7 @@ const REVIEWS = [
   { id: "r2", kind: "Текст", who: "Пациенты", tag: "Питание", photo: "/figma/reviews/r2.png", video: false, title: "", name: "Екатерина Ласковская", text: "Убирала молочку, потом глютен, потом всё сразу — и каждый раз наугад. Отчёт наконец дал конкретный список." },
   { id: "r3", kind: "Текст", who: "Пациенты", tag: "Общее самочувствие", photo: "/figma/reviews/r3.png", video: false, title: "", name: "Игорь Потруников", text: "Списывал всё на возраст и работу. Четыре месяца вёл дневник питания и не продвинулся ни на шаг." },
   { id: "r4", kind: "Текст", who: "Специалисты", tag: "Специалист", photo: "/figma/reviews/r4.png", video: false, title: "", name: "Алёна Вавилова", role: "Нутрициолог", text: "С отчётом легче выстроить разговор: пациент видит структуру, а не список запретов." },
-  { id: "r5", kind: "Видео", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r5.png", video: true, title: "«Ответ оказался не в косметологии»", name: "Алексей, 41 год", text: "" },
+  { id: "r5", kind: "Видео", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r5.png", video: true, title: "Ответ оказался не в косметологии", name: "Алексей, 41 год", text: "" },
   { id: "r6", kind: "Текст", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r6.png", video: false, title: "", name: "Марина К.", text: "С врачом собрали план по отчёту — без угадывания. Через два месяца стало заметно лучше." },
   { id: "r7", kind: "Текст", who: "Пациенты", tag: "Вес и отёчность", photo: "/figma/reviews/r7.png", video: false, title: "", name: "Ольга, 29 лет", text: "Думала, что дело в соли. С нутрициологом временно убрали лишнее — ушло ощущение тяжести." },
   { id: "r8", kind: "Текст", who: "Специалисты", tag: "Общее самочувствие", photo: "/figma/reviews/r8.png", video: false, title: "", name: "Клиника на Таганке", text: "Отчёт стал структурой приёма, а не списком запретов, который пациент составил сам." },
@@ -795,23 +795,27 @@ export function ReviewsPage() {
             <div className="v01-row">
               <div>
                 <h1>Отзывы</h1>
-                <p className="fx-lead">Истории людей, которые сдали тест FOX, и специалистов, которые разбирают отчёт на приёме. Публикуем после модерации.</p>
+                <p className="fx-lead">Истории людей, которые сдали тест, и отзывы специалистов, которые работают с отчётом. Все отзывы проходят модерацию.</p>
                 <div className="v-rate-card">
                   <p className="v-rate"><b>4,9</b><span className="v-stars" aria-hidden="true">★★★★★</span></p>
                   <div className="v-rate-side">
-                    <p className="v-rate-note">312 отзывов</p>
+                    <p className="v-rate-note">312 отзывов после модерации</p>
                     <p className="v-avatars">
-                      <span><img src="/figma/reviews/r1.png" alt="" /><img src="/figma/reviews/r2.png" alt="" /><img src="/figma/reviews/r3.png" alt="" /><img src="/figma/reviews/r4.png" alt="" /></span>
-                      +48
+                      <span><img src="/figma/reviews/r1.png" alt="" /><img src="/figma/reviews/r2.png" alt="" /><img src="/figma/reviews/r3.png" alt="" /><img src="/figma/reviews/r4.png" alt="" /><i className="v-more">+48</i></span>
                     </p>
                     <p className="v-rate-foot">из них 48 — от врачей и нутрициологов</p>
                   </div>
                 </div>
               </div>
-              <div className="v-collage">
-                <img src="/figma/reviews/hero-a.jpg" alt="" />
-                <img src="/figma/reviews/hero-b.jpg" alt="" />
-                <p>Отчёт наконец дал конкретный список</p>
+              {/* visual · коллаж (1277:858): lime circle, Алексей behind, Елена (video) in front, quote bubble with stars. */}
+              <div className="v-collage2" aria-hidden="true" data-contrast>
+                <i className="v-dot" />
+                <img className="v-photo-a" src="/figma/reviews/hero-a.jpg" alt="" />
+                <div className="v-photo-b">
+                  <img src="/figma/reviews/hero-b.jpg" alt="" />
+                  <p className="v-play"><span><img src="/figma/icons/play.svg" alt="" /></span>Елена · 1:24</p>
+                </div>
+                <p className="v-quote"><span>★★★★★</span>«Отчёт наконец дал конкретный список»</p>
               </div>
             </div>
           </div>
@@ -819,6 +823,7 @@ export function ReviewsPage() {
         <section data-s="v02">
           <div className="wrap v02">
             <div className="v-tools">
+              <div className="v-chiprow" data-allow-x>
               <div className="chips">
                 {["Все", "Пациенты", "Специалисты", "Видео"].map((item) => (
                   <button key={item} className={`chip${filter === item ? " is-active" : ""}`} type="button" onClick={() => {
@@ -837,18 +842,19 @@ export function ReviewsPage() {
                   <button key={item} className={`chip${topic === item ? " is-active" : ""}`} type="button" onClick={() => { setTopic(topic === item ? "" : item); setPage(1); }}>{item}</button>
                 ))}
               </div>
+              </div>
               <label className="v-sort">Сначала новые
                 <select aria-label="Сначала новые" defaultValue="new"><option value="new">Сначала новые</option></select>
               </label>
+              <p className="v-shown">Показано {Math.min(7, cards.length)} из 312</p>
             </div>
-            <p className="v-shown">Показано {Math.min(7, cards.length)} из 312</p>
             <div className="v-grid">
               {slice.map((item) => item.video ? (
                 <article key={item.id} className="rev rev-video" style={{ backgroundImage: `url(${item.photo})` }}>
                   <p><span>{item.tag}</span><span>Видео</span></p>
                   <div>
                     <p className="rev-play"><img src="/figma/icons/play.svg" alt="" />Смотреть историю · 1:24</p>
-                    <h3>{item.title}</h3>
+                    <h3>«{item.title}»</h3>
                     <b>{item.name}</b>
                     <small><img src="/figma/icons/check.svg" alt="" />Отзыв проверен модератором</small>
                   </div>
@@ -860,7 +866,7 @@ export function ReviewsPage() {
                   <blockquote>{item.text}</blockquote>
                   <footer>
                     <img src={item.photo} alt="" />
-                    <span><b>{item.name}</b>{item.role && <small>{item.role}</small>}<small><img src="/figma/icons/check.svg" alt="" />Отзыв проверен модератором</small></span>
+                    <span><b>{item.name}</b>{item.role && <small>{item.role}</small>}<small><img src="/figma/icons/check-2.svg" alt="" />Отзыв проверен модератором</small></span>
                   </footer>
                 </article>
               ))}
