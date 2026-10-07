@@ -69,7 +69,7 @@ export function Header() {
   useDialog(menuRef, () => setMenu(false), menu && !closing);
   const lessons = path.startsWith("/course/lessons");
   const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
-  const darkHero = path === "/" || path.startsWith("/specialists") || path === "/course" || path === "/labs" || path === "/faq" || path === "/reviews" || path === "/contacts" || path === "/report" || path === "/certificates";
+  const darkHero = path === "/" || path.startsWith("/specialists") || path === "/course" || path === "/labs" || path === "/faq" || path === "/reviews" || path === "/contacts" || path === "/certificates";
   const homeMobileStack = path === "/" && mobileNav;
   const onDark = !scrolled && darkHero && !lessons && !homeMobileStack;
   const items = variant === "b2b" ? B2B : variant === "course" ? COURSE : NAV;

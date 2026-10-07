@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 export function ReportToc({ items }: { items: Array<[string, string]> }) {
   const [active, setActive] = useState(items[0]?.[0] ?? "");
   const [copied, setCopied] = useState(false);
+  const [open, setOpen] = useState(false);
+  const index = Math.max(0, items.findIndex(([id]) => id === active));
 
   useEffect(() => {
     const nodes = items
@@ -26,10 +28,17 @@ export function ReportToc({ items }: { items: Array<[string, string]> }) {
   const shareUrl = typeof window !== "undefined" ? window.location.href : "https://foodfox.example/report";
 
   return (
-    <nav className="toc" data-allow-x aria-label="Содержание">
+    <nav className={`toc${open ? " is-open" : ""}`} data-allow-x aria-label="Содержание">
+      <button type="button" className="rf-toc-m m-only" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <span>
+          <small>На этой странице · {index + 1} из {items.length}</small>
+          <strong>{items[index]?.[1]}</strong>
+        </span>
+        <img src="/icons/chevron-down.svg" alt="" width={16} height={16} />
+      </button>
       <p className="rf-toc-label">На этой странице</p>
       {items.map(([id, title]) => (
-        <a key={id} href={`#${id}`} className={active === id ? "is-active" : ""} aria-current={active === id ? "location" : undefined}>
+        <a key={id} href={`#${id}`} onClick={() => setOpen(false)} className={active === id ? "is-active" : ""} aria-current={active === id ? "location" : undefined}>
           {title}
         </a>
       ))}
@@ -60,5 +69,30 @@ export function ReportToc({ items }: { items: Array<[string, string]> }) {
         </div>
       </div>
     </nav>
+  );
+}
+
+export function ShareButton() {
+  const [done, setDone] = useState(false);
+  return (
+    <button
+      type="button"
+      className="btn rf-share-doc"
+      onClick={() => {
+        const url = window.location.href;
+        const nav = navigator as Navigator & { share?: (data: { url: string; title?: string }) => Promise<void> };
+        if (nav.share) {
+          void nav.share({ url, title: "Как читать отчёт FOX" }).catch(() => {});
+        } else {
+          void navigator.clipboard?.writeText(url).then(() => {
+            setDone(true);
+            window.setTimeout(() => setDone(false), 1600);
+          });
+        }
+      }}
+    >
+      {done ? "Ссылка скопирована" : "Поделиться с врачом"}
+      <img src="/figma/icons/plus-dark.svg" alt="" width={24} height={24} />
+    </button>
   );
 }

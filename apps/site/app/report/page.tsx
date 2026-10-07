@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ReportFaq, ReportViewer } from "@/components/ReportStage";
-import { ReportToc } from "@/components/ReportToc";
+import { ReportToc, ShareButton } from "@/components/ReportToc";
 import "./frame.css";
 
 export const metadata = { title: "Отчёт FOX: как читать" };
@@ -63,7 +63,7 @@ export default function Page() {
       <main className="report-page">
         <section className="rf-hero" data-s="r01">
           <div className="wrap rf-hero-in">
-            <p className="crumbs">
+            <p className="crumbs d-only">
               <Link href="/">Главная</Link>
               <span className="sep">/</span>
               <span aria-current="page">Отчёт FOX: как читать</span>
@@ -71,17 +71,18 @@ export default function Page() {
             <div className="rf-hero-row">
               <div className="rf-hero-copy">
                 <h1>Как читать отчёт FOX</h1>
-                <p className="rf-lead">
+                <p className="rf-lead d-only">
                   Отчёт — не список запретов, а карта реактивности. Здесь разбираем каждый блок: что значат зоны и значения в U/mL, зачем нужен anti-CCD-контроль и что делать после получения результата.
                 </p>
-                <div className="rf-hero-cta">
+                <p className="rf-lead m-only">Отчёт — не список запретов, а карта реактивности. Разбираем каждый блок — для пациента и специалиста.</p>
+                <div className="rf-hero-cta d-only">
                   <a className="btn btn-dark" href="#anatomy">Открыть пример отчёта</a>
                   <a className="text-link" href="/figma/report/front.png">
                     Скачать PDF
                     <img src="/icons/arrow-right.svg" alt="" width={16} height={16} />
                   </a>
                 </div>
-                <div className="rf-stats">
+                <div className="rf-stats d-only">
                   <div><strong>286</strong><span>пищевых антигенов в отчёте</span></div>
                   <div><strong>13</strong><span>групп продуктов</span></div>
                   <div><strong>3</strong><span>зоны реактивности</span></div>
@@ -93,11 +94,22 @@ export default function Page() {
                   <span className="rf-paper-back" />
                   <img src="/figma/report/front.png" alt="Первая страница примера отчёта FOX" />
                 </div>
-                <div className="rf-audiences">
+                <div className="rf-audiences d-only">
                   <span>Пациентам — до и после теста</span>
                   <span>Специалистам — опора на консультации</span>
                 </div>
-                <p>Отчёт можно открыть вместе с пациентом — страница построена как общая карта для обоих.</p>
+                <div className="rf-audiences-m m-only" data-contrast>
+                  <span><i className="g" />Пациенту</span>
+                  <span><i className="y" />Специалисту</span>
+                </div>
+                <p className="d-only">Отчёт можно открыть вместе с пациентом — страница построена как общая карта для обоих.</p>
+              </div>
+              <a className="btn btn-dark rf-pdf-m m-only" href="/figma/report/front.png">Скачать пример отчёта</a>
+              <div className="rf-stats-m m-only">
+                <div><i className="g" /><strong>286</strong><span>антигенов</span></div>
+                <div><i className="y" /><strong>3</strong><span>зоны</span></div>
+                <div><i className="r" /><strong>U/mL</strong><span>единицы</span></div>
+                <div><i className="l" /><strong>7–10</strong><span>дней</span></div>
               </div>
             </div>
           </div>
@@ -129,7 +141,8 @@ export default function Page() {
             <section id="anatomy" data-s="anatomy" className="rf-sec">
               <span className="rf-num">02</span>
               <h2>Анатомия отчёта</h2>
-              <p className="rf-anatomy-lead">Кликните на маркер — справа подсветится объяснение блока. Связь работает в две стороны.</p>
+              <p className="rf-anatomy-lead d-only">Кликните на маркер — справа подсветится объяснение блока. Связь работает в две стороны.</p>
+              <p className="rf-anatomy-lead m-only">Нажмите на маркер — описание раздела подсветится ниже, под отчётом.</p>
               <ReportViewer />
             </section>
 
@@ -215,25 +228,33 @@ export default function Page() {
                   </li>
                 ))}
               </ul>
-              <p className="rf-limits-note">Уровень IgG меняется вместе с рационом: повторный тест через несколько месяцев может показать другой профиль. Решение о питании остаётся за специалистом.</p>
+              <p className="rf-limits-note">Результат может меняться со временем: уровень IgG зависит от состава рациона и частоты употребления продуктов, поэтому повторный тест через несколько месяцев может показать новый профиль.</p>
             </section>
 
             <ReportFaq />
 
-            <section data-s="cta" className="rf-cta">
+            <section data-s="cta" className="rf-cta d-only">
               <img src="/figma/course/cta-bg.png" alt="" />
               <div className="rf-cta-shade" />
               <div className="rf-cta-copy">
                 <h2>Готовы сдать тест или нужно обсудить отчёт?</h2>
                 <p>Выберите лабораторию-партнёра или покажите эту страницу своему врачу или нутрициологу — она собрана и для специалистов.</p>
-                <div>
-                  <Link className="btn btn-light" href="/labs">Где сдать тест</Link>
-                  <Link className="text-link rf-light-link" href="/specialists">
-                    Специалистам
-                    <img src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
-                  </Link>
-                </div>
               </div>
+              <div className="rf-cta-actions">
+                <Link className="btn btn-light" href="/labs">Где сдать тест</Link>
+                <Link className="text-link rf-light-link" href="/specialists">
+                  Специалистам
+                  <img src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
+                </Link>
+              </div>
+            </section>
+            <section data-s="cta-m" className="rf-cta-m m-only">
+              <i />
+              <h2>Готовы сдать тест или нужно обсудить отчёт?</h2>
+              <p>Выберите лабораторию-партнёра или покажите эту страницу своему врачу.</p>
+              <img src="/figma/course/cta-bg.png" alt="" />
+              <Link className="btn btn-dark" href="/labs">Где сдать тест</Link>
+              <ShareButton />
             </section>
           </div>
         </div>
