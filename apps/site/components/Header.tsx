@@ -27,11 +27,13 @@ const B2B = [
   { href: "/specialists#labs", label: "Лаборатории" },
 ];
 
+// Figma Header / Course (1133:717): badge + section anchors + «Получить доступ».
 const COURSE = [
+  { href: "/course#audience", label: "Для кого" },
   { href: "/course#program", label: "Программа" },
   { href: "/course#lectors", label: "Лекторы" },
-  { href: "/specialists", label: "Специалистам" },
-  { href: "/report", label: "Отчёт" },
+  { href: "/course#includes", label: "Что входит" },
+  { href: "/course#faq", label: "Вопросы" },
 ];
 
 export const PARTNER_LOGIN = "https://foodfox.yuri.guru/partner";
@@ -69,7 +71,7 @@ export function Header() {
   useDialog(menuRef, () => setMenu(false), menu && !closing);
   const lessons = path.startsWith("/course/lessons");
   const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
-  const darkHero = path === "/" || path.startsWith("/specialists") || path === "/course" || path === "/labs" || path === "/faq" || path === "/reviews" || path === "/contacts" || path === "/certificates";
+  const darkHero = path === "/" || path.startsWith("/specialists") || path === "/labs" || path === "/faq" || path === "/reviews" || path === "/contacts" || path === "/certificates";
   const homeMobileStack = path === "/" && mobileNav;
   const onDark = !scrolled && darkHero && !lessons && !homeMobileStack;
   const items = variant === "b2b" ? B2B : variant === "course" ? COURSE : NAV;
@@ -123,6 +125,7 @@ export function Header() {
         <Link href="/" className="logo" aria-label="FOX Food Xplorer">
           <img src={onDark ? "/icons/logo-light.svg" : "/icons/logo-dark.svg"} alt="" />
         </Link>
+        {variant === "course" && <span className="course-badge">Курс для специалистов</span>}
         <nav className="nav" aria-label="Разделы">
           {items.map((item) => (
             <Link key={item.href} href={item.href} aria-current={path === item.href || (item.href !== "/" && path.startsWith(item.href)) ? "page" : undefined}>
@@ -155,7 +158,11 @@ export function Header() {
             <button className={`btn ${onDark ? "btn-light" : "btn-dark"}`} type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
           </>
         ) : (
-          <Link className="btn btn-dark" href="/course">Зарегистрироваться на курс</Link>
+          path === "/course" ? (
+            <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:course"))}>Получить доступ</button>
+          ) : (
+            <Link className="btn btn-dark" href="/course">Получить доступ</Link>
+          )
         )}
         <button
           className={`menu-capsule burger${menu ? " is-x" : ""}`}

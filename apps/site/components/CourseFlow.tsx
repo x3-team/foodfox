@@ -267,6 +267,7 @@ function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration>
 export function CoursePage() {
   const flow = useRegistration();
   const [opened, setOpened] = useState(0);
+  const [allAud, setAllAud] = useState(false);
   const [faq, setFaq] = useState(0);
 
   function openLesson(index: number) {
@@ -286,15 +287,18 @@ export function CoursePage() {
               <div className="kf-hero-copy">
                 <span className="kf-chip">Бесплатный курс для специалистов</span>
                 <h1>Научитесь применять FOX Food Xplorer в работе с пациентами</h1>
-                <p>За шесть видеоуроков вы разберёте основы иммунологической пищевой непереносимости, принципы работы FOX, структуру отчёта и алгоритм применения результатов в практике.</p>
+                <p className="kf-lead-d">За шесть видеоуроков вы разберёте основы иммунологической пищевой непереносимости, принципы работы FOX, структуру отчёта и алгоритм применения результатов в практике.</p>
+                <p className="kf-lead-m">Шесть видеоуроков: от основ иммунологической пищевой непереносимости до работы с отчётом.</p>
+                <img className="kf-hero-visual-m" src="/figma/course/hero-visual.jpg" alt="" />
                 <div className="kf-hero-cta">
-                  <button className="btn btn-light" type="button" onClick={flow.start}>Зарегистрироваться</button>
+                  <button className="btn btn-light" type="button" onClick={flow.start}>Получить доступ</button>
                   <a className="text-link kf-light-link" href="#program">
                     Программа курса
                     <img src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
                   </a>
                 </div>
-                <p className="kf-caption">Около 30 секунд на регистрацию · доступ открывается сразу</p>
+                <p className="kf-caption kf-lead-d">Около 30 секунд на регистрацию · доступ открывается сразу</p>
+                <p className="kf-caption kf-lead-m">Около 30 секунд на регистрацию · доступ сразу</p>
               </div>
               <img className="kf-hero-visual" src="/figma/course/hero-visual.jpg" alt="" />
             </div>
@@ -307,13 +311,14 @@ export function CoursePage() {
           </div>
         </section>
 
-        <section className="kf-band" data-s="k02">
+        <section className="kf-band" id="audience" data-s="k02">
           <div className="wrap kf-stack">
             <div className="kf-head">
-              <h2>Для кого курс по иммунологической пищевой непереносимости</h2>
-              <p>Найдите свою специальность — покажем, что именно вы разберёте на уроках. Клик по карточке открывает соответствующий урок в программе.</p>
+              <h2><span className="kf-lead-d">Для кого курс по иммунологической пищевой непереносимости</span><span className="kf-lead-m">Для кого курс</span></h2>
+              <p className="kf-lead-d">Найдите свою специальность — покажем, что именно вы разберёте на уроках. Клик по карточке открывает соответствующий урок в программе.</p>
+              <p className="kf-lead-m">Найдите свою специальность — покажем, что именно вы разберёте.</p>
             </div>
-            <div className="kf-audience" data-allow-x>
+            <div className={`kf-audience${allAud ? " is-all" : ""}`} data-allow-x>
               {AUDIENCE.map((card) => (
                 <button key={card.title} type="button" className="kf-aud" onClick={() => openLesson(card.lesson)}>
                   <span className="kf-aud-top">
@@ -331,6 +336,12 @@ export function CoursePage() {
                 </button>
               ))}
             </div>
+            {!allAud && (
+              <button type="button" className="btn kf-aud-more" onClick={() => setAllAud(true)}>
+                Показать все {AUDIENCE.length} специальностей
+                <img src="/figma/icons/plus-dark.svg" alt="" width={24} height={24} />
+              </button>
+            )}
           </div>
         </section>
 
@@ -374,7 +385,8 @@ export function CoursePage() {
           <div className="wrap kf-stack">
             <div className="kf-head">
               <h2>Лекторы курса</h2>
-              <p>Каждый лектор ведёт свои уроки — номера указаны на карточке. Клик открывает профиль автора в блоге.</p>
+              <p className="kf-lead-d">Каждый лектор ведёт свои уроки — номера указаны на карточке. Клик открывает профиль автора в блоге.</p>
+              <p className="kf-lead-m">Номера уроков — на карточке. Тап открывает профиль автора.</p>
             </div>
             <div className="kf-lectors" data-allow-x>
               {LECTURERS.map((person) => (
@@ -396,7 +408,7 @@ export function CoursePage() {
           </div>
         </section>
 
-        <section className="kf-includes" data-s="k05">
+        <section className="kf-includes" id="includes" data-s="k05">
           <img className="kf-includes-bg" src="/figma/course/hero-bg.png" alt="" />
           <div className="kf-includes-shade" />
           <div className="wrap kf-includes-in">
@@ -422,7 +434,7 @@ export function CoursePage() {
           </div>
         </section>
 
-        <section className="kf-band" data-s="k06">
+        <section className="kf-band" id="faq" data-s="k06">
           <div className="wrap kf-faq">
             <h2>Вопросы о курсе</h2>
             <div>
@@ -448,7 +460,8 @@ export function CoursePage() {
           <div className="wrap kf-final-in">
             <i className="kf-bar" />
             <h2>Зарегистрируйтесь на курс</h2>
-            <p>После короткой регистрации откроются шесть уроков, конспекты и гайд по отчёту. Доступ бессрочный.</p>
+            <p className="kf-lead-d">Доступ к шести урокам, конспектам и гайду по отчёту — сразу после регистрации. Около 30 секунд и только e-mail.</p>
+            <p className="kf-lead-m">Доступ к шести урокам, конспектам и гайду — сразу после регистрации.</p>
             <div className="kf-facts">
               <span>6 уроков</span>
               <span>Конспекты PDF</span>
@@ -456,7 +469,8 @@ export function CoursePage() {
               <span>Сертификат</span>
             </div>
             <button className="btn btn-light" type="button" onClick={flow.start}>Получить доступ</button>
-            <p className="kf-disclaimer">Сертификат подтверждает прохождение курса и не является баллом НМО.</p>
+            <p className="kf-disclaimer kf-lead-d">Сертификат подтверждает прохождение курса и не является документом о повышении квалификации и не даёт баллов НМО.</p>
+            <p className="kf-disclaimer kf-lead-m">Сертификат подтверждает прохождение курса и не является документом о повышении квалификации.</p>
           </div>
         </section>
         <RegistrationDialog flow={flow} />

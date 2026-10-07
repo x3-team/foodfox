@@ -55,7 +55,7 @@ test("unknown route is the designed 404", async ({ page }) => {
 });
 
 test("dark hero sits under the header", async ({ page }) => {
-  for (const path of ["/", "/specialists", "/course"]) {
+  for (const path of ["/", "/specialists"]) {
     await page.goto(path);
     await ready(page);
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -86,6 +86,17 @@ test("dark hero sits under the header", async ({ page }) => {
     }, path);
     expect(overlap, path).toBe(true);
   }
+  // Figma 1133:716 / 1322:7204: the course header is the light bar and the dark hero starts below it.
+  await page.goto("/course");
+  await ready(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const courseBelow = await page.evaluate(() => {
+    const header = document.querySelector(".site-header");
+    const hero = document.querySelector(".dark-hero");
+    if (!header || !hero) return false;
+    return !header.classList.contains("on-dark") && hero.getBoundingClientRect().top >= header.getBoundingClientRect().bottom - 2;
+  });
+  expect(courseBelow, "/course").toBe(true);
   await page.goto("/course/lessons");
   await ready(page);
   const lessonsDark = await page.locator(".site-header").evaluate((node) => node.classList.contains("on-dark"));
@@ -114,7 +125,8 @@ test("blog search empty state and course registration errors", async ({ page }) 
 
   await page.goto("/course");
   await ready(page);
-  await page.getByRole("button", { name: "Зарегистрироваться", exact: true }).click();
+  // Figma K01: the hero button reads «Получить доступ».
+  await page.locator('[data-s="k01"]').getByRole("button", { name: "Получить доступ" }).click();
   await page.getByRole("button", { name: "Дальше" }).click();
   await expect(page.locator(".err")).toContainText("имя");
   await page.getByRole("dialog").locator("input").fill("Анна");
@@ -256,7 +268,8 @@ test("escape closes the mobile menu and the course dialog", async ({ page }, tes
   }
   await page.goto("/course");
   await ready(page);
-  await page.getByRole("button", { name: "Зарегистрироваться", exact: true }).click();
+  // Figma K01: the hero button reads «Получить доступ».
+  await page.locator('[data-s="k01"]').getByRole("button", { name: "Получить доступ" }).click();
   await expect(page.getByRole("dialog", { name: /Шаг 1/ })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: /Шаг 1/ })).toHaveCount(0);
