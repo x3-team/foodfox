@@ -648,12 +648,16 @@ export function ContactsPage() {
             <div className="k01-row">
               <div>
                 <h1>Контакты</h1>
-                <p className="fx-lead">Вопросы о сайте, документах и партнёрстве. Дистанционную медицинскую интерпретацию отчёта не делаем.</p>
-                <p className="k-note">Офис — не лаборатория: анализы здесь не берут. Где сдать тест — на странице <Link href="/labs">/labs</Link>.</p>
+                <p className="fx-lead">Напишите нам — ответим в течение одного рабочего дня. По вопросам медицинской интерпретации отчёта направим к специалисту — дистанционные консультации по результатам мы не даём.</p>
+                <p className="k-note"><span className="k-note-ico" aria-hidden="true" /><span>Офис — не лаборатория: анализы здесь не берут. Где сдать тест — на странице <Link href="/labs">/labs</Link></span></p>
               </div>
               <div className="k-hero-photo">
                 <img src="/figma/contacts/hero.jpg" alt="" />
-                <p className="k-hero-card">Сейчас открыто · Москва, ул. Таганская, 3</p>
+                <div className="k-hero-card">
+                  <small className={officeOpen ? "is-open" : ""}>{officeOpen ? "Сейчас открыто · до 19:00" : "Сейчас закрыто"}</small>
+                  <b>Москва, ул. Таганская, 3</b>
+                  <span>МФК Инмунотех · м. Марксистская</span>
+                </div>
               </div>
             </div>
           </div>
