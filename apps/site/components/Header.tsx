@@ -141,8 +141,8 @@ export function Header() {
           <span className="cabinet-pill">Кабинет курса</span>
         ) : variant === "site" ? (
           <>
-            <button className="btn btn-ghost header-contact" type="button" onClick={() => window.dispatchEvent(new Event("fox:contact"))}>Связаться</button>
-            <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
+            {/* Figma Header (1069:409): «Пример результата» + one button; white on the transparent state. */}
+            <button className={`btn ${onDark ? "btn-light" : "btn-dark"}`} type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
           </>
         ) : (
           <Link className="btn btn-dark" href="/course">Зарегистрироваться на курс</Link>

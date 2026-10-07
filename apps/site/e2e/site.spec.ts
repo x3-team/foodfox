@@ -66,7 +66,8 @@ test("dark hero sits under the header", async ({ page }) => {
       const h = header.getBoundingClientRect();
       const e = hero.getBoundingClientRect();
       const mobile = window.matchMedia("(max-width: 1100px)").matches;
-      if (route === "/" && mobile) {
+      const phone = window.matchMedia("(max-width: 767px)").matches;
+      if (route === "/" && phone) {
         const photo = document.querySelector("[data-s='s01'] .hero-media img");
         const h1 = document.querySelector("[data-s='s01'] h1");
         if (!photo || !h1) return false;
@@ -76,9 +77,11 @@ test("dark hero sits under the header", async ({ page }) => {
         return (
           header.classList.contains("is-home-top") &&
           photoRect.top >= headerH - 2 &&
-          h1Rect.top >= photoRect.bottom + 20
+          h1Rect.top >= photoRect.bottom - 2
         );
       }
+      // Tablet home keeps the light bar header above the full-bleed photo.
+      if (route === "/" && mobile) return header.classList.contains("is-home-top") && e.top <= 2 && e.bottom > h.bottom;
       return e.top <= 2 && e.bottom > h.bottom && header.classList.contains("on-dark");
     }, path);
     expect(overlap, path).toBe(true);

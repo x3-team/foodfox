@@ -334,12 +334,13 @@ export function HomePage() {
           <div className="hero-media">
             <picture>
               <source
-                media="(max-width: 1100px)"
+                media="(max-width: 767px)"
                 srcSet="/figma/home/hero-photo-mobile.webp"
                 type="image/webp"
               />
-              <source media="(max-width: 1100px)" srcSet="/figma/home/hero-photo-mobile.jpg" />
-              <img className="bg" src="/blog/cover-lactose.png" alt="" />
+              <source media="(max-width: 767px)" srcSet="/figma/home/hero-photo-mobile.jpg" />
+              <source srcSet="/figma/home/hero-desktop.webp 1x, /figma/home/hero-desktop@2x.webp 2x" type="image/webp" />
+              <img className="bg" src="/figma/home/hero-desktop.jpg" alt="" />
             </picture>
           </div>
           <div className="shade" aria-hidden />
@@ -358,7 +359,9 @@ export function HomePage() {
                 <div className="hero-actions">
                   <button className="btn btn-light hero-book-btn" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>
                     <span>Записаться на тест</span>
-                    <span className="hero-book-plus" aria-hidden>+</span>
+                    <svg className="hero-book-plus" viewBox="0 0 24 24" width="24" height="24" aria-hidden>
+                      <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                    </svg>
                   </button>
                   <Link className="hero-report-link" href="/report">
                     Пример отчёта
@@ -370,9 +373,10 @@ export function HomePage() {
               </div>
             </div>
             <div className="facts">
+              {/* Desktop frame 1385:283 says «286 продуктов · покажет тест», «7–10 дней · до результата»; the 390 frame keeps the short form. */}
               <div><strong>1 сеанс</strong><span>сдачи крови</span></div>
-              <div><strong>286</strong><span>продуктов</span></div>
-              <div><strong>7–10</strong><span className="facts-lines"><span>дней до</span><span>результата</span></span></div>
+              <div><strong>286<i className="fact-d"> продуктов</i></strong><span><i className="fact-d">покажет тест</i><i className="fact-m">продуктов</i></span></div>
+              <div><strong>7–10<i className="fact-d"> дней</i></strong><span className="facts-lines"><i className="fact-d">до результата</i><span className="fact-m">дней до</span><span className="fact-m">результата</span></span></div>
             </div>
           </div>
         </section>
