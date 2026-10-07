@@ -3768,3 +3768,46 @@ body .art-toc-m, body .art-date-m { display: none; }
 /* ===== light headers on /faq, /reviews, /contacts, /certificates (all four Figma frames: light header bar) ===== */
 body [data-s="c01"]::before { display: none; }
 body [data-s="c01"] { background: #d7d8cd; padding-bottom: 64px; }
+
+/* ===== /report: light header bar (Figma) — the old dark band under the header made the nav unreadable. .report-page is used only by /report. ===== */
+body .report-page::before { display: none; }
+
+/* ===== /faq sweep (Figma 1328:7911 mobile). f01/f02/f-* classes are FAQ-only; shared fx-* scoped under [data-s="f01"]. ===== */
+@media (max-width: 767px) {
+  body [data-s="f01"] { padding: 24px 0 28px; }
+  body [data-s="f01"] .f01 { gap: 0; }
+  body [data-s="f01"] .crumbs { display: none; }
+  body [data-s="f01"] .f01-row, body [data-s="f01"] .f01-copy { display: contents; }
+  body [data-s="f01"] .wrap.f01 { display: flex; flex-direction: column; gap: 14px; }
+  body [data-s="f01"] .fx-eye { order: 1; padding: 0; background: transparent; border: 0; font-size: 12px; line-height: 16px; color: rgba(11, 12, 8, 0.65); }
+  body [data-s="f01"] .fx-eye i { display: none; }
+  body [data-s="f01"] h1 { order: 2; font-size: 32px; line-height: 36px; letter-spacing: 0; }
+  body [data-s="f01"] .fx-lead { order: 3; font-size: 16px; line-height: 20px; color: rgba(11, 12, 8, 0.65); }
+  body [data-s="f01"] .f01-visual { order: 4; height: 150px; border-radius: 16px; }
+  body [data-s="f01"] .f01-visual article, body [data-s="f01"] .f01-expert { display: none; }
+  body [data-s="f01"] .f-search { order: 5; width: calc(100% - 30px); height: 44px; padding: 0 16px; gap: 10px; }
+  body [data-s="f01"] .f-search kbd, body [data-s="f01"] .f-search .btn { display: none; }
+  body [data-s="f01"] .f-search input { font-size: 16px; }
+  body [data-s="f01"] .chips { order: 6; gap: 8px; }
+  body [data-s="f01"] .chips .chip { height: 28px; padding: 6px 12px; font-size: 12px; line-height: 16px; background: #fff; border-color: #fff; }
+  body [data-s="f01"] .chips .chip.is-active { background: #0b0c08; border-color: #0b0c08; color: #f8f9f6; }
+  body [data-s="f02"] .f-groups > section { background: transparent; border: 0; border-radius: 0; padding: 28px 0 16px; }
+  body [data-s="f02"] .f-groups header { padding-bottom: 12px; }
+  body [data-s="f02"] .f-groups header > span { display: none; }
+  body [data-s="f02"] .f-groups h2 { display: flex; align-items: center; gap: 10px; font-size: 24px; line-height: 28px; }
+  body [data-s="f02"] .f-groups .f-num { margin: 0; display: inline-flex; align-items: center; height: 24px; padding: 4px 8px; border-radius: 6px; background: #e7f551; font-size: 12px; line-height: 16px; }
+  body [data-s="f02"] .f-groups article { border-bottom: 0; border-top: 1px solid rgba(11, 12, 8, 0.1); }
+  body [data-s="f02"] .f-groups header + article { border-top: 0; }
+  body [data-s="f02"] .f-groups article > button { padding: 24px 0; gap: 24px; font-size: 20px; line-height: 24px; text-align: left; }
+  body [data-s="f02"] .f-groups article > button img { width: 20px; height: 20px; flex: 0 0 20px; }
+  body [data-s="f02"] .f-groups article.is-open .f-answer p { font-size: 16px; line-height: 20px; color: #5c5e57; }
+  body [data-s="f02"] .f-groups article.is-open .f-answer { padding-bottom: 24px; }
+  body [data-s="f02"] .f-groups .f-actions { display: none; }
+  body [data-s="f01"] .chips { flex-wrap: wrap; overflow: visible; }
+  body [data-s="f02"] .f-nav-links { padding: 12px 20px; margin: 0 -20px; width: auto; max-width: none; border-bottom: 1px solid rgba(11, 12, 8, 0.1); scrollbar-width: none; }
+  body [data-s="f02"] .f-nav-links a { display: inline-flex; gap: 0; height: 40px; align-items: center; padding: 10px 14px; border-radius: 100px; border: 1px solid rgba(11, 12, 8, 0.1); background: #fff; font-size: 14px; line-height: 18px; }
+  body [data-s="f02"] .f-nav-links a.is-on { background: #0b0c08; border-color: #0b0c08; color: #f8f9f6; }
+  body [data-s="f02"] .f-nav-links a b { opacity: 1; font-weight: 400; }
+  body [data-s="f02"] .f-nav-links a b::before { content: "\00a0·\00a0"; }
+  body [data-s="f02"] { padding-top: 0; }
+}

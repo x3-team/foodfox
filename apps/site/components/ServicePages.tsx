@@ -167,7 +167,7 @@ export function FaqPage() {
               <div className="f01-copy">
                 <p className="fx-eye"><i />39 ответов · проверены экспертами FOX</p>
                 <h1>Вопросы и ответы</h1>
-                <p className="fx-lead">Коротко о методе, подготовке и том, как читать отчёт. Медицинскую интерпретацию по переписке не даём.</p>
+                <p className="fx-lead"><span className="d-only">Коротко о методе, подготовке и том, как читать отчёт. Медицинскую интерпретацию по переписке не даём.</span><span className="m-only">О тесте, сдаче, результате и работе со специалистом.</span></p>
                 <form className="search f-search" onSubmit={(event) => event.preventDefault()}>
                   <img src="/icons/search.svg" alt="" />
                   <input data-hotkey value={q} onChange={(event) => setQ(event.target.value)} placeholder="Например: anti-CCD, дети, цена" aria-label="Поиск по вопросам" />
