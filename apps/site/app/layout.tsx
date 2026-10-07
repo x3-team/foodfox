@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   },
   description:
     "Статьи врачей и нутрициологов: как понять свои симптомы, что показывает тест FOX и что делать с результатом.",
+  // Demo on foodfox.yuri.guru: public, but kept out of search engines.
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
