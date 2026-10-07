@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import localFont from "next/font/local";
 import { CookieBar } from "@/components/CookieBar";
 import { SiteOverlays } from "@/components/SiteOverlays";
 import "./globals.css";
 
-const manrope = Manrope({
-  subsets: ["latin", "cyrillic"],
-  weight: ["300", "400", "500"],
+// Manrope v4.504 (same build Google Fonts serves; latin + cyrillic incl. ext), served from the repo:
+// fetching Google Fonts at build time made VPS deploys flaky.
+const manrope = localFont({
+  src: "./fonts/Manrope-var.woff2",
+  weight: "300 500",
+  style: "normal",
   variable: "--font",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
