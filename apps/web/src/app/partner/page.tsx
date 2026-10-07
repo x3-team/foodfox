@@ -2,8 +2,19 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { AuthSplit, Field, inputClass } from "@/components/partner/AuthSplit";
+import { useEffect, useRef, useState } from "react";
+import {
+  AuthSplit,
+  Field,
+  inputClass,
+  maskPhone,
+  phoneDigits,
+} from "@/components/partner/AuthSplit";
+import {
+  PARTNER_DEMO_AUTOLOGIN,
+  PARTNER_DEMO_AUTOLOGIN_CODE,
+  PARTNER_DEMO_AUTOLOGIN_PHONE,
+} from "@/lib/partner-demo-autologin";
 
 const CLIENT_ROLE_ERROR =
   "Этот номер зарегистрирован как клиент. В кабинет партнёра он не входит.";
@@ -19,11 +30,31 @@ function PartnerLoginForm() {
   const [step, setStep] = useState<"phone" | "code">("phone");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const autoLoginStarted = useRef(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("error") === "role") setError(CLIENT_ROLE_ERROR);
+    if (params.get("error") === "role") {
+      setError(CLIENT_ROLE_ERROR);
+      return;
+    }
+    // TEMPORARY demo auto-login, see lib/partner-demo-autologin.ts.
+    if (!PARTNER_DEMO_AUTOLOGIN || params.has("manual") || autoLoginStarted.current) return;
+    autoLoginStarted.current = true;
+    void demoAutoLogin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function demoAutoLogin() {
+    const pause = () => new Promise((resolve) => window.setTimeout(resolve, 400));
+    setPhone(maskPhone(PARTNER_DEMO_AUTOLOGIN_PHONE));
+    await pause();
+    // A 429 means an unused demo code is still pending, so verify can go ahead.
+    if (!(await sendCode(PARTNER_DEMO_AUTOLOGIN_PHONE, true))) return;
+    setCode(PARTNER_DEMO_AUTOLOGIN_CODE);
+    await pause();
+    await checkCode(PARTNER_DEMO_AUTOLOGIN_PHONE, PARTNER_DEMO_AUTOLOGIN_CODE);
+  }
 
   async function requestCode(event: React.FormEvent) {
     event.preventDefault();
@@ -35,22 +66,28 @@ function PartnerLoginForm() {
       setError("Неверный номер телефона");
       return;
     }
+    await sendCode(phoneDigits(phone));
+  }
+
+  async function sendCode(phoneNumber: string, pendingIsOk = false): Promise<boolean> {
     setError("");
     setBusy(true);
     try {
       const response = await fetch("/api/auth/otp/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone: phoneNumber }),
       });
       const body = (await response.json()) as { error?: string };
-      if (!response.ok) {
+      if (!response.ok && !(pendingIsOk && response.status === 429)) {
         setError(body.error ?? "Не удалось отправить код");
-        return;
+        return false;
       }
       setStep("code");
+      return true;
     } catch {
       setError("Не удалось отправить код");
+      return false;
     } finally {
       setBusy(false);
     }
@@ -62,13 +99,17 @@ function PartnerLoginForm() {
       setError("Введите код из СМС");
       return;
     }
+    await checkCode(phoneDigits(phone), code);
+  }
+
+  async function checkCode(phoneNumber: string, codeValue: string) {
     setError("");
     setBusy(true);
     try {
       const response = await fetch("/api/auth/otp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, code, intent: "partner" }),
+        body: JSON.stringify({ phone: phoneNumber, code: codeValue, intent: "partner" }),
       });
       const body = (await response.json()) as {
         error?: string;
@@ -96,11 +137,11 @@ function PartnerLoginForm() {
             <input
               className={`${inputClass} ${error ? "border-[#A03A22]" : ""}`}
               value={phone}
-              onChange={(event) => setPhone(event.target.value)}
+              onChange={(event) => setPhone(maskPhone(event.target.value))}
               type="tel"
               inputMode="tel"
               autoComplete="tel"
-              placeholder="+7 999 000-11-22"
+              placeholder="+7 (999) 000-11-22"
               aria-invalid={error ? true : undefined}
             />
           </Field>
@@ -126,6 +167,7 @@ function PartnerLoginForm() {
               value={code}
               onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 4))}
               inputMode="numeric"
+              maxLength={4}
               autoComplete="one-time-code"
               placeholder="••••"
               aria-invalid={error ? true : undefined}
@@ -182,9 +224,7 @@ function ApplyLink() {
 }
 
 function isPhone(raw: string): boolean {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length === 11 && (digits.startsWith("7") || digits.startsWith("8"))) return true;
-  return digits.length === 10;
+  return phoneDigits(raw).length === 11;
 }
 
 function ErrorText({ children }: { children: React.ReactNode }) {

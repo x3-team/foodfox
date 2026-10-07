@@ -34,7 +34,7 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
     } finally {
-      window.location.href = "/partner";
+      window.location.href = "/partner?manual=1";
     }
   }
 

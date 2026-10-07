@@ -62,3 +62,37 @@ export function Field({
 
 export const inputClass =
   "w-full rounded-[14px] border border-[#E3E4DF] bg-white px-[18px] py-[15px] text-[15px] text-[#0B0C08] outline-none transition-[border-color] duration-150 focus:border-[#0B0C08]";
+
+/**
+ * Phone as up to 11 digits starting with 7. A leading 8 or 7 is the country
+ * code; exactly 10 digits without it (a pasted "999 000-11-22") get the 7.
+ */
+export function phoneDigits(raw: string): string {
+  const trimmed = raw.trim();
+  const digits = trimmed.replace(/\D/g, "");
+  if (!digits) return "";
+  let national: string;
+  if (trimmed.startsWith("+7")) {
+    national = digits.slice(1);
+    // A full number pasted after the "+7" prefix the mask already shows.
+    if (national.length === 11 && /^[78]/.test(national)) national = national.slice(1);
+  } else if (digits.length !== 10 && /^[78]/.test(digits)) {
+    national = digits.slice(1);
+  } else {
+    national = digits;
+  }
+  return `7${national.slice(0, 10)}`;
+}
+
+/** Display mask "+7 (999) 000-11-22"; separators appear as digits are typed. */
+export function maskPhone(raw: string): string {
+  const digits = phoneDigits(raw);
+  if (!digits) return "";
+  const n = digits.slice(1);
+  let out = "+7";
+  if (n.length > 0) out += ` (${n.slice(0, 3)}`;
+  if (n.length > 3) out += `) ${n.slice(3, 6)}`;
+  if (n.length > 6) out += `-${n.slice(6, 8)}`;
+  if (n.length > 8) out += `-${n.slice(8, 10)}`;
+  return out;
+}

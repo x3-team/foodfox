@@ -2,7 +2,11 @@ import { expect, test, type Page } from "@playwright/test";
 
 const WIDTHS = [375, 768, 1280, 1440] as const;
 
-const PUBLIC_ROUTES = ["/partner", "/partner/apply", "/partner/pending"] as const;
+// /partner signs the demo partner in by itself (lib/partner-demo-autologin.ts);
+// ?manual=1 keeps the form for tests that drive it by hand.
+const LOGIN = "/partner?manual=1";
+
+const PUBLIC_ROUTES = [LOGIN, "/partner/apply", "/partner/pending"] as const;
 
 const CABINET_ROUTES = [
   "/partner/home",
@@ -37,7 +41,7 @@ async function requestOtp(page: Page, phone: string) {
 test.describe.serial("partner cabinet", () => {
   test("empty login shows an error on the phone field", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto("/partner");
+    await page.goto(LOGIN);
     await page.getByRole("button", { name: "Получить код" }).click();
     const error = page.getByText("Введите номер телефона");
     await expect(error).toBeVisible();
@@ -51,7 +55,7 @@ test.describe.serial("partner cabinet", () => {
   test("wrong code is rejected and a normal number omits demoCode", async ({ page }) => {
     const phone = `79${String(Date.now()).slice(-9)}`;
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto("/partner");
+    await page.goto(LOGIN);
 
     await page.getByLabel("Телефон").fill(phone);
     const requested = page.waitForResponse(
@@ -96,11 +100,17 @@ test.describe.serial("partner cabinet", () => {
     await expect(page.getByRole("heading", { name: /Мария/ })).toHaveCount(0);
   });
 
+  test("demo auto-login opens the cabinet from a plain /partner visit", async ({ page }) => {
+    await page.goto("/partner");
+    await expect(page).toHaveURL(/\/partner\/home\/?$/);
+    await expect(page.getByRole("heading", { name: /Мария/ })).toBeVisible();
+  });
+
   test("demo partner signs in and the cabinet fits 375, 768, 1280 and 1440", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/partner");
+    await page.goto(LOGIN);
     await page.getByLabel("Телефон").fill("+7 999 000-11-22");
 
     const askForCode = async () => {
@@ -155,7 +165,7 @@ test.describe.serial("partner cabinet", () => {
         await page.goto(route);
         await noHorizontalScroll(page);
       }
-      await page.goto("/partner");
+      await page.goto(LOGIN);
       const button = page.getByRole("button", { name: "Получить код" });
       await button.scrollIntoViewIfNeeded();
       await expect(button).toBeVisible();
