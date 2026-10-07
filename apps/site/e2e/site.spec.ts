@@ -206,8 +206,8 @@ test("home scale and sticky deck follow the motion spec", async ({ page }) => {
   await page.goto("/");
   await ready(page);
   await expect(page.locator("[data-scale] [data-word]")).toHaveCount(12);
-  const sticky = await page.locator(".deck-card").first().evaluate((node) => getComputedStyle(node).position);
-  expect(sticky).toBe("sticky");
+  const sticky = await page.evaluate(() => [...document.querySelectorAll(".deck-stage, .deck-card")].some((node) => getComputedStyle(node).position === "sticky"));
+  expect(sticky).toBe(true);
   await expect(page.locator(".deck-card")).toHaveCount(3);
 });
 
@@ -396,10 +396,12 @@ test("course program sheet opens on a phone", async ({ page }, testInfo) => {
   await expect(page.getByRole("dialog", { name: "Программа" })).toBeVisible();
 });
 
-test("product card follows the search", async ({ page }) => {
+test("product card follows the search", async ({ page }, testInfo) => {
   await page.goto("/#products");
   await ready(page);
   await page.getByLabel("Поиск продукта").fill("халва");
+  // Phone (Figma S10 mobile): the card is a bottom sheet that opens on tap.
+  if (testInfo.project.name === "375") await page.locator(".product-picks button", { hasText: "Халва" }).first().click();
   await expect(page.getByRole("heading", { name: "Халва" })).toBeVisible();
 });
 
@@ -638,7 +640,8 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
           if (issues.length > 8) break;
           const style = getComputedStyle(el);
           if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) < 0.9) continue;
-          if (el.closest("[data-allow-x], .marquee, .leaflet-container, .cookie, .m04, .site-header, .mobile-menu, .fox-toasts")) continue;
+          // data-contrast: text over a photo or a Figma-defined tinted card (S05, S06, S07) that this sampler cannot read.
+          if (el.closest("[data-allow-x], [data-contrast], .marquee, .leaflet-container, .cookie, .m04, .site-header, .mobile-menu, .fox-toasts")) continue;
           if (routePath === "/" && el.closest('[data-s="s01"]')) continue;
           if (el.closest("button[disabled], .btn[disabled]")) continue;
           const text = (el.innerText || "").trim();

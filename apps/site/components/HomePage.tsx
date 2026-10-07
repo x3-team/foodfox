@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { articles } from "@/lib/content";
+import { articles, authors, CATEGORIES } from "@/lib/content";
 
 const SYMPTOMS = [
   {
@@ -29,69 +29,82 @@ const SYMPTOMS = [
     id: "well",
     title: "Общее самочувствие",
     specialist: "терапевт",
-    items: ["Постоянная усталость", "Сонливость после еды", "Головные боли", "Нарушения сна", "Перепады настроения"],
+    items: ["Постоянная усталость", "Сонливость после еды", "Головные боли", "Снижение концентрации", "Ощущение «тумана» в голове"],
   },
 ];
 
 const SCALE_WORDS = "До 20% людей живут с пищевой непереносимостью и не знают об этом".split(" ");
 
-const DECK = [
-  ["Узнайте причину, а не симптомы", "Реакция на продукт проявляется через 3–72 часа. Поэтому связь с едой легко потерять."],
-  ["Симптомы маскируются под другие состояния", "Усталость, высыпания и тяжесть после еды часто списывают на стресс, возраст или работу."],
-  ["Не предрасположенность, а текущее состояние", "В отличие от генетических тестов, FOX показывает IgG сейчас — и этот снимок может измениться."],
+const DECK: Array<[string, string, string]> = [
+  ["Узнайте причину,|а не симптомы", "Реакция на продукт проявляется через 3–\u206072 часа после еды. Поэтому связь между тарелкой и самочувствием почти невозможно поймать самостоятельно", " — её называют «скрытой» гиперчувствительностью"],
+  ["Симптомы маскируются под|другие состояния", "Усталость, головная боль, высыпания и проблемы с пищеварением похожи на десятки других причин. Их лечат по отдельности, а связь с рационом может оставаться незамеченной", ""],
+  ["Не предрасположенность,|а текущее состояние", "В отличие от генетических тестов, FOX показывает не общую склонность, а то, как организм реагирует сейчас. Результат меняется вместе с рационом", ""],
 ];
 
 const GROUPS = ["Все 286", "Молочные", "Яйца", "Мясо", "Рыба и морепродукты", "Злаки и семена", "Бобовые", "Овощи", "Фрукты", "Орехи", "Специи", "Грибы", "Суперфуды", "Компоненты БАДов"];
 
-const PRODUCTS: Array<{ name: string; group: string; aka?: string[]; compound?: string }> = [
-  { name: "Казеин", group: "Молочные", aka: ["bos d 8"] },
-  { name: "Альфа-лактальбумин", group: "Молочные" },
-  { name: "Бета-лактоглобулин", group: "Молочные" },
-  { name: "Коровье молоко", group: "Молочные" },
-  { name: "Овечий сыр", group: "Молочные" },
-  { name: "Козье молоко", group: "Молочные" },
-  { name: "Куриное яйцо, белок", group: "Яйца" },
-  { name: "Куриное яйцо, желток", group: "Яйца" },
-  { name: "Пшеница", group: "Злаки и семена" },
-  { name: "Глютен", group: "Злаки и семена" },
-  { name: "Гречка", group: "Злаки и семена", aka: ["гречневая"] },
-  { name: "Рис", group: "Злаки и семена" },
-  { name: "Овёс", group: "Злаки и семена" },
-  { name: "Кукуруза", group: "Злаки и семена" },
-  { name: "Соя", group: "Бобовые" },
-  { name: "Горох", group: "Бобовые" },
-  { name: "Томат", group: "Овощи" },
-  { name: "Картофель", group: "Овощи" },
-  { name: "Банан", group: "Фрукты" },
-  { name: "Яблоко", group: "Фрукты" },
-  { name: "Авокадо", group: "Фрукты" },
-  { name: "Миндаль", group: "Орехи" },
-  { name: "Грецкий орех", group: "Орехи", aka: ["грецкие"] },
-  { name: "Кешью", group: "Орехи" },
-  { name: "Лосось", group: "Рыба и морепродукты" },
-  { name: "Тунец", group: "Рыба и морепродукты" },
-  { name: "Креветка", group: "Рыба и морепродукты" },
-  { name: "Морской язык", group: "Рыба и морепродукты", aka: ["солея"] },
-  { name: "Курица", group: "Мясо" },
-  { name: "Индейка", group: "Мясо" },
-  { name: "Говядина", group: "Мясо" },
-  { name: "Спирулина", group: "Суперфуды" },
-  { name: "Хлорелла", group: "Суперфуды" },
-  { name: "Семена чиа", group: "Злаки и семена" },
-  { name: "Куркума", group: "Специи" },
-  { name: "Халва", group: "Компоненты БАДов", compound: "Составной продукт: в панели смотрите кунжут, мёд и сахар отдельно." },
+type Product = { name: string; group: string; tag?: string; aka?: string[]; compound?: string; extra?: boolean; desc?: string; facts?: Array<[string, string]> };
+
+// Figma S10 1395:574 — the 36 product chips in panel order, each with its short tag.
+const PRODUCTS: Product[] = [
+  {
+    name: "Казеин", group: "Молочные", tag: "Bos d 8", aka: ["bos d 8"],
+    desc: "Основной белок коровьего молока. В панели исследуется как отдельный компонент — независимо от «молока» в целом.",
+    facts: [["Группа", "Молочные продукты"], ["Биологическое семейство", "Полорогие (Bovidae)"], ["Где встречается", "Сыр, творог, выпечка, соусы"], ["Родственные в панели", "Козье молоко, овечий сыр"]],
+  },
+  { name: "Альфа-лактальбумин", group: "Молочные", tag: "молочные" },
+  { name: "Бета-лактоглобулин", group: "Молочные", tag: "молочные" },
+  { name: "Коровье молоко", group: "Молочные", tag: "молочные" },
+  { name: "Овечий сыр", group: "Молочные", tag: "молочные" },
+  { name: "Козье молоко", group: "Молочные", tag: "молочные" },
+  { name: "Куриное яйцо, белок", group: "Яйца", tag: "яйца" },
+  { name: "Куриное яйцо, желток", group: "Яйца", tag: "яйца" },
+  { name: "Пшеница", group: "Злаки и семена", tag: "злаки" },
+  { name: "Глютен", group: "Злаки и семена", tag: "злаки" },
+  { name: "Гречка", group: "Злаки и семена", tag: "злаки", aka: ["гречневая"] },
+  { name: "Рис", group: "Злаки и семена", tag: "злаки" },
+  { name: "Овёс", group: "Злаки и семена", tag: "злаки" },
+  { name: "Кукуруза", group: "Злаки и семена", tag: "злаки" },
+  { name: "Соя", group: "Бобовые", tag: "бобовые" },
+  { name: "Горох", group: "Бобовые", tag: "бобовые" },
+  { name: "Томат", group: "Овощи", tag: "овощи" },
+  { name: "Картофель", group: "Овощи", tag: "овощи" },
+  { name: "Банан", group: "Фрукты", tag: "фрукты" },
+  { name: "Яблоко", group: "Фрукты", tag: "фрукты" },
+  { name: "Авокадо", group: "Фрукты", tag: "фрукты" },
+  { name: "Миндаль", group: "Орехи", tag: "орехи" },
+  { name: "Грецкий орех", group: "Орехи", tag: "орехи", aka: ["грецкие"] },
+  { name: "Кешью", group: "Орехи", tag: "орехи" },
+  { name: "Лосось", group: "Рыба и морепродукты", tag: "рыба" },
+  { name: "Тунец", group: "Рыба и морепродукты", tag: "рыба" },
+  { name: "Креветка", group: "Рыба и морепродукты", tag: "морепродукты" },
+  { name: "Курица", group: "Мясо", tag: "мясо" },
+  { name: "Индейка", group: "Мясо", tag: "мясо" },
+  { name: "Говядина", group: "Мясо", tag: "мясо" },
+  { name: "Спирулина", group: "Суперфуды", tag: "суперфуды" },
+  { name: "Хлорелла", group: "Суперфуды", tag: "суперфуды" },
+  { name: "Семена чиа", group: "Злаки и семена", tag: "семена" },
+  { name: "Куркума", group: "Специи", tag: "специи" },
+  { name: "Кофе", group: "Напитки", tag: "напитки" },
+  { name: "Чёрный чай", group: "Напитки", tag: "напитки" },
+  // Found by search only (not in the default 36-chip view).
+  { name: "Морской язык", group: "Рыба и морепродукты", tag: "рыба", aka: ["солея"], extra: true },
+  { name: "Халва", group: "Компоненты БАДов", tag: "составной", compound: "Составной продукт: в панели смотрите кунжут, мёд и сахар отдельно.", extra: true },
 ];
 
+// Figma mobile S10 1430:48677 — the 14 chips shown on phones before filtering.
+const MOBILE_PICKS = ["Казеин", "Коровье молоко", "Козье молоко", "Куриное яйцо, белок", "Пшеница", "Глютен", "Гречка", "Рис", "Соя", "Томат", "Банан", "Миндаль", "Лосось", "Курица"];
+
 const LABS: Array<[string, string]> = [
-  ["Ситилаб", "/figma/labs/citilab.svg"],
-  ["Гемотест", "/figma/labs/gemotest.svg"],
-  ["KDL", "/figma/labs/kdl.svg"],
-  ["ДНКОМ", "/figma/labs/dnkom.svg"],
-  ["Инвитро", "/figma/labs/invitro.svg"],
-  ["CMD", "/figma/labs/cmd.svg"],
-  ["Хеликс", "/figma/labs/helix.svg"],
-  ["Хромолаб", "/figma/labs/chromolab.png"],
-  ["Юнимед", "/figma/labs/unimed.svg"],
+  ["Ситилаб", "/figma/labs/fig/citilab.png"],
+  ["Гемотест", "/figma/labs/fig/gemotest.png"],
+  ["KDL", "/figma/labs/fig/kdl.png"],
+  ["ДНКОМ", "/figma/labs/fig/dnkom.png"],
+  ["Инвитро", "/figma/labs/fig/invitro.png"],
+  ["CMD", "/figma/labs/fig/cmd.png"],
+  ["Хеликс", "/figma/labs/fig/helix.png"],
+  ["Хромолаб", "/figma/labs/fig/chromolab.png"],
+  ["Юнимед", "/figma/labs/fig/unimed.png"],
 ];
 
 const REPORT_SLIDES = [
@@ -104,8 +117,8 @@ let antigenAnimated = false;
 
 const SHOWS = [
   ["286 продуктов", "Весь привычный рацион — от базовых продуктов до редких. За один забор крови."],
-  ["13 групп", "Молочные, яйца, мясо, рыба, злаки, бобовые, овощи, фрукты, орехи, специи, грибы, суперфуды и компоненты добавок."],
-  ["3 уровня", "Низкий, средний и повышенный IgG. Показывает, что убрать в первую очередь и что вернуть раньше."],
+  ["13 групп", "Овощи, злаки, молочное, рыба, специи, грибы. Отдельно суперфуды и компоненты БАД"],
+  ["3 уровня", "Показывает, что стоит убрать в первую очередь, а что можно вернуть в рацион раньше остального"],
 ];
 
 const STEPS = [
@@ -125,7 +138,7 @@ const FAQ = [
 
 const REVIEWS = [
   ["Екатерина Ласковская", "Убирала молочку, потом глютен, потом всё сразу — и каждый раз наугад. Отчёт наконец дал конкретный список. Двух продуктов из него я бы не заподозрила никогда."],
-  ["Игорь Потруников", "Списывал всё на возраст и работу: тяжесть после еды, вечная усталость к обеду, вздутие. Отчёт дал точку отсчёта вместо очередной догадки. Убрал три продукта, потом возвращал их по одному."],
+  ["Игорь Потруников", "Списывал всё на возраст и работу: тяжесть после еды, вечная усталость к обеду, вздутие. Четыре месяца вёл дневник питания и не продвинулся ни на шаг — к моменту, когда появлялась реакция, вспомнить позавчерашний обед было уже невозможно. Отчёт дал точку отсчёта вместо очередной догадки. Убрал три продукта, потом возвращал их по одному. Через два месяца перестал планировать день вокруг того, как себя чувствует желудок."],
 ];
 
 function pdf(items: string[]) {
@@ -153,7 +166,7 @@ export function HomePage() {
   const [checked, setChecked] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState(GROUPS[0]);
-  const [picked, setPicked] = useState(PRODUCTS[0]);
+  const [picked, setPicked] = useState<Product>(PRODUCTS[0]);
   const [count, setCount] = useState(0);
   const [faq, setFaq] = useState(0);
   const showsRef = useRef<HTMLElement>(null);
@@ -161,12 +174,30 @@ export function HomePage() {
   const [suggest, setSuggest] = useState(false);
   const [reportPage, setReportPage] = useState(0);
   const [chipsOpen, setChipsOpen] = useState(false);
+  const [moreProducts, setMoreProducts] = useState(false);
+  const [cardOpen, setCardOpen] = useState(false);
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const sync = () => setPhone(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
   const [openGroup, setOpenGroup] = useState("gut");
   const scaleRef = useRef<HTMLElement>(null);
   const deckRef = useRef<HTMLElement>(null);
   const countRef = useRef<HTMLElement>(null);
   const austriaRef = useRef<HTMLElement>(null);
   const reviewsRef = useRef<HTMLDivElement>(null);
+  const [reviewDot, setReviewDot] = useState(0);
+  const onReviewScroll = () => {
+    const row = reviewsRef.current;
+    if (!row || row.scrollLeft <= 0) return setReviewDot(0);
+    const card = row.querySelector<HTMLElement>(".review-card");
+    const step = (card?.offsetWidth ?? 300) + 12;
+    setReviewDot(Math.min(4, Math.round(row.scrollLeft / step)));
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem("fox-checker");
@@ -192,22 +223,39 @@ export function HomePage() {
           word.style.opacity = String(0.18 + 0.82 * local);
         });
       }
-      if (!reduce && deckRef.current) {
-        const cards = [...deckRef.current.querySelectorAll<HTMLElement>(".deck-card")];
+      if (deckRef.current) {
+        // S04 deck: on desktop the stage is pinned and the front card leaves upward
+        // while the cards behind step forward to the 1118 / 990 / 902 Figma sizes.
+        const section = deckRef.current;
+        const stage = section.querySelector<HTMLElement>(".deck-stage");
+        const cards = [...section.querySelectorAll<HTMLElement>(".deck-card")];
+        const pinned = stage && getComputedStyle(stage).position === "sticky" && !reduce;
+        let progress = 0;
+        if (pinned && stage) {
+          const rect = section.getBoundingClientRect();
+          const pad = parseFloat(getComputedStyle(section).paddingTop) || 0;
+          const top = parseFloat(getComputedStyle(stage).top) || 0;
+          const travel = Math.max(1, section.offsetHeight - stage.offsetHeight - pad * 2);
+          progress = Math.min(1, Math.max(0, (pad - top - rect.top) / travel)) * (cards.length - 1);
+        }
         cards.forEach((card, index) => {
-          const next = cards[index + 1];
-          if (!next) {
+          if (!pinned) {
             card.style.transform = "";
-            card.style.filter = "";
-            card.style.opacity = "1";
+            card.style.opacity = "";
+            card.style.zIndex = "";
             return;
           }
-          const overlap = card.getBoundingClientRect().bottom - next.getBoundingClientRect().top;
-          const amount = Math.min(1, Math.max(0, overlap / 220));
-          card.style.transform = `scale(${1 - 0.06 * amount})`;
-          card.style.filter = `blur(${3 * amount}px)`;
-          card.style.opacity = String(1 - 0.45 * amount);
-          card.style.borderRadius = `${32 - 8 * amount}px`;
+          const rel = index - progress;
+          if (rel < 0) {
+            card.style.transform = `translateY(${rel * 70}%)`;
+            card.style.opacity = String(Math.max(0, 1 + rel * 1.4));
+          } else {
+            const scale = rel <= 1 ? 1 - 0.1145 * rel : 0.8855 - 0.0785 * Math.min(1, rel - 1);
+            const shift = rel <= 1 ? 24 * rel : 24 + 25 * Math.min(1, rel - 1);
+            card.style.transform = `translateY(${shift}px) scale(${scale})`;
+            card.style.opacity = "1";
+          }
+          card.style.zIndex = String(Math.round(100 - rel * 10));
         });
       }
       if (!reduce && austriaRef.current) {
@@ -268,7 +316,7 @@ export function HomePage() {
 
   useEffect(() => {
     const row = reviewsRef.current;
-    if (!row || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!row || window.matchMedia("(prefers-reduced-motion: reduce)").matches || window.matchMedia("(max-width: 767px)").matches) return;
     let stop = false;
     let paused = false;
     let raf = 0;
@@ -309,10 +357,10 @@ export function HomePage() {
     return PRODUCTS.filter((item) => {
       const inGroup = group === "Все 286" || item.group === group;
       if (!inGroup) return false;
-      if (!q) return true;
+      if (!q) return moreProducts || !item.extra;
       return item.name.toLowerCase().includes(q) || (item.aka ?? []).some((aka) => aka.includes(q));
     });
-  }, [query, group]);
+  }, [query, group, moreProducts]);
 
   useEffect(() => {
     if (shown.length && !shown.some((item) => item.name === picked.name)) setPicked(shown[0]);
@@ -382,13 +430,13 @@ export function HomePage() {
         </section>
 
         <section className="lab-marquee" data-s="s02" aria-label="Лаборатории">
-          <p className="meta-line">Тест доступен в лабораториях:</p>
+          <p className="meta-line"><span className="d-only">Тест доступен в лабораториях:</span><span className="m-only">Тест есть в 9 федеральных сетях</span></p>
           <div className="marquee" data-allow-x>
             <div>
               {[...LABS, ...LABS].map(([name, slug], index) => (
-                <Link key={`${slug}-${index}`} href="/labs">
+                <Link key={`${slug}-${index}`} href="/labs" aria-label={name}>
                   <img className="lab-logo" src={slug} alt="" />
-                  {name}
+                  <span className="lab-name">{name}</span>
                 </Link>
               ))}
             </div>
@@ -399,7 +447,7 @@ export function HomePage() {
           <div className="scale-pin">
             <h2 className="page-title">
               {SCALE_WORDS.map((word, index) => (
-                <span data-word key={`${word}-${index}`}>{word} </span>
+                <span data-word key={`${word}-${index}`}>{word}{index === SCALE_WORDS.length - 1 && <sup>1</sup>}{" "}{(index === 3 || index === 6) && <br className="scale-br" />}</span>
               ))}
             </h2>
           </div>
@@ -407,13 +455,20 @@ export function HomePage() {
           <p className="scale-note">¹ Оценка распространённости пищевой непереносимости. Источник — ссылка на исследование (предоставит клиент)</p>
         </section>
 
-        <section className="wrap deck" ref={deckRef} data-deck data-s="s04">
-          {DECK.map(([title, text], index) => (
-            <article className="deck-card" key={title} style={{ top: 80 + index * 12 }}>
-              <h2>{title}</h2>
-              <p>{text}</p>
-            </article>
-          ))}
+        <section className="deck" ref={deckRef} data-deck data-s="s04">
+          {/* Figma S04 1385:578 (desktop deck 1385:579) · 1426:48571 (mobile list) */}
+          <div className="deck-stage">
+            {DECK.map(([title, text, tail], index) => (
+              <article className="deck-card" key={title} data-i={index} style={{ ["--i" as string]: index }}>
+                <img className="deck-bg" src={`/figma/home/deck/card-${index + 1}.webp`} alt="" />
+                <h2>{title.split("|")[0]}<br className="deck-br" /> {title.split("|")[1]}</h2>
+                <div className="deck-foot">
+                  <img className="deck-icon" src={`/figma/home/deck/icon-${index + 1}.svg`} alt="" />
+                  <p>{text}{tail && <span className="deck-tail">{tail}</span>}<span className="deck-dot">.</span></p>
+                </div>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className="symptom-band" data-s="s05">
@@ -426,7 +481,7 @@ export function HomePage() {
                 ["Самочувствие", ["Хроническая усталость", "Общая слабость", "Тяжесть после еды", "Нарушения сна", "Упадок сил", "Перепады настроения"], "/figma/symptoms/well.png"],
                 ["Вес и отёчность", ["Трудно снизить вес", "Стойкая отёчность", "Отёки лица по утрам", "Колебания веса"], "/figma/symptoms/s6.png"],
               ].map(([title, chips, src]) => (
-                <article className="sym-card" key={title as string}>
+                <article className="sym-card" key={title as string} data-contrast="photo">
                   <img src={src as string} alt="" />
                   <div className="sym-shade" />
                   <h3>{title as string}</h3>
@@ -445,7 +500,7 @@ export function HomePage() {
         <section className="wrap band checker" id="checker" data-s="s06">
           <div className="s06-head">
             <div>
-              <p className="meta-line">Чекер симптомов · около минуты</p>
+              <p className="meta-line s06-eyebrow"><i aria-hidden />Чекер симптомов · около минуты</p>
               <h2 className="page-title">Отметьте, что беспокоит вас последние 4 недели</h2>
             </div>
             <p className="lead">Интерактивный список — не диагноз и не оценка риска. Он поможет собрать мысли перед консультацией и понять, с какого специалиста удобно начать разговор.</p>
@@ -458,20 +513,27 @@ export function HomePage() {
                   <div className={`symptom-group${openGroup === groupItem.id ? " is-open" : ""}`} key={groupItem.id}>
                     <h3>
                       <button type="button" onClick={() => setOpenGroup(openGroup === groupItem.id ? "" : groupItem.id)}>
-                        {groupItem.title} <span>{n} из {groupItem.items.length}</span>
+                        <i className="s06-gicon" aria-hidden><img src={`/figma/home/checker/g-${groupItem.id}.svg`} alt="" /></i>
+                        <b>{groupItem.title}</b> <span className={n > 0 ? "is-on" : ""}>{n} из {groupItem.items.length}</span>
                       </button>
                     </h3>
                     {groupItem.items.map((item) => (
                       <label className={`check-row${checked.includes(item) ? " is-on" : ""}`} key={item}>
                         <input type="checkbox" checked={checked.includes(item)} onChange={() => toggle(item)} />
+                        <i className="s06-box" aria-hidden />
                         <span>{item}</span>
                       </label>
                     ))}
+                    {groupItem.id === "weight" && <p className="s06-gnote">Отёки и изменения веса бывают по разным причинам — отметьте их, чтобы не забыть обсудить на приёме.</p>}
                   </div>
                 );
               })}
+              <p className="s06-foot">
+                <button type="button" onClick={() => setChecked([])}>Сбросить отметки</button>
+                <span>Ответы не сохраняются и не передаются — список собирается только на вашем устройстве.</span>
+              </p>
             </div>
-            <aside className="panel checker-card checker-dark">
+            <aside className="panel checker-card checker-dark" data-contrast="photo">
               <div className="checker-top">
                 <p>Ваш список</p>
                 <span>{checked.length === 0 ? "пока пусто" : `${checked.length} отмечено`}</span>
@@ -480,6 +542,7 @@ export function HomePage() {
               <div className="checker-meters">
                 {SYMPTOMS.map((item) => {
                   const n = item.items.filter((label) => checked.includes(label)).length;
+                  if (checked.length > 0 && n === 0) return null;
                   return (
                     <p key={item.id}>
                       <span>{item.title.replace("Общее самочувствие", "Самочувствие")}</span>
@@ -491,9 +554,13 @@ export function HomePage() {
               </div>
               <p className="checker-kicker">С чего можно начать</p>
               <ul className="checker-specs">
-                <li><strong>Гастроэнтеролог</strong><small>ЖКТ</small></li>
-                <li><strong>Дерматолог</strong><small>Кожа</small></li>
-                <li><strong>Нутрициолог</strong><small>Питание и самочувствие</small></li>
+                {[["Гастроэнтеролог", "ЖКТ"], ["Дерматолог", "Кожа"], ["Нутрициолог", "Питание и самочувствие"]].map(([name, area], index) => (
+                  <li key={name}>
+                    <i aria-hidden><img src={`/figma/home/checker/s-${index + 1}.svg`} alt="" /></i>
+                    <span><strong>{name}</strong><small>{area}</small></span>
+                    <img className="s06-arrow" src="/icons/arrow-right-light.svg" alt="" />
+                  </li>
+                ))}
               </ul>
               <div className="checker-bring">
                 <p className="checker-kicker">Что взять на приём</p>
@@ -501,7 +568,7 @@ export function HomePage() {
                   {(ready ? checked : ["Этот список — в PDF или на телефоне", "Результат теста FOX, если уже сдавали", "Дневник питания за 1–2 недели"]).map((item) => <li key={item}>{item}</li>)}
                 </ul>
               </div>
-              <button className="btn btn-dark" type="button" disabled={!ready} onClick={() => pdf(checked)}>Скачать список</button>
+              <button className="btn btn-dark" type="button" disabled={!ready} onClick={() => pdf(checked)}>Скачать список и записаться<img src="/figma/home/checker/plus.svg" alt="" /></button>
               <Link className="btn btn-ghost" href="/labs">Найти лабораторию рядом</Link>
               <p className="checker-fine">Чекер не ставит диагноз и не заменяет приём врача. Тест FOX интерпретирует специалист.</p>
             </aside>
@@ -509,36 +576,37 @@ export function HomePage() {
         </section>
 
         <section className="shows-band" data-s="s07" id="chto-pokazyvaet" ref={showsRef}>
+          {/* Figma S07 1385:652 · mobile 1428:48608 */}
           <div className="wrap shows">
             <div className="shows-pin">
-              <h2 className="page-title">Что показывает<br />тест FOX</h2>
-              <p className="lead">Определяет уровень иммуноглобулина G к каждому продукту из панели: чем выше значение, тем заметнее реакция организма на этот продукт</p>
-              <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
+              <h2 className="page-title">Что показывает<br /> тест FOX</h2>
+              <div className="shows-foot">
+                <p className="lead">Определяет уровень иммуноглобулина G к каждому продукту из панели: чем выше значение, тем заметнее реакция организма на этот продукт</p>
+                <button className="btn btn-dark shows-cta" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
+              </div>
             </div>
             <div className="shows-cards">
               {SHOWS.map(([title, text], index) => (
-                <article className={`show-card${index === showOn ? " is-on" : " is-off"}`} key={title}>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                  {index === 0 && (
-                    <div className="antigen-dots" aria-hidden>
-                      {Array.from({ length: 286 }, (_, dot) => <i key={dot} className={dot % 17 === 0 ? "is-hot" : ""} style={{ animationDelay: `${dot * 8}ms` }} />)}
-                    </div>
+                <article className={`show-card show-card-${index + 1}${index === showOn ? " is-on" : " is-off"}`} key={title} data-contrast="figma">
+                  <div className="show-copy">
+                    <h3>{title}</h3>
+                    <p>{text}</p>
+                  </div>
+                  {index === 0 && <img className="show-dots" src="/figma/home/shows/dots.svg" alt="" />}
+                  {index === 1 && (
+                    <div className="show-rings" aria-hidden data-allow-x><i /><i /><i /></div>
                   )}
                   {index === 2 && (
                     <ul className="igg-levels">
-                      <li><i className="low" />Низкий уровень IgG</li>
-                      <li><i className="mid" />Средний уровень IgG</li>
-                      <li><i className="high" />Повышенный уровень IgG</li>
+                      <li><span><i className="low" />Низкий уровень IgG</span><b /></li>
+                      <li><span><i className="mid" />Средний уровень IgG</span><b /></li>
+                      <li><span><i className="high" />Повышенный уровень IgG</span><b /></li>
                     </ul>
                   )}
-                  <svg className="orbit-svg" viewBox="0 0 120 120" aria-hidden>
-                    <circle className="orbit-ring" cx="60" cy="60" r="46" />
-                    <circle className="orbit-ring r2" cx="60" cy="60" r="28" />
-                  </svg>
                 </article>
               ))}
             </div>
+            <button className="btn btn-dark shows-cta-m" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест<img src="/figma/home/checker/plus.svg" alt="" /></button>
           </div>
         </section>
 
@@ -546,17 +614,21 @@ export function HomePage() {
           <div className="wrap">
             <article className="s08-card">
               <div className="s08-copy">
-                <h2>Получите персональную карту реакций на 286 продуктов</h2>
-                <p>Уровень IgG по каждому продукту, разложенный по тринадцати категориям еды. Из отчёта видно, что убрать из рациона в первую очередь, а что трогать не нужно</p>
-                <Link className="btn btn-light" href="/report">Пример результата</Link>
+                <h2>Получите персональную <br className="s08-br" />карту реакций <br className="s08-br" />на 286 продуктов</h2>
+                <div className="s08-foot">
+                <p>Уровень IgG по каждому продукту, разложенный по <span className="d-only">тринадцати категориям еды. Из отчёта видно, что убрать из рациона в первую очередь, а что трогать не нужно</span><span className="m-only">13 категориям еды.</span></p>
+                <Link className="btn btn-light" href="/report">Пример результата<img src="/icons/arrow-up-right.svg" alt="" /><img className="s08-plus" src="/figma/icons/plus-dark.svg" alt="" /></Link>
+                <Link className="s08-more" href="/report#zones">Как читать отчёт</Link>
+                </div>
               </div>
-              <div className="s08-stack">
+              <div className="s08-stack" data-allow-x>
                 <button type="button" className="s08-nav prev" aria-label="Предыдущая страница отчёта" onClick={() => setReportPage((n) => (n + REPORT_SLIDES.length - 1) % REPORT_SLIDES.length)} />
-                <img src="/figma/report/p2.png" alt="" />
-                <img src="/figma/report/p4.png" alt="" />
+                <i className="s08-sheet s08-sheet-3" aria-hidden />
+                <i className="s08-sheet s08-sheet-2" aria-hidden />
                 <img className="s08-shot" key={reportPage} src={REPORT_SLIDES[reportPage][0]} alt="" />
                 <button type="button" className="s08-nav next" aria-label="Следующая страница отчёта" onClick={() => setReportPage((n) => (n + 1) % REPORT_SLIDES.length)} />
               </div>
+              <div className="s08-pager" aria-hidden>{REPORT_SLIDES.map((slide, index) => <i key={slide[0]} className={index === reportPage ? "is-on" : ""} />)}</div>
               <div className="s08-glass">
                 {[
                   ["Точные значения", "Уровень IgG в U/mL по каждому продукту"],
@@ -588,17 +660,19 @@ export function HomePage() {
         </section>
 
         <section className="wrap band" id="products" data-s="s10" ref={countRef}>
+          {/* Figma S10 1395:574 · mobile 1430:48646 */}
           <div className="s10-head">
             <div>
               <h2 className="page-title">Продукты, которые исследует FOX</h2>
               <p className="lead">Самый частый вопрос перед тестом — «а мой продукт там есть?». Найдите его в составе панели за пару секунд.</p>
             </div>
-            <p className="count-line"><strong data-antigen-count>{count}</strong><span>пищевых антигенов из 13 групп · один забор крови</span></p>
+            <p className="count-line"><strong data-antigen-count>{count}</strong><span className="d-only">пищевых антигенов из 13 групп · один забор крови</span><span className="m-only">антигенов · 13 групп</span></p>
           </div>
           <div className="suggest">
           <label className="search">
             <img src="/icons/search.svg" alt="" />
-            <input data-hotkey value={query} onChange={(event) => { setQuery(event.target.value); setSuggest(true); }} onFocus={() => setSuggest(true)} placeholder="Например, казеин, гречка или солея" aria-label="Поиск продукта" />
+            <input data-hotkey value={query} onChange={(event) => { setQuery(event.target.value); setSuggest(true); }} onFocus={() => setSuggest(true)} placeholder={phone ? "Например, «гречка»" : "Поиск продукта — например, «казеин», «гречка» или «солея»"} aria-label="Поиск продукта" />
+            <kbd className="s10-kbd" aria-hidden>/</kbd>
             <button className="s10-find" type="button">Найти</button>
           </label>
           {suggest && query.trim().length >= 2 && (
@@ -611,38 +685,67 @@ export function HomePage() {
           )}
           </div>
           {compound?.compound && query.trim().length >= 2 && <p className="hint">{compound.compound}</p>}
-          <div className={`chips${chipsOpen ? " is-open" : ""}`} data-allow-x style={{ marginTop: 16 }}>
+          <div className={`chips${chipsOpen ? " is-open" : ""}`} data-allow-x>
             {GROUPS.map((item) => (
               <button key={item} className={`chip${group === item ? " is-active" : ""}`} type="button" onClick={() => setGroup(item)}>{item}</button>
             ))}
             <button className="chip chip-more" type="button" onClick={() => setChipsOpen(true)}>Показать ещё</button>
           </div>
           <div className="checker-grid">
-            <div className="product-picks" data-allow-x>
-              {shown.map((item) => (
-                <button type="button" className={picked.name === item.name ? "is-on" : ""} key={item.name} onClick={() => setPicked(item)}>
-                  {item.name}
-                </button>
-              ))}
-              {shown.length === 0 && <p>В показанной части панели такого запроса нет. Спросите специалиста.</p>}
+            <div className="s10-products">
+              <div className={`product-picks${!query.trim() && group === "Все 286" && !moreProducts ? " is-default" : ""}`} data-allow-x>
+                {shown.map((item) => (
+                  <button type="button" className={`${picked.name === item.name ? "is-on" : ""}${MOBILE_PICKS.includes(item.name) ? " m-pick" : ""}`} key={item.name} onClick={() => { setPicked(item); setCardOpen(true); }}>
+                    {item.name}{item.tag && <small>{item.tag}</small>}
+                  </button>
+                ))}
+                {shown.length === 0 && <p>В показанной части панели такого запроса нет. Спросите специалиста.</p>}
+              </div>
+              <div className="s10-more">
+                {!moreProducts && <button className="btn btn-light" type="button" onClick={() => setMoreProducts(true)}>Показать ещё<img src="/figma/icons/plus-dark.svg" alt="" /></button>}
+                <p className="meta-line"><span className="d-only">Показано {Math.min(36, shown.length)} из 286 · полный список — в PDF «Состав панели»</span><span className="m-only">Показано {Math.min(14, shown.length)} из 286 · тап по продукту открывает карточку</span></p>
+              </div>
             </div>
-            <article className="panel">
-              <h3>{picked.name}</h3>
-              <p>{picked.group}. В панели это отдельная позиция, не полка целиком.</p>
-              <p>Исключать продукт и подбирать замены стоит только вместе со специалистом — чтобы рацион оставался полноценным.</p>
-              <p className="meta-line">Показано {Math.min(14, shown.length)} из 286 · полный состав панели уточняет лаборатория</p>
+            <article className={`panel s10-card${cardOpen ? " is-open" : ""}`}>
+              <div className="s10-card-top">
+                <span className="s10-tag">{picked.group}{picked.tag && picked.tag !== picked.group.toLowerCase() && /[A-Za-z]/.test(picked.tag) ? ` · ${picked.tag}` : ""}</span>
+                <button type="button" className="s10-close" aria-label="Сбросить выбор" onClick={() => { setCardOpen(false); setQuery(""); setGroup("Все 286"); setPicked(PRODUCTS[0]); }}>✕</button>
+              </div>
+              <div className="s10-card-head">
+                <h3>{picked.name}</h3>
+                <p>{picked.desc ?? `${picked.group}. В панели это отдельная позиция, не полка целиком.`}</p>
+              </div>
+              <dl className="s10-facts">
+                {(picked.facts ?? [
+                  ["Группа", picked.group],
+                  ["Родственные в панели", PRODUCTS.filter((item) => item.group === picked.group && item.name !== picked.name && !item.extra).slice(0, 2).map((item) => item.name).join(", ") || "—"],
+                ]).map(([term, value]) => (
+                  <div key={term}><dt>{term}</dt><dd>{value}</dd></div>
+                ))}
+              </dl>
+              <p className="s10-swap">Исключать продукт и подбирать замены стоит только вместе со специалистом — чтобы рацион оставался полноценным.</p>
+              <div className="s10-blog">
+                <p>В блоге</p>
+                {articles.slice(0, 2).map((article) => (
+                  <Link key={article.slug} href={`/blog/${article.slug}`}><span>{article.title}</span><img src="/icons/arrow-right.svg" alt="" /></Link>
+                ))}
+              </div>
             </article>
           </div>
         </section>
 
         <section className="austria" data-s="s11" ref={austriaRef}>
+          {/* Figma S11 1385:792 · mobile 1437:48639 */}
           <div className="aus-copy">
-            <h2 className="page-title">Тест разработан в Австрии</h2>
-            <p>FOX — продукт венской компании MacroArray Diagnostics, основанной в 2016 году и специализирующейся на аллергодиагностике. Первый CE-маркированный IVD-продукт компания вывела на рынок в августе 2017.</p>
-            <p>В основе — иммуноферментный анализ (ELISA), общепринятая стандартная лабораторная процедура. В России и СНГ тест представляет МФК Инмунотех.</p>
-            <Link className="btn btn-light" href="/certificates">Сертификаты</Link>
+            <p className="aus-eyebrow">Сделано в Европе</p>
+            <h2 className="page-title">Тест разработан <br className="aus-br" />в Австрии</h2>
+            <div className="aus-foot">
+              <p className="aus-p1">FOX — продукт венской компании MacroArray Diagnostics, основанной в 2016 году и специализирующейся на аллергодиагностике. Первый CE-маркированный IVD-продукт компания вывела на рынок в августе 2017.</p>
+              <p className="aus-p2">В основе — иммуноферментный анализ (ELISA), общепринятая стандартная лабораторная процедура. В России и СНГ тест представляет МФК Инмунотех.</p>
+              <Link className="btn btn-light" href="/certificates">Смотреть сертификаты</Link>
+            </div>
           </div>
-          <div className="aus-photo">
+          <div className="aus-photo" data-allow-x>
             <img className="parallax" src="/figma/austria/a1.png" alt="" />
             <div className="aus-cards">
               {[
@@ -658,60 +761,91 @@ export function HomePage() {
         </section>
 
         <section className="wrap band" data-s="s12">
-          <h2 className="page-title">Сдайте тест в любой из 1500+ лабораторий</h2>
-          <p className="s12-count" aria-hidden>1500+</p>
+          {/* Figma S12 1385:815 · mobile 1437:48658 */}
+          <h2 className="page-title">Сдайте тест <br className="s12-br" />в любой из 1500+ лабораторий</h2>
           <p className="lead">Цена устанавливается лабораторией. Уточняйте на официальном сайте.</p>
+          <p className="s12-count"><strong>1500+</strong><span>пунктов в 9 сетях</span></p>
           <div className="lab-grid">
             {LABS.map(([name, slug]) => (
-              <Link className="lab-tile" key={slug} href="/labs">
-                <img className="lab-logo" src={slug} alt="" />
-                <span className="btn btn-ghost">Сдать в {name}</span>
+              <Link className="lab-tile" key={slug} href="/labs" aria-label={`Сдать тест в ${name}`}>
+                <span className="lab-logo-box"><img className="lab-logo" src={slug} alt="" /></span>
+                <span className="lab-go">Сдать тест<img src="/icons/arrow-up-right.svg" alt="" /></span>
               </Link>
             ))}
             <Link className="lab-tile lab-tile-all" href="/labs">
               <strong>1500+</strong>
-              <span>Все на карте</span>
+              <small>пунктов в 9 сетях</small>
+              <span className="lab-go">На карте<img src="/icons/arrow-up-right.svg" alt="" /></span>
+              <em>Все на карте →</em>
+              <small className="lab-all-m">1500+ точек</small>
             </Link>
           </div>
+          <Link className="btn btn-dark s12-cta" href="/labs">Найти лабораторию рядом</Link>
         </section>
 
-        <section className="wrap band" data-s="s13">
+        <section className="band s13" data-s="s13">
           <h2 className="page-title">Отзывы наших клиентов</h2>
-          <div className="review-row" data-allow-x ref={reviewsRef}>
+          <div className="review-row" data-allow-x ref={reviewsRef} onScroll={onReviewScroll}>
             <div className="review-track">
             {[0, 1].flatMap((copy) => [
-              <article className="review-card" key={`${REVIEWS[0][0]}-${copy}`}>
+              <article className="review-card is-photo" key={`p1-${copy}`} aria-hidden={copy === 1 || undefined}>
+                <img src="/figma/home/reviews/p1.webp" alt="" />
+                <span className="review-play" aria-hidden><img src="/figma/home/reviews/play.svg" alt="" /></span>
+              </article>,
+              <article className="review-card is-oval" key={`${REVIEWS[0][0]}-${copy}`} aria-hidden={copy === 1 || undefined}>
                 <p className="review-stars" aria-label="5 из 5">★★★★★</p>
-                <p>{REVIEWS[0][1]}</p>
-                <img className="review-avatar" src="/figma/reviews/r2.png" alt="" />
+                <div className="review-body">
+                  <p>{REVIEWS[0][1]}</p>
+                  <img className="review-avatar" src="/figma/home/reviews/a1.webp" alt="" />
+                </div>
                 <h3>{REVIEWS[0][0]}</h3>
               </article>,
-              <article className="review-card is-photo is-oval" key={`photo-a-${copy}`}><img src="/figma/reviews/r1.png" alt="" /></article>,
-              <article className="review-card is-photo is-video" key={`photo-b-${copy}`}><img src="/figma/reviews/r5.png" alt="" /><span>Смотреть</span></article>,
-              <article className="review-card" key={`${REVIEWS[1][0]}-${copy}`}>
+              <article className="review-card is-photo" key={`p2-${copy}`} aria-hidden={copy === 1 || undefined}>
+                <img src="/figma/home/reviews/p2.webp" alt="" />
+                <span className="review-play" aria-hidden><img src="/figma/home/reviews/play.svg" alt="" /></span>
+              </article>,
+              <article className="review-card is-dark" key={`${REVIEWS[1][0]}-${copy}`} aria-hidden={copy === 1 || undefined}>
                 <p className="review-stars" aria-label="5 из 5">★★★★★</p>
                 <p>{REVIEWS[1][1]}</p>
                 <h3>{REVIEWS[1][0]}</h3>
               </article>,
+              <article className="review-card is-photo" key={`p3-${copy}`} aria-hidden={copy === 1 || undefined}>
+                <img src="/figma/home/reviews/p3.webp" alt="" />
+                <span className="review-play" aria-hidden><img src="/figma/home/reviews/play.svg" alt="" /></span>
+              </article>,
             ])}
             </div>
           </div>
-          <Link className="text-link" href="/reviews">Все отзывы <img src="/icons/arrow-right.svg" alt="" /></Link>
+          <div className="review-pager" aria-hidden>
+            {[0, 1, 2, 3, 4].map((i) => <i key={i} className={reviewDot === i ? "is-on" : ""} />)}
+          </div>
+          <Link className="btn btn-light s13-all" href="/reviews">Все отзывы <img src="/figma/icons/plus-dark.svg" alt="" /></Link>
         </section>
 
         <section className="blog-band" data-s="s14">
           <div className="wrap">
-            <h2 className="page-title">Больше полезного в нашем блоге</h2>
+            <h2 className="page-title">Больше полезного <br className="s14-br" />в нашем блоге</h2>
             <div className="cards-4 blog-home" data-allow-x>
-              {articles.slice(0, 4).map((article) => (
+              {articles.slice(0, 4).map((article) => {
+                const author = authors.find((item) => item.slug === article.author);
+                const cat = CATEGORIES.find((item) => item.id === article.category)?.label;
+                return (
                 <Link className="blog-home-card" key={article.slug} href={`/blog/${article.slug}`}>
                   <img src={article.cover} alt="" />
+                  <span className="bh-meta m-only"><small>~{article.minutes} минут</small>{cat && <small>{cat}</small>}</span>
                   <h3>{article.title}</h3>
                   <p>{article.excerpt}</p>
+                  {author && (
+                    <span className="bh-author m-only">
+                      <img src={author.avatar} alt="" />
+                      <span><b>{author.name}</b><small>{author.role}</small></span>
+                    </span>
+                  )}
                 </Link>
-              ))}
+                );
+              })}
             </div>
-            <Link className="btn btn-dark" href="/blog">Перейти в блог</Link>
+            <Link className="btn btn-dark s14-all" href="/blog">Перейти в блог <img className="m-only" src="/figma/icons/plus-dark.svg" alt="" /></Link>
           </div>
         </section>
 
@@ -747,14 +881,24 @@ export function HomePage() {
                   );
                 })}
               </div>
-              <Link href="/faq">Все вопросы →</Link>
+              <Link className="s15-all" href="/faq"><span className="d-only">Все вопросы →</span><span className="m-only">Все вопросы <img src="/figma/icons/plus-dark.svg" alt="" /></span></Link>
             </div>
           </div>
-          <div className="s15-cta">
-            <h2 className="s15-desk">Остались вопросы?</h2>
-            <h2 className="s15-mob">Не нашли ответ?</h2>
-            <p>Свяжитесь с нами и мы ответим в ближайшее время.</p>
-            <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:contact"))}>Связаться</button>
+          <div className="s15-cta d-only">
+            <div className="s15-box">
+              <h2>Остались вопросы?</h2>
+              <p>Свяжитесь с нами и мы ответим в ближайшее время</p>
+              <button className="btn btn-light" type="button" onClick={() => window.dispatchEvent(new Event("fox:contact"))}>Связаться</button>
+            </div>
+          </div>
+          <div className="s15-help m-only">
+            <div className="s15-help-card">
+              <div className="s15-chat"><img src="/figma/home/anna.webp" alt="" /><p><small>Анна, служба заботы</small><b>Здравствуйте! Чем помочь?</b></p></div>
+              <h2>Не нашли ответ?</h2>
+              <p>Напишите нам — ответим в течение одного рабочего дня и добавим вопрос в подборку.</p>
+              <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:contact"))}>Задать вопрос</button>
+              <a className="btn s15-tel" href="tel:+74953748305">+7 (495) 374-83-05</a>
+            </div>
           </div>
         </section>
       </main>

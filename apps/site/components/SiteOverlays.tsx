@@ -195,7 +195,8 @@ export function SiteOverlays() {
     <>
       {barEligible && (
         <div className={`m04${bar ? " is-on" : ""}`} role="region" aria-label="Записаться на тест" aria-hidden={!bar}>
-          <button className="btn btn-dark" type="button" onClick={openBook} tabIndex={bar ? 0 : -1}>Записаться на тест</button>
+          <p className="m04-copy"><b>286 продуктов</b><small>отчёт за 7–10 дней</small></p>
+          <button className="btn btn-dark" type="button" onClick={openBook} tabIndex={bar ? 0 : -1}>Записаться</button>
         </div>
       )}
       {book && <BookModal initialLab={book.lab} onClose={() => setBook(null)} />}
