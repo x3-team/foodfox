@@ -144,6 +144,13 @@ const REVIEWS = [
   ["Игорь Потруников", "Списывал всё на возраст и работу: тяжесть после еды, вечная усталость к обеду, вздутие. Четыре месяца вёл дневник питания и не продвинулся ни на шаг — к моменту, когда появлялась реакция, вспомнить позавчерашний обед было уже невозможно. Отчёт дал точку отсчёта вместо очередной догадки. Убрал три продукта, потом возвращал их по одному. Через два месяца перестал планировать день вокруг того, как себя чувствует желудок."],
 ];
 
+// The three specialists of the frame; icon = index of /figma/home/checker/s-N.svg.
+const SPECS: [string, string, number, string[]][] = [
+  ["Гастроэнтеролог", "ЖКТ", 1, ["gut"]],
+  ["Дерматолог", "Кожа", 2, ["skin"]],
+  ["Нутрициолог", "Питание и самочувствие", 3, ["weight", "well"]],
+];
+
 function pdf(items: string[]) {
   const lines = ["FOX. Spisok dlya priema", ...items.map((item, i) => `${i + 1}. ${item}`), new Date().toLocaleDateString("ru-RU")];
   const escaped = lines.join(" | ").replace(/[()\\]/g, "");
@@ -431,6 +438,8 @@ export function HomePage() {
   }, [query]);
   const picksRef = useRef<HTMLDivElement>(null);
   const picksPos = useRef<Map<string, DOMRect>>(new Map());
+  const picksNodes = useRef<Map<string, HTMLElement>>(new Map());
+  const picksBox = useRef<{ left: number; top: number } | null>(null);
   const shown = useMemo(() => {
     const q = qDeb.trim().toLowerCase();
     return PRODUCTS.filter((item) => {
@@ -445,10 +454,32 @@ export function HomePage() {
     if (!box) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const next = new Map<string, DOMRect>();
-    box.querySelectorAll<HTMLElement>("button[data-name]").forEach((node) => {
+    const nodes = new Map<string, HTMLElement>();
+    const boxRect = box.getBoundingClientRect();
+    const live = new Set([...box.querySelectorAll<HTMLElement>("button[data-name]")].map((node) => node.dataset.name ?? ""));
+    // Chips that dropped out fade and collapse in place (220 мс) while the rest slide over them.
+    if (!reduce && picksBox.current) {
+      const shiftX = boxRect.left - picksBox.current.left;
+      const shiftY = boxRect.top - picksBox.current.top;
+      picksNodes.current.forEach((clone, name) => {
+        const old = picksPos.current.get(name);
+        if (live.has(name) || !old || !old.width) return;
+        clone.classList.add("pick-ghost");
+        clone.setAttribute("aria-hidden", "true");
+        clone.tabIndex = -1;
+        clone.style.left = `${old.left - picksBox.current!.left - shiftX + box.scrollLeft}px`;
+        clone.style.top = `${old.top - picksBox.current!.top - shiftY + box.scrollTop}px`;
+        clone.style.width = `${old.width}px`;
+        clone.style.height = `${old.height}px`;
+        box.appendChild(clone);
+        clone.animate([{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.6)" }], { duration: 220, easing: "cubic-bezier(.4, 0, .2, 1)", fill: "forwards" }).finished.then(() => clone.remove(), () => clone.remove());
+      });
+    }
+    box.querySelectorAll<HTMLElement>("button[data-name]:not(.pick-ghost)").forEach((node) => {
       const rect = node.getBoundingClientRect();
       const name = node.dataset.name ?? "";
       next.set(name, rect);
+      nodes.set(name, node.cloneNode(true) as HTMLElement);
       const old = picksPos.current.get(name);
       if (reduce || !picksPos.current.size || !rect.width) return;
       if (old && (old.left !== rect.left || old.top !== rect.top)) {
@@ -458,6 +489,8 @@ export function HomePage() {
       }
     });
     picksPos.current = next;
+    picksNodes.current = nodes;
+    picksBox.current = { left: boxRect.left, top: boxRect.top };
   }, [shown]);
 
   useEffect(() => {
@@ -465,6 +498,25 @@ export function HomePage() {
   }, [shown, picked.name]);
 
   const compound = useMemo(() => PRODUCTS.find((item) => item.compound && (item.name.toLowerCase().includes(query.trim().toLowerCase()) || query.trim().toLowerCase().includes("халв"))), [query]);
+
+  // M43: the specialists reorder by how many of their signs are checked; the lists swap with a 200 мс crossfade.
+  const specOrder = useMemo(() => {
+    const score = (ids: string[]) => SYMPTOMS.filter((group) => ids.includes(group.id)).reduce((sum, group) => sum + group.items.filter((label) => checked.includes(label)).length, 0);
+    return SPECS.map((item) => [item, score(item[3])] as const).sort((a, b) => b[1] - a[1]).map(([item]) => item);
+  }, [checked]);
+  const specKey = specOrder.map((item) => item[0]).join("|");
+  const specPrev = useRef(specOrder);
+  const [specOld, setSpecOld] = useState<typeof SPECS | null>(null);
+  useEffect(() => {
+    const prev = specPrev.current;
+    specPrev.current = specOrder;
+    if (prev.map((item) => item[0]).join("|") === specKey) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setSpecOld(prev);
+    const id = window.setTimeout(() => setSpecOld(null), 200);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [specKey]);
 
   function toggle(label: string) {
     setChecked((current) => (current.includes(label) ? current.filter((item) => item !== label) : [...current, label]));
@@ -669,15 +721,28 @@ export function HomePage() {
                 })}
               </div>
               <p className="checker-kicker">С чего можно начать</p>
-              <ul className="checker-specs">
-                {[["Гастроэнтеролог", "ЖКТ"], ["Дерматолог", "Кожа"], ["Нутрициолог", "Питание и самочувствие"]].map(([name, area], index) => (
-                  <li key={name}>
-                    <i aria-hidden><img src={`/figma/home/checker/s-${index + 1}.svg`} alt="" /></i>
-                    <span><strong>{name}</strong><small>{area}</small></span>
-                    <img className="s06-arrow" src="/icons/arrow-right-light.svg" alt="" />
-                  </li>
-                ))}
-              </ul>
+              <div className="checker-specs-x">
+                <ul className={`checker-specs${specOld ? " is-in" : ""}`} key={specOrder.map((item) => item[0]).join("|")}>
+                  {specOrder.map(([name, area, icon]) => (
+                    <li key={name}>
+                      <i aria-hidden><img src={`/figma/home/checker/s-${icon}.svg`} alt="" /></i>
+                      <span><strong>{name}</strong><small>{area}</small></span>
+                      <img className="s06-arrow" src="/icons/arrow-right-light.svg" alt="" />
+                    </li>
+                  ))}
+                </ul>
+                {specOld && (
+                  <ul className="checker-specs is-old" aria-hidden>
+                    {specOld.map(([name, area, icon]) => (
+                      <li key={name}>
+                        <i><img src={`/figma/home/checker/s-${icon}.svg`} alt="" /></i>
+                        <span><strong>{name}</strong><small>{area}</small></span>
+                        <img className="s06-arrow" src="/icons/arrow-right-light.svg" alt="" />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
               <div className="checker-bring">
                 <p className="checker-kicker">Что взять на приём</p>
                 <ul>

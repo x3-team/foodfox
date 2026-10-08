@@ -4546,3 +4546,21 @@ main img.sk-in { animation: sk-in 200ms ease-out; }
 .report-viewer .rv-nav img { width: 18px; height: 18px; }
 body [data-s="s08"] .s08-stack .s08-shot { cursor: zoom-in; }
 @media (min-width: 1101px) { body [data-s="s08"] .s08-stack .s08-shot { cursor: default; } }
+/* M43: specialists crossfade 200 мс when their order changes. */
+.checker-specs-x { position: relative; }
+.checker-specs-x > .checker-specs.is-in { animation: sk-in 200ms ease-out both; }
+.checker-specs-x > .checker-specs.is-old { position: absolute; left: 0; right: 0; top: 0; pointer-events: none; animation: fx-out 200ms ease-out both; }
+@keyframes fx-out { to { opacity: 0; } }
+/* M45: chips that drop out fade and collapse in place over the reflowing list. */
+.product-picks { position: relative; }
+.product-picks > .pick-ghost { position: absolute; margin: 0; pointer-events: none; transform-origin: 50% 50%; z-index: 0; }
+/* G17: shimmer veil over a picture that fills its box; veil and picture crossfade 200 мс. */
+main img.is-sk-under { opacity: 0; }
+main .sk-veil { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(100deg, rgba(11, 12, 8, 0.06) 30%, rgba(11, 12, 8, 0.02) 50%, rgba(11, 12, 8, 0.06) 70%) #ecede6; background-size: 300% 100%; animation: sk-shimmer 1.2s linear infinite; }
+main .sk-veil.is-out { animation: sk-shimmer 1.2s linear infinite, fx-out 200ms ease-out forwards; }
+/* M31 rubber band must not trigger browser back-swipe. */
+body [data-s="c05"] .c05 ol.is-track { overscroll-behavior-x: contain; }
+@media (prefers-reduced-motion: reduce) {
+  main .sk-veil { animation: none !important; }
+  main .sk-veil.is-out { animation: rm-out 100ms ease-in forwards !important; }
+}

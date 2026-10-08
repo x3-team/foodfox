@@ -55,10 +55,51 @@ export function CertificatesView() {
       });
     };
     sync();
+    // M31: at «Сейчас» the track hits the end and gives up to 24 px of rubber band, then springs back.
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let startX = 0;
+    let band = 0;
+    let pulling = false;
+    const onStart = (event: TouchEvent) => {
+      startX = event.touches[0].clientX;
+      pulling = false;
+      band = 0;
+      list.style.transition = "";
+    };
+    const onMove = (event: TouchEvent) => {
+      if (reduce || event.touches.length > 1) return;
+      const max = list.scrollWidth - list.clientWidth;
+      const atEnd = max > 1 && list.scrollLeft >= max - 1;
+      const dx = event.touches[0].clientX - startX;
+      if (!pulling) {
+        if (!atEnd || dx >= 0) {
+          startX = event.touches[0].clientX;
+          return;
+        }
+        pulling = true;
+      }
+      band = Math.max(-24, Math.min(0, dx * 0.4));
+      list.style.transform = `translateX(${band}px)`;
+    };
+    const onEnd = () => {
+      if (!pulling) return;
+      pulling = false;
+      list.style.transition = "transform 320ms cubic-bezier(.2, 1.4, .4, 1)";
+      list.style.transform = "";
+      band = 0;
+    };
     list.addEventListener("scroll", sync, { passive: true });
+    list.addEventListener("touchstart", onStart, { passive: true });
+    list.addEventListener("touchmove", onMove, { passive: true });
+    list.addEventListener("touchend", onEnd);
+    list.addEventListener("touchcancel", onEnd);
     window.addEventListener("resize", sync);
     return () => {
       list.removeEventListener("scroll", sync);
+      list.removeEventListener("touchstart", onStart);
+      list.removeEventListener("touchmove", onMove);
+      list.removeEventListener("touchend", onEnd);
+      list.removeEventListener("touchcancel", onEnd);
       window.removeEventListener("resize", sync);
     };
   }, []);

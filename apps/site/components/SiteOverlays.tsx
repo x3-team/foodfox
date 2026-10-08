@@ -89,6 +89,26 @@ export function SiteOverlays() {
         const rect = img.getBoundingClientRect();
         // Skip pictures with their own entrance animation (C01 fan, report pages) and transparent layers.
         if (rect.width < 120 || rect.height < 80 || getComputedStyle(img).animationName !== "none" || img.closest(".c-fan, [data-no-sk]")) return;
+        // Real crossfade: when the picture fills a positioned box, the shimmer is a separate veil on top of it,
+        // so the veil fades out while the picture fades in (200 мс). Otherwise the shimmer is the <img> background.
+        const parent = img.parentElement;
+        const box = parent?.getBoundingClientRect();
+        if (parent && box && getComputedStyle(parent).position !== "static" && Math.abs(box.width - rect.width) < 4 && Math.abs(box.height - rect.height) < 4) {
+          const veil = document.createElement("span");
+          veil.className = "sk-veil";
+          veil.setAttribute("aria-hidden", "true");
+          img.classList.add("is-sk-under");
+          img.after(veil);
+          const done = (ok: boolean) => {
+            img.classList.remove("is-sk-under");
+            if (ok) img.classList.add("sk-in");
+            veil.classList.add("is-out");
+            window.setTimeout(() => veil.remove(), 260);
+          };
+          img.addEventListener("load", () => done(true), { once: true });
+          img.addEventListener("error", () => done(false), { once: true });
+          return;
+        }
         img.classList.add("is-sk");
         img.addEventListener("load", () => { img.classList.remove("is-sk"); img.classList.add("sk-in"); }, { once: true });
         img.addEventListener("error", () => img.classList.remove("is-sk"), { once: true });
