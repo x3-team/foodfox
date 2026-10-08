@@ -4210,3 +4210,112 @@ body .report-page .rf-pin.is-on { box-shadow: 0 0 32px rgba(231, 245, 81, 0.35);
 @keyframes rf-in-next { from { opacity: 0; transform: translateX(16px); } }
 @keyframes rf-in-prev { from { opacity: 0; transform: translateX(-16px); } }
 @media (prefers-reduced-motion: reduce) { .rf-sheet img.rf-in-next, .rf-sheet img.rf-in-prev { animation: none; } }
+
+/* V02: long review text clamp + «Читать целиком»; video modal (stub — no video files yet). */
+body [data-s="v02"] .rev-text { display: block; overflow: hidden; max-height: calc(24px * 6); transition: max-height 250ms cubic-bezier(.2,.8,.2,1); }
+body [data-s="v02"] .rev-more { align-self: flex-start; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; line-height: 18px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; color: inherit; }
+@media (max-width: 760px) { body [data-s="v02"] .rev-text { max-height: calc(18px * 8); } }
+body [data-s="v02"] button.rev-play { border: 0; background: none; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+.rev-modal-scrim { position: fixed; inset: 0; z-index: 90; background: rgba(11, 12, 8, 0.6); display: grid; place-items: center; padding: 24px; animation: rev-scrim 200ms ease-out; }
+.rev-modal { width: min(880px, 100%); background: #0b0c08; color: #f8f9f6; border-radius: 20px; overflow: hidden; box-shadow: 0 24px 64px -8px rgba(11, 12, 8, 0.16), 0 4px 12px rgba(11, 12, 8, 0.08); animation: rev-modal-in 320ms cubic-bezier(.2,.8,.2,1); }
+.rev-modal-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 14px 20px; }
+.rev-modal-x { width: 40px; height: 40px; border-radius: 99px; border: 0; background: rgba(255, 255, 255, 0.12); color: #fff; font-size: 24px; line-height: 1; cursor: pointer; }
+.rev-modal-video { position: relative; aspect-ratio: 16 / 9; background: #21251d center / cover no-repeat; display: grid; place-items: center; }
+.rev-modal-video::before { content: ""; position: absolute; inset: 0; background: rgba(10, 13, 8, 0.45); }
+.rev-modal-play { position: relative; width: 72px; height: 72px; border-radius: 99px; background: #e7f551; display: grid; place-items: center; box-shadow: 0 0 0 10px rgba(231, 245, 81, 0.25); }
+.rev-modal-play img { width: 26px; height: 26px; }
+.rev-modal-stub { position: absolute; left: 0; right: 0; bottom: 16px; text-align: center; font-size: 14px; color: rgba(248, 249, 246, 0.8); }
+.rev-modal-bar { display: flex; align-items: center; gap: 16px; padding: 14px 20px; font-size: 14px; }
+.rev-modal-progress { flex: 1; height: 4px; border-radius: 4px; background: rgba(255, 255, 255, 0.2); overflow: hidden; }
+.rev-modal-progress i { display: block; width: 0; height: 100%; background: #e7f551; }
+.rev-modal-bar .chip { color: #f8f9f6; border-color: rgba(255, 255, 255, 0.3); }
+.rev-modal-bar .chip.is-active { background: #e7f551; color: #0b0c08; border-color: #e7f551; }
+@keyframes rev-scrim { from { opacity: 0; } }
+@keyframes rev-modal-in { from { opacity: 0; transform: scale(0.96); } }
+@media (max-width: 760px) {
+  .rev-modal-scrim { padding: 0; place-items: end stretch; }
+  .rev-modal { border-radius: 20px 20px 0 0; animation-name: rev-sheet-in; }
+  @keyframes rev-sheet-in { from { transform: translateY(100%); } }
+}
+@media (prefers-reduced-motion: reduce) { .rev-modal-scrim, .rev-modal { animation: none; } body [data-s="v02"] .rev-text { transition: none; } }
+
+/* S05: chips lighten on hover. S14: #F2F2F2 plate on hover without moving the layout (spread ring). F01: search ring = FOX/Focus Ring 3px. */
+body [data-s="s05"] .sym-chips span { transition: background-color 200ms ease-out; }
+body [data-s="s05"] .sym-card:hover .sym-chips span { background-color: rgba(255, 255, 255, 0.22); }
+body [data-s="s14"] .blog-home-card { transition: background-color 200ms ease-out, box-shadow 200ms ease-out; }
+body [data-s="s14"] .blog-home-card:hover, body [data-s="s14"] .blog-home-card:focus-visible { background: #f2f2f2; box-shadow: 0 0 0 12px #f2f2f2; }
+body [data-s="f01"] .f-search input:focus-visible { outline: none; box-shadow: none; }
+body [data-s="f01"] .f-search:focus-within { box-shadow: 0 0 0 3px #e7f551; }
+
+/* L01 / M19 (Figma notes): watched mark — check scales .8→1 (200 мс); progress bar 300 мс ease-out; idle controls fade (150 мс);
+   tab content crossfade 160 мс; certificate unlock 300 мс. */
+body [data-s="l01"] .ls-item.is-done .ls-badge img { animation: ls-check 200ms cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes ls-check { from { transform: scale(0.8); opacity: 0; } }
+body [data-s="l01"] .ls-progress b { transition: width 300ms ease-out; }
+body [data-s="l01"] .ls-controls, body [data-s="l01"] .ls-play { transition: opacity 150ms ease-out; }
+body [data-s="l01"] .ls-player.is-idle .ls-controls, body [data-s="l01"] .ls-player.is-idle .ls-play { opacity: 0; }
+body [data-s="l01"] .ls-player.is-idle { cursor: none; }
+body [data-s="l01"] .ls-player:focus-visible { outline: 3px solid #e7f551; outline-offset: 2px; }
+body [data-s="l01"] .ls-about { animation: ls-fade 160ms ease-out; }
+@keyframes ls-fade { from { opacity: 0; } }
+body [data-s="l01"] .ls-cert, body [data-s="l01"] .ls-cert-btn { transition: background-color 300ms ease-out, color 300ms ease-out; }
+body [data-s="l01"] .ls-cert.is-open .ls-cert-btn { background: #e7f551; color: #0b0c08; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { body [data-s="l01"] .ls-item.is-done .ls-badge img, body [data-s="l01"] .ls-about { animation: none; } }
+
+/* K08 registration modal (Figma 1136:561): 568px, r20, Shadow L; 3-segment indicator (150 мс); step crossfade 200 мс + y 8. */
+.reg-modal { box-shadow: 0 24px 64px -8px rgba(11, 12, 8, 0.16), 0 4px 12px rgba(11, 12, 8, 0.08); padding: 32px; }
+.reg-modal .reg-x { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; border-radius: 99px; border: 0; background: rgba(11, 12, 8, 0.06); font-size: 22px; line-height: 1; cursor: pointer; }
+.reg-steps { display: flex; gap: 6px; width: 120px; margin-bottom: 20px; }
+.reg-steps i { flex: 1; height: 4px; border-radius: 4px; background: rgba(11, 12, 8, 0.12); transition: background-color 150ms ease-out; }
+.reg-steps i.is-on { background: #0b0c08; }
+.reg-body { animation: reg-step 200ms ease-out; }
+@keyframes reg-step { from { opacity: 0; transform: translateY(8px); } }
+.reg-body h2 { margin: 0 48px 8px 0; font-weight: 300; font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
+.reg-body .lead { margin: 0 0 20px; color: rgba(11, 12, 8, 0.65); font-size: 16px; line-height: 22px; }
+.reg-body form { display: flex; flex-direction: column; gap: 16px; }
+.reg-body .field select { height: 48px; }
+.reg-body .btn { width: 100%; justify-content: center; }
+.reg-hint { margin: 12px 0 0; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+.reg-hint a { text-decoration: underline; color: #0b0c08; }
+.reg-link { background: none; border: 0; padding: 0; font: inherit; color: #0b0c08; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.reg-body > .btn + .reg-link { display: block; margin: 16px auto 0; }
+@media (max-width: 760px) {
+  .modal-back:has(.reg-modal) { align-items: end; padding: 0; }
+  .reg-modal { width: 100%; border-radius: 20px 20px 0 0; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); animation: reg-sheet 320ms cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes reg-sheet { from { transform: translateY(100%); } }
+  .reg-body h2 { font-size: 24px; line-height: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { .reg-body, .reg-modal { animation: none; } }
+
+/* L01: lesson row Hover state (bg/hover). R01 / C4 author profile entrance: photo opacity + scale 1.04→1 over 900 мс;
+   name, role, chips, columns — opacity + y, stagger 60 мс. */
+body [data-s="l01"] .ls-item { transition: background-color 150ms ease-out; }
+body [data-s="l01"] .ls-item:not(.is-current):hover { background-color: #f2f2f2; }
+body .profile-photo img { animation: pf-photo 900ms cubic-bezier(.2,.8,.2,1) both; }
+@keyframes pf-photo { from { opacity: 0; transform: scale(1.04); } }
+body .profile > div:nth-child(2) > * { animation: pf-rise 600ms cubic-bezier(.2,.8,.2,1) both; }
+body .profile > div:nth-child(2) > :nth-child(2) { animation-delay: 60ms; }
+body .profile > div:nth-child(2) > :nth-child(3) { animation-delay: 120ms; }
+body .profile > div:nth-child(2) > :nth-child(4) { animation-delay: 180ms; }
+body .profile > div:nth-child(2) > :nth-child(n+5) { animation-delay: 240ms; }
+@keyframes pf-rise { from { opacity: 0; transform: translateY(16px); } }
+@media (prefers-reduced-motion: reduce) {
+  body .profile-photo img { animation: pf-fade 150ms ease-out both; }
+  body .profile > div:nth-child(2) > * { animation: pf-fade 150ms ease-out both; }
+  @keyframes pf-fade { from { opacity: 0; } }
+}
+
+/* Global notes (07 · Глобальные состояния, 08 · Адаптив):
+   G02 hover underline 2px grows left→right (200 мс); G03 tooltip «Кабинет партнёра» — 300 мс delay, 150 мс fade;
+   G14 Success — a check draws on the right of the field (200 мс); M05 chip row fades out at the right edge (24px). */
+.nav a { background-size: 0 2px; }
+.nav a:hover, .nav a[aria-current="page"] { background-size: 100% 2px; }
+.partner-dot::after { content: "Кабинет партнёра"; position: absolute; top: calc(100% + 8px); right: 0; background: #101400; color: #f8f9f6; font-size: 13px; line-height: 16px; padding: 6px 10px; border-radius: 8px; white-space: nowrap; z-index: 30; opacity: 0; pointer-events: none; transition: opacity 150ms ease-out 0ms; }
+.partner-dot:hover::after, .partner-dot:focus-visible::after { opacity: 1; transition-delay: 300ms; }
+.field.is-ok .lf-input::after { content: ""; position: absolute; right: 14px; top: 50%; width: 6px; height: 11px; margin-top: -8px; border: solid #4a6b1f; border-width: 0 2px 2px 0; transform: rotate(45deg); clip-path: inset(0 0 100% 0); animation: ok-draw 200ms ease-out forwards; pointer-events: none; }
+.field.is-ok .lf-input input { padding-right: 40px; }
+@keyframes ok-draw { to { clip-path: inset(0 0 0 0); } }
+@media (max-width: 760px) {
+  body [data-s="b02"] .chips { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); }
+}
+@media (prefers-reduced-motion: reduce) { .field.is-ok .lf-input::after { animation: none; clip-path: none; } .partner-dot::after { transition: none; } }

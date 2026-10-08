@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { useDialog } from "@/components/useDialog";
 
 const AUDIENCE = [
   {
@@ -185,30 +186,36 @@ const COURSE_FAQ = [
   ["Нужно ли проходить уроки по порядку?", "Нет. Уроки можно смотреть в удобном порядке. Сертификат открывается, когда отмечены все шесть."],
 ];
 
+const SPECIALTIES = ["Нутрициолог", "Диетолог", "Гастроэнтеролог", "Терапевт / врач общей практики", "Специалист по аутоиммунным заболеваниям", "Невролог"];
+
+/* K08 (Figma 1136:561 «Модалка регистрации · 3 коротких шага»): e-mail + consent → name → specialty → «Проверьте почту».
+   Steps crossfade 200 мс + y 8, the indicator segment fills 150 мс, «Назад» keeps the input, autofocus + Enter on every step,
+   e-mail checked on blur, the button is inactive without consent, Esc asks before dropping typed data, resend timer 60 s.
+   The request goes to /api/lead (kind: "course"). */
 function useRegistration() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [spec, setSpec] = useState(SPECIALTIES[0]);
   const [agree, setAgree] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  const [wait, setWait] = useState(0);
 
   useEffect(() => {
     // M04 «Доступ» on a phone (Figma CTA bar on /course).
-    const onCourse = () => { setOpen(true); setSent(false); setStep(0); setError(""); };
+    const onCourse = () => start();
     window.addEventListener("fox:course", onCourse);
     return () => window.removeEventListener("fox:course", onCourse);
   }, []);
+
+  useEffect(() => {
+    if (wait <= 0) return;
+    const timer = window.setTimeout(() => setWait(wait - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [wait]);
 
   function start() {
     setOpen(true);
@@ -217,48 +224,111 @@ function useRegistration() {
     setError("");
   }
 
-  function next() {
-    if (step === 0 && name.trim().length < 2) return setError("Укажите имя");
-    if (step === 1 && !email.includes("@")) return setError("Проверьте email");
-    if (step === 2 && !agree) return setError("Нужно согласие на обработку данных");
-    setError("");
-    if (step < 2) setStep(step + 1);
-    else setSent(true);
+  const emailError = (value: string) => (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim()) ? "" : "Укажите корректный e-mail — на него придёт ссылка для входа");
+
+  async function send() {
+    setBusy(true);
+    try {
+      await Promise.all([
+        fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "course", email, name, specialty: spec }) }),
+        new Promise((resolve) => window.setTimeout(resolve, 600)),
+      ]);
+      setSent(true);
+      setWait(60);
+    } catch {
+      window.dispatchEvent(new CustomEvent("fox:toast", { detail: { text: "Нет соединения — попробуйте ещё раз", type: "error" } }));
+    } finally {
+      setBusy(false);
+    }
   }
 
-  return { open, setOpen, step, sent, error, email, setEmail, name, setName, agree, setAgree, start, next };
+  function next() {
+    if (busy) return;
+    if (step === 0) { const err = emailError(email); setError(err); if (err || !agree) return; }
+    if (step === 1 && name.trim().length < 2) return setError("Укажите имя и фамилию");
+    setError("");
+    if (step < 2) setStep(step + 1);
+    else void send();
+  }
+
+  function close() {
+    const typed = !sent && (email.trim() || name.trim());
+    if (typed && !window.confirm("Прервать регистрацию?")) return;
+    setOpen(false);
+  }
+
+  return { open, close, step, setStep, sent, setSent, busy, error, setError, email, setEmail, name, setName, spec, setSpec, agree, setAgree, wait, start, next, send, emailError };
 }
 
 function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration> }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(flow.close);
+  closeRef.current = flow.close;
+  useDialog(ref, () => closeRef.current(), flow.open);
   if (!flow.open) return null;
+  const heads = [
+    ["Начнём с e-mail", "На него придёт ссылка для входа — без пароля. Шаг 1 из 3."],
+    ["Как к вам обращаться?", "Имя попадёт в сертификат о прохождении. Шаг 2 из 3."],
+    ["Ваша специальность", "Подберём примеры и порядок уроков под вашу практику. Шаг 3 из 3."],
+  ];
+  const [title, lead] = flow.sent ? ["Проверьте почту", ""] : heads[flow.step];
   return (
-    <div className="modal-back" role="presentation" onClick={() => flow.setOpen(false)}>
-      <div className="modal" role="dialog" aria-labelledby="reg-title" onClick={(event) => event.stopPropagation()}>
-        <h2 id="reg-title">{flow.sent ? "Проверьте почту" : `Шаг ${flow.step + 1} из 3`}</h2>
-        {flow.sent ? (
-          <p className="lead">Ссылка на кабинет курса придёт на {flow.email}. Доступ открывается сразу после перехода.</p>
-        ) : (
-          <>
-            {flow.step === 0 && (
-              <label className="field">Имя
-                <input value={flow.name} onChange={(event) => flow.setName(event.target.value)} />
-              </label>
-            )}
-            {flow.step === 1 && (
-              <label className="field">Email
-                <input type="email" value={flow.email} onChange={(event) => flow.setEmail(event.target.value)} />
-              </label>
-            )}
-            {flow.step === 2 && (
-              <label className="check-row">
-                <input type="checkbox" checked={flow.agree} onChange={(event) => flow.setAgree(event.target.checked)} />
-                <span>Согласен на обработку данных по 152-ФЗ</span>
-              </label>
-            )}
-            {flow.error && <p className="err" role="alert">{flow.error}</p>}
-            <button className="btn btn-dark" style={{ marginTop: 16 }} onClick={flow.next}>{flow.step === 2 ? "Получить доступ" : "Дальше"}</button>
-          </>
-        )}
+    <div className="modal-back" role="presentation" onClick={() => { if (!flow.email.trim() && !flow.name.trim()) flow.close(); }}>
+      <div className="modal reg-modal" ref={ref} role="dialog" aria-modal="true" aria-labelledby="reg-title" onClick={(event) => event.stopPropagation()}>
+        <button type="button" className="lead-x reg-x" aria-label="Закрыть" onClick={flow.close}>×</button>
+        {!flow.sent && <div className="reg-steps" aria-hidden>{[0, 1, 2].map((index) => <i key={index} className={index <= flow.step ? "is-on" : ""} />)}</div>}
+        <div className="reg-body" key={flow.sent ? "sent" : flow.step}>
+          <h2 id="reg-title">{title}</h2>
+          {flow.sent ? (
+            <>
+              <p className="lead">Мы отправили ссылку для входа на {flow.email}. Ссылка действует 24 часа и открывает кабинет без пароля.</p>
+              <p className="reg-hint">Не пришло письмо? Проверьте папку «Спам» или отправьте повторно через 60 секунд.</p>
+              <button type="button" className="btn btn-ghost" disabled={flow.wait > 0 || flow.busy} onClick={() => void flow.send()}>
+                Отправить снова{flow.wait > 0 ? ` (${Math.floor(flow.wait / 60)}:${String(flow.wait % 60).padStart(2, "0")})` : ""}
+              </button>
+              <button type="button" className="text-link reg-link" onClick={() => { flow.setSent(false); flow.setStep(0); }}>Изменить e-mail</button>
+            </>
+          ) : (
+            <form noValidate onSubmit={(event) => { event.preventDefault(); flow.next(); }}>
+              <p className="lead">{flow.step === 0 && flow.error ? "Проверьте адрес — на него придёт ссылка для входа." : lead}</p>
+              {flow.step === 0 && (
+                <>
+                  <label className={`field${flow.error ? " is-error" : ""}`}>E-mail
+                    <input type="email" autoFocus value={flow.email} aria-invalid={Boolean(flow.error)}
+                      onChange={(event) => { flow.setEmail(event.target.value); if (flow.error) flow.setError(flow.emailError(event.target.value)); }}
+                      onBlur={() => { if (flow.email.trim()) flow.setError(flow.emailError(flow.email)); }} />
+                    <span className={`lf-err${flow.error ? " is-on" : ""}`} aria-live="polite"><span className="err">{flow.error}</span></span>
+                  </label>
+                  <label className="check-row">
+                    <input type="checkbox" checked={flow.agree} onChange={(event) => flow.setAgree(event.target.checked)} />
+                    <span>Согласен с политикой конфиденциальности и обработкой персональных данных (152-ФЗ)</span>
+                  </label>
+                </>
+              )}
+              {flow.step === 1 && (
+                <label className={`field${flow.error ? " is-error" : ""}`}>Имя и фамилия
+                  <input autoFocus value={flow.name} aria-invalid={Boolean(flow.error)} onChange={(event) => { flow.setName(event.target.value); if (flow.error) flow.setError(""); }} />
+                  <span className={`lf-err${flow.error ? " is-on" : ""}`} aria-live="polite"><span className="err">{flow.error}</span></span>
+                </label>
+              )}
+              {flow.step === 2 && (
+                <label className="field">Специальность
+                  <select autoFocus value={flow.spec} onChange={(event) => flow.setSpec(event.target.value)}>
+                    {SPECIALTIES.map((item) => <option key={item}>{item}</option>)}
+                  </select>
+                </label>
+              )}
+              <button className={`btn btn-dark${flow.busy ? " is-loading is-labelled" : ""}`} type="submit" disabled={(flow.step === 0 && !flow.agree) || flow.busy}>
+                {flow.busy ? "Отправляем…" : flow.step === 2 ? "Получить доступ" : "Продолжить"}
+              </button>
+              {flow.step === 0 ? (
+                <p className="reg-hint">Уже есть доступ? <Link href="/course/lessons">Войти</Link></p>
+              ) : (
+                <p className="reg-hint"><button type="button" className="text-link reg-link" onClick={() => { flow.setError(""); flow.setStep(flow.step - 1); }}>← Назад</button>{flow.step === 2 ? " · Город спросим позже в кабинете" : ""}</p>
+              )}
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -511,7 +581,10 @@ export function LessonsPage() {
     if (!node) return;
     const onTime = () => {
       if (!node.duration) return;
-      setProgress(node.currentTime / node.duration);
+      const share = node.currentTime / node.duration;
+      setProgress(share);
+      // L01 / M18: a lesson is marked watched automatically at ≥ 90% of the video.
+      if (share >= 0.9) setDone((prev) => (prev.includes(current) ? prev : [...prev, current]));
     };
     node.addEventListener("timeupdate", onTime);
     return () => node.removeEventListener("timeupdate", onTime);
@@ -525,6 +598,22 @@ export function LessonsPage() {
   }
 
   const passed = Math.max(done.length, current + 1);
+  // L01: controls hide after 2 s without movement while playing (opacity 150 мс) and come back on movement or focus.
+  const [idle, setIdle] = useState(false);
+  const idleTimer = useRef<number | undefined>(undefined);
+  const wake = useCallback(() => {
+    setIdle(false);
+    window.clearTimeout(idleTimer.current);
+    idleTimer.current = window.setTimeout(() => setIdle(true), 2000);
+  }, []);
+  useEffect(() => { if (playing) wake(); else { window.clearTimeout(idleTimer.current); setIdle(false); } }, [playing, wake]);
+  // L01: at 6/6 the certificate card unlocks (300 мс) and a toast confirms it.
+  const unlocked = done.length >= 6;
+  const firstUnlock = useRef(true);
+  useEffect(() => {
+    if (!unlocked) return;
+    if (firstUnlock.current) { firstUnlock.current = false; window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Сертификат доступен" })); }
+  }, [unlocked]);
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("fox:lesson", { detail: current + 1 }));
   }, [current]);
@@ -585,12 +674,12 @@ export function LessonsPage() {
                 );
               })}
             </div>
-            <div className="ls-cert">
+            <div className={`ls-cert${unlocked ? " is-open" : ""}`}>
               <div>
                 <strong>Сертификат</strong>
                 <p>Станет доступен после всех шести уроков · {passed} из 6</p>
               </div>
-              <button type="button" className="ls-cert-btn" disabled={done.length < 6}>Скачать сертификат</button>
+              <button type="button" className="ls-cert-btn" disabled={!unlocked}>Скачать сертификат</button>
             </div>
           </aside>
           <div className="ls-main">
@@ -598,7 +687,15 @@ export function LessonsPage() {
               <p>Урок {current + 1} · {lesson.lecturer}<span className="ls-min"> · {lesson.minutes} мин</span></p>
               <h1>{lesson.title}</h1>
             </div>
-            <div className="ls-player" aria-label="Плеер урока">
+            {/* L01: Space — play/pause, ←/→ — ±5 с (when the player has focus). */}
+            <div className={`ls-player${playing && idle ? " is-idle" : ""}`} aria-label="Плеер урока" tabIndex={0} onMouseMove={wake} onFocus={wake} onKeyDown={(event) => {
+              const node = videoRef.current;
+              if (!node || (event.target as HTMLElement).tagName === "INPUT") return;
+              if (event.key === " ") { event.preventDefault(); toggle(); }
+              if (event.key === "ArrowRight" && node.duration) { event.preventDefault(); node.currentTime = Math.min(node.duration, node.currentTime + 5); }
+              if (event.key === "ArrowLeft") { event.preventDefault(); node.currentTime = Math.max(0, node.currentTime - 5); }
+              wake();
+            }}>
               <div className="ls-stage">
                 <video
                   ref={videoRef}
@@ -658,7 +755,7 @@ export function LessonsPage() {
               <button type="button" className={tab === "files" ? "is-on" : ""} onClick={() => setTab("files")}>Материалы</button>
               <button type="button" className={tab === "ask" ? "is-on" : ""} onClick={() => setTab("ask")}>Вопрос</button>
             </div>
-            <div className="ls-about">
+            <div className="ls-about" key={tab}>
               <p className="ls-kicker">{tab === "files" ? "Материалы" : tab === "ask" ? "Вопрос лектору" : "О чём этот урок"}</p>
               <p>
                 {tab === "ask" ? "Напишите вопрос к этому уроку — лектор ответит в кабинете курса." : (

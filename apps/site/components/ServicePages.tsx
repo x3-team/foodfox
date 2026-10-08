@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { useDialog } from "@/components/useDialog";
 import { Footer } from "@/components/Footer";
 import { Header, PARTNER_LOGIN } from "@/components/Header";
 import { LabsMap, type Branch } from "@/components/LabsMap";
@@ -778,8 +780,35 @@ export function ReviewsPage() {
   }, []);
   const [topic, setTopic] = useState("");
   const [page, setPage] = useState(1);
-  const cards = REVIEWS.filter((item) => (filter === "Все" || item.who === filter || item.kind === filter) && (!topic || item.tag === topic));
+  const [video, setVideo] = useState<(typeof REVIEWS)[number] | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const pick = (f: string, t: string) => REVIEWS.filter((item) => (f === "Все" || item.who === f || item.kind === f) && (!t || item.tag === t));
+  const cards = pick(filter, topic);
   const slice = cards.slice((page - 1) * 7, page * 7);
+  // V02 (Figma note): the grid rebuilds with FLIP 300 мс — leaving cards fade + scale .96, staying cards glide, new ones rise from +12px.
+  const flip = (f: string, t: string, apply: () => void) => {
+    const grid = gridRef.current;
+    if (!grid || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { apply(); return; }
+    const nextIds = new Set(pick(f, t).slice(0, 7).map((item) => item.id));
+    const items = [...grid.querySelectorAll<HTMLElement>("[data-k]")];
+    const first = new Map(items.map((el) => [el.dataset.k, el.getBoundingClientRect()]));
+    const leaving = items.filter((el) => !nextIds.has(el.dataset.k ?? ""));
+    leaving.forEach((el) => el.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "scale(.96)" }], { duration: 150, easing: "ease-out", fill: "forwards" }));
+    window.setTimeout(() => {
+      leaving.forEach((el) => el.getAnimations().forEach((anim) => anim.cancel()));
+      flushSync(apply);
+      grid.querySelectorAll<HTMLElement>("[data-k]").forEach((el) => {
+        const was = first.get(el.dataset.k);
+        const now = el.getBoundingClientRect();
+        if (was && el.dataset.k !== "promo") {
+          const dx = was.left - now.left, dy = was.top - now.top;
+          if (dx || dy) el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: 300, easing: "cubic-bezier(.2,.8,.2,1)" });
+        } else if (!was) {
+          el.animate([{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }], { duration: 300, easing: "cubic-bezier(.2,.8,.2,1)" });
+        }
+      });
+    }, leaving.length ? 150 : 0);
+  };
   return (
     <>
       <Header />
@@ -822,8 +851,7 @@ export function ReviewsPage() {
               <div className="chips">
                 {["Все", "Пациенты", "Специалисты", "Видео"].map((item) => (
                   <button key={item} className={`chip${filter === item ? " is-active" : ""}`} type="button" onClick={() => {
-                    setFilter(item);
-                    setPage(1);
+                    flip(item, topic, () => { setFilter(item); setPage(1); });
                     const url = new URL(window.location.href);
                     if (item === "Видео") url.searchParams.set("type", "video");
                     else if (item === "Текст") url.searchParams.set("type", "text");
@@ -834,7 +862,7 @@ export function ReviewsPage() {
               </div>
               <div className="chips">
                 {["ЖКТ", "Кожа", "Вес и отёчность", "Общее самочувствие"].map((item) => (
-                  <button key={item} className={`chip${topic === item ? " is-active" : ""}`} type="button" onClick={() => { setTopic(topic === item ? "" : item); setPage(1); }}>{item}</button>
+                  <button key={item} className={`chip${topic === item ? " is-active" : ""}`} type="button" onClick={() => { const next = topic === item ? "" : item; flip(filter, next, () => { setTopic(next); setPage(1); }); }}>{item}</button>
                 ))}
               </div>
               </div>
@@ -843,29 +871,29 @@ export function ReviewsPage() {
               </label>
               <p className="v-shown">Показано {Math.min(7, cards.length)} из 312</p>
             </div>
-            <div className="v-grid">
+            <div className="v-grid" ref={gridRef}>
               {slice.map((item) => item.video ? (
-                <article key={item.id} className="rev rev-video" style={{ backgroundImage: `url(${item.photo})` }}>
+                <article key={item.id} data-k={item.id} className="rev rev-video" style={{ backgroundImage: `url(${item.photo})` }}>
                   <p><span>{item.tag}</span><span>Видео</span></p>
                   <div>
-                    <p className="rev-play"><img src="/figma/icons/play.svg" alt="" />Смотреть историю · 1:24</p>
+                    <button type="button" className="rev-play" onClick={() => setVideo(item)}><img src="/figma/icons/play.svg" alt="" />Смотреть историю · 1:24</button>
                     <h3>«{item.title}»</h3>
                     <b>{item.name}</b>
                     <small><img src="/figma/icons/check.svg" alt="" />Отзыв проверен модератором</small>
                   </div>
                 </article>
               ) : (
-                <article key={item.id} className={`rev${item.who === "Специалисты" ? " is-pro" : ""}`}>
+                <article key={item.id} data-k={item.id} className={`rev${item.who === "Специалисты" ? " is-pro" : ""}`}>
                   <p><span className={item.tag === "Специалист" ? "is-spec" : undefined}>{item.tag}</span><em>{item.kind}</em></p>
                   <i aria-hidden="true">“</i>
-                  <blockquote>{item.text}</blockquote>
+                  <RevText text={item.text} />
                   <footer>
                     <img src={item.photo} alt="" />
                     <span><b>{item.name}</b>{item.role && <small>{item.role}</small>}<small><img src="/figma/icons/check-2.svg" alt="" />Отзыв проверен модератором</small></span>
                   </footer>
                 </article>
               ))}
-              <article className="rev rev-promo">
+              <article className="rev rev-promo" data-k="promo">
                 <h3>Сдали тест? Поделитесь историей</h3>
                 <p>Поможете тем, кто только ищет причину своих симптомов</p>
                 <a className="btn btn-dark" href="#review-form">Оставить отзыв</a>
@@ -892,8 +920,63 @@ export function ReviewsPage() {
           </div>
         </section>
       </main>
+      {video && <VideoModal item={video} onClose={() => setVideo(null)} />}
       <Footer />
     </>
+  );
+}
+
+/* V02: long text — 6 lines (8 on a phone, M47) + «Читать целиком», opens inside the card over 250 мс. */
+function RevText({ text }: { text: string }) {
+  const ref = useRef<HTMLQuoteElement>(null);
+  const [long, setLong] = useState(false);
+  const [open, setOpen] = useState(false);
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const check = () => { if (!node.classList.contains("is-open")) setLong(node.scrollHeight > node.clientHeight + 2); };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return (
+    <>
+      <blockquote ref={ref} className={`rev-text${open ? " is-open" : ""}`} onTransitionEnd={() => { if (ref.current && open) ref.current.style.maxHeight = "none"; }}>{text}</blockquote>
+      {long && !open && (
+        <button type="button" className="rev-more" onClick={() => {
+          const node = ref.current;
+          if (node) { node.style.maxHeight = `${node.clientHeight}px`; window.requestAnimationFrame(() => { node.style.maxHeight = `${node.scrollHeight}px`; }); }
+          setOpen(true);
+        }}>Читать целиком</button>
+      )}
+    </>
+  );
+}
+
+/* V02 / M34: video review player in a modal. There is no video file for the reviews yet, so the player is a stub:
+   the poster with the play button and a «Видео пока не загружено» line instead of playback. */
+function VideoModal({ item, onClose }: { item: (typeof REVIEWS)[number]; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [subs, setSubs] = useState(true);
+  useDialog(ref, onClose);
+  return (
+    <div className="rev-modal-scrim" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <div className="rev-modal" ref={ref} role="dialog" aria-modal="true" aria-label={`Видеоотзыв: ${item.name}`}>
+        <div className="rev-modal-head">
+          <span><b>{item.name}</b></span>
+          <button type="button" className="rev-modal-x" aria-label="Закрыть" onClick={onClose} data-autofocus>×</button>
+        </div>
+        <div className="rev-modal-video" style={{ backgroundImage: `url(${item.photo})` }}>
+          <span className="rev-modal-play"><img src="/figma/icons/play.svg" alt="" /></span>
+          <p className="rev-modal-stub">Видео пока не загружено</p>
+        </div>
+        <div className="rev-modal-bar">
+          <span className="rev-modal-progress" aria-hidden><i /></span>
+          <span>0:00 / 1:24</span>
+          <button type="button" className={`chip${subs ? " is-active" : ""}`} aria-pressed={subs} onClick={() => setSubs(!subs)}>Субтитры</button>
+        </div>
+      </div>
+    </div>
   );
 }
 

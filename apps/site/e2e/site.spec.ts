@@ -134,12 +134,16 @@ test("blog search empty state and course registration errors", async ({ page }) 
   await ready(page);
   // Figma K01: the hero button reads «Получить доступ».
   await page.locator('[data-s="k01"]').getByRole("button", { name: "Получить доступ" }).click();
-  await page.getByRole("button", { name: "Дальше" }).click();
-  await expect(page.locator(".err")).toContainText("имя");
-  await page.getByRole("dialog").locator("input").fill("Анна");
-  await page.getByRole("button", { name: "Дальше" }).click();
-  await page.getByRole("button", { name: "Дальше" }).click();
-  await expect(page.locator(".err")).toContainText("email");
+  // Figma K08 (1136:561): step 1 — e-mail + consent, error on blur, the button waits for consent; step 2 — name.
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("button", { name: "Продолжить" })).toBeDisabled();
+  await dialog.getByLabel("E-mail").fill("anna@clinic");
+  await dialog.getByRole("checkbox").check();
+  await expect(dialog.locator(".lf-err.is-on .err")).toContainText("корректный e-mail");
+  await dialog.getByLabel("E-mail").fill("anna@clinic.ru");
+  await dialog.getByRole("button", { name: "Продолжить" }).click();
+  await dialog.getByRole("button", { name: "Продолжить" }).click();
+  await expect(dialog.locator(".lf-err.is-on .err")).toContainText("имя");
 });
 
 test("contacts validation and labs empty city", async ({ page }) => {
@@ -277,9 +281,9 @@ test("escape closes the mobile menu and the course dialog", async ({ page }, tes
   await ready(page);
   // Figma K01: the hero button reads «Получить доступ».
   await page.locator('[data-s="k01"]').getByRole("button", { name: "Получить доступ" }).click();
-  await expect(page.getByRole("dialog", { name: /Шаг 1/ })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Начнём с e-mail" })).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog", { name: /Шаг 1/ })).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Начнём с e-mail" })).toHaveCount(0);
 });
 
 test("desktop home contains every design section", async ({ page }, testInfo) => {
