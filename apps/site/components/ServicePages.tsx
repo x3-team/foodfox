@@ -861,7 +861,10 @@ export function ReviewsPage() {
   };
   // M32: on phones the rating counts up 0,0 → 4,9 and 0 → +48 (900 мс, ease-out) and the stars fill with it.
   const [rate, setRate] = useState<number | null>(null);
+  // Until hydration the phone hides the final numbers, so they do not flash 4,9 → 0,0 before the count-up.
+  const [ratePending, setRatePending] = useState(true);
   useEffect(() => {
+    setRatePending(false);
     if (!window.matchMedia("(max-width: 760px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const start = performance.now();
     let raf = 0;
@@ -914,7 +917,7 @@ export function ReviewsPage() {
               <div>
                 <h1>Отзывы</h1>
                 <p className="fx-lead">Истории людей, которые сдали тест, и отзывы специалистов, которые работают с отчётом. Все отзывы проходят модерацию.</p>
-                <div className="v-rate-card">
+                <div className={`v-rate-card${ratePending ? " is-pending" : ""}`}>
                   <p className="v-rate" aria-label="Средняя оценка 4,9"><b aria-hidden>{(4.9 * rateShare).toFixed(1).replace(".", ",")}</b><span className={`v-stars${rate === null ? "" : " is-filling"}`} aria-hidden="true" style={rate === null ? undefined : { ["--fill" as string]: `${rateShare * 98}%` }}>★★★★★</span></p>
                   <div className="v-rate-side">
                     <p className="v-rate-note">312 отзывов после модерации</p>

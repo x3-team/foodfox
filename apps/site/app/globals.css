@@ -4532,3 +4532,4 @@ main img.sk-in { animation: sk-in 200ms ease-out; }
 .access-modal .btn { justify-content: center; }
 @keyframes access-pop { from { transform: scale(0.8); opacity: 0; } 70% { transform: scale(1.05); } }
 .author-more { display: flex; justify-content: center; margin: 24px 0 0; }
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) { body .v-rate-card.is-pending .v-rate b, body .v-rate-card.is-pending .v-more { visibility: hidden; } }
