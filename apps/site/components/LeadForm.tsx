@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, ReactNode, useRef, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
 import { atLeast } from "@/components/useDialog";
 
 /*
@@ -85,6 +85,16 @@ export function LeadForm({
   const formRef = useRef<HTMLFormElement>(null);
   const sending = status === "sending";
   const fields: Field[] = who === "Лаборатория" ? ["name", "contact", "company", "text"] : ["name", "contact", "text"];
+  // K04: «Оставить заявку» for labs scrolls to the page form with the «Лаборатория / партнёр» segment preselected.
+  useEffect(() => {
+    if (variant !== "page") return;
+    const pick = (event: Event) => {
+      const next = (event as CustomEvent<Who>).detail;
+      if (WHO.includes(next)) setWho(next);
+    };
+    window.addEventListener("fox:lead-who", pick);
+    return () => window.removeEventListener("fox:lead-who", pick);
+  }, [variant]);
 
   function update(field: Field, value: string) {
     const next = { ...values, [field]: value };

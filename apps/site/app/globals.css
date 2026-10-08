@@ -2365,7 +2365,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 .btn-text:hover { text-decoration-color: currentColor; }
 
 /* G14: focus 1→2px border + ring; error text slides in (height 0→auto, 160мс); shake only on a submit attempt. */
-.field input:focus, .field textarea:focus { border-color: var(--ink); border-width: 1px; box-shadow: inset 0 0 0 1px var(--ink); }
+.field input:focus, .field textarea:focus { border-color: var(--ink); border-width: 1px; box-shadow: inset 0 0 0 1px var(--ink), 0 0 0 3px #e7f551; }
 .field.is-error input, .field.is-error textarea { animation: none; border-color: #c4462a; background: #fff; }
 .field.is-error input:focus, .field.is-error textarea:focus { box-shadow: inset 0 0 0 1px #c4462a; }
 .is-shake .field.is-error input, .is-shake .field.is-error textarea { animation: field-shake 240ms linear; }
@@ -2766,7 +2766,7 @@ body [data-s="s06"] .checker-bring li::before { content: ""; flex: none; width: 
 body [data-s="s06"] .checker-bring { display: flex; flex-direction: column; gap: 8px; }
 body [data-s="s06"] .checker-card .btn-dark { gap: 8px; background: #0b0c08; color: #f8f9f6; }
 body [data-s="s06"] .checker-card .btn-dark img { width: 14px; height: 14px; filter: invert(1); }
-body [data-s="s06"] .checker-card .btn-dark:disabled { opacity: .55; }
+body [data-s="s06"] .checker-card .btn-dark:disabled { opacity: .4; }
 @media (min-width: 1101px) {
   body [data-s="s06"] .s06-head > div { display: flex; flex-direction: column; gap: 20px; }
   body [data-s="s06"] .meta-line { margin: 0; }
@@ -3937,7 +3937,7 @@ body [data-s="v02"] .v-tools .v-shown { flex-basis: 100%; margin: 0; }
 @media (max-width: 767px) {
   body [data-s="v02"] .v-tools { display: grid; grid-template-columns: 1fr auto; gap: 16px 12px; align-items: center; }
   body [data-s="v02"] .v-chiprow { grid-column: 1 / -1; flex-wrap: nowrap; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; }
-  body [data-s="v02"] .v-chiprow .chips { flex-wrap: nowrap; overflow: visible; flex: none; }
+  body [data-s="v02"] .v-chiprow .chips { flex-wrap: nowrap; overflow: visible; flex: none; max-width: none; width: max-content; }
   body [data-s="v02"] .v-tools .v-shown { grid-column: 1; grid-row: 2; }
   body [data-s="v02"] .v-sort { grid-column: 2; grid-row: 2; }
 }
@@ -4124,4 +4124,68 @@ body .pf-tg-m { display: none; }
   body .pf-tg-m { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; padding: 20px; border-radius: 20px; background: #d7d8cd; }
   body .pf-tg-m > p { margin: 0; font-size: 17px; line-height: 23px; color: #0b0c08; }
   body .pf-tg-m .btn { width: 100%; height: 48px; justify-content: center; background: #fff; color: #0b0c08; border-color: #fff; }
+}
+
+/* States audit 08.10 — hovers from the Figma notes (FOX/Shadow M, L), 200 мс.
+   K02 Contact/Card: −4px, Shadow L (icon circle is already lime in the frame).
+   K04 Route/Card: lime tint, arrow +4px, whole card clickable.
+   C02 Doc/Card: −4px, Shadow M→L, preview 1.03, «Открыть PDF» arrow +4px.
+   V02 review card: −4px, Shadow L, quote lime; video: play 1.1 + pulse ring.
+   E02 tiles: −4px, Shadow L, icon plate lime, arrow +4px. */
+body [data-s="k02"] .k-cards article, body [data-s="k04"] .k-routes article, body [data-s="c02"] .cert-card, body [data-s="v02"] .rev:not(.rev-promo), body [data-s="e02"] .e-tiles a {
+  transition: transform 200ms cubic-bezier(.2,.8,.2,1), box-shadow 200ms cubic-bezier(.2,.8,.2,1), background-color 200ms ease-out;
+}
+body [data-s="k02"] .k-cards article:hover { translate: 0 -4px; box-shadow: 0 24px 64px -8px rgba(11, 12, 8, 0.16), 0 4px 12px rgba(11, 12, 8, 0.08); }
+body [data-s="k02"] .k-cards article { transition: translate 200ms cubic-bezier(.2,.8,.2,1), box-shadow 200ms cubic-bezier(.2,.8,.2,1); }
+body [data-s="c02"] .cert-card:hover, body [data-s="v02"] .rev:not(.rev-promo):not(.rev-video):hover, body [data-s="e02"] .e-tiles a:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 64px -8px rgba(11, 12, 8, 0.16), 0 4px 12px rgba(11, 12, 8, 0.08);
+}
+body [data-s="c02"] .cert-card { box-shadow: 0 8px 24px -4px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
+body [data-s="c02"] .cert-card .c-paper { transition: transform 200ms cubic-bezier(.2,.8,.2,1); }
+body [data-s="c02"] .cert-card:hover .c-paper { transform: scale(1.03); }
+body [data-s="c02"] .cert-open img, body [data-s="k04"] .k-routes a img, body [data-s="e02"] .e-tiles .e-arrow { transition: transform 200ms cubic-bezier(.2,.8,.2,1); }
+body [data-s="c02"] .cert-card:hover .cert-open img, body [data-s="k04"] .k-routes article:hover a img, body [data-s="e02"] .e-tiles a:hover .e-arrow { transform: translateX(4px); }
+body [data-s="k04"] .k-routes article { position: relative; }
+body [data-s="k04"] .k-routes article a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+body [data-s="k04"] .k-routes article:hover { background-color: #f6fbc8; }
+body [data-s="k04"] .k-routes article:focus-within { outline: 2px solid #0b0c08; outline-offset: 2px; }
+body [data-s="k04"] .k-routes article a:focus-visible { outline: none; box-shadow: none; }
+body [data-s="v02"] .rev i { transition: background-color 200ms ease-out; }
+body [data-s="v02"] .rev:hover i { background-color: #e7f551; }
+body [data-s="v02"] .rev-play img { transition: transform 200ms cubic-bezier(.2,.8,.2,1); }
+body [data-s="v02"] .rev-video:hover .rev-play img { transform: scale(1.1); animation: rev-pulse 1.2s ease-out infinite; }
+@keyframes rev-pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 245, 81, 0.6); } 100% { box-shadow: 0 0 0 14px rgba(231, 245, 81, 0); } }
+body [data-s="e02"] .e-tiles .e-ico { transition: background-color 200ms ease-out; }
+body [data-s="e02"] .e-tiles a:hover .e-ico { background-color: #e7f551 !important; }
+
+/* V03 review form states (Figma note V03). */
+body [data-s="v03"] form fieldset { display: contents; }
+body [data-s="v03"] form.is-shake .field.is-error textarea { animation: v03-shake 320ms linear; }
+@keyframes v03-shake { 25% { transform: translateX(-2px); } 50% { transform: translateX(2px); } 75% { transform: translateX(-2px); } 100% { transform: translateX(0); } }
+body [data-s="v03"] .v03-done { background: #fff; border-radius: 24px; padding: 40px 28px; border: 1px solid rgba(11, 12, 8, 0.08); box-shadow: 0 8px 24px rgba(11, 12, 8, 0.06); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; align-self: start; animation: v03-in 300ms cubic-bezier(.2,.8,.2,1); }
+body [data-s="v03"] .v03-done svg { width: 56px; height: 56px; margin-bottom: 8px; }
+body [data-s="v03"] .v03-done circle { fill: #e7f551; }
+body [data-s="v03"] .v03-done path { fill: none; stroke: #0b0c08; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 32; stroke-dashoffset: 32; animation: v03-draw 500ms 150ms ease-out forwards; }
+body [data-s="v03"] .v03-done h3 { font-weight: 300; font-size: 32px; line-height: 36px; }
+body [data-s="v03"] .v03-done p { color: rgba(11, 12, 8, 0.65); }
+@keyframes v03-draw { to { stroke-dashoffset: 0; } }
+@keyframes v03-in { from { opacity: 0; transform: scale(0.97); } }
+@media (prefers-reduced-motion: reduce) {
+  body [data-s="v03"] .v03-done, body [data-s="v03"] form.is-shake .field.is-error textarea, body [data-s="v02"] .rev-video:hover .rev-play img { animation: none; }
+  body [data-s="v03"] .v03-done path { animation: none; stroke-dashoffset: 0; }
+}
+
+/* E01 (Figma note): «404» digits rise one by one — stagger 90 мс, 700 мс, ease-out-back; chip floats 4px over 3 s;
+   plate photo parallax ±6px by cursor (a 6px bleed keeps the edges covered). */
+body .e-plate .e-four { animation: none; overflow: hidden; }
+body .e-plate .e-four span { display: inline-block; animation: e-digit 700ms cubic-bezier(.34, 1.56, .64, 1) both; }
+@keyframes e-digit { from { transform: translateY(100%); opacity: 0; } to { transform: none; opacity: 1; } }
+body .e-plate .e-chip { animation: e-chip-float 3s ease-in-out infinite; }
+@keyframes e-chip-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@media (hover: hover) and (pointer: fine) {
+  body .e-plate img { width: calc(100% + 12px); height: calc(100% + 12px); max-width: none; margin: -6px; transition: translate 300ms ease-out; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body .e-plate .e-four span, body .e-plate .e-chip { animation: none; }
 }

@@ -741,7 +741,7 @@ export function ContactsPage() {
                 <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-mail.svg)" }} aria-hidden />
                 <h3>Лабораториям и клиникам</h3>
                 <p>Стать партнёром FOX, подключить тест в свою сеть</p>
-                <a href="#k-form">Оставить заявку <img src="/icons/arrow-right.svg" alt="" /></a>
+                <a href="#k-form" onClick={() => window.dispatchEvent(new CustomEvent("fox:lead-who", { detail: "Лаборатория" }))}>Оставить заявку <img src="/icons/arrow-right.svg" alt="" /></a>
               </article>
               <article>
                 <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-tg.svg)" }} aria-hidden />
@@ -770,8 +770,6 @@ const REVIEWS = [
 ];
 
 export function ReviewsPage() {
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState("");
   const [filter, setFilter] = useState("Все");
   useEffect(() => {
     const type = new URLSearchParams(window.location.search).get("type");
@@ -890,31 +888,60 @@ export function ReviewsPage() {
                 <li><b>Модерация 1–2 рабочих дня</b><span>Проверяем, что отзыв написал человек, а не шаблон.</span></li>
               </ul>
             </div>
-            <form onSubmit={(event) => {
-              event.preventDefault();
-              const data = new FormData(event.currentTarget);
-              if (!data.get("agree")) return setError("Нужно согласие на публикацию");
-              if (String(data.get("text") || "").trim().length < 10) return setError("Напишите чуть подробнее");
-              setError("");
-              setSent(true);
-            }}>
-              <label className="field">Имя<input name="name" /></label>
-              <label className="field">Город<input name="city" /></label>
-              <label className="field">О ком отзыв
-                <select name="who" defaultValue="Пациент"><option>Пациент</option><option>Специалист</option></select>
-              </label>
-              <label className="field">Текст<textarea name="text" rows={5} /></label>
-              <label className="check-row"><input name="agree" type="checkbox" /><span>Согласен на публикацию отзыва и обработку персональных данных (152-ФЗ)</span></label>
-              {error && <p className="err" role="alert">{error}</p>}
-              {sent && <p role="status">Отзыв отправлен на модерацию.</p>}
-              <button className="btn btn-dark" type="submit">Отправить</button>
-              <p className="v-hint">Кнопка активна после согласия</p>
-            </form>
+            <ReviewForm />
           </div>
         </section>
       </main>
       <Footer />
     </>
+  );
+}
+
+/* V03 (Figma note): validation on blur, red border + text under the field, shake 2px × 2 on submit,
+   button active only after consent, sending → spinner + «Отправляем…» with disabled fields,
+   success → the form collapses into the «Спасибо!» card with a drawn check (500 мс).
+   There is no review API yet, so the sending state lasts a short fixed time. */
+function ReviewForm() {
+  const [agree, setAgree] = useState(false);
+  const [text, setText] = useState("");
+  const [textErr, setTextErr] = useState("");
+  const [shake, setShake] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  const check = (value: string) => (value.trim().length < 10 ? "Напишите чуть подробнее" : "");
+  if (done) {
+    return (
+      <div className="v03-done" role="status">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="24" /><path d="M14 25l7 7 13-15" /></svg>
+        <h3>Спасибо!</h3>
+        <p>Опубликуем после модерации — до 3 дней</p>
+      </div>
+    );
+  }
+  return (
+    <form className={shake ? "is-shake" : undefined} noValidate onSubmit={(event) => {
+      event.preventDefault();
+      if (!agree || busy) return;
+      const err = check(text);
+      setTextErr(err);
+      if (err) { setShake(false); window.requestAnimationFrame(() => setShake(true)); return; }
+      setBusy(true);
+      window.setTimeout(() => { setBusy(false); setDone(true); }, 900);
+    }}>
+      <fieldset disabled={busy}>
+        <label className="field">Имя<input name="name" /></label>
+        <label className="field">Город<input name="city" /></label>
+        <label className="field">О ком отзыв
+          <select name="who" defaultValue="Пациент"><option>Пациент</option><option>Специалист</option></select>
+        </label>
+        <label className={`field${textErr ? " is-error" : ""}`}>Текст<textarea name="text" rows={5} value={text} aria-invalid={Boolean(textErr)} onChange={(event) => { setText(event.target.value); if (textErr) setTextErr(check(event.target.value)); }} onBlur={() => { if (text.trim() || textErr) setTextErr(check(text)); }} />
+          <span className={`lf-err${textErr ? " is-on" : ""}`} aria-live="polite"><span className="err">{textErr}</span></span>
+        </label>
+        <label className="check-row"><input name="agree" type="checkbox" checked={agree} onChange={(event) => setAgree(event.target.checked)} /><span>Согласен на публикацию отзыва и обработку персональных данных (152-ФЗ)</span></label>
+      </fieldset>
+      <button className={`btn btn-dark${busy ? " is-loading is-labelled" : ""}`} type="submit" disabled={!agree || busy}>{busy ? "Отправляем…" : "Отправить"}</button>
+      <p className="v-hint">Кнопка активна после согласия</p>
+    </form>
   );
 }
 

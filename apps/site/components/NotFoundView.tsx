@@ -55,12 +55,18 @@ export function NotFoundView() {
               </form>
               <div className="e-actions">
                 <Link className="btn btn-dark" href="/">На главную</Link>
-                <button className="btn btn-ghost" type="button" onClick={() => window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Спасибо, ссылку записали" }))}>Сообщить о битой ссылке</button>
+                <button className="btn btn-ghost" type="button" onClick={() => window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Спасибо, починим" }))}>Сообщить о битой ссылке</button>
               </div>
             </div>
-            <div className="e-plate">
+            {/* E01: digits rise one by one (stagger 90 мс, 700 мс, ease-out-back); plate photo follows the cursor ±6px. */}
+            <div className="e-plate" onMouseMove={(event) => {
+              const box = event.currentTarget.getBoundingClientRect();
+              const img = event.currentTarget.querySelector("img");
+              if (!img || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+              img.style.translate = `${(((event.clientX - box.left) / box.width) - 0.5) * 12}px ${(((event.clientY - box.top) / box.height) - 0.5) * 12}px`;
+            }} onMouseLeave={(event) => { const img = event.currentTarget.querySelector("img"); if (img) img.style.translate = ""; }}>
               <img src="/figma/not-found/plate.jpg" alt="" />
-              <p className="e-four" aria-hidden>404</p>
+              <p className="e-four" aria-hidden>{["4", "0", "4"].map((digit, index) => <span key={index} style={{ animationDelay: `${index * 90}ms` }}>{digit}</span>)}</p>
               <p className="e-chip">Здесь пусто — как на этой тарелке</p>
             </div>
           </div>
