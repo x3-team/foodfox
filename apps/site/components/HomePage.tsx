@@ -5,6 +5,8 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { useDialog } from "@/components/useDialog";
+import { ZoomPane } from "@/components/ZoomPane";
 import { articles, authors, CATEGORIES } from "@/lib/content";
 
 const SYMPTOMS = [
@@ -181,6 +183,7 @@ export function HomePage() {
     setReportPage((n) => (n + REPORT_SLIDES.length + dir) % REPORT_SLIDES.length);
   };
   const reportTouch = useRef<number | null>(null);
+  const [reportFull, setReportFull] = useState(false);
   const [chipsOpen, setChipsOpen] = useState(false);
   const [moreProducts, setMoreProducts] = useState(false);
   const [cardOpen, setCardOpen] = useState(false);
@@ -749,10 +752,20 @@ export function HomePage() {
                 <button type="button" className="s08-nav prev" aria-label="Предыдущая страница отчёта" onClick={() => turnReport(-1)} />
                 <i className="s08-sheet s08-sheet-3" aria-hidden />
                 <i className="s08-sheet s08-sheet-2" aria-hidden />
-                <img className="s08-shot" key={reportPage} src={REPORT_SLIDES[reportPage][0]} alt="" />
+                <img
+                  className="s08-shot"
+                  key={reportPage}
+                  src={REPORT_SLIDES[reportPage][0]}
+                  alt=""
+                  onClick={() => {
+                    // M44: on phones a tap on the page opens the full-screen view with pinch-zoom.
+                    if (window.matchMedia("(max-width: 1100px)").matches) setReportFull(true);
+                  }}
+                />
                 {curl && <img className={`s08-shot s08-curl${curl.dir < 0 ? " is-back" : ""}`} key={curl.n} src={curl.src} alt="" aria-hidden onAnimationEnd={() => setCurl(null)} />}
                 <button type="button" className="s08-nav next" aria-label="Следующая страница отчёта" onClick={() => turnReport(1)} />
               </div>
+              {reportFull && createPortal(<ReportViewer page={reportPage} onPage={setReportPage} onClose={() => setReportFull(false)} />, document.body)}
               <div className="s08-pager" aria-hidden>{REPORT_SLIDES.map((slide, index) => <i key={slide[0]} className={index === reportPage ? "is-on" : ""} />)}</div>
               <div className="s08-glass">
                 {[
@@ -1043,5 +1056,53 @@ function Hit({ text, q }: { text: string; q: string }) {
       <mark className="s10-hit">{text.slice(at, at + needle.length)}</mark>
       {text.slice(at + needle.length)}
     </>
+  );
+}
+
+/** M44: full-screen report page — pinch-zoom, swipe or arrows between pages, pager «n / N», Esc / × to close. */
+function ReportViewer({ page, onPage, onClose }: { page: number; onPage: (n: number) => void; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useDialog(ref, () => closeRef.current());
+  const zoomed = useRef(false);
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const total = REPORT_SLIDES.length;
+  const go = (dir: number) => onPage((page + total + dir) % total);
+  return (
+    <div className="modal-back doc-back" onClick={() => closeRef.current()}>
+      <div
+        ref={ref}
+        className="modal doc-viewer report-viewer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Пример результата"
+        onClick={(event) => event.stopPropagation()}
+        onTouchStart={(event) => { touch.current = event.touches.length === 1 && !zoomed.current ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null; }}
+        onTouchMove={(event) => { if (event.touches.length > 1 || zoomed.current) touch.current = null; }}
+        onTouchEnd={(event) => {
+          const start = touch.current;
+          touch.current = null;
+          const end = event.changedTouches[0];
+          if (!start || !end) return;
+          const dx = end.clientX - start.x;
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(end.clientY - start.y)) go(dx < 0 ? 1 : -1);
+        }}
+      >
+        <header className="doc-top">
+          <h2 aria-live="polite">{page + 1} / {total}</h2>
+          <button type="button" className="doc-x" onClick={() => closeRef.current()} aria-label="Закрыть">×</button>
+        </header>
+        <div className="doc-page rv-page">
+          <ZoomPane resetKey={page} onZoomChange={(value) => { zoomed.current = value; }}>
+            <img key={page} className="rv-img" ref={(img) => { if (img?.complete) img.classList.add("is-loaded"); }} onLoad={(event) => event.currentTarget.classList.add("is-loaded")} src={REPORT_SLIDES[page][0]} alt={`Страница отчёта ${page + 1} из ${total}: ${REPORT_SLIDES[page][1]}`} draggable={false} />
+          </ZoomPane>
+        </div>
+        <footer className="rv-nav">
+          <button type="button" aria-label="Предыдущая страница отчёта" onClick={() => go(-1)}><img src="/icons/arrow-left.svg" alt="" /></button>
+          <button type="button" aria-label="Следующая страница отчёта" onClick={() => go(1)}><img src="/icons/arrow-right.svg" alt="" /></button>
+        </footer>
+      </div>
+    </div>
   );
 }

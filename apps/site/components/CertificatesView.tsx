@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useDialog } from "@/components/useDialog";
+import { ZoomPane } from "@/components/ZoomPane";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 
@@ -210,6 +211,7 @@ function DocViewer({ code, index, from, onClose }: { code: string; index: number
   const [loaded, setLoaded] = useState(false);
   const [dy, setDy] = useState(0);
   const touch = useRef<number | null>(null);
+  const zoomed = useRef(false);
   useDialog(ref, () => closeRef.current());
 
   useLayoutEffect(() => {
@@ -255,10 +257,15 @@ function DocViewer({ code, index, from, onClose }: { code: string; index: number
         onClick={(event) => event.stopPropagation()}
         style={dy ? { transform: `translateY(${dy}px)`, transition: "none" } : undefined}
         onTouchStart={(event) => {
-          touch.current = event.touches.length === 1 ? event.touches[0].clientY : null;
+          touch.current = event.touches.length === 1 && !zoomed.current ? event.touches[0].clientY : null;
         }}
         onTouchMove={(event) => {
-          if (touch.current === null || event.touches.length !== 1) return;
+          if (event.touches.length !== 1 || zoomed.current) {
+            touch.current = null;
+            if (dy) setDy(0);
+            return;
+          }
+          if (touch.current === null) return;
           setDy(Math.max(0, event.touches[0].clientY - touch.current));
         }}
         onTouchEnd={() => {
@@ -273,7 +280,10 @@ function DocViewer({ code, index, from, onClose }: { code: string; index: number
         </header>
         <div className="doc-page">
           {!loaded && <span className="doc-skel" aria-hidden><i /><i /><i /><i /><i /></span>}
-          <img src={`/figma/certificates/doc-${index + 1}.png`} alt={`${code} — превью документа`} onLoad={() => setLoaded(true)} className={loaded ? "is-loaded" : ""} />
+          {/* M29: pinch-zoom inside the document (1–4×, double tap 2.5×); swipe-to-close pauses while zoomed. */}
+          <ZoomPane onZoomChange={(value) => { zoomed.current = value; }}>
+            <img src={`/figma/certificates/doc-${index + 1}.png`} alt={`${code} — превью документа`} onLoad={() => setLoaded(true)} className={loaded ? "is-loaded" : ""} draggable={false} />
+          </ZoomPane>
         </div>
         <p className="doc-note">PDF пока не загружен — показано превью документа.</p>
         <footer className="doc-actions">
