@@ -177,7 +177,7 @@ export function HomePage() {
   // M44: the page that leaves curls away over the left edge while the next one already lies underneath.
   const [curl, setCurl] = useState<{ src: string; n: number; dir: 1 | -1 } | null>(null);
   const turnReport = (dir: 1 | -1) => {
-    setCurl({ src: REPORT_SLIDES[reportPage][0], n: Date.now(), dir });
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) setCurl({ src: REPORT_SLIDES[reportPage][0], n: Date.now(), dir });
     setReportPage((n) => (n + REPORT_SLIDES.length + dir) % REPORT_SLIDES.length);
   };
   const reportTouch = useRef<number | null>(null);

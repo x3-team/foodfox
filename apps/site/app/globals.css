@@ -4494,3 +4494,30 @@ main img.sk-in { animation: sk-in 200ms ease-out; }
 .leaflet-map .leaflet-tile-pane { transition: opacity 200ms ease-out; }
 @keyframes sk-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
 @keyframes sk-in { from { opacity: 0; } }
+
+/* ===== Block 5 · prefers-reduced-motion (adaptive rule 08): every animation becomes a 100 мс fade, nothing moves ===== */
+@media (prefers-reduced-motion: reduce) {
+  /* Section entrances: the existing per-element motion is already off; the section itself fades in. */
+  [data-s].is-in { animation: rm-fade 100ms ease-out both !important; }
+  /* Windows, sheets, menus, toasts, bars: fade instead of slide / scale. */
+  .modal-back, .modal, .doc-viewer, .bs, .bs-back::before, .mobile-menu:not(.is-closing), .mobile-menu:not(.is-closing) > *, .fox-toasts .fox-toast:not(.is-out), .s06-bar, .ls-stage, main img.sk-in, .s10-card.is-open {
+    animation: rm-fade 100ms ease-out both !important;
+  }
+  .fox-toasts .fox-toast.is-out { animation: rm-out 100ms ease-in forwards !important; }
+  /* Transitions keep their properties but run 100 мс without delays. */
+  *, *::before, *::after { transition-duration: 100ms !important; transition-delay: 0s !important; scroll-behavior: auto !important; }
+  /* Decorative loops and the new phone motion stop on the final frame. */
+  .k-map .fox-pin span.is-on::after, body [data-s="c05"] .c05 ol.is-track li.is-current::before, main img.is-sk, .leaflet-map.is-sk, .doc-viewer .doc-skel::after,
+  body [data-s="s12"].is-in .lab-tile, body .v-collage2 .v-photo-a, body .v-collage2 .v-photo-b, body .v-collage2 .v-quote,
+  body [data-s="s06"] .symptom-group.is-open .check-row, body [data-s="c04"] .c04.is-play ol li, body [data-s="c04"] .c04.is-play .c04-visual > img,
+  body [data-s="c02"] .c-docs.is-nudge > *, body [data-s="l01"] .ls-seek i {
+    animation: none !important;
+  }
+  body [data-s="s05"] .sym-card.is-active img { transform: none; }
+  body [data-s="s04"] .deck-card { scale: none; filter: none; }
+  /* M18 seek hint: appears and disappears by opacity only. */
+  body [data-s="l01"] .ls-seek { animation: rm-flash 700ms linear forwards !important; }
+}
+@keyframes rm-fade { from { opacity: 0; } }
+@keyframes rm-out { to { opacity: 0; } }
+@keyframes rm-flash { 0% { opacity: 0; } 15%, 85% { opacity: 1; } 100% { opacity: 0; } }
