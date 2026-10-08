@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { articles, authors, CATEGORIES } from "@/lib/content";
@@ -173,6 +174,13 @@ export function HomePage() {
   const [showOn, setShowOn] = useState(0);
   const [suggest, setSuggest] = useState(false);
   const [reportPage, setReportPage] = useState(0);
+  // M44: the page that leaves curls away over the left edge while the next one already lies underneath.
+  const [curl, setCurl] = useState<{ src: string; n: number; dir: 1 | -1 } | null>(null);
+  const turnReport = (dir: 1 | -1) => {
+    setCurl({ src: REPORT_SLIDES[reportPage][0], n: Date.now(), dir });
+    setReportPage((n) => (n + REPORT_SLIDES.length + dir) % REPORT_SLIDES.length);
+  };
+  const reportTouch = useRef<number | null>(null);
   const [chipsOpen, setChipsOpen] = useState(false);
   const [moreProducts, setMoreProducts] = useState(false);
   const [cardOpen, setCardOpen] = useState(false);
@@ -184,7 +192,12 @@ export function HomePage() {
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
   }, []);
-  const [openGroup, setOpenGroup] = useState("gut");
+  // M43: groups are accordions — several can be open at once.
+  const [openGroups, setOpenGroups] = useState<string[]>(["gut"]);
+  const toggleGroup = (id: string) => setOpenGroups((list) => (list.includes(id) ? list.filter((item) => item !== id) : [...list, id]));
+  const symRowRef = useRef<HTMLDivElement>(null);
+  const checkerRef = useRef<HTMLElement>(null);
+  const [checkerBar, setCheckerBar] = useState(false);
   const scaleRef = useRef<HTMLElement>(null);
   const deckRef = useRef<HTMLElement>(null);
   const countRef = useRef<HTMLElement>(null);
@@ -200,12 +213,59 @@ export function HomePage() {
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem("fox-checker");
+    // M43: marks live in sessionStorage (this tab only).
+    localStorage.removeItem("fox-checker");
+    const saved = sessionStorage.getItem("fox-checker");
     if (saved) setChecked(JSON.parse(saved) as string[]);
   }, []);
+  const checkedOnce = useRef(false);
   useEffect(() => {
-    localStorage.setItem("fox-checker", JSON.stringify(checked));
+    if (!checkedOnce.current) {
+      checkedOnce.current = true;
+      return;
+    }
+    sessionStorage.setItem("fox-checker", JSON.stringify(checked));
   }, [checked]);
+
+  // M43: on phones, after the first mark a bar «Отмечено N · К итогу ↓» stays at the bottom while the list is on screen
+  // and the summary card is not.
+  useEffect(() => {
+    const section = checkerRef.current;
+    const card = section?.querySelector(".checker-card");
+    if (!section || !card) return;
+    let inSection = false;
+    let cardSeen = false;
+    const sync = () => setCheckerBar(inSection && !cardSeen && window.matchMedia("(max-width: 760px)").matches);
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.target === section) inSection = entry.isIntersecting;
+        else cardSeen = entry.isIntersecting;
+      });
+      sync();
+    });
+    io.observe(section);
+    io.observe(card);
+    return () => io.disconnect();
+  }, []);
+
+  // M43: the checker bar replaces the global phone CTA bar (m04) while it is shown.
+  const barOn = checkerBar && checked.length > 0;
+  useEffect(() => {
+    document.body.classList.toggle("has-s06-bar", barOn);
+    return () => document.body.classList.remove("has-s06-bar");
+  }, [barOn]);
+
+  // M42: the card that is snapped in the phone row slowly zooms its photo (1 → 1.04).
+  useEffect(() => {
+    const row = symRowRef.current;
+    if (!row) return;
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((entry) => entry.target.classList.toggle("is-active", entry.intersectionRatio >= 0.75)),
+      { root: row, threshold: [0, 0.75, 1] },
+    );
+    row.querySelectorAll(".sym-card").forEach((card) => io.observe(card));
+    return () => io.disconnect();
+  }, []);
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -243,8 +303,16 @@ export function HomePage() {
             card.style.transform = "";
             card.style.opacity = "";
             card.style.zIndex = "";
+            // M41: on phones the next sticky card slides over this one — it shrinks to 0.94 and darkens by 20%.
+            const next = cards[index + 1];
+            if (next && !reduce) {
+              const rect = card.getBoundingClientRect();
+              const cover = Math.min(1, Math.max(0, (rect.bottom - next.getBoundingClientRect().top) / rect.height));
+              card.style.setProperty("--cover", cover.toFixed(3));
+            } else card.style.removeProperty("--cover");
             return;
           }
+          card.style.removeProperty("--cover");
           const rel = index - progress;
           if (rel < 0) {
             card.style.transform = `translateY(${rel * 70}%)`;
@@ -352,15 +420,42 @@ export function HomePage() {
     };
   }, []);
 
+  // M45: the search filters with a 150 мс debounce; chips that stay slide to their new places (FLIP, 220 мс).
+  const [qDeb, setQDeb] = useState("");
+  useEffect(() => {
+    const id = window.setTimeout(() => setQDeb(query), 150);
+    return () => window.clearTimeout(id);
+  }, [query]);
+  const picksRef = useRef<HTMLDivElement>(null);
+  const picksPos = useRef<Map<string, DOMRect>>(new Map());
   const shown = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = qDeb.trim().toLowerCase();
     return PRODUCTS.filter((item) => {
       const inGroup = group === "Все 286" || item.group === group;
       if (!inGroup) return false;
       if (!q) return moreProducts || !item.extra;
       return item.name.toLowerCase().includes(q) || (item.aka ?? []).some((aka) => aka.includes(q));
     });
-  }, [query, group, moreProducts]);
+  }, [qDeb, group, moreProducts]);
+  useLayoutEffect(() => {
+    const box = picksRef.current;
+    if (!box) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const next = new Map<string, DOMRect>();
+    box.querySelectorAll<HTMLElement>("button[data-name]").forEach((node) => {
+      const rect = node.getBoundingClientRect();
+      const name = node.dataset.name ?? "";
+      next.set(name, rect);
+      const old = picksPos.current.get(name);
+      if (reduce || !picksPos.current.size || !rect.width) return;
+      if (old && (old.left !== rect.left || old.top !== rect.top)) {
+        node.animate([{ transform: `translate(${old.left - rect.left}px, ${old.top - rect.top}px)` }, { transform: "none" }], { duration: 220, easing: "cubic-bezier(.2, .8, .2, 1)" });
+      } else if (!old) {
+        node.animate([{ opacity: 0, transform: "scale(.92)" }, { opacity: 1, transform: "none" }], { duration: 220, easing: "ease-out" });
+      }
+    });
+    picksPos.current = next;
+  }, [shown]);
 
   useEffect(() => {
     if (shown.length && !shown.some((item) => item.name === picked.name)) setPicked(shown[0]);
@@ -474,14 +569,25 @@ export function HomePage() {
         <section className="symptom-band" data-s="s05">
           <div className="wrap">
             <h2 className="page-title">Симптомы, при которых стоит обсудить тест со специалистом</h2>
-            <div className="cards-4 sym-row" data-allow-x>
+            <div className="cards-4 sym-row" data-allow-x ref={symRowRef}>
               {[
                 ["Кожные реакции", ["Высыпания", "Экзема", "Дерматиты и зуд"], "/figma/symptoms/skin.png"],
                 ["Проблемы с ЖКТ", ["Вздутие живота", "Газообразование", "Диарея", "Тошнота", "Спазмы или боли"], "/figma/symptoms/gut.png"],
                 ["Самочувствие", ["Хроническая усталость", "Общая слабость", "Тяжесть после еды", "Нарушения сна", "Упадок сил", "Перепады настроения"], "/figma/symptoms/well.png"],
                 ["Вес и отёчность", ["Трудно снизить вес", "Стойкая отёчность", "Отёки лица по утрам", "Колебания веса"], "/figma/symptoms/s6.png"],
-              ].map(([title, chips, src]) => (
-                <article className="sym-card" key={title as string} data-contrast="photo">
+              ].map(([title, chips, src], index) => (
+                <article
+                  className="sym-card"
+                  key={title as string}
+                  data-contrast="photo"
+                  onClick={() => {
+                    // M42: on phones a tap scrolls to the checker and opens the matching group.
+                    if (!window.matchMedia("(max-width: 760px)").matches) return;
+                    const id = ["skin", "gut", "well", "weight"][index];
+                    setOpenGroups((list) => (list.includes(id) ? list : [...list, id]));
+                    window.requestAnimationFrame(() => document.getElementById(`s06-${id}`)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }));
+                  }}
+                >
                   <img src={src as string} alt="" />
                   <div className="sym-shade" />
                   <h3>{title as string}</h3>
@@ -497,7 +603,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="wrap band checker" id="checker" data-s="s06">
+        <section className="wrap band checker" id="checker" data-s="s06" ref={checkerRef}>
           <div className="s06-head">
             <div>
               <p className="meta-line s06-eyebrow"><i aria-hidden />Чекер симптомов · около минуты</p>
@@ -510,9 +616,9 @@ export function HomePage() {
               {SYMPTOMS.map((groupItem) => {
                 const n = groupItem.items.filter((item) => checked.includes(item)).length;
                 return (
-                  <div className={`symptom-group${openGroup === groupItem.id ? " is-open" : ""}`} key={groupItem.id}>
+                  <div className={`symptom-group${openGroups.includes(groupItem.id) ? " is-open" : ""}`} key={groupItem.id} id={`s06-${groupItem.id}`}>
                     <h3>
-                      <button type="button" onClick={() => setOpenGroup(openGroup === groupItem.id ? "" : groupItem.id)}>
+                      <button type="button" aria-expanded={openGroups.includes(groupItem.id)} onClick={() => toggleGroup(groupItem.id)}>
                         <i className="s06-gicon" aria-hidden><img src={`/figma/home/checker/g-${groupItem.id}.svg`} alt="" /></i>
                         <b>{groupItem.title}</b> <span className={n > 0 ? "is-on" : ""}>{n} из {groupItem.items.length}</span>
                       </button>
@@ -533,6 +639,13 @@ export function HomePage() {
                 <span>Ответы не сохраняются и не передаются — список собирается только на вашем устройстве.</span>
               </p>
             </div>
+            {barOn &&
+              createPortal(
+                <button type="button" className="s06-bar" onClick={() => checkerRef.current?.querySelector(".checker-card")?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+                  Отмечено {checked.length} · К итогу ↓
+                </button>,
+                document.body,
+              )}
             <aside className="panel checker-card checker-dark" data-contrast="photo">
               <div className="checker-top">
                 <p>Ваш список</p>
@@ -621,12 +734,24 @@ export function HomePage() {
                 <Link className="s08-more" href="/report#zones">Как читать отчёт</Link>
                 </div>
               </div>
-              <div className="s08-stack" data-allow-x>
-                <button type="button" className="s08-nav prev" aria-label="Предыдущая страница отчёта" onClick={() => setReportPage((n) => (n + REPORT_SLIDES.length - 1) % REPORT_SLIDES.length)} />
+              <div
+                className="s08-stack"
+                data-allow-x
+                onTouchStart={(event) => { reportTouch.current = event.touches[0]?.clientX ?? null; }}
+                onTouchEnd={(event) => {
+                  const start = reportTouch.current;
+                  reportTouch.current = null;
+                  const end = event.changedTouches[0]?.clientX;
+                  if (start === null || end === undefined || Math.abs(end - start) < 40) return;
+                  turnReport(end < start ? 1 : -1);
+                }}
+              >
+                <button type="button" className="s08-nav prev" aria-label="Предыдущая страница отчёта" onClick={() => turnReport(-1)} />
                 <i className="s08-sheet s08-sheet-3" aria-hidden />
                 <i className="s08-sheet s08-sheet-2" aria-hidden />
                 <img className="s08-shot" key={reportPage} src={REPORT_SLIDES[reportPage][0]} alt="" />
-                <button type="button" className="s08-nav next" aria-label="Следующая страница отчёта" onClick={() => setReportPage((n) => (n + 1) % REPORT_SLIDES.length)} />
+                {curl && <img className={`s08-shot s08-curl${curl.dir < 0 ? " is-back" : ""}`} key={curl.n} src={curl.src} alt="" aria-hidden onAnimationEnd={() => setCurl(null)} />}
+                <button type="button" className="s08-nav next" aria-label="Следующая страница отчёта" onClick={() => turnReport(1)} />
               </div>
               <div className="s08-pager" aria-hidden>{REPORT_SLIDES.map((slide, index) => <i key={slide[0]} className={index === reportPage ? "is-on" : ""} />)}</div>
               <div className="s08-glass">
@@ -693,10 +818,10 @@ export function HomePage() {
           </div>
           <div className="checker-grid">
             <div className="s10-products">
-              <div className={`product-picks${!query.trim() && group === "Все 286" && !moreProducts ? " is-default" : ""}`} data-allow-x>
+              <div ref={picksRef} className={`product-picks${!query.trim() && group === "Все 286" && !moreProducts ? " is-default" : ""}`} data-allow-x>
                 {shown.map((item) => (
-                  <button type="button" className={`${picked.name === item.name ? "is-on" : ""}${MOBILE_PICKS.includes(item.name) ? " m-pick" : ""}`} key={item.name} onClick={() => { setPicked(item); setCardOpen(true); }}>
-                    {item.name}{item.tag && <small>{item.tag}</small>}
+                  <button type="button" data-name={item.name} className={`${picked.name === item.name ? "is-on" : ""}${MOBILE_PICKS.includes(item.name) ? " m-pick" : ""}`} key={item.name} onClick={() => { setPicked(item); setCardOpen(true); }}>
+                    <Hit text={item.name} q={qDeb} />{item.tag && <small>{item.tag}</small>}
                   </button>
                 ))}
                 {shown.length === 0 && <p>В показанной части панели такого запроса нет. Спросите специалиста.</p>}
@@ -766,13 +891,13 @@ export function HomePage() {
           <p className="lead">Цена устанавливается лабораторией. Уточняйте на официальном сайте.</p>
           <p className="s12-count"><strong>1500+</strong><span>пунктов в 9 сетях</span></p>
           <div className="lab-grid">
-            {LABS.map(([name, slug]) => (
-              <Link className="lab-tile" key={slug} href="/labs" aria-label={`Сдать тест в ${name}`}>
+            {LABS.map(([name, slug], index) => (
+              <Link className="lab-tile" key={slug} href="/labs" aria-label={`Сдать тест в ${name}`} style={{ ["--k" as string]: index }}>
                 <span className="lab-logo-box"><img className="lab-logo" src={slug} alt="" /></span>
                 <span className="lab-go">Сдать тест<img src="/icons/arrow-up-right.svg" alt="" /></span>
               </Link>
             ))}
-            <Link className="lab-tile lab-tile-all" href="/labs">
+            <Link className="lab-tile lab-tile-all" href="/labs" style={{ ["--k" as string]: LABS.length }}>
               <strong>1500+</strong>
               <small>пунктов в 9 сетях</small>
               <span className="lab-go">На карте<img src="/icons/arrow-up-right.svg" alt="" /></span>
@@ -903,6 +1028,20 @@ export function HomePage() {
         </section>
       </main>
       <Footer />
+    </>
+  );
+}
+
+/** M45: the part of the product name that matches the search is highlighted. */
+function Hit({ text, q }: { text: string; q: string }) {
+  const needle = q.trim().toLowerCase();
+  const at = needle.length >= 2 ? text.toLowerCase().indexOf(needle) : -1;
+  if (at < 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, at)}
+      <mark className="s10-hit">{text.slice(at, at + needle.length)}</mark>
+      {text.slice(at + needle.length)}
     </>
   );
 }

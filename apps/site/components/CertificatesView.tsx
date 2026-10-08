@@ -18,6 +18,49 @@ export function CertificatesView() {
   const openDoc = (code: string, index: number, card: Element | null) => setOpen({ code, index, from: card?.querySelector(".c-paper")?.getBoundingClientRect() ?? null });
   // M29: on first appearance the phone carousel nudges 24px left and back (600 мс) to show it scrolls.
   const docsRef = useRef<HTMLDivElement>(null);
+  // M30: on phones the ELISA steps appear one by one when the block reaches 70% of the screen (once).
+  const elisaRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = elisaRef.current;
+    if (!node || !window.matchMedia("(max-width: 760px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    node.classList.add("is-armed");
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      io.disconnect();
+      node.classList.add("is-play");
+    }, { rootMargin: "0px 0px -30% 0px" });
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+  // M31: the history line is drawn as the track scrolls; passed dots are black, the current one is lime and pulses.
+  const historyRef = useRef<HTMLOListElement>(null);
+  useEffect(() => {
+    const list = historyRef.current;
+    if (!list) return;
+    const items = [...list.querySelectorAll<HTMLElement>("li")];
+    const sync = () => {
+      const max = list.scrollWidth - list.clientWidth;
+      if (max <= 1) {
+        list.classList.remove("is-track");
+        return;
+      }
+      list.classList.add("is-track");
+      const pos = (list.scrollLeft / max) * (items.length - 1);
+      const current = Math.round(pos);
+      items.forEach((item, index) => {
+        item.style.setProperty("--lp", `${Math.min(1, Math.max(0, pos - index + 0.5)) * 100}%`);
+        item.classList.toggle("is-current", index === current);
+        item.classList.toggle("is-past", index < current);
+      });
+    };
+    sync();
+    list.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync);
+    return () => {
+      list.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
+    };
+  }, []);
   useEffect(() => {
     const node = docsRef.current;
     if (!node || !window.matchMedia("(max-width: 760px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -113,7 +156,7 @@ export function CertificatesView() {
         </section>
 
         <section data-s="c04">
-          <div className="wrap c04">
+          <div className="wrap c04" ref={elisaRef}>
             <div>
               <p className="fx-kicker c04-kicker">Технология</p>
               <h2>ELISA — стандартная лабораторная процедура</h2>
@@ -137,7 +180,7 @@ export function CertificatesView() {
               <h2>История FOX</h2>
               <p>От лаборатории в Вене до партнёрской сети по всей России.</p>
             </header>
-            <ol data-allow-x aria-label="История FOX">
+            <ol data-allow-x aria-label="История FOX" ref={historyRef}>
               <li><b>2016</b><span>Основание MADx, Вена</span></li>
               <li><b>2017</b><span>Первый CE-маркированный IVD-продукт</span></li>
               {/* TODO: год расширения панели до 286 антигенов — уточнить у клиента */}

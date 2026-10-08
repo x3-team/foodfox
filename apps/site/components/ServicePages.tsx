@@ -832,6 +832,52 @@ export function ReviewsPage() {
   const pick = (f: string, t: string) => REVIEWS.filter((item) => (f === "Все" || item.who === f || item.kind === f) && (!t || item.tag === t));
   const cards = pick(filter, topic);
   const slice = cards.slice((page - 1) * 7, page * 7);
+  // M35: on phones reviews come 5 at a time with «Показать ещё» instead of the pager.
+  const [phone, setPhone] = useState(false);
+  const [limit, setLimit] = useState(5);
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 760px)");
+    const sync = () => setPhone(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => setLimit(5), [filter, topic]);
+  const visible = phone ? cards.slice(0, limit) : slice;
+  const showMore = () => {
+    const from = limit;
+    flushSync(() => setLimit(limit + 5));
+    const fresh = [...(gridRef.current?.querySelectorAll<HTMLElement>("[data-k]:not([data-k=promo])") ?? [])].slice(from);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    fresh.forEach((el, index) => {
+      if (!reduce) el.animate([{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }], { duration: 300, delay: index * 60, easing: "cubic-bezier(.2,.8,.2,1)", fill: "backwards" });
+    });
+    const first = fresh[0];
+    if (first) {
+      first.tabIndex = -1;
+      first.focus({ preventScroll: true });
+    }
+  };
+  // M32: on phones the rating counts up 0,0 → 4,9 and 0 → +48 (900 мс, ease-out) and the stars fill with it.
+  const [rate, setRate] = useState<number | null>(null);
+  useEffect(() => {
+    if (!window.matchMedia("(max-width: 760px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / 900);
+      if (t >= 1) {
+        setRate(null);
+        return;
+      }
+      setRate(1 - Math.pow(1 - t, 3));
+      raf = requestAnimationFrame(tick);
+    };
+    setRate(0);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  const rateShare = rate ?? 1;
   // V02 (Figma note): the grid rebuilds with FLIP 300 мс — leaving cards fade + scale .96, staying cards glide, new ones rise from +12px.
   const flip = (f: string, t: string, apply: () => void) => {
     const grid = gridRef.current;
@@ -868,11 +914,11 @@ export function ReviewsPage() {
                 <h1>Отзывы</h1>
                 <p className="fx-lead">Истории людей, которые сдали тест, и отзывы специалистов, которые работают с отчётом. Все отзывы проходят модерацию.</p>
                 <div className="v-rate-card">
-                  <p className="v-rate"><b>4,9</b><span className="v-stars" aria-hidden="true">★★★★★</span></p>
+                  <p className="v-rate" aria-label="Средняя оценка 4,9"><b aria-hidden>{(4.9 * rateShare).toFixed(1).replace(".", ",")}</b><span className={`v-stars${rate === null ? "" : " is-filling"}`} aria-hidden="true" style={rate === null ? undefined : { ["--fill" as string]: `${rateShare * 98}%` }}>★★★★★</span></p>
                   <div className="v-rate-side">
                     <p className="v-rate-note">312 отзывов после модерации</p>
                     <p className="v-avatars">
-                      <span><img src="/figma/reviews/r1.png" alt="" /><img src="/figma/reviews/r2.png" alt="" /><img src="/figma/reviews/r3.png" alt="" /><img src="/figma/reviews/r4.png" alt="" /><i className="v-more">+48</i></span>
+                      <span><img src="/figma/reviews/r1.png" alt="" /><img src="/figma/reviews/r2.png" alt="" /><img src="/figma/reviews/r3.png" alt="" /><img src="/figma/reviews/r4.png" alt="" /><i className="v-more">+{Math.round(48 * rateShare)}</i></span>
                     </p>
                     <p className="v-rate-foot">из них 48 — от врачей и нутрициологов</p>
                   </div>
@@ -916,10 +962,10 @@ export function ReviewsPage() {
               <label className="v-sort">Сначала новые
                 <select aria-label="Сначала новые" defaultValue="new"><option value="new">Сначала новые</option></select>
               </label>
-              <p className="v-shown">Показано {Math.min(7, cards.length)} из 312</p>
+              <p className="v-shown">Показано {phone ? visible.length : Math.min(7, cards.length)} из 312</p>
             </div>
             <div className="v-grid" ref={gridRef}>
-              {slice.map((item) => item.video ? (
+              {visible.map((item) => item.video ? (
                 <article key={item.id} data-k={item.id} className="rev rev-video" style={{ backgroundImage: `url(${item.photo})` }}>
                   <p><span>{item.tag}</span><span>Видео</span></p>
                   <div>
@@ -946,6 +992,15 @@ export function ReviewsPage() {
                 <a className="btn btn-dark" href="#review-form">Оставить отзыв</a>
               </article>
             </div>
+            {phone && (
+              <div className="v-more-row">
+                {limit < cards.length ? (
+                  <button type="button" className="btn btn-light v-more-btn" onClick={showMore}>Показать ещё</button>
+                ) : (
+                  <a className="text-link" href="#review-form">Оставить свой отзыв</a>
+                )}
+              </div>
+            )}
             <div className="v-pages">
               {[1, 2, 3].map((item) => (
                 <button key={item} type="button" className={page === item ? "is-on" : ""} onClick={() => setPage(item)} aria-label={`Страница ${item}`}>{item}</button>
