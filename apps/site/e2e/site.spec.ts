@@ -148,7 +148,7 @@ test("contacts validation and labs empty city", async ({ page }) => {
   const form = page.locator("#k-form");
   const send = form.getByRole("button", { name: "Отправить" });
   await expect(send).toBeDisabled();
-  await form.getByRole("checkbox", { name: /Согласен/ }).check();
+  await form.getByRole("checkbox", { name: /соглашаетесь|Согласен/ }).check();
   await send.click();
   await expect(form.locator(".err").first()).toBeVisible();
   await form.getByLabel("E-mail или телефон").fill("anna@clinic");

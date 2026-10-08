@@ -49,7 +49,7 @@ function validate(field: Field, values: Values, who: Who) {
     case "company":
       return who === "Лаборатория" && values.company.trim().length < 2 ? "Укажите компанию" : "";
     case "text":
-      return values.text.trim().length < 4 ? "Опишите вопрос — пары предложений достаточно" : "";
+      return values.text.trim().length < 10 ? "Опишите вопрос — пары предложений достаточно" : "";
   }
 }
 
@@ -202,13 +202,15 @@ export function LeadForm({
             disabled={sending}
             onClick={() => setWho(item)}
           >
-            {item}
+            {variant === "page" && item === "Лаборатория" ? <><span className="d-only">Лаборатория / партнёр</span><span className="m-only">Партнёр</span></> : item}
           </button>
         ))}
       </div>
       {whoHint && <p className="k-who">{whoHint(who)}</p>}
+      <div className="lf-row">
       <Input field="name" label="Имя" placeholder="Как к вам обращаться" autoComplete="name" values={values} errors={errors} sending={sending} onChange={update} onBlur={blur} />
       <Input field="contact" label="E-mail или телефон" placeholder="Куда ответить" autoComplete="email" values={values} errors={errors} sending={sending} onChange={update} onBlur={blur} />
+      </div>
       <div className={`lf-slide${who === "Лаборатория" ? " is-open" : ""}`} aria-hidden={who !== "Лаборатория"}>
         <div>
           {who === "Лаборатория" && (
@@ -222,7 +224,7 @@ export function LeadForm({
           name="text"
           rows={4}
           maxLength={MAX}
-          placeholder={QUESTION_HINT[who]}
+          placeholder={variant === "page" && who === "Пациент" ? "Опишите ситуацию — без медицинских данных и сканов отчёта" : QUESTION_HINT[who]}
           value={values.text}
           readOnly={sending}
           aria-invalid={!!errors.text}
@@ -232,20 +234,20 @@ export function LeadForm({
         />
         <Err text={errors.text} />
         <span className="lf-meta" id="lf-text-meta">
-          <span>Не прикладывайте медицинские данные</span>
+          <span>{variant === "page" ? "Минимум 10 символов" : "Не прикладывайте медицинские данные"}</span>
           <span className={count > WARN ? "is-warn" : ""} aria-live="polite">{count} / {MAX}</span>
         </span>
       </label>
       <label className="lf-consent">
         <input type="checkbox" checked={consent} disabled={sending} onChange={(event) => setConsent(event.target.checked)} />
         <span className="lf-box" aria-hidden />
-        <span>Согласен на обработку персональных данных (152-ФЗ)</span>
+        <span>{variant === "page" ? "Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности и обработкой персональных данных (152-ФЗ)" : "Согласен на обработку персональных данных (152-ФЗ)"}</span>
       </label>
       <div className="lf-actions">
         <button className={`btn btn-dark${sending ? " is-loading is-labelled" : ""}`} type="submit" disabled={!consent || sending}>
           {sending ? "Отправляем…" : "Отправить"}
         </button>
-        {!consent && <span className="lf-hint">Кнопка активна после согласия</span>}
+        {variant === "page" ? <span className="lf-hint">Отвечаем в течение 1 рабочего дня</span> : !consent && <span className="lf-hint">Кнопка активна после согласия</span>}
       </div>
       {status === "error" && (
         <div className="lf-toast" role="alert">

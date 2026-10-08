@@ -36,19 +36,19 @@ export default function Page() {
             <div className="pr01-top">
               <div>
                 <h1>Политика конфиденциальности</h1>
-                <p className="pr-meta"><span>Редакция от 01.09.2026</span><span>Оператор: ООО «Инмунотех»</span><span>Чтение ~12 мин</span></p>
+                <p className="pr-meta"><span className="pr-meta-main"><img src="/icons/nf/pin.svg" alt="" />Редакция от 01.09.2026</span><span>Оператор: ООО «Инмунотех»</span><span>Чтение ~12 мин</span></p>
               </div>
               <div className="pr-actions">
-                <a className="btn btn-ghost" href="#s10">К контактам оператора</a>
-                <button type="button" className="btn btn-dark">Скачать PDF</button>
+                <button type="button" className="btn btn-dark"><img src="/icons/download.svg" alt="" />Скачать PDF</button>
+                <a className="btn btn-ghost pr-link" href="#s10">К контактам оператора</a>
               </div>
             </div>
             <article className="pr-short">
               <h2>Коротко — без юридического языка</h2>
               <ul>
-                <li><b>Не храним медицинские данные</b><span>Отчёты выдаёт лаборатория, на сайт они не попадают.</span></li>
-                <li><b>Симптом-чекер работает локально</b><span>Ответы не уходят на сервер без вашего действия.</span></li>
-                <li><b>Отозвать согласие — одним письмом</b><span>privacy@inmunotech.ru, ответ в течение 10 дней.</span></li>
+                <li className="pr-i1"><b>Не храним медицинские данные</b><span>Отчёты выдаёт лаборатория, на сайт они не попадают</span></li>
+                <li className="pr-i2"><b>Симптом-чекер работает локально</b><span>Ответы не уходят на сервер без вашего действия</span></li>
+                <li className="pr-i3"><b>Отозвать согласие — одним письмом</b><span>privacy@inmunotech.ru, ответ в течение 10 дней</span></li>
               </ul>
             </article>
           </div>
