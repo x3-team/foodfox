@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AuthorPosts } from "@/components/AuthorPosts";
+import { AuthorPosts, SubscribeLink } from "@/components/AuthorPosts";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { authors, articles, authorBySlug, materialsWord } from "@/lib/content";
@@ -56,7 +56,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
               <span className="tag">Эксперт FOX</span>
             </div>
             <p className="pf-tg-d" style={{ marginTop: 16 }}>
-              <a className="btn btn-dark" href="https://t.me/foxfoodxplorer">Подписаться в Telegram</a>
+              <SubscribeLink className="btn btn-dark">Подписаться в Telegram</SubscribeLink>
             </p>
             <div className="columns">
               <div>
@@ -81,7 +81,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
             {/* Phone: «подписаться на автора» card (Figma 1457:50156) instead of the hero button. */}
             <div className="pf-tg-m">
               <p>Новые материалы от {authorGenitive(author.name)} — в Telegram</p>
-              <a className="btn btn-light" href="https://t.me/foxfoodxplorer">Подписаться</a>
+              <SubscribeLink className="btn btn-light">Подписаться</SubscribeLink>
             </div>
           </div>
         </section>

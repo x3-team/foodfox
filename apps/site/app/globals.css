@@ -2319,9 +2319,10 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   }
   .article-related .related-dots { justify-content: center; gap: 6px; margin-top: 8px; }
   .article-related .related-dots i {
-    width: 6px; height: 6px; border-radius: 99px; background: rgba(11, 12, 8, 0.28); display: block;
+    width: 6px; height: 6px; border-radius: 3px; background: rgba(11, 12, 8, 0.3); display: block;
   }
-  .article-related .related-dots i.is-on { width: 18px; background: #0b0c08; }
+  /* Mobile article frame 1313:5686 · dots: active 20×6, others 6×6 at 30%, gap 6, r3. */
+  .article-related .related-dots i.is-on { width: 20px; background: #0b0c08; }
   body [data-s="v03"] ul > li > b,
   body [data-s="v03"] form .check-row > span { font-size: 14px; line-height: 18px; }
 }
@@ -4521,3 +4522,13 @@ main img.sk-in { animation: sk-in 200ms ease-out; }
 @keyframes rm-fade { from { opacity: 0; } }
 @keyframes rm-out { to { opacity: 0; } }
 @keyframes rm-flash { 0% { opacity: 0; } 15%, 85% { opacity: 1; } 100% { opacity: 0; } }
+/* K08 «Доступ открыт» (Figma 1136:561). */
+.access-modal .reg-body { display: flex; flex-direction: column; gap: 14px; }
+.access-modal .access-ok { display: flex; align-items: center; gap: 12px; margin: 0; }
+.access-modal .access-ok .lead { margin: 0; }
+.access-modal .access-check { flex: none; width: 40px; height: 40px; border-radius: 50%; background: #e7f551; display: grid; place-items: center; animation: access-pop 360ms cubic-bezier(.34, 1.56, .64, 1) both; }
+.access-modal .access-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.access-modal .access-chips li { display: flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 999px; background: rgba(11, 12, 8, 0.06); font-size: 14px; line-height: 18px; }
+.access-modal .btn { justify-content: center; }
+@keyframes access-pop { from { transform: scale(0.8); opacity: 0; } 70% { transform: scale(1.05); } }
+.author-more { display: flex; justify-content: center; margin: 24px 0 0; }

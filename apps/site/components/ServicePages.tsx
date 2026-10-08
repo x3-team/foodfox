@@ -139,7 +139,8 @@ export function FaqPage() {
         setNav(qa.group);
         setOpen((current) => (current.includes(qa.question) ? current : [...current, qa.question]));
         setFlash(qa.id);
-        window.setTimeout(() => setFlash(""), 1200);
+        // M-note FAQ: the flash on the target question lasts 600 мс on phones (1.2 с on desktop).
+        window.setTimeout(() => setFlash(""), window.matchMedia("(max-width: 760px)").matches ? 600 : 1200);
         window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
         return;
       }

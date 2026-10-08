@@ -335,8 +335,50 @@ function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration>
   );
 }
 
+/**
+ * K08 final state (Figma 1136:561) — «Доступ открыт», shown when the visitor comes back by the link from the e-mail
+ * (/course?access=1). The link itself is sent by the back end; the site has no token check yet, so this screen
+ * only presents the state and leads to lesson 1.
+ */
+function AccessDialog({ onClose }: { onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useDialog(ref, () => closeRef.current());
+  return (
+    <div className="modal-back" role="presentation" onClick={() => closeRef.current()}>
+      <div className="modal reg-modal access-modal" ref={ref} role="dialog" aria-modal="true" aria-labelledby="access-title" onClick={(event) => event.stopPropagation()}>
+        <button type="button" className="lead-x reg-x" aria-label="Закрыть" onClick={() => closeRef.current()}>×</button>
+        <div className="reg-steps" aria-hidden>{[0, 1, 2].map((index) => <i key={index} className="is-on" />)}</div>
+        <div className="reg-body">
+          <h2 id="access-title">Доступ открыт</h2>
+          <p className="access-ok">
+            <span className="access-check" aria-hidden><img src="/figma/icons/check.svg" alt="" width={16} height={16} /></span>
+            <span className="lead">Все шесть уроков и материалы доступны в личном кабинете.</span>
+          </p>
+          <ul className="access-chips">
+            {["6 уроков", "Конспекты PDF", "Гайд по отчёту", "Сертификат после 6/6"].map((item) => <li key={item}>{item}</li>)}
+          </ul>
+          <Link className="btn btn-dark" href="/course/lessons" data-autofocus>Перейти к уроку 1</Link>
+          <p className="reg-hint">Ссылку на кабинет мы также продублировали в письме.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function CoursePage() {
   const flow = useRegistration();
+  const [access, setAccess] = useState(false);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("access") !== null) setAccess(true);
+  }, []);
+  const closeAccess = useCallback(() => {
+    setAccess(false);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("access");
+    window.history.replaceState(null, "", url);
+  }, []);
   const [opened, setOpened] = useState(0);
   const [allAud, setAllAud] = useState(false);
   const [faq, setFaq] = useState(0);
@@ -545,6 +587,7 @@ export function CoursePage() {
           </div>
         </section>
         <RegistrationDialog flow={flow} />
+        {access && <AccessDialog onClose={closeAccess} />}
       </main>
       <Footer />
     </>
