@@ -858,7 +858,7 @@ export function ReviewsPage() {
                 </article>
               ) : (
                 <article key={item.id} className={`rev${item.who === "Специалисты" ? " is-pro" : ""}`}>
-                  <p><span>{item.tag}</span><em>{item.kind}</em></p>
+                  <p><span className={item.tag === "Специалист" ? "is-spec" : undefined}>{item.tag}</span><em>{item.kind}</em></p>
                   <i aria-hidden="true">“</i>
                   <blockquote>{item.text}</blockquote>
                   <footer>

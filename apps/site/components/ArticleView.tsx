@@ -176,6 +176,18 @@ export function ArticleView({ article }: { article: Article }) {
     window.setTimeout(() => setToast(false), 2500);
   }
 
+  const shareUrl = `https://foodfox.yuri.guru/blog/${article.slug}`;
+  // Share / Bar (Figma 1076:645 under the TOC, 1313:5686 after the article body): Telegram, VK, copy link.
+  const shareBar = (
+    <div className="art-share">
+      <span>Поделиться</span>
+      <div>
+        <a href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(article.title)}`} target="_blank" rel="noreferrer" aria-label="Поделиться в Telegram"><img src="/icons/share/telegram.svg" alt="" /></a>
+        <a href={`https://vk.com/share.php?url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noreferrer" aria-label="Поделиться во ВКонтакте"><img src="/icons/share/vk.svg" alt="" /></a>
+        <button type="button" onClick={copyLink} aria-label="Скопировать ссылку">{copied ? "✓" : <img src="/icons/share/copy.svg" alt="" />}</button>
+      </div>
+    </div>
+  );
   const lead = article.excerpt;
   const tocItems = headings.flatMap((block) => (block.type === "h2" ? [block] : []));
   const tocIndex = Math.max(0, tocItems.findIndex((block) => block.id === active));
@@ -262,6 +274,7 @@ export function ArticleView({ article }: { article: Article }) {
                   )}
                 </>
               )}
+              <div className="art-share-d">{shareBar}</div>
             </nav>
             <div className="prose" id="article-body">
               <p className="dek">{lead}</p>
@@ -289,12 +302,6 @@ export function ArticleView({ article }: { article: Article }) {
                   {DISCLAIMER}
                 </p>
               </aside>
-              <div className="share">
-                <span>Поделиться</span>
-                <button type="button" onClick={copyLink} aria-label="Скопировать ссылку">
-                  {copied ? "✓" : "↗"}
-                </button>
-              </div>
               <div className="author-block" id="author-end">
                 <img className="avatar l" src={author.avatar} alt="" />
                 <div>
@@ -308,6 +315,7 @@ export function ArticleView({ article }: { article: Article }) {
                   </p>
                 </div>
               </div>
+              <div className="art-share-m"><p>Поделиться статьёй</p>{shareBar}</div>
             </div>
             <aside className="aside">
               <div className="aside-card">

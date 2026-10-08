@@ -3942,7 +3942,7 @@ body [data-s="v02"] .v-tools .v-shown { flex-basis: 100%; margin: 0; }
   body [data-s="v02"] .v-sort { grid-column: 2; grid-row: 2; }
 }
 body [data-s="v02"] .rev-video::before { background: linear-gradient(180deg, rgba(10, 13, 8, 0.1) 0%, rgba(10, 13, 8, 0) 35%, rgba(10, 13, 8, 0.82) 100%); }
-body [data-s="v02"] .rev.is-pro > p span { background: #0b0c08; color: #f8f9f6; }
+body [data-s="v02"] .rev > p span.is-spec { background: #0b0c08; color: #f8f9f6; }
 @media (max-width: 767px) {
   body [data-s="v02"] .rev blockquote { font-size: 20px; line-height: 24px; }
   body [data-s="v02"] .rev-video { min-height: 480px; }
@@ -4100,3 +4100,28 @@ body .pr-body p { font-size: 16px; line-height: 20px; color: rgba(11, 12, 8, 0.6
 }
 body .pr-short li.pr-i3::before { background-size: 14px; }
 @media (max-width: 767px) { body .pr-actions .btn { white-space: nowrap; } }
+/* /reviews: «Специалист» badge carries Icon/award (lime) as in Figma 1277:858. */
+body [data-s="v02"] .rev > p span.is-spec { display: inline-flex; align-items: center; gap: 6px; }
+body [data-s="v02"] .rev > p span.is-spec::before { content: ""; width: 14px; height: 14px; background: url(/icons/award-lime.svg) center / 14px no-repeat; }
+/* Article share (Figma Share / Bar): desktop under the TOC, phone after the author block. */
+body .art-share { display: flex; flex-direction: column; gap: 12px; }
+body .art-share > span { font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+body .art-share > div { display: flex; gap: 8px; }
+body .art-share a, body .art-share button { width: 40px; height: 40px; border-radius: 999px; border: 1px solid #0b0c08; background: transparent; display: grid; place-items: center; padding: 0; color: #0b0c08; font-size: 14px; cursor: pointer; }
+body .art-share a:hover, body .art-share button:hover { background: rgba(11, 12, 8, 0.06); }
+body .art-share img { width: 16px; height: 16px; }
+body .art-share-d { margin-top: 32px; }
+body .art-share-m { display: none; }
+@media (max-width: 1099px) {
+  body .art-share-d { display: none; }
+  body .art-share-m { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-top: 32px; }
+  body .art-share-m > p { margin: 0; font-size: 14px; line-height: 18px; color: #0b0c08; }
+}
+/* Author profile: Telegram card on phones (Figma 1457:50156 «подписаться на автора»). */
+body .pf-tg-m { display: none; }
+@media (max-width: 767px) {
+  body .pf-tg-d { display: none; }
+  body .pf-tg-m { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; padding: 20px; border-radius: 20px; background: #d7d8cd; }
+  body .pf-tg-m > p { margin: 0; font-size: 17px; line-height: 23px; color: #0b0c08; }
+  body .pf-tg-m .btn { width: 100%; height: 48px; justify-content: center; background: #fff; color: #0b0c08; border-color: #fff; }
+}

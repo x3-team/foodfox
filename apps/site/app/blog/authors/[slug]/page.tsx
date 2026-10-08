@@ -16,6 +16,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return { title: author.name, description: author.bio };
 }
 
+const GENITIVE: Record<string, string> = { Ксения: "Ксении", Алёна: "Алёны", Светлана: "Светланы", Дмитрий: "Дмитрия", Анна: "Анны" };
+function authorGenitive(name: string) {
+  if (name.startsWith("Редакция")) return "редакции FOX";
+  const first = name.split(" ")[0];
+  return GENITIVE[first] ?? name;
+}
+
 export default async function AuthorPage({ params }: { params: Promise<{ slug: string }> }) {
   const author = authorBySlug((await params).slug);
   if (!author) notFound();
@@ -48,7 +55,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
               {author.lecturer && <span className="tag tag-lime">{author.lecturer}</span>}
               <span className="tag">Эксперт FOX</span>
             </div>
-            <p style={{ marginTop: 16 }}>
+            <p className="pf-tg-d" style={{ marginTop: 16 }}>
               <a className="btn btn-dark" href="https://t.me/foxfoodxplorer">Подписаться в Telegram</a>
             </p>
             <div className="columns">
@@ -70,6 +77,11 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
                 ))}
                 <p>{author.bio}</p>
               </div>
+            </div>
+            {/* Phone: «подписаться на автора» card (Figma 1457:50156) instead of the hero button. */}
+            <div className="pf-tg-m">
+              <p>Новые материалы от {authorGenitive(author.name)} — в Telegram</p>
+              <a className="btn btn-light" href="https://t.me/foxfoodxplorer">Подписаться</a>
             </div>
           </div>
         </section>
