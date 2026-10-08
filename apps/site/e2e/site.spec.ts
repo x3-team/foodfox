@@ -521,6 +521,9 @@ test("text stays readable and sections stay visible", async ({ page }, testInfo)
       }, undefined, { timeout: 4000 }).catch(() => undefined);
       const problems = await page.evaluate(async (routePath) => {
         const parse = (value: string) => {
+          // Hovered .btn-dark computes to color(srgb r g b) via color-mix(); read it instead of falling through to the parent.
+          const srgb = value.match(/color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)(?: \/ ([\d.]+))?\)/);
+          if (srgb) return { rgb: [srgb[1], srgb[2], srgb[3]].map((part) => Number.parseFloat(part) * 255), a: srgb[4] ? Number.parseFloat(srgb[4]) : 1 };
           const match = value.match(/rgba?\(([^)]+)\)/);
           if (!match) return null;
           const parts = match[1].split(",").map((part) => Number.parseFloat(part.trim()));
