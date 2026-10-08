@@ -4189,3 +4189,24 @@ body .e-plate .e-chip { animation: e-chip-float 3s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   body .e-plate .e-four span, body .e-plate .e-chip { animation: none; }
 }
+
+/* P07 (Figma note): photo scale 1.10 over 500 мс cubic-bezier(.2,.7,.2,1), name underlined, card lifts 2px.
+   P08: hover adds FOX/Shadow M to the existing #F2F2F2 + scale 1.02. L02: hover shadow M (150 мс); the frame card has a border, not Shadow S. */
+body [data-s="p07"] .sp-experts article { transition: translate 500ms cubic-bezier(.2,.7,.2,1); }
+body [data-s="p07"] .sp-experts article:hover { translate: 0 -2px; }
+body [data-s="p07"] .sp-portrait img { transition: transform 500ms cubic-bezier(.2,.7,.2,1); }
+body [data-s="p07"] .sp-experts article:hover img { transform: scale(1.1); }
+body [data-s="p07"] .sp-experts article:hover h3 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+body [data-s="p08"] .sp-labs a:hover { box-shadow: 0 8px 24px -4px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
+body [data-s="l02"] .l-partners > button { transition: transform 150ms cubic-bezier(.2,.8,.2,1), box-shadow 150ms cubic-bezier(.2,.8,.2,1); }
+body [data-s="l02"] .l-partners > button:hover, body [data-s="l02"] .l-partners > button:focus-visible { box-shadow: 0 8px 24px -4px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
+@media (prefers-reduced-motion: reduce) { body [data-s="p07"] .sp-portrait img, body [data-s="p07"] .sp-experts article { transition: none; } }
+
+/* R02 (Figma note): active marker — lime, dark outline + FOX/Glow Lime, 200 мс; page crossfade 250 мс + 16px shift. */
+body .report-page .rf-pin { transition: background-color 200ms ease-out, box-shadow 200ms ease-out; }
+body .report-page .rf-pin.is-on { box-shadow: 0 0 32px rgba(231, 245, 81, 0.35); }
+.rf-sheet img.rf-in-next { animation: rf-in-next 250ms ease-out both; }
+.rf-sheet img.rf-in-prev { animation: rf-in-prev 250ms ease-out both; }
+@keyframes rf-in-next { from { opacity: 0; transform: translateX(16px); } }
+@keyframes rf-in-prev { from { opacity: 0; transform: translateX(-16px); } }
+@media (prefers-reduced-motion: reduce) { .rf-sheet img.rf-in-next, .rf-sheet img.rf-in-prev { animation: none; } }

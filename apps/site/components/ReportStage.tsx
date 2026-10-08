@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const PAGES = [
   "/figma/report/sheet1.png",
@@ -42,18 +42,27 @@ const FAQ = [
 export function ReportViewer() {
   const [page, setPage] = useState(0);
   const [marker, setMarker] = useState(1);
+  const [dir, setDir] = useState(0);
+  const busy = useRef(false);
 
+  // R02 (Figma note): crossfade 250 мс + 16px shift in the paging direction; clicks are ignored while it runs; ←/→ page.
   function go(next: number) {
-    if (next < 0 || next >= PAGES.length || next === page) return;
+    if (busy.current || next < 0 || next >= PAGES.length || next === page) return;
+    busy.current = true;
+    window.setTimeout(() => { busy.current = false; }, 250);
+    setDir(next > page ? 1 : -1);
     setPage(next);
     setMarker(1);
   }
 
   return (
     <div className="rf-anatomy">
-      <div className="rf-viewer">
+      <div className="rf-viewer" onKeyDown={(event) => {
+        if (event.key === "ArrowRight") { event.preventDefault(); go(page + 1); }
+        if (event.key === "ArrowLeft") { event.preventDefault(); go(page - 1); }
+      }}>
         <div className="rf-sheet">
-          <img src={PAGES[page]} alt="" />
+          <img key={page} className={dir ? (dir > 0 ? "rf-in-next" : "rf-in-prev") : undefined} src={PAGES[page]} alt="" />
           {MARKERS.map((item) => (
             <button
               key={item.n}
