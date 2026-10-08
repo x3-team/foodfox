@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { BottomSheet } from "@/components/BottomSheet";
 import { useDialog } from "@/components/useDialog";
 
 const AUDIENCE = [
@@ -550,6 +551,8 @@ export function CoursePage() {
   );
 }
 
+const SHEET_STOPS = [0.5, 0.92];
+
 export function LessonsPage() {
   const [current, setCurrent] = useState(1);
   const [sheet, setSheet] = useState(false);
@@ -567,14 +570,7 @@ export function LessonsPage() {
     if (videoRef.current) videoRef.current.currentTime = 0;
   }, [current]);
 
-  useEffect(() => {
-    if (!sheet) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSheet(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [sheet]);
+  const closeSheet = useCallback(() => setSheet(false), []);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -598,6 +594,8 @@ export function LessonsPage() {
   }
 
   const passed = Math.max(done.length, current + 1);
+  const lastTap = useRef<{ t: number; side: "back" | "fwd" | null } | null>(null);
+  const [seek, setSeek] = useState<{ side: "back" | "fwd"; n: number } | null>(null);
   // L01: controls hide after 2 s without movement while playing (opacity 150 мс) and come back on movement or focus.
   const [idle, setIdle] = useState(false);
   const idleTimer = useRef<number | undefined>(undefined);
@@ -630,15 +628,18 @@ export function LessonsPage() {
           </div>
           <button type="button" className="btn btn-ghost ls-open" onClick={() => setSheet(true)}>Программа курса</button>
           {sheet && (
-            <div className="modal-back" onClick={() => setSheet(false)}>
-              <div className="modal ls-sheet" role="dialog" aria-label="Программа" onClick={(event) => event.stopPropagation()}>
+            // M20 (Figma 1327:7804): program sheet with two stops — 50% and 92% of the screen height.
+            <BottomSheet label="Программа" className="ls-bs" stops={SHEET_STOPS} onClose={closeSheet}>
+              <div className="ls-bs-head">
                 <h2>Программа</h2>
-                <p className="meta-line">2 из 6</p>
+                <p className="meta-line">{current + 1} из 6</p>
+              </div>
+              <div className="bs-scroll">
                 {LESSONS.map((item, index) => {
                   const state = index === current ? "current" : done.includes(index) ? "done" : "next";
                   return (
-                    <button key={item.title} type="button" className={`ls-item is-${state}`} onClick={() => { setCurrent(index); setSheet(false); }}>
-                      <span className="ls-badge">{state === "done" ? "✓" : index + 1}</span>
+                    <button key={item.title} type="button" className={`ls-item is-${state}`} aria-current={index === current ? "true" : undefined} onClick={() => { setCurrent(index); setSheet(false); }}>
+                      <span className="ls-badge">{state === "done" ? <img src="/figma/icons/check.svg" alt="" width={14} height={14} /> : index + 1}</span>
                       <span>
                         <strong>{item.short}</strong>
                         <small>{item.minutes} мин{state === "current" ? " · смотрите сейчас" : state === "done" ? " · просмотрено" : ""}</small>
@@ -646,12 +647,12 @@ export function LessonsPage() {
                     </button>
                   );
                 })}
-                <div className="ls-cert">
+                <div className={`ls-cert${unlocked ? " is-open" : ""}`}>
                   <strong>Сертификат</strong>
                   <p>Станет доступен после всех шести уроков · {passed} из 6</p>
                 </div>
               </div>
-            </div>
+            </BottomSheet>
           )}
           <aside className="ls-side">
             <p>Программа</p>
@@ -696,7 +697,35 @@ export function LessonsPage() {
               if (event.key === "ArrowLeft") { event.preventDefault(); node.currentTime = Math.max(0, node.currentTime - 5); }
               wake();
             }}>
-              <div className="ls-stage">
+              {/* M20: switching lessons crossfades the player (240 мс). */}
+              <div
+                className="ls-stage"
+                key={current}
+                onTouchEnd={(event) => {
+                  // M18: a double tap on the left / right third seeks ∓10 s (round ripple + «10»).
+                  const node = videoRef.current;
+                  const touch = event.changedTouches[0];
+                  if (!node || !touch) return;
+                  const rect = event.currentTarget.getBoundingClientRect();
+                  const x = (touch.clientX - rect.left) / rect.width;
+                  const side = x < 1 / 3 ? "back" : x > 2 / 3 ? "fwd" : null;
+                  const now = performance.now();
+                  const last = lastTap.current;
+                  lastTap.current = { t: now, side };
+                  if (!side || !last || last.side !== side || now - last.t > 320) return;
+                  event.preventDefault();
+                  lastTap.current = null;
+                  node.currentTime = side === "back" ? Math.max(0, node.currentTime - 10) : Math.min(node.duration || node.currentTime + 10, node.currentTime + 10);
+                  setSeek({ side, n: (seek?.n ?? 0) + 1 });
+                  wake();
+                }}
+              >
+                {seek && (
+                  <span key={seek.n} className={`ls-seek is-${seek.side}`} aria-hidden onAnimationEnd={() => setSeek(null)}>
+                    <i />
+                    <b>10</b>
+                  </span>
+                )}
                 <video
                   ref={videoRef}
                   className="player-poster"

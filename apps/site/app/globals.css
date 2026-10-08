@@ -4346,3 +4346,74 @@ body .profile > div:nth-child(2) > :nth-child(n+5) { animation-delay: 240ms; }
 }
 @media (prefers-reduced-motion: reduce) { .c-stack .c-fan-p, .c-stack .c-fan-ce { animation: none; transition: none; } }
 .c-stack.c-stack > p { display: none; } /* was always clipped below the 220px image on phones; the chip is part of the Figma stack */
+
+/* Bottom sheets (M08, M20, M26, M29): slide-up, scrim up to 45% in proportion to the height, swipe down to close. */
+.bs-back { position: fixed; inset: 0; z-index: 92; display: flex; align-items: flex-end; justify-content: center; }
+.bs-back::before { content: ""; position: absolute; inset: 0; background: #0b0c08; opacity: var(--bs-scrim, 0.45); transition: opacity 200ms linear; animation: bs-fade var(--bs-ms, 320ms) ease-out backwards; }
+.bs-back.is-closing::before { opacity: 0; transition-duration: 240ms; }
+.bs { position: relative; width: 100%; max-width: 560px; max-height: 92vh; display: flex; flex-direction: column; background: #f8f9f6; color: #0b0c08; border-radius: 24px 24px 0 0; padding: 28px 20px calc(20px + env(safe-area-inset-bottom)); box-shadow: 0 24px 64px -8px rgba(11, 12, 8, 0.16), 0 4px 12px rgba(11, 12, 8, 0.08); will-change: transform; }
+.bs.is-opening { animation: bs-in var(--bs-ms, 320ms) cubic-bezier(.2, .8, .2, 1) both; }
+.bs-grab { position: absolute; left: 0; right: 0; top: 0; height: 28px; touch-action: none; cursor: grab; z-index: 1; }
+.bs-grab::before { content: ""; position: absolute; left: 50%; top: 10px; width: 40px; height: 4px; margin-left: -20px; border-radius: 99px; background: rgba(11, 12, 8, 0.18); }
+.bs-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+@keyframes bs-in { from { transform: translateY(100%); } to { transform: translateY(var(--bs-rest, 0px)); } }
+@keyframes bs-fade { from { opacity: 0; } }
+/* M20 program sheet content (Figma 1327:7804). */
+.ls-bs { padding-left: 20px; padding-right: 20px; }
+.ls-bs .ls-bs-head { display: flex; align-items: baseline; justify-content: space-between; padding: 8px 0 12px; }
+.ls-bs .ls-bs-head h2 { font-weight: 300; font-size: 26px; line-height: 30px; margin: 0; }
+.ls-bs .ls-bs-head .meta-line { margin: 0; font-size: 14px; color: rgba(11, 12, 8, 0.65); }
+.ls-bs .bs-scroll { display: flex; flex-direction: column; gap: 4px; }
+.ls-bs .ls-item { width: 100%; text-align: left; }
+.ls-bs .ls-cert { margin-top: 12px; }
+body [data-s="l01"] .ls-stage { animation: ls-xfade 240ms ease-out; }
+@keyframes ls-xfade { from { opacity: 0; } }
+/* M18: double-tap seek ripple. */
+body [data-s="l01"] .ls-seek { position: absolute; top: 0; bottom: 0; width: 40%; z-index: 3; display: grid; place-items: center; overflow: hidden; pointer-events: none; color: #fff; animation: ls-seek-out 600ms ease-out forwards; }
+body [data-s="l01"] .ls-seek.is-back { left: 0; border-radius: 0 50% 50% 0 / 0 50% 50% 0; }
+body [data-s="l01"] .ls-seek.is-fwd { right: 0; border-radius: 50% 0 0 50% / 50% 0 0 50%; }
+body [data-s="l01"] .ls-seek i { position: absolute; width: 120px; height: 120px; border-radius: 50%; background: rgba(255, 255, 255, 0.28); animation: ls-seek-wave 600ms ease-out forwards; }
+body [data-s="l01"] .ls-seek b { position: relative; font-weight: 500; font-size: 18px; line-height: 22px; font-variant-numeric: tabular-nums; }
+@keyframes ls-seek-wave { from { transform: scale(0.2); opacity: 1; } to { transform: scale(2.6); opacity: 0; } }
+@keyframes ls-seek-out { 0%, 70% { background: rgba(255, 255, 255, 0.12); opacity: 1; } 100% { background: rgba(255, 255, 255, 0); opacity: 0; } }
+/* M08 partner sheet: two actions, full width. */
+.partner-bs { gap: 10px; padding-top: 36px; }
+.partner-bs .btn { width: 100%; justify-content: center; }
+/* M26: route sheet rows + the active office pin pulses with a lime ring every 2.4 s. */
+.route-bs { padding-top: 32px; gap: 0; }
+.route-bs > a, .route-bs > button { display: flex; align-items: center; justify-content: space-between; min-height: 56px; padding: 0 4px; border-bottom: 1px solid rgba(11, 12, 8, 0.1); font-size: 17px; line-height: 22px; color: #0b0c08; text-align: left; background: none; }
+.route-bs > :last-child { border-bottom: 0; }
+.route-bs img { width: 16px; height: 16px; }
+.k-map-tap { display: contents; }
+.k-map .fox-pin span.is-on { position: relative; }
+.k-map .fox-pin span.is-on::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid #e7f551; animation: pin-pulse 2.4s ease-out infinite; }
+@keyframes pin-pulse { 0% { transform: scale(1); opacity: 0.9; } 50%, 100% { transform: scale(2.4); opacity: 0; } }
+/* M29 document viewer: modal on desktop, fullscreen on phones; skeleton with shimmer while the preview loads. */
+.doc-viewer { width: min(640px, 100%); display: flex; flex-direction: column; gap: 12px; padding: 20px; }
+.doc-viewer .doc-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.doc-viewer .doc-top h2 { margin: 0; font-weight: 400; font-size: 22px; line-height: 26px; }
+.doc-viewer .doc-x { width: 44px; height: 44px; border-radius: 50%; font-size: 26px; line-height: 1; color: #0b0c08; background: rgba(11, 12, 8, 0.06); }
+.doc-viewer .doc-page { position: relative; flex: 1 1 auto; min-height: 280px; border-radius: 16px; background: #f6fbc8; overflow: hidden; display: grid; place-items: center; touch-action: pan-y pinch-zoom; }
+.doc-viewer .doc-page img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: 0; transition: opacity 200ms ease-out; }
+.doc-viewer .doc-page img.is-loaded { opacity: 1; }
+.doc-viewer .doc-skel { position: absolute; inset: 24px; border-radius: 12px; background: #fff; display: flex; flex-direction: column; gap: 12px; padding: 24px; overflow: hidden; }
+.doc-viewer .doc-skel i { display: block; height: 10px; border-radius: 99px; background: rgba(11, 12, 8, 0.08); }
+.doc-viewer .doc-skel i:first-child { width: 55%; height: 16px; }
+.doc-viewer .doc-skel i:nth-child(3) { width: 80%; }
+.doc-viewer .doc-skel::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.7) 50%, transparent 70%); transform: translateX(-100%); animation: skel-shimmer 1.2s ease-in-out infinite; }
+@keyframes skel-shimmer { to { transform: translateX(100%); } }
+.doc-viewer .doc-note { margin: 0; font-size: 13px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+.doc-viewer .doc-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.doc-viewer .doc-actions .btn { width: 100%; justify-content: center; }
+.doc-viewer .doc-actions .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+@media (max-width: 760px) {
+  .modal-back.doc-back { padding: 0; align-items: stretch; }
+  .doc-viewer { width: 100%; max-width: none; height: 100dvh; max-height: none; border-radius: 0; padding: calc(12px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom)); }
+}
+/* M29: one-time nudge of the phone carousel. */
+@media (max-width: 760px) {
+  body [data-s="c02"] .c-docs.is-nudge > * { animation: c-nudge 600ms cubic-bezier(.4, 0, .2, 1); }
+}
+@keyframes c-nudge { 40% { transform: translateX(-24px); } }
+.modal.doc-viewer { animation: none; overflow: hidden; }
+@media (hover: none) { .partner-dot:hover:not(:focus-visible)::after { opacity: 0; transition: none; } } /* touch: :hover sticks after a tap — no tooltip over the M08 sheet */

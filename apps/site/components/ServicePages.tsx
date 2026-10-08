@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { BottomSheet } from "@/components/BottomSheet";
 import { useDialog } from "@/components/useDialog";
 import { Footer } from "@/components/Footer";
 import { Header, PARTNER_LOGIN } from "@/components/Header";
@@ -631,7 +632,49 @@ export function LabsPage() {
   );
 }
 
+const OFFICE: Branch[] = [{ id: "office", lab: "Офис", address: "ул. Таганская, 3", metro: "Марксистская", hours: "Пн–Пт 10–19", lat: 55.7406, lng: 37.653 }];
+const OFFICE_ADDRESS = "Москва, ул. Таганская, 3";
+const noop = () => undefined;
+
+/** M26: map-app chooser — Яндекс Карты, 2ГИС, Apple / Google Карты (by platform), «Скопировать адрес». */
+function RouteSheet({ onClose }: { onClose: () => void }) {
+  const [apple, setApple] = useState(false);
+  useEffect(() => setApple(/iPhone|iPad|Macintosh/.test(navigator.userAgent) && "ontouchend" in document), []);
+  const q = encodeURIComponent(OFFICE_ADDRESS);
+  return (
+    <BottomSheet label="Построить маршрут" className="route-bs" duration={280} onClose={onClose} portal>
+      <a href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer">Яндекс Карты <img src="/icons/arrow-up-right.svg" alt="" /></a>
+      <a href={`https://2gis.ru/moscow/search/${q}`} target="_blank" rel="noreferrer">2ГИС <img src="/icons/arrow-up-right.svg" alt="" /></a>
+      {apple ? (
+        <a href={`https://maps.apple.com/?q=${q}&ll=55.7406,37.653`} target="_blank" rel="noreferrer">Apple Карты <img src="/icons/arrow-up-right.svg" alt="" /></a>
+      ) : (
+        <a href={`https://www.google.com/maps/search/?api=1&query=${q}`} target="_blank" rel="noreferrer">Google Карты <img src="/icons/arrow-up-right.svg" alt="" /></a>
+      )}
+      <button
+        type="button"
+        onClick={() => {
+          void navigator.clipboard?.writeText(OFFICE_ADDRESS).then(
+            () => window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Адрес скопирован" })),
+            () => undefined,
+          );
+          onClose();
+        }}
+      >
+        Скопировать адрес
+      </button>
+    </BottomSheet>
+  );
+}
+
 export function ContactsPage() {
+  const [route, setRoute] = useState(false);
+  const closeRoute = useCallback(() => setRoute(false), []);
+  const phoneRoute = (event: { preventDefault: () => void }) => {
+    if (!window.matchMedia("(max-width: 1100px)").matches) return false;
+    event.preventDefault();
+    setRoute(true);
+    return true;
+  };
   // The page is prerendered at build time, so the office status is read after
   // hydration; computing it during render made /contacts mismatch (React #418)
   // whenever the build and the visit fell on different sides of 10:00 / 19:00.
@@ -691,7 +734,7 @@ export function ContactsPage() {
                 <h2>Адрес</h2>
                 <p className="k-strong">ул. Таганская, 3</p>
                 <p>Офис, не лаборатория</p>
-                <a className="k-go" href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer">Маршрут <img src="/icons/arrow-right.svg" alt="" /></a>
+                <a className="k-go" href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer" onClick={(event) => phoneRoute(event)}>Маршрут <img src="/icons/arrow-right.svg" alt="" /></a>
               </div>
             </article>
             <article>
@@ -713,11 +756,14 @@ export function ContactsPage() {
               subtitle="Выберите, кто вы — так письмо попадёт к нужному сотруднику."
             />
             <aside className="k-map">
-              <LabsMap points={[{ id: "office", lab: "Офис", address: "ул. Таганская, 3", metro: "Марксистская", hours: "Пн–Пт 10–19", lat: 55.7406, lng: 37.653 }]} selected="office" onSelect={() => undefined} />
+              {/* M26: on phones the map is a static preview — a tap opens the map-app sheet. */}
+              <div className="k-map-tap" onClick={(event) => phoneRoute(event)}>
+                <LabsMap points={OFFICE} selected="office" onSelect={noop} staticOnPhone />
+              </div>
               <div>
                 <h2>Офис Инмунотех</h2>
                 <p>Москва, ул. Таганская, 3 · 5 минут от м. Марксистская</p>
-                <a className="btn btn-dark k-route" href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer">Построить маршрут</a>
+                <a className="btn btn-dark k-route" href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer" onClick={(event) => phoneRoute(event)}>Построить маршрут</a>
               </div>
             </aside>
           </div>
@@ -754,6 +800,7 @@ export function ContactsPage() {
             </div>
           </div>
         </section>
+        {route && <RouteSheet onClose={closeRoute} />}
       </main>
       <Footer />
     </>

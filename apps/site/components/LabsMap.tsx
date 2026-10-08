@@ -18,10 +18,13 @@ export function LabsMap({
   points,
   selected,
   onSelect,
+  staticOnPhone = false,
 }: {
   points: Branch[];
   selected: string;
   onSelect: (id: string) => void;
+  /** M26: on phones the map is a static preview (no gestures) so it never captures the page scroll. */
+  staticOnPhone?: boolean;
 }) {
   const holder = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
@@ -33,7 +36,11 @@ export function LabsMap({
     (async () => {
       const L = (await import("leaflet")).default;
       if (dead || !holder.current || mapRef.current) return;
-      const map = L.map(holder.current, { scrollWheelZoom: false }).setView([55.741, 37.655], 13);
+      const still = staticOnPhone && window.matchMedia("(max-width: 1100px)").matches;
+      const map = L.map(holder.current, {
+        scrollWheelZoom: false,
+        ...(still ? { dragging: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, zoomControl: false } : {}),
+      }).setView([55.741, 37.655], 13);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap",
       }).addTo(map);
@@ -57,7 +64,7 @@ export function LabsMap({
       mapRef.current = null;
       markers.current = {};
     };
-  }, [points, onSelect]);
+  }, [points, onSelect, staticOnPhone]);
 
   useEffect(() => {
     const map = mapRef.current;

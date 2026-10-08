@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useDialog } from "@/components/useDialog";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 
@@ -13,15 +14,22 @@ const DOCS = [
 ];
 
 export function CertificatesView() {
-  const [open, setOpen] = useState<string | null>(null);
+  const [open, setOpen] = useState<{ code: string; index: number; from: DOMRect | null } | null>(null);
+  const openDoc = (code: string, index: number, card: Element | null) => setOpen({ code, index, from: card?.querySelector(".c-paper")?.getBoundingClientRect() ?? null });
+  // M29: on first appearance the phone carousel nudges 24px left and back (600 мс) to show it scrolls.
+  const docsRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(null);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+    const node = docsRef.current;
+    if (!node || !window.matchMedia("(max-width: 760px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      io.disconnect();
+      node.classList.add("is-nudge");
+      window.setTimeout(() => node.classList.remove("is-nudge"), 700);
+    }, { threshold: 0.6 });
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
   return (
     <>
       <Header />
@@ -61,7 +69,7 @@ export function CertificatesView() {
               <h2>Документы</h2>
               <p>Формулировки — о производстве и качестве. Нажмите, чтобы открыть PDF в просмотрщике.</p>
             </header>
-            <div className="c-docs" data-certs data-allow-x>
+            <div className="c-docs" data-certs data-allow-x ref={docsRef}>
               {DOCS.map(([code, kind, text, size], index) => (
                 <article className="cert-card" key={code}>
                   <div className="c-paper" aria-hidden="true" style={{ backgroundImage: `url(/figma/certificates/doc-${index + 1}.png)` }}><b>{code}</b></div>
@@ -71,10 +79,10 @@ export function CertificatesView() {
                     <h3>{code}</h3>
                     <p>{text}</p>
                     <div className="cert-actions">
-                      <button type="button" className="cert-open" onClick={() => setOpen(code)}>Открыть PDF <img src="/icons/arrow-up-right.svg" alt="" /></button>
+                      <button type="button" className="cert-open" onClick={(event) => openDoc(code, index, event.currentTarget.closest(".cert-card"))}>Открыть PDF <img src="/icons/arrow-up-right.svg" alt="" /></button>
                       <span>{size}</span>
                       {/\d/.test(size) && (
-                        <button type="button" className="cert-dl" aria-label={`Скачать ${code}`} onClick={() => setOpen(code)}><img src="/icons/download.svg" alt="" /></button>
+                        <button type="button" className="cert-dl" aria-label={`Скачать ${code}`} onClick={(event) => openDoc(code, index, event.currentTarget.closest(".cert-card"))}><img src="/icons/download.svg" alt="" /></button>
                       )}
                     </div>
                   </div>
@@ -139,17 +147,97 @@ export function CertificatesView() {
           </div>
         </section>
 
-        {open && (
-          <div className="modal-back" onClick={() => setOpen(null)}>
-            <div className="modal" role="dialog" aria-label={open} onClick={(event) => event.stopPropagation()}>
-              <h2>{open}</h2>
-              <p>Просмотрщик PDF. Файл описывает соответствие производства, а не эффективность для конкретного человека.</p>
-              <button type="button" className="btn btn-dark" onClick={() => setOpen(null)}>Закрыть</button>
-            </div>
-          </div>
-        )}
+        {open && <DocViewer key={open.code} code={open.code} index={open.index} from={open.from} onClose={() => setOpen(null)} />}
       </main>
       <Footer />
     </>
+  );
+}
+
+/**
+ * M29: document viewer. On phones it is fullscreen — the card grows into the screen (320 мс), title and close on top,
+ * «Скачать» and «Поделиться» (Web Share API) at the bottom, a page skeleton with shimmer while the preview loads,
+ * swipe down to close. The PDF files themselves are not uploaded yet, so the viewer shows the page preview
+ * and «Скачать» stays disabled — no fake download.
+ */
+function DocViewer({ code, index, from, onClose }: { code: string; index: number; from: DOMRect | null; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  const [loaded, setLoaded] = useState(false);
+  const [dy, setDy] = useState(0);
+  const touch = useRef<number | null>(null);
+  useDialog(ref, () => closeRef.current());
+
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node || !from || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const to = node.getBoundingClientRect();
+    if (!to.width || !to.height) return;
+    node.animate(
+      [
+        { transformOrigin: "0 0", transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`, borderRadius: "20px", opacity: 0.6 },
+        { transformOrigin: "0 0", transform: "none", opacity: 1 },
+      ],
+      { duration: 320, easing: "cubic-bezier(.2, .8, .2, 1)" },
+    );
+  }, [from]);
+
+  async function share() {
+    const url = `${window.location.origin}/certificates#${encodeURIComponent(code)}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `${code} — FOX Food Xplorer`, url });
+      } catch {
+        /* the user closed the share sheet */
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Ссылка скопирована" }));
+    } catch {
+      /* clipboard is not available */
+    }
+  }
+
+  return (
+    <div className="modal-back doc-back" onClick={() => closeRef.current()} style={dy ? { background: `rgba(11, 12, 8, ${Math.max(0, 0.5 - dy / 800)})` } : undefined}>
+      <div
+        ref={ref}
+        className="modal doc-viewer"
+        role="dialog"
+        aria-modal="true"
+        aria-label={code}
+        onClick={(event) => event.stopPropagation()}
+        style={dy ? { transform: `translateY(${dy}px)`, transition: "none" } : undefined}
+        onTouchStart={(event) => {
+          touch.current = event.touches.length === 1 ? event.touches[0].clientY : null;
+        }}
+        onTouchMove={(event) => {
+          if (touch.current === null || event.touches.length !== 1) return;
+          setDy(Math.max(0, event.touches[0].clientY - touch.current));
+        }}
+        onTouchEnd={() => {
+          touch.current = null;
+          if (dy > 120) closeRef.current();
+          else setDy(0);
+        }}
+      >
+        <header className="doc-top">
+          <h2>{code}</h2>
+          <button type="button" className="doc-x" onClick={() => closeRef.current()} aria-label="Закрыть">×</button>
+        </header>
+        <div className="doc-page">
+          {!loaded && <span className="doc-skel" aria-hidden><i /><i /><i /><i /><i /></span>}
+          <img src={`/figma/certificates/doc-${index + 1}.png`} alt={`${code} — превью документа`} onLoad={() => setLoaded(true)} className={loaded ? "is-loaded" : ""} />
+        </div>
+        <p className="doc-note">PDF пока не загружен — показано превью документа.</p>
+        <footer className="doc-actions">
+          <button type="button" className="btn btn-ghost" disabled title="PDF пока не загружен">Скачать</button>
+          <button type="button" className="btn btn-dark" onClick={() => void share()}>Поделиться</button>
+        </footer>
+      </div>
+    </div>
   );
 }

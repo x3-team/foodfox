@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { BottomSheet } from "@/components/BottomSheet";
 import { prefersReducedMotion, useDialog } from "@/components/useDialog";
 
 export const NAV = [
@@ -37,6 +38,7 @@ const COURSE = [
 ];
 
 export const PARTNER_LOGIN = "https://foodfox.yuri.guru/partner";
+export const PARTNER_APPLY = "https://foodfox.yuri.guru/partner/apply";
 
 export function Header() {
   const path = usePathname();
@@ -45,6 +47,8 @@ export function Header() {
   const [menu, setMenuOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
+  const [partnerSheet, setPartnerSheet] = useState(false);
+  const closePartnerSheet = useCallback(() => setPartnerSheet(false), []);
   const lastY = useRef(0);
   const menuRef = useRef<HTMLDivElement>(null);
   const swipe = useRef<number | null>(null);
@@ -159,7 +163,17 @@ export function Header() {
             <i><b style={{ width: `${(lessonN / 6) * 100}%` }} /></i>
           </span>
         ) : null}
-        <a className={`partner-dot${lessons ? " is-lessons" : ""}`} href={PARTNER_LOGIN} aria-label="Кабинет партнёра">
+        <a
+          className={`partner-dot${lessons ? " is-lessons" : ""}`}
+          href={PARTNER_LOGIN}
+          aria-label="Кабинет партнёра"
+          onClick={(event) => {
+            // M08: on phones the icon opens a sheet «Войти» / «Стать партнёром» instead of leaving the page.
+            if (!window.matchMedia("(max-width: 1100px)").matches) return;
+            event.preventDefault();
+            setPartnerSheet(true);
+          }}
+        >
           <img src={onDark ? "/icons/user-light.svg" : "/icons/user.svg"} alt="" />
         </a>
         {lessons ? (
@@ -194,6 +208,12 @@ export function Header() {
           </span>
         </button>
       </div>
+      {partnerSheet && (
+        <BottomSheet label="Кабинет партнёра" className="partner-bs" onClose={closePartnerSheet} portal>
+          <a className="btn btn-dark" href={PARTNER_LOGIN}>Войти</a>
+          <a className="btn btn-ghost" href={PARTNER_APPLY}>Стать партнёром</a>
+        </BottomSheet>
+      )}
       {menu && (
         <div
           id="mobile-menu"

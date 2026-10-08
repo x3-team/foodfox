@@ -290,6 +290,7 @@ function ModalShell({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const drag = useRef<{ y: number; h: number } | null>(null);
+  const touchDrag = useRef<{ y: number; h: number } | null>(null);
   const [dy, setDy] = useState(0);
   useDialog(ref, onClose);
 
@@ -307,6 +308,31 @@ function ModalShell({
         aria-modal="true"
         aria-label={label}
         style={dy ? { transform: `translateY(${dy}px)`, transition: "none" } : undefined}
+        onTouchStart={(event) => {
+          // Swipe-to-close from anywhere on the sheet while its content is scrolled to the top (phones only).
+          const node = ref.current;
+          const target = event.target as HTMLElement;
+          if (!node || drag.current || event.touches.length !== 1 || !window.matchMedia("(max-width: 1100px)").matches) return;
+          if (node.scrollTop > 0 || target.closest("input, textarea, select, [role=listbox], .sheet-grab")) return;
+          touchDrag.current = { y: event.touches[0].clientY, h: node.offsetHeight };
+        }}
+        onTouchMove={(event) => {
+          const state = touchDrag.current;
+          if (!state) return;
+          const next = event.touches[0].clientY - state.y;
+          if (next < 0 && !dy) {
+            touchDrag.current = null;
+            return;
+          }
+          setDy(Math.max(0, next));
+        }}
+        onTouchEnd={() => {
+          const state = touchDrag.current;
+          touchDrag.current = null;
+          if (!state) return;
+          if (dy > state.h * 0.3) onClose();
+          else setDy(0);
+        }}
       >
         <span
           className="sheet-grab"
