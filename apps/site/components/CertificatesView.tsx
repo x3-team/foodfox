@@ -41,7 +41,14 @@ export function CertificatesView() {
                 </ul>
               </div>
               <div className="c-stack" aria-hidden="true">
-                <img src="/figma/certificates/stack.png" alt="" />
+                {/* C01 (Figma 1275:590): the stack is rebuilt from its layers so the sheets can fan out on load and on hover. */}
+                <div className="c-fan">
+                  <img className="c-fan-p c-fan-p1" src="/figma/certificates/fan/p1.png" alt="" />
+                  <img className="c-fan-p c-fan-p2" src="/figma/certificates/fan/p2.png" alt="" />
+                  <img className="c-fan-p c-fan-p3" src="/figma/certificates/fan/p3.png" alt="" />
+                  <img className="c-fan-chip" src="/figma/certificates/fan/chip.png" alt="" />
+                  <img className="c-fan-ce" src="/figma/certificates/fan/ce.png" alt="" />
+                </div>
                 <p>4 документа · PDF</p>
               </div>
             </div>

@@ -4319,3 +4319,30 @@ body .profile > div:nth-child(2) > :nth-child(n+5) { animation-delay: 240ms; }
   body [data-s="b02"] .chips { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); }
 }
 @media (prefers-reduced-motion: reduce) { .field.is-ok .lf-input::after { animation: none; clip-path: none; } .partner-dot::after { transition: none; } }
+
+/* C01 / M28 (Figma 1275:590): stack of sheets from separate layers (positions in % of the 560×480 frame).
+   Load: sheets lie flat, then fan out to −8° / +4° / −2° (Figma) — stagger 120 мс, 700 мс; on a phone 80 мс / 520 мс and the CE chip pops.
+   Hover: the fan opens to ±10°, the top sheet lifts 8px (300 мс). */
+.c-stack { container-type: size; }
+.c-stack .c-fan { position: absolute; inset: 0; margin: auto; width: min(100cqw, 100cqh * 560 / 480); height: min(100cqh, 100cqw * 480 / 560); overflow: hidden; border-radius: calc(24 / 560 * 100%) / calc(24 / 480 * 100%); background: radial-gradient(calc(260 / 560 * 100%) calc(260 / 480 * 100%) at 75% calc(380 / 480 * 100%), rgba(231, 245, 81, 0.35) 99.6%, transparent 100%) #f6fbc8; }
+.c-stack .c-fan > * { position: absolute; display: block; max-width: none; object-fit: fill; }
+.c-stack .c-fan-p1 { left: calc(108.8 / 560 * 100%); top: calc(46.8 / 480 * 100%); width: calc(404 / 560 * 100%); height: calc(433.5 / 480 * 100%); transform-origin: 50% 48.9%; --flat: -8deg; --open: 2deg; }
+.c-stack .c-fan-p2 { left: calc(94.4 / 560 * 100%); top: calc(11 / 480 * 100%); width: calc(384 / 560 * 100%); height: calc(458 / 480 * 100%); transform-origin: 49.9% 44.7%; --flat: 4deg; --open: -6deg; animation-delay: 120ms !important; }
+.c-stack .c-fan-p3 { left: calc(52.3 / 560 * 100%); top: calc(58.2 / 480 * 100%); width: calc(383.5 / 560 * 100%); height: calc(422 / 480 * 100%); transform-origin: 50% 48.9%; --flat: -2deg; animation-delay: 240ms !important; }
+.c-stack .c-fan-chip { left: calc(4 / 560 * 100%); top: calc(12 / 480 * 100%); width: calc(217 / 560 * 100%); height: calc(84 / 480 * 100%); }
+.c-stack .c-fan-ce { left: calc(370 / 560 * 100%); top: calc(410 / 480 * 100%); width: calc(186 / 560 * 100%); height: calc(70 / 480 * 100%); }
+.c-stack .c-fan-p { animation: c-fan-in 700ms cubic-bezier(.2,.8,.2,1) both; transition: rotate 300ms cubic-bezier(.2,.8,.2,1), translate 300ms cubic-bezier(.2,.8,.2,1); }
+@keyframes c-fan-in { from { transform: rotate(var(--flat)); } }
+@media (hover: hover) and (pointer: fine) {
+  .c-stack:hover .c-fan-p1, .c-stack:hover .c-fan-p2 { rotate: var(--open); }
+  .c-stack:hover .c-fan-p3 { translate: 0 -8px; }
+}
+@media (max-width: 760px) {
+  .c-stack .c-fan-p { animation-duration: 520ms; }
+  .c-stack .c-fan-p2 { animation-delay: 80ms !important; }
+  .c-stack .c-fan-p3 { animation-delay: 160ms !important; }
+  .c-stack .c-fan-ce { animation: c-fan-pop 360ms 520ms cubic-bezier(.2,.8,.2,1) both; transform-origin: 50% 50%; }
+  @keyframes c-fan-pop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.05); opacity: 1; } 100% { transform: none; } }
+}
+@media (prefers-reduced-motion: reduce) { .c-stack .c-fan-p, .c-stack .c-fan-ce { animation: none; transition: none; } }
+.c-stack.c-stack > p { display: none; } /* was always clipped below the 220px image on phones; the chip is part of the Figma stack */
