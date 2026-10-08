@@ -79,6 +79,27 @@ export function SiteOverlays() {
     };
   }, [path]);
 
+  // G17: images that are still loading show a same-size skeleton with a 1.2 s shimmer (the <img> background),
+  // then the picture fades in over 200 мс. Only real loading — already decoded images are left alone.
+  useEffect(() => {
+    const mark = () => {
+      document.querySelectorAll<HTMLImageElement>("main img:not([data-sk])").forEach((img) => {
+        img.dataset.sk = "1";
+        if (img.complete && img.naturalWidth) return;
+        const rect = img.getBoundingClientRect();
+        // Skip pictures with their own entrance animation (C01 fan, report pages) and transparent layers.
+        if (rect.width < 120 || rect.height < 80 || getComputedStyle(img).animationName !== "none" || img.closest(".c-fan, [data-no-sk]")) return;
+        img.classList.add("is-sk");
+        img.addEventListener("load", () => { img.classList.remove("is-sk"); img.classList.add("sk-in"); }, { once: true });
+        img.addEventListener("error", () => img.classList.remove("is-sk"), { once: true });
+      });
+    };
+    mark();
+    const mo = new MutationObserver(mark);
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => mo.disconnect();
+  }, [path]);
+
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const seen = new Set<Element>();

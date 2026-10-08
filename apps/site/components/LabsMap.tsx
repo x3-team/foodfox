@@ -41,9 +41,12 @@ export function LabsMap({
         scrollWheelZoom: false,
         ...(still ? { dragging: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, zoomControl: false } : {}),
       }).setView([55.741, 37.655], 13);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      // G17: the map shows a shimmer skeleton until the first tiles arrive.
+      holder.current.classList.add("is-sk");
+      const tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap",
       }).addTo(map);
+      tiles.once("load", () => holder.current?.classList.remove("is-sk"));
       mapRef.current = map;
       for (const point of points) {
         const icon = L.divIcon({

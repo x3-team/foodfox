@@ -4485,3 +4485,12 @@ body [data-s="s12"].is-in .lab-tile { animation: lab-in 360ms cubic-bezier(.2, .
 @keyframes c04-zoom { from { transform: scale(1.06); } }
 @keyframes c05-pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 245, 81, 0.7); } 60%, 100% { box-shadow: 0 0 0 10px rgba(231, 245, 81, 0); } }
 body.has-s06-bar .m04 { visibility: hidden; opacity: 0; transition: opacity 150ms linear, visibility 0s 150ms; }
+
+/* ===== Block 4 · skeletons (G17): same size as the content, shimmer left → right 1.2 s, content crossfades in 200 мс ===== */
+main img.is-sk { background: linear-gradient(100deg, rgba(11, 12, 8, 0.06) 30%, rgba(11, 12, 8, 0.02) 50%, rgba(11, 12, 8, 0.06) 70%) #ecede6; background-size: 300% 100%; animation: sk-shimmer 1.2s linear infinite; }
+main img.sk-in { animation: sk-in 200ms ease-out; }
+.leaflet-map.is-sk .leaflet-tile-pane { opacity: 0; }
+.leaflet-map.is-sk { background: linear-gradient(100deg, rgba(11, 12, 8, 0.06) 30%, rgba(11, 12, 8, 0.02) 50%, rgba(11, 12, 8, 0.06) 70%) #ecede6; background-size: 300% 100%; animation: sk-shimmer 1.2s linear infinite; }
+.leaflet-map .leaflet-tile-pane { transition: opacity 200ms ease-out; }
+@keyframes sk-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@keyframes sk-in { from { opacity: 0; } }
