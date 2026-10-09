@@ -21,7 +21,7 @@ const COLS = [
       ["Курс по тесту FOX", "/course"],
       ["Отчёт: как читать", "/report"],
       ["Сертификаты", "/certificates"],
-      ["Кабинет партнёра ↗", "https://foodfox.yuri.guru/partner"],
+      ["Кабинет партнёра\u00a0↗", "https://foodfox.yuri.guru/partner"],
     ],
   },
   {

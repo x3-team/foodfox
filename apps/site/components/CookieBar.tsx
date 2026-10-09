@@ -41,23 +41,22 @@ export function CookieBar() {
   return (
     <>
       {open && (
-        <div className={`cookie cookie-sheet${leaving ? " is-leaving" : ""}`} role="region" aria-label="Cookie">
-          <img className="cookie-pin" src="/icons/pin.svg" alt="" width={28} height={28} />
-          <div className="cookie-copy">
+        <div className={`cookie fox-cookie${leaving ? " is-leaving" : ""}`} role="region" aria-label="Cookie">
+          {/* Figma Cookie / Banner (1299:2174 desktop · 1299:2398 390): Graphic / Cookie, title + text, three buttons. */}
+          <img className="ck-graphic" src="/icons/cookie.svg" alt="" width={56} height={56} />
+          <div className="ck-copy">
             <strong>Мы используем cookie</strong>
-            <p>
-              Для работы сайта, аналитики посещений и измерения рекламы. Можно принять все или только необходимые.{" "}
-              <button type="button" className="cookie-inline" onClick={() => setSettings(true)}>
-                Настроить
-              </button>
-            </p>
+            <p>Для работы сайта, аналитики посещений и измерения рекламы. Можно принять все или только необходимые.</p>
           </div>
-          <div className="cookie-actions">
+          <div className="ck-actions">
             <button className="btn btn-dark" type="button" onClick={() => save({ necessary: true, analytics: true, ads: true })}>
               Принять все
             </button>
-            <button className="btn btn-ghost cookie-necessary" type="button" onClick={() => save({ necessary: true, analytics: false, ads: false })}>
+            <button className="btn ck-outline" type="button" onClick={() => save({ necessary: true, analytics: false, ads: false })}>
               Только необходимые
+            </button>
+            <button className="btn ck-text" type="button" onClick={() => setSettings(true)}>
+              Настроить
             </button>
           </div>
         </div>
@@ -103,10 +102,14 @@ function CookieSettings({
   ];
   return (
     <div className="modal-back" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <div ref={ref} className="modal cookie-modal" role="dialog" aria-modal="true" aria-label="Настройки cookie">
+      <div ref={ref} className="modal cookie-modal ck-modal" role="dialog" aria-modal="true" aria-label="Настройки cookie">
         <span className="sheet-grab" aria-hidden />
         <button className="lead-x" type="button" onClick={onClose} aria-label="Закрыть">×</button>
-        <h2>Настройки cookie</h2>
+        {/* Figma 1299:2239 «modal · 568»: Graphic / Cookie + title, rows on grey plates, «Сохранить выбор» + «Принять все». */}
+        <div className="ck-head">
+          <img src="/icons/cookie.svg" alt="" width={56} height={56} />
+          <h2>Настройки cookie</h2>
+        </div>
         <p className="lead-note">Выберите, что можно сохранять. Необходимые нужны для работы сайта и всегда включены.</p>
         {rows.map((row) => (
           <div className="switch-row" key={row.title}>
@@ -127,7 +130,7 @@ function CookieSettings({
         ))}
         <div className="cookie-modal-actions">
           <button className="btn btn-dark" type="button" onClick={onSave}>Сохранить выбор</button>
-          <button className="btn btn-ghost" type="button" onClick={onAcceptAll}>Принять все</button>
+          <button className="btn ck-outline" type="button" onClick={onAcceptAll}>Принять все</button>
         </div>
       </div>
     </div>

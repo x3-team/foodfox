@@ -8,6 +8,9 @@ async function ready(page: import("@playwright/test").Page) {
   try {
     await cookie.waitFor({ state: "visible", timeout: 2500 });
     await cookie.click();
+    // Park the pointer: otherwise it rests where the banner button was and later :hover states (color-mix)
+    // land under it after scrolling, which the contrast sampler cannot read.
+    await page.mouse.move(0, 0);
   } catch {
     /* already dismissed */
   }

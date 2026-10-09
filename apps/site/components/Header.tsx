@@ -133,7 +133,7 @@ export function Header() {
     >
       <div className="header-left">
         <Link href="/" className="logo" aria-label="FOX Food Xplorer">
-          <img src={onDark ? "/icons/logo-light.svg" : "/icons/logo-dark.svg"} alt="" />
+          <img src={onDark || menu ? "/icons/logo-light.svg" : "/icons/logo-dark.svg"} alt="" />
         </Link>
         {variant === "course" && <span className="course-badge">Курс для специалистов</span>}
         <nav className="nav" aria-label="Разделы">
@@ -174,7 +174,7 @@ export function Header() {
             setPartnerSheet(true);
           }}
         >
-          <img src={onDark ? "/icons/user-light.svg" : "/icons/user.svg"} alt="" />
+          <img src={onDark || menu ? "/icons/user-light.svg" : "/icons/user.svg"} alt="" />
         </a>
         {lessons ? (
           <span className="cabinet-pill my-lessons">
@@ -239,17 +239,24 @@ export function Header() {
               {item.label} <img src="/icons/arrow-right-light.svg" alt="" />
             </Link>
           ))}
-          {[
-            <a key="partner" href={PARTNER_LOGIN}>Кабинет партнёра</a>,
-            <a key="tel" href="tel:+74953748305">+7 (495) 374-83-05</a>,
-            <a key="tg" href="https://t.me/foxfoodxplorer">Telegram</a>,
-            <button key="contact" className="btn btn-light" type="button" onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:contact")); }}>Связаться</button>,
-            <button key="book" className="btn btn-light" type="button" onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:book")); }}>Записаться на тест</button>,
-          ].map((node, index) => (
-            <span key={node.key} className="mobile-menu-foot" style={{ animationDelay: `${120 + (NAV.length - 1) * 30 + 80 + index * 30}ms` }}>
-              {node}
-            </span>
-          ))}
+          {/* Figma 1298:1430 bottom block: white CTA on the full width, two outline pills, phone + Telegram. */}
+          <div className="mobile-menu-foot mm-bottom" style={{ animationDelay: `${120 + (NAV.length - 1) * 30 + 80}ms` }}>
+            <button className="btn btn-light mm-cta" type="button" onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:book")); }}>Записаться на тест</button>
+            <div className="mm-pills">
+              <button className="mm-pill" type="button" onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:contact")); }}>Связаться</button>
+              <a className="mm-pill" href={PARTNER_LOGIN}>
+                <img src="/icons/user-light.svg" alt="" />
+                Кабинет партнёра
+              </a>
+            </div>
+            <div className="mm-contacts">
+              <a href="tel:+74953748305">+7 (495) 374-83-05</a>
+              <a href="https://t.me/foxfoodxplorer">
+                <img src="/icons/share/telegram.svg" alt="" />
+                Telegram
+              </a>
+            </div>
+          </div>
         </div>
       )}
     </header>
