@@ -25,7 +25,9 @@ export function ReportToc({ items }: { items: Array<[string, string]> }) {
     return () => io.disconnect();
   }, [items]);
 
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "https://foodfox.example/report";
+  // The page URL is read after mount: reading window during render made the server and client hrefs differ (hydration error).
+  const [shareUrl, setShareUrl] = useState("");
+  useEffect(() => { setShareUrl(window.location.href); }, []);
 
   return (
     <nav className={`toc${open ? " is-open" : ""}`} data-allow-x aria-label="Содержание">
