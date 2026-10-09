@@ -92,7 +92,7 @@ export default function Page() {
               <div className="rf-hero-visual">
                 <div className="rf-paper">
                   <span className="rf-paper-back" />
-                  <img src="/figma/report/front.png" alt="Первая страница примера отчёта FOX" />
+                  <img src="/figma/report/front.webp" alt="Первая страница примера отчёта FOX" />
                 </div>
                 <div className="rf-audiences d-only">
                   <span>Пациентам — до и после теста</span>
@@ -234,7 +234,7 @@ export default function Page() {
             <ReportFaq />
 
             <section data-s="cta" className="rf-cta d-only">
-              <img src="/figma/course/cta-bg.png" alt="" />
+              <img src="/figma/course/cta-bg.webp" alt="" />
               <div className="rf-cta-shade" />
               <div className="rf-cta-copy">
                 <h2>Готовы сдать тест или нужно обсудить отчёт?</h2>
@@ -252,7 +252,7 @@ export default function Page() {
               <i />
               <h2>Готовы сдать тест или нужно обсудить отчёт?</h2>
               <p>Выберите лабораторию-партнёра или покажите эту страницу своему врачу.</p>
-              <img src="/figma/course/cta-bg.png" alt="" />
+              <img src="/figma/course/cta-bg.webp" alt="" />
               <Link className="btn btn-dark" href="/labs">Где сдать тест</Link>
               <ShareButton />
             </section>

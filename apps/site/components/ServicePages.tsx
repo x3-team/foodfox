@@ -809,14 +809,14 @@ export function ContactsPage() {
 }
 
 const REVIEWS = [
-  { id: "r1", kind: "Видео", who: "Пациенты", tag: "ЖКТ", photo: "/figma/reviews/r1.png", video: true, title: "Наконец поняла, что менять в рационе", name: "Елена, 34 года", text: "" },
-  { id: "r2", kind: "Текст", who: "Пациенты", tag: "Питание", photo: "/figma/reviews/r2.png", video: false, title: "", name: "Екатерина Ласковская", text: "Убирала молочку, потом глютен, потом всё сразу — и каждый раз наугад. Отчёт наконец дал конкретный список." },
-  { id: "r3", kind: "Текст", who: "Пациенты", tag: "Общее самочувствие", photo: "/figma/reviews/r3.png", video: false, title: "", name: "Игорь Потруников", text: "Списывал всё на возраст и работу. Четыре месяца вёл дневник питания и не продвинулся ни на шаг." },
-  { id: "r4", kind: "Текст", who: "Специалисты", tag: "Специалист", photo: "/figma/reviews/r4.png", video: false, title: "", name: "Алёна Вавилова", role: "Нутрициолог", text: "С отчётом легче выстроить разговор: пациент видит структуру, а не список запретов." },
-  { id: "r5", kind: "Видео", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r5.png", video: true, title: "Ответ оказался не в косметологии", name: "Алексей, 41 год", text: "" },
-  { id: "r6", kind: "Текст", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r6.png", video: false, title: "", name: "Марина К.", text: "С врачом собрали план по отчёту — без угадывания. Через два месяца стало заметно лучше." },
-  { id: "r7", kind: "Текст", who: "Пациенты", tag: "Вес и отёчность", photo: "/figma/reviews/r7.png", video: false, title: "", name: "Ольга, 29 лет", text: "Думала, что дело в соли. С нутрициологом временно убрали лишнее — ушло ощущение тяжести." },
-  { id: "r8", kind: "Текст", who: "Специалисты", tag: "Общее самочувствие", photo: "/figma/reviews/r8.png", video: false, title: "", name: "Клиника на Таганке", text: "Отчёт стал структурой приёма, а не списком запретов, который пациент составил сам." },
+  { id: "r1", kind: "Видео", who: "Пациенты", tag: "ЖКТ", photo: "/figma/reviews/r1.webp", video: true, title: "Наконец поняла, что менять в рационе", name: "Елена, 34 года", text: "" },
+  { id: "r2", kind: "Текст", who: "Пациенты", tag: "Питание", photo: "/figma/reviews/r2.webp", video: false, title: "", name: "Екатерина Ласковская", text: "Убирала молочку, потом глютен, потом всё сразу — и каждый раз наугад. Отчёт наконец дал конкретный список." },
+  { id: "r3", kind: "Текст", who: "Пациенты", tag: "Общее самочувствие", photo: "/figma/reviews/r3.webp", video: false, title: "", name: "Игорь Потруников", text: "Списывал всё на возраст и работу. Четыре месяца вёл дневник питания и не продвинулся ни на шаг." },
+  { id: "r4", kind: "Текст", who: "Специалисты", tag: "Специалист", photo: "/figma/reviews/r1.webp", video: false, title: "", name: "Алёна Вавилова", role: "Нутрициолог", text: "С отчётом легче выстроить разговор: пациент видит структуру, а не список запретов." },
+  { id: "r5", kind: "Видео", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r5.webp", video: true, title: "Ответ оказался не в косметологии", name: "Алексей, 41 год", text: "" },
+  { id: "r6", kind: "Текст", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r2.webp", video: false, title: "", name: "Марина К.", text: "С врачом собрали план по отчёту — без угадывания. Через два месяца стало заметно лучше." },
+  { id: "r7", kind: "Текст", who: "Пациенты", tag: "Вес и отёчность", photo: "/figma/reviews/r7.webp", video: false, title: "", name: "Ольга, 29 лет", text: "Думала, что дело в соли. С нутрициологом временно убрали лишнее — ушло ощущение тяжести." },
+  { id: "r8", kind: "Текст", who: "Специалисты", tag: "Общее самочувствие", photo: "/figma/reviews/r8.webp", video: false, title: "", name: "Клиника на Таганке", text: "Отчёт стал структурой приёма, а не списком запретов, который пациент составил сам." },
 ];
 
 export function ReviewsPage() {
@@ -922,7 +922,7 @@ export function ReviewsPage() {
                   <div className="v-rate-side">
                     <p className="v-rate-note">312 отзывов после модерации</p>
                     <p className="v-avatars">
-                      <span><img src="/figma/reviews/r1.png" alt="" /><img src="/figma/reviews/r2.png" alt="" /><img src="/figma/reviews/r3.png" alt="" /><img src="/figma/reviews/r4.png" alt="" /><i className="v-more">+{Math.round(48 * rateShare)}</i></span>
+                      <span><img src="/figma/reviews/r1-640.webp" alt="" /><img src="/figma/reviews/r2-640.webp" alt="" /><img src="/figma/reviews/r3-640.webp" alt="" /><img src="/figma/reviews/r1-640.webp" alt="" /><i className="v-more">+{Math.round(48 * rateShare)}</i></span>
                     </p>
                     <p className="v-rate-foot">из них 48 — от врачей и нутрициологов</p>
                   </div>
@@ -931,9 +931,9 @@ export function ReviewsPage() {
               {/* visual · коллаж (1277:858): lime circle, Алексей behind, Елена (video) in front, quote bubble with stars. */}
               <div className="v-collage2" aria-hidden="true" data-contrast>
                 <i className="v-dot" />
-                <img className="v-photo-a" src="/figma/reviews/hero-a.jpg" alt="" />
+                <img className="v-photo-a" src="/figma/reviews/r3-640.webp" srcSet="/figma/reviews/r3-640.webp 640w, /figma/reviews/r3.webp 1205w" sizes="(min-width: 1101px) 320px, 45vw" alt="" />
                 <div className="v-photo-b">
-                  <img src="/figma/reviews/hero-b.jpg" alt="" />
+                  <img src="/figma/reviews/r1-640.webp" srcSet="/figma/reviews/r1-640.webp 640w, /figma/reviews/r1.webp 1205w" sizes="(min-width: 1101px) 340px, 50vw" alt="" />
                   <p className="v-play"><span><img src="/figma/icons/play.svg" alt="" /></span>Елена · 1:24</p>
                 </div>
                 <p className="v-quote"><span>★★★★★</span>«Отчёт наконец дал конкретный список»</p>
@@ -985,7 +985,7 @@ export function ReviewsPage() {
                   <i aria-hidden="true">“</i>
                   <RevText text={item.text} />
                   <footer>
-                    <img src={item.photo} alt="" />
+                    <img src={item.photo.replace(".webp", "-640.webp")} alt="" />
                     <span><b>{item.name}</b>{item.role && <small>{item.role}</small>}<small><img src="/figma/icons/check-2.svg" alt="" />Отзыв проверен модератором</small></span>
                   </footer>
                 </article>

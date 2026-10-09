@@ -157,7 +157,7 @@ export function CertificatesView() {
             <div className="c-docs" data-certs data-allow-x ref={docsRef}>
               {DOCS.map(([code, kind, text, size], index) => (
                 <article className="cert-card" key={code}>
-                  <div className="c-paper" aria-hidden="true" style={{ backgroundImage: `url(/figma/certificates/doc-${index + 1}.png)` }}><b>{code}</b></div>
+                  <div className="c-paper" aria-hidden="true" style={{ backgroundImage: `url(/figma/certificates/doc-${index + 1}.webp)` }}><b>{code}</b></div>
                   {/* Doc / Card (1275:449): badge, title, text, actions row «Открыть PDF ↗ · PDF · size · download». */}
                   <div className="cert-body">
                     <p className="cert-kind">{kind}</p>
@@ -323,7 +323,7 @@ function DocViewer({ code, index, from, onClose }: { code: string; index: number
           {!loaded && <span className="doc-skel" aria-hidden><i /><i /><i /><i /><i /></span>}
           {/* M29: pinch-zoom inside the document (1–4×, double tap 2.5×); swipe-to-close pauses while zoomed. */}
           <ZoomPane onZoomChange={(value) => { zoomed.current = value; }}>
-            <img src={`/figma/certificates/doc-${index + 1}.png`} alt={`${code} — превью документа`} onLoad={() => setLoaded(true)} className={loaded ? "is-loaded" : ""} draggable={false} />
+            <img src={`/figma/certificates/doc-${index + 1}.webp`} alt={`${code} — превью документа`} onLoad={() => setLoaded(true)} className={loaded ? "is-loaded" : ""} draggable={false} />
           </ZoomPane>
         </div>
         <p className="doc-note">PDF пока не загружен — показано превью документа.</p>

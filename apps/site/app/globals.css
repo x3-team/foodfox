@@ -975,7 +975,7 @@ body:has(.mobile-menu) .ls-sticky { display: none !important; }
 .map {
   height: 420px; border-radius: 24px; background:
     linear-gradient(180deg, rgba(248,249,246,.2), rgba(248,249,246,.05)),
-    url('/blog/footer-bokeh.png') center/cover;
+    url('/figma/course/cta-bg.webp') center/cover;
   border: 1px solid var(--ink-10); position: relative;
 }
 .pin { position: absolute; width: 14px; height: 14px; border-radius: 99px; background: var(--lime); border: 2px solid var(--ink); }
@@ -2027,7 +2027,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   position: absolute; left: 20px; bottom: 20px; z-index: 1;
   background: #e7f551; color: #0b0c08; border-radius: 999px; padding: 8px 14px; font-size: 14px;
 }
-[data-s="s08"] { overflow: hidden; background-image: linear-gradient(180deg, rgba(16, 20, 8, 0.45), rgba(16, 20, 8, 0.55)), url("/figma/home/s08-bg.jpg"); background-size: cover; background-position: center; }
+[data-s="s08"] { overflow: hidden; background-image: linear-gradient(180deg, rgba(16, 20, 8, 0.45), rgba(16, 20, 8, 0.55)), image-set(url("/figma/home/s08-bg.webp") 1x, url("/figma/home/s08-bg@2x.webp") 2x); background-size: cover; background-position: center; }
 .s08-stack { overflow: hidden; }
 .s08-stack img:nth-of-type(1) { top: 72px; }
 .s08-stack img:nth-of-type(2) { top: 40px; }
@@ -2047,7 +2047,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 
 @media (min-width: 1101px) {
   [data-s="s15"].faq-band {
-    background: #101400 url("/figma/home/s15-bg.jpg") center / cover no-repeat;
+    background: #101400 image-set(url("/figma/home/s15-bg.webp") 1x, url("/figma/home/s15-bg@2x.webp") 2x) center / cover no-repeat;
     color: #f8f9f6;
   }
   [data-s="s15"] .page-title,
@@ -2753,7 +2753,7 @@ body [data-s="s06"] .symptom-group { display: flex; flex-direction: column; }
 .s06-foot button { padding: 0; border: 0; background: none; font: inherit; font-size: 14px; line-height: 18px; color: #0b0c08; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .s06-foot span { font-size: 12px; line-height: 16px; color: rgba(11,12,8,.4); }
 body [data-s="s06"] .checker-card.checker-dark {
-  background: linear-gradient(180deg, rgba(33,37,29,0), rgba(33,37,29,.9)), linear-gradient(rgba(33,37,29,.45), rgba(33,37,29,.45)), #21251d url("/figma/home/checker/panel-bg.webp") center / cover;
+  background: linear-gradient(180deg, rgba(33,37,29,0), rgba(33,37,29,.9)), linear-gradient(rgba(33,37,29,.45), rgba(33,37,29,.45)), #21251d url("/figma/home/hero-panel-texture.webp") center / cover;
 }
 body [data-s="s06"] .checker-specs li { flex-direction: row; align-items: center; gap: 14px; padding: 12px 14px; border: 1px solid rgba(255,255,255,.08); }
 body [data-s="s06"] .checker-specs li > i { flex: none; width: 40px; height: 40px; border-radius: 50%; background: #e7f551; display: grid; place-items: center; }
@@ -2930,7 +2930,7 @@ body [data-s="s09"] .step.is-green .step-copy p:last-child { color: rgba(248,249
 .s08-pager i.is-on { width: 20px; background: #fff; }
 .s08-plus { display: none; }
 @media (max-width: 1100px) {
-  body [data-s="s08"] { background-image: linear-gradient(rgba(33,37,29,.2), rgba(33,37,29,.2)), url("/figma/home/s08-bg.jpg"); }
+  body [data-s="s08"] { background-image: linear-gradient(rgba(33,37,29,.2), rgba(33,37,29,.2)), image-set(url("/figma/home/s08-bg.webp") 1x, url("/figma/home/s08-bg@2x.webp") 2x); }
   body [data-s="s08"] .s08-copy .btn img { display: none; }
   body [data-s="s08"] .s08-copy .btn .s08-plus { display: block; width: 14px; height: 14px; margin-left: 8px; }
 }
@@ -3177,7 +3177,7 @@ body [data-s="s15"] .acc-plus::before, body [data-s="s15"] .acc-plus::after { di
 body [data-s="s15"] .acc.is-open .acc-plus { background-color: transparent; transform: rotate(180deg); }
 body [data-s="s15"] .s15-help { display: none; }
 @media (min-width: 768px) {
-  body [data-s="s15"].faq-band { background: #101400 url("/figma/home/s15-bg.jpg") center / cover no-repeat; color: #f8f9f6; padding: 0; }
+  body [data-s="s15"].faq-band { background: #101400 image-set(url("/figma/home/s15-bg.webp") 1x, url("/figma/home/s15-bg@2x.webp") 2x) center / cover no-repeat; color: #f8f9f6; padding: 0; }
   body [data-s="s15"] .s15-grid { padding: 128px max(48px, calc(50% - 672px)); max-width: none; margin: 0; box-sizing: border-box; grid-template-columns: minmax(0, 473px) minmax(0, 775px); justify-content: space-between; gap: 48px; }
   body [data-s="s15"] .page-title { color: #f8f9f6; font-size: 64px; line-height: 68px; letter-spacing: -2px; }
   body [data-s="s15"] .stack { display: flex; flex-direction: column; gap: 0; }
@@ -3280,7 +3280,7 @@ body .m04 .btn { width: auto; height: 48px; padding: 12px 16px; border-radius: 4
 
 /* ==== /specialists sweep (1120:3113 | 1317:6392) ==== */
 @media (min-width: 1101px) {
-  body [data-s="p04"].sp-dark { background-image: url("/figma/specialists/route-bg.webp"); background-size: cover; background-position: center; }
+  body [data-s="p04"].sp-dark { background-image: url("/figma/course/cta-bg.webp"); background-size: cover; background-position: center; }
   body [data-s="p09"] .sp-fan, body [data-s="p09"] .sp-fan-cap { display: none; }
 }
 body [data-s="p08"].sp-grey { background: #d7d8cd; }

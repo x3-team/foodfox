@@ -360,7 +360,7 @@ export function BlogFeed() {
           <div>
             {featured && featuredAuthor && (
               <Link href={`/blog/${featured.slug}`} className="featured featured-in">
-                <img className="featured-bg" src="/blog/featured-bg.png" alt="" />
+                <img className="featured-bg" src="/figma/course/hero-bg.webp" alt="" />
                 <div className="featured-shade" />
                 <div className="featured-photo">
                   <img src={featured.cover} alt="" />
@@ -462,7 +462,7 @@ export function BlogFeed() {
 
         <section className="wrap cta-band" data-s="b04">
           <article className="cta" ref={ctaRef}>
-            <img className="bokeh" src="/blog/footer-bokeh.png" alt="" />
+            <img className="bokeh" src="/figma/course/cta-bg.webp" alt="" />
             <div className="shade" />
             <div>
               <h2>Не уверены, что симптомы связаны с едой?</h2>

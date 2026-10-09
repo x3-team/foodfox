@@ -929,7 +929,7 @@
   .is-desk { display: inline; }
   [data-s="p05"] .sp-compliance { display: block; }
   [data-s="p04"] {
-    background-image: linear-gradient(180deg, rgba(16, 20, 0, 0.55), rgba(16, 20, 0, 0.78)), url("/figma/specialists/hero.jpeg");
+    background-image: linear-gradient(180deg, rgba(16, 20, 0, 0.55), rgba(16, 20, 0, 0.78)), image-set(url("/figma/specialists/hero-1440.webp") 1x, url("/figma/specialists/hero.webp") 2x);
     background-size: cover;
     background-position: center;
   }
