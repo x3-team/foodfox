@@ -1,7 +1,7 @@
-[data-s="k01"].dark-hero { min-height: 0; background: #101400; align-items: stretch; }
-[data-s="k01"].dark-hero img.bg { opacity: 1; }
-[data-s="k01"] .shade { background: rgba(16, 20, 0, 0.82); }
-[data-s="k01"].dark-hero .inner {
+[data-s="k01"]:where(:has(.kf-hero-row)).dark-hero { min-height: 0; background: #101400; align-items: stretch; }
+[data-s="k01"]:where(:has(.kf-hero-row)).dark-hero img.bg { opacity: 1; }
+[data-s="k01"]:where(:has(.kf-hero-row)) .shade { background: rgba(16, 20, 0, 0.82); }
+[data-s="k01"]:where(:has(.kf-hero-row)).dark-hero .inner {
   min-height: 0;
   box-sizing: border-box;
   padding: calc(var(--header) + 8px) 0 40px;
@@ -148,7 +148,7 @@
 .kf-disclaimer { font-size: 14px !important; line-height: 18px !important; color: rgba(248, 249, 246, 0.65) !important; }
 [data-s="k07"] .kf-includes-shade { background: rgba(16, 20, 0, 0.78); }
 
-[data-s="l01"] {
+[data-s="l01"]:where(.ls-layout) {
   width: min(1344px, calc(100% - 40px));
   margin: 0 auto;
   padding: 40px 0 96px;
@@ -201,12 +201,12 @@
 .ls-after p { margin: 0; font-size: 16px; line-height: 20px; }
 
 @media (max-width: 1100px) {
-  .kf-hero-row, .kf-audience, .kf-lectors, .kf-include-3, .kf-include-4, .kf-faq, [data-s="l01"] { grid-template-columns: 1fr; }
+  .kf-hero-row, .kf-audience, .kf-lectors, .kf-include-3, .kf-include-4, .kf-faq, [data-s="l01"]:where(.ls-layout) { grid-template-columns: 1fr; }
   .kf-hero-visual { width: 100%; height: 240px; }
-  [data-s="k01"].dark-hero, [data-s="k01"].dark-hero .inner, [data-s="k02"], [data-s="k03"], [data-s="k04"], [data-s="k05"], [data-s="k06"], [data-s="k07"], .kf-includes-in, .kf-final-in, [data-s="l01"], .ls-main, .kf-head, .kf-lector { min-height: 0; }
+  [data-s="k01"].dark-hero, [data-s="k01"].dark-hero .inner, [data-s="k02"], [data-s="k03"], [data-s="k04"], [data-s="k05"], [data-s="k06"], [data-s="k07"], .kf-includes-in, .kf-final-in, [data-s="l01"]:where(.ls-layout), .ls-main, .kf-head, .kf-lector { min-height: 0; }
   .kf-aud { height: auto; min-height: 280px; }
   .ls-side { display: none; }
-  [data-s="l01"] { display: flex; flex-direction: column; }
+  [data-s="l01"]:where(.ls-layout) { display: flex; flex-direction: column; }
   .ls-main { order: 1; }
   .ls-open { order: 2; }
   .ls-title { min-height: 0; }

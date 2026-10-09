@@ -816,7 +816,7 @@ export function LessonsPage() {
                 <a className="ls-quiet" href="/report">{"Конспект"}<span className="ls-d">{"\u00a0урока"}</span>{"\u00a0PDF"}</a>
                 {current < 5 ? (
                   <button type="button" className="text-link" onClick={() => setCurrent(current + 1)}>
-                    Следующий<span className="ls-d">&nbsp;урок</span>
+                    <span>Следующий<span className="ls-d">&nbsp;урок</span></span>
                     <img src="/icons/arrow-right.svg" alt="" width={16} height={16} />
                   </button>
                 ) : null}
