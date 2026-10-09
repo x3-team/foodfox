@@ -105,8 +105,8 @@ const LABS: Array<[string, string]> = [
   ["ДНКОМ", "/figma/labs/fig/dnkom.svg"],
   ["Инвитро", "/figma/labs/fig/invitro.svg"],
   ["CMD", "/figma/labs/fig/cmd.svg"],
-  ["Хеликс", "/figma/labs/fig/helix.svg"],
   ["Хромолаб", "/figma/labs/fig/chromolab.svg"],
+  ["Хеликс", "/figma/labs/fig/helix.svg"],
   ["Юнимед", "/figma/labs/fig/unimed.svg"],
 ];
 
@@ -647,7 +647,7 @@ export function HomePage() {
                 ["Кожные реакции", ["Высыпания", "Экзема", "Дерматиты и зуд"], "/figma/symptoms/skin-card.webp"],
                 ["Проблемы с ЖКТ", ["Вздутие живота", "Газообразование", "Диарея", "Тошнота", "Спазмы или боли"], "/figma/symptoms/gut-card.webp"],
                 ["Самочувствие", ["Хроническая усталость", "Общая слабость", "Тяжесть после еды", "Нарушения сна", "Упадок сил", "Перепады настроения"], "/figma/symptoms/well-card.webp"],
-                ["Вес и отёчность", ["Трудно снизить вес", "Стойкая отёчность", "Отёки лица по утрам", "Колебания веса"], "/figma/symptoms/s6.webp"],
+                ["Вес и отёчность", ["Трудно снизить вес", "Стойкая отёчность", "Отёки лица по утрам", "Колебания веса"], "/figma/symptoms/s6-card.webp"],
               ].map(([title, chips, src], index) => (
                 <article
                   className="sym-card"

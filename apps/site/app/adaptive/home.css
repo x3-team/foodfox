@@ -429,3 +429,62 @@ body [data-s="s15"] .acc.is-open .acc-plus { background-image: url("/figma/icons
 @media (max-width: 767px) {
   body [data-s="s10"].wrap { width: 100%; max-width: none; margin-left: 0; margin-right: 0; }
 }
+
+/* S01 hero ≥1280: сетка 2×2 вместо «колонка справа сверху вниз».
+   Ряд 1 — H1 и лид по одной верхней линии (лид выше рукава на фото), ряд 2 — плашки фактов и кнопки по одной средней.
+   Раньше кнопки заканчивались на 161 px от верха блока: ниже H1 (136) и выше плашек (193–253) — «висели» между рядами. */
+@media (min-width: 1280px) {
+  body [data-s="s01"].home-hero .inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 367px;
+    grid-template-areas: "title lead" "facts actions";
+    column-gap: 48px;
+    row-gap: 32px;
+    top: auto;
+  }
+  body [data-s="s01"].home-hero .hero-top,
+  body [data-s="s01"].home-hero .hero-side { display: contents; }
+  body [data-s="s01"].home-hero h1 { grid-area: title; align-self: start; }
+  body [data-s="s01"].home-hero .lead { grid-area: lead; align-self: start; margin: 0; padding-top: 7px; /* верх заглавных лида = верх заглавных H1 (11,5 − 4,5 px) */ max-width: 335px; }
+  body [data-s="s01"].home-hero .facts { grid-area: facts; align-self: center; }
+  body [data-s="s01"].home-hero .hero-actions { grid-area: actions; align-self: center; margin: 0; }
+  /* разделитель 1px слева от лида (Rectangle 1966 во фрейме, перенесён с текста на x = колонка − 24) */
+  body [data-s="s01"].home-hero .lead { position: relative; }
+  body [data-s="s01"].home-hero .lead::before { content: ""; position: absolute; left: -24px; top: 7px; height: 72px; width: 1px; background: rgba(248, 249, 246, 0.2); }
+}
+@media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
+  /* hero-side стал display: contents — его появление (80 мс) переезжает на лид */
+  body [data-s="s01"].home-hero .lead { animation: riseY 600ms var(--ease) 80ms both; }
+}
+@media (min-width: 1280px) and (max-width: 1439px) {
+  /* на 1280 три плашки (812 px) + кнопки (364 px) встают в один ряд только с зазором 24 и полями плашек 16 */
+  body [data-s="s01"].home-hero .inner { column-gap: 24px; }
+  body [data-s="s01"].home-hero .facts { flex-wrap: nowrap; }
+  body [data-s="s01"].home-hero .facts > div { padding-left: 16px; padding-right: 16px; }
+}
+@media (min-width: 1280px) and (max-width: 1439px) {
+  /* фото 1440×900 обрезается по ширине; центрированный кадр клал пальцы с яблоком под лид справа.
+     Режем всё лишнее слева — рука уходит на (1440 − W) / 2 левее, лицо остаётся в кадре. */
+  body [data-s="s01"].home-hero .hero-media img.bg { object-position: 100% 100%; }
+}
+
+/* ── Выравнивание по сетке 48 / 1344 (правка по замечаниям заказчика 09.10) ── */
+/* S02: подпись над лентой — .meta-line во flex, текст прижимался к левому краю экрана */
+body [data-s="s02"] .meta-line { justify-content: center; }
+@media (min-width: 1101px) {
+  /* S09, S12: у .wrap.band были ещё 48px полей внутри уже отступившего контейнера — шаги и сетка
+     лабораторий стояли на 96–1344 вместо 48–1392, уже соседних секций */
+  body [data-s="s09"].band,
+  body [data-s="s12"].band { padding-left: 0; padding-right: 0; }
+  /* S12: заголовок 890px был прижат влево (центр 541 вместо 720), подзаголовок переносился —
+     во фрейме он в одну строку */
+  body [data-s="s12"] .page-title { margin-left: auto; margin-right: auto; }
+  body [data-s="s12"] .lead { max-width: 720px; }
+  /* S15: сетка — .wrap (1344) с полями 48 → список вопросов кончался на 1296, а блок
+     «Остались вопросы?» под ним — на 1392 */
+  body [data-s="s15"] .s15-grid { width: 100%; }
+  /* S07: карточка 438 в колонке 551 (фрейм) оставляла 113px пустоты справа — край не совпадал
+     ни с контейнером, ни с текстовой колонкой слева; карточка на всю ширину колонки */
+  body [data-s="s07"] .shows-cards { padding-right: 0; }
+  body [data-s="s07"] .show-card { width: 100%; }
+}

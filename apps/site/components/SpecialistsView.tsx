@@ -212,8 +212,8 @@ const LABS: Array<[string, string]> = [
   ["ДНКОМ", "/figma/labs/fig/dnkom.svg"],
   ["Инвитро", "/figma/labs/fig/invitro.svg"],
   ["CMD", "/figma/labs/fig/cmd.svg"],
-  ["Хеликс", "/figma/labs/fig/helix.svg"],
   ["Хромолаб", "/figma/labs/fig/chromolab.svg"],
+  ["Хеликс", "/figma/labs/fig/helix.svg"],
   ["Юнимед", "/figma/labs/fig/unimed.svg"],
 ];
 
@@ -564,13 +564,13 @@ export function SpecialistsView() {
               </div>
               <div className="sp-stage" ref={stageRef}>
                 <div className="sp-sheet is-back-2" aria-hidden>
-                  <img src="/figma/report/front.webp" alt="" />
+                  <img src="/figma/report/p4.webp" alt="" />
                 </div>
                 <div className="sp-sheet is-back-1" aria-hidden>
-                  <img src="/figma/report/front.webp" alt="" />
+                  <img src="/figma/report/p4.webp" alt="" />
                 </div>
                 <div className={`sp-sheet is-front is-zone-${report + 1}${turning ? " is-turning" : ""}`}>
-                  <img src="/figma/report/front.webp" alt="" />
+                  <img src="/figma/report/p4.webp" alt="" />
                   <span className="sp-highlight" />
                   <b>{String(report + 1).padStart(2, "0")}</b>
                 </div>

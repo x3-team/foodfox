@@ -133,3 +133,30 @@
   body [data-s="p02"] .sp-related a:first-of-type { min-height: 44px; margin-top: -12px; margin-bottom: 4px; }
   body [data-s="p08"] .sp-partner > a { min-height: 44px; }
 }
+
+/* ── Выравнивание (правка по замечаниям заказчика 09.10) ── */
+@media (min-width: 768px) {
+  /* P04: в карточках шагов разделитель над «Что делаете вы / Участие специалиста» стоял на своей высоте
+     в каждой карточке (space-between от разной длины текста). Верх карточки и блок роли — общие строки
+     сетки (subgrid): разделители на одной линии во всём ряду. */
+  [data-s="p04"] .sp-steps { grid-auto-rows: auto; row-gap: 16px; }
+  [data-s="p04"] .sp-step { display: grid; grid-row: span 2; grid-template-rows: subgrid; row-gap: 24px; min-height: 0; }
+  [data-s="p04"] .sp-step-you { align-self: start; }
+  /* P07: у Ксении должность в 2 строки — её список фактов начинался ниже соседних. Фото / имя+должность /
+     список — общие строки сетки: списки во всех трёх карточках начинаются на одной линии. */
+  [data-s="p07"] .sp-experts { grid-auto-rows: auto; row-gap: 0; }
+  [data-s="p07"] .sp-experts article { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 20px; align-content: start; }
+}
+
+@media (min-width: 1101px) {
+  /* P06: геометрия стопки из фрейма 1375:4638. Передний лист — 132px от края колонки и 24px сверху,
+     задние листы — со смещением +18/+71 (7°) и +15/+32 (3.5°) от него, пейджер под стопкой на y 879.
+     Было: лист у самого края колонки, задние листы торчали вправо, пейджер лежал на низу листа.
+     На 1101–1439 колонка уже — отступ сжимается до 0, чтобы стопка не вылезала. */
+  [data-s="p06"] .sp-stage { --off: clamp(0px, calc(100% - 612px), 132px); min-height: 927px; }
+  [data-s="p06"] .sp-sheet.is-front { margin: 24px 0 0 var(--off); }
+  [data-s="p06"] .sp-sheet.is-back-1 { left: calc(var(--off) + 15px); top: 56px; }
+  [data-s="p06"] .sp-sheet.is-back-2 { left: calc(var(--off) + 18px); top: 95px; }
+  [data-s="p06"] .sp-controls { left: var(--off); top: 879px; bottom: auto; z-index: 2; }
+}
+
