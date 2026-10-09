@@ -123,13 +123,6 @@
 .kf-include-row h3 { margin: 0; font-weight: 300; font-size: 24px; line-height: 28px; letter-spacing: -0.5px; color: #f8f9f6; }
 .kf-include-row p { margin: 0; font-size: 16px; line-height: 20px; color: rgba(248, 249, 246, 0.65); }
 .kf-include-row img { width: 24px; height: 24px; object-fit: contain; }
-.kf-search {
-  width: 24px;
-  height: 24px;
-  background: var(--lime);
-  -webkit-mask: url("/icons/search.svg") center / 16px 16px no-repeat;
-  mask: url("/icons/search.svg") center / 16px 16px no-repeat;
-}
 
 .kf-faq { display: grid; grid-template-columns: 437px minmax(0, 1fr); gap: 48px; align-items: start; }
 .kf-faq h2 { max-width: 10ch; }
