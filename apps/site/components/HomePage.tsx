@@ -185,8 +185,15 @@ export function HomePage() {
   const [reportPage, setReportPage] = useState(0);
   // M44: the page that leaves curls away over the left edge while the next one already lies underneath.
   const [curl, setCurl] = useState<{ src: string; n: number; dir: 1 | -1 } | null>(null);
+  // S08 note: clicks during a page turn (450 мс) are ignored.
+  const turnAt = useRef(0);
+  const [turnDir, setTurnDir] = useState<1 | -1>(1);
   const turnReport = (dir: 1 | -1) => {
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) setCurl({ src: REPORT_SLIDES[reportPage][0], n: Date.now(), dir });
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduce && performance.now() - turnAt.current < 450) return;
+    turnAt.current = performance.now();
+    setTurnDir(dir);
+    if (!reduce) setCurl({ src: REPORT_SLIDES[reportPage][0], n: Date.now(), dir });
     setReportPage((n) => (n + REPORT_SLIDES.length + dir) % REPORT_SLIDES.length);
   };
   const reportTouch = useRef<number | null>(null);
@@ -313,6 +320,7 @@ export function HomePage() {
             card.style.transform = "";
             card.style.opacity = "";
             card.style.zIndex = "";
+            card.style.filter = "";
             // M41: on phones the next sticky card slides over this one — it shrinks to 0.94 and darkens by 20%.
             const next = cards[index + 1];
             if (next && !reduce) {
@@ -325,15 +333,24 @@ export function HomePage() {
           card.style.removeProperty("--cover");
           const rel = index - progress;
           if (rel < 0) {
-            card.style.transform = `translateY(${rel * 70}%)`;
-            card.style.opacity = String(Math.max(0, 1 + rel * 1.4));
+            // Storyboard 1407:1817: the next card slides over this one; it goes back into the stack
+            // (scale .94, opacity .55, blur 3) and only its top edge stays visible, 12px per step.
+            const depth = -rel;
+            const near = Math.min(1, depth);
+            const scale = 1 - 0.06 * near - 0.03 * Math.max(0, depth - 1);
+            const lift = 12 * depth + (1 - scale) * card.offsetHeight;
+            card.style.transform = `translateY(${-lift}px) scale(${scale})`;
+            card.style.opacity = String(1 - 0.45 * near);
+            card.style.filter = `blur(${(3 * near).toFixed(2)}px)`;
+            card.style.zIndex = String(Math.round(50 - depth * 10));
           } else {
             const scale = rel <= 1 ? 1 - 0.1145 * rel : 0.8855 - 0.0785 * Math.min(1, rel - 1);
             const shift = rel <= 1 ? 24 * rel : 24 + 25 * Math.min(1, rel - 1);
             card.style.transform = `translateY(${shift}px) scale(${scale})`;
             card.style.opacity = "1";
+            card.style.filter = "";
+            card.style.zIndex = String(Math.round(100 - rel * 10));
           }
-          card.style.zIndex = String(Math.round(100 - rel * 10));
         });
       }
       if (!reduce && austriaRef.current) {
@@ -818,7 +835,7 @@ export function HomePage() {
                 <i className="s08-sheet s08-sheet-3" aria-hidden />
                 <i className="s08-sheet s08-sheet-2" aria-hidden />
                 <img
-                  className="s08-shot"
+                  className={`s08-shot${turnDir < 0 ? " is-back" : ""}`}
                   key={reportPage}
                   src={REPORT_SLIDES[reportPage][0]}
                   alt=""
