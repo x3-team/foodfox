@@ -3650,7 +3650,7 @@ body [data-s="l03"] [data-lab-list] .l-actions .btn-ghost { border-color: transp
   body [data-s="l03"] .l-pane .search { margin: 20px 24px 10px; width: auto; }
   body [data-s="l03"] .l-found { padding: 0 24px 16px; border-bottom: 1px solid rgba(11, 12, 8, 0.1); }
 }
-@media (max-width: 480px) {
+@media (max-width: 767px) {
   body [data-s="l01"].fx-hero { padding: 16px 0 20px; }
   body [data-s="l01"] .l01, body [data-s="l01"] .l01-copy { gap: 14px; }
   body [data-s="l01"] h1 { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; font-weight: 300; }

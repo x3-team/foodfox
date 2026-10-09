@@ -1,9 +1,9 @@
-[data-s^="l"] { color: #0b0c08; }
-[data-s^="l"] h1,
-[data-s^="l"] h2,
-[data-s^="l"] h3,
-[data-s^="l"] p { margin: 0; }
-[data-s^="l"] img { max-width: 100%; }
+[data-s^="l"]:where(:not(.ls-layout)) { color: #0b0c08; }
+[data-s^="l"]:where(:not(.ls-layout)) h1,
+[data-s^="l"]:where(:not(.ls-layout)) h2,
+[data-s^="l"]:where(:not(.ls-layout)) h3,
+[data-s^="l"]:where(:not(.ls-layout)) p { margin: 0; }
+[data-s^="l"]:where(:not(.ls-layout)) img { max-width: 100%; }
 
 main:has(> .fx-hero) { padding-top: var(--header); }
 section.dark-hero.fx-hero {
@@ -46,11 +46,11 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .fx-lead { margin: 0; font-size: 20px; line-height: 24px; color: rgba(11, 12, 8, 0.65); max-width: 640px; }
 .fx-kicker { color: #5c5e57; font-weight: 500; }
 
-[data-s="l01"] { background: #d7d8cd; padding: 40px 0 80px; }
+[data-s="l01"]:where(.fx-hero) { background: #d7d8cd; padding: 40px 0 80px; }
 .l01 { display: flex; flex-direction: column; gap: 40px; min-width: 0; }
 .l01-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); gap: 64px; align-items: start; min-width: 0; }
 .l01-copy { display: flex; flex-direction: column; gap: 28px; min-width: 0; max-width: 720px; }
-[data-s="l01"] h1 { font-weight: 300; font-size: 64px; line-height: 68px; letter-spacing: -2px; }
+[data-s="l01"]:where(.fx-hero) h1 { font-weight: 300; font-size: 64px; line-height: 68px; letter-spacing: -2px; }
 .l-city { background: #fff; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 2px 6px rgba(11, 12, 8, 0.05), 0 8px 24px -4px rgba(11, 12, 8, 0.1); min-width: 0; }
 .l-city-top { display: flex; gap: 16px; align-items: center; min-width: 0; }
 .l-pin { width: 48px; height: 48px; border-radius: 99px; background: #e7f551; display: grid; place-items: center; flex: 0 0 48px; }
@@ -154,7 +154,7 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .l05 small { grid-column: 1 / -1; color: rgba(11, 12, 8, 0.65); }
 
 @media (max-width: 1100px) {
-  [data-s="l01"] h1 { font-size: 40px; line-height: 44px; letter-spacing: -1px; }
+  [data-s="l01"]:where(.fx-hero) h1 { font-size: 40px; line-height: 44px; letter-spacing: -1px; }
   .l01-row, .l-visit, .l05, .l-split { grid-template-columns: 1fr; height: auto; }
   .l01-photo { height: 280px; }
   .l-city-top { flex-direction: column; align-items: stretch; }
@@ -175,18 +175,20 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   .l-visit { grid-template-columns: 1fr 1fr; }
 }
 
-@media (max-width: 480px) {
+/* Телефон ≤767 (единая сетка; раньше ≤480): композиция мобильного фрейма 1261:1099. */
+@media (max-width: 767px) {
+  /* 1261:1099 заканчивается списком отделений и CTA-баром: L02/L04/L05 на телефоне не показываются. */
   [data-s="l02"], [data-s="l04"], [data-s="l05"] { display: none; }
-  .l01-photo, .l-stats, .l-note, .fx-lead, .fx-eye { display: none; }
-  [data-s="l01"] { padding: 0; }
-  [data-s="l01"] .crumbs { display: none; }
+  .l01 .l01-photo, .l01 .l-stats, .l01 .l-note, .l01 .fx-lead, .l01 .fx-eye { display: none; }
+  [data-s="l01"].fx-hero { padding: 0; }
+  [data-s="l01"].fx-hero .crumbs { display: none; }
   .l-city { padding: 8px 0; max-width: 100%; }
   .l-city-top { flex-direction: row; align-items: center; min-width: 0; width: 100%; }
   .l-city-name { width: auto; flex: 1 1 auto; min-width: 0; }
   .l-city-name span { display: none; }
   .l-city-name input { font-size: 16px; line-height: 20px; min-width: 0; }
   .l-change { flex: 0 0 auto; }
-  [data-s="l01"] h1 { font-size: 28px; line-height: 32px; }
+  [data-s="l01"]:where(.fx-hero) h1 { font-size: 28px; line-height: 32px; }
   [data-s="l03"] { padding: 8px 0 0; }
   .l-split.is-list { border: 0; background: transparent; }
   .l-found, .l-caption, .l-more { display: none; }
@@ -233,5 +235,6 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   }
   .l-map-card h3 { margin: 0 0 4px; font-size: 16px; font-weight: 500; }
   .l-map-card p { margin: 0; color: rgba(11, 12, 8, 0.7); font-size: 14px; line-height: 18px; }
-  body:has([data-s="l03"]) .footer { display: none; }
+  /* Футер (глобальный 1311:15729) виден под списком; в режиме «Карта» карта занимает экран — футер скрыт. */
+  body:has(.l-split.is-map) .footer { display: none; }
 }

@@ -356,7 +356,8 @@ export function LabsPage() {
   }, [points]);
 
   useEffect(() => {
-    const query = window.matchMedia("(min-width: 1101px)");
+    // Tablet (≥768) keeps the desktop list + map split (1247:87); phones switch «Список | Карта».
+    const query = window.matchMedia("(min-width: 768px)");
     const apply = () => setWide(query.matches);
     apply();
     query.addEventListener("change", apply);
@@ -424,7 +425,7 @@ export function LabsPage() {
                       <input value={city} onChange={(event) => setCity(event.target.value)} aria-label="Город" />
                     </div>
                     <button type="button" className="l-change" onClick={() => document.querySelector<HTMLInputElement>("[aria-label='Город']")?.focus()}>
-                      Изменить<span className="d-only">&nbsp;город</span> <img src="/icons/chevron-down.svg" alt="" />
+                      <span>Изменить<span className="d-only">&nbsp;город</span></span> <img src="/icons/chevron-down.svg" alt="" />
                     </button>
                   </div>
                   <div className="l-stats">
@@ -536,10 +537,17 @@ export function LabsPage() {
                   <div className="l03-map">
                     <LabsMap points={points} selected={selected} onSelect={pickFromMap} />
                     {selectedLab && (
+                      // Mobile map frame 1261:1311: the selected branch sits in a bottom sheet as a full Branch / Item.
                       <article className="l-map-card">
-                        <h3>{selectedLab.lab}</h3>
-                        <p>{selectedLab.address}</p>
-                        <p>{selectedLab.metro}</p>
+                        <i className="l-map-grab" aria-hidden />
+                        <h3>{selectedLab.lab === "Инвитро" ? "INVITRO" : selectedLab.lab}</h3>
+                        <p className="l-open"><i />Открыто до {closesAt(selectedLab.hours)}</p>
+                        <p className="l-addr">{selectedLab.address}</p>
+                        <p className="l-metro">{selectedLab.metro}</p>
+                        <div className="l-actions">
+                          <a className="btn btn-dark" href={withUtm(PARTNERS.find((partner) => partner.name === selectedLab.lab || (selectedLab.lab === "Инвитро" && partner.name === "INVITRO"))?.href ?? "https://foodfox.yuri.guru/labs", "labs_branch")} target="_blank" rel="noreferrer">Сдать здесь</a>
+                          <a className="btn btn-ghost" href={`https://yandex.ru/maps/?text=${encodeURIComponent(`${selectedLab.address}, ${city}`)}`} target="_blank" rel="noreferrer">Маршрут</a>
+                        </div>
                       </article>
                     )}
                   </div>
