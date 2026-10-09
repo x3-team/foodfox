@@ -23,7 +23,7 @@ export function CertificatesView() {
   const elisaRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const node = elisaRef.current;
-    if (!node || !window.matchMedia("(max-width: 760px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!node || !window.matchMedia("(max-width: 767px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     node.classList.add("is-armed");
     const io = new IntersectionObserver((entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) return;
@@ -105,7 +105,7 @@ export function CertificatesView() {
   }, []);
   useEffect(() => {
     const node = docsRef.current;
-    if (!node || !window.matchMedia("(max-width: 760px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!node || !window.matchMedia("(max-width: 767px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const io = new IntersectionObserver((entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) return;
       io.disconnect();

@@ -1,5 +1,5 @@
 // State/motion probe for foodfox site. node states.mjs <base> <outdir>
-import { chromium } from "/workspace/foodfox-autologin/apps/site/node_modules/playwright/index.mjs";
+import { chromium } from "../../../apps/site/node_modules/playwright/index.mjs";
 import fs from "fs";
 const [base = "http://localhost:3217", out = "/workspace/foodfox-hero/states"] = process.argv.slice(2);
 fs.mkdirSync(out, { recursive: true });

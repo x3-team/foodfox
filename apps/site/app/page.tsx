@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { HomePage } from "@/components/HomePage";
+import "@/app/adaptive/home.css";
 
 export const metadata: Metadata = {
   title: "FOX Food Xplorer — тест на пищевую непереносимость",

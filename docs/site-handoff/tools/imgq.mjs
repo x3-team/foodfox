@@ -1,6 +1,6 @@
 // Usage: node imgq.mjs <base> <out.json>  — for every <img> and CSS background on each page (1440 and 390, DPR 2),
 // compares the intrinsic pixel size with the rendered size × DPR.
-import { chromium } from "/workspace/foodfox-autologin/apps/site/node_modules/playwright/index.mjs";
+import { chromium } from "../../../apps/site/node_modules/playwright/index.mjs";
 import fs from "node:fs";
 const [base, outFile] = process.argv.slice(2);
 const PAGES = ["/", "/specialists", "/report", "/course", "/course/lessons", "/labs", "/blog", "/blog/skrytaya-neperenosimost-laktozy-i-glyutena", "/blog/authors", "/blog/authors/kseniya-ellinskaya", "/faq", "/certificates", "/reviews", "/contacts", "/privacy", "/no-such-page-404"];

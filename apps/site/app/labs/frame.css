@@ -153,7 +153,7 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .l05 li { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; }
 .l05 small { grid-column: 1 / -1; color: rgba(11, 12, 8, 0.65); }
 
-@media (max-width: 1099px) {
+@media (max-width: 1100px) {
   [data-s="l01"] h1 { font-size: 40px; line-height: 44px; letter-spacing: -1px; }
   .l01-row, .l-visit, .l05, .l-split { grid-template-columns: 1fr; height: auto; }
   .l01-photo { height: 280px; }

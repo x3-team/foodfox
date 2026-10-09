@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthorsBrowser } from "@/components/AuthorsBrowser";
+import "@/app/adaptive/blog.css";
 
 export const metadata: Metadata = {
   title: "Авторы блога",

@@ -103,7 +103,7 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   .k-routes .k-ico { width: 36px; height: 36px; background-color: #e7f551; }
 }
 
-@media (max-width: 1099px) {
+@media (max-width: 1100px) {
   [data-s="k01"] h1 { font-size: 40px; line-height: 44px; }
   .k01-row, .k-cards, .k03, .k-routes { grid-template-columns: 1fr; }
   .k01-row img { height: 220px; }

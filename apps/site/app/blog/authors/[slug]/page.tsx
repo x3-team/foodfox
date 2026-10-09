@@ -5,6 +5,7 @@ import { AuthorPosts, SubscribeLink } from "@/components/AuthorPosts";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { authors, articles, authorBySlug, materialsWord } from "@/lib/content";
+import "@/app/adaptive/blog.css";
 
 export function generateStaticParams() {
   return authors.map((author) => ({ slug: author.slug }));

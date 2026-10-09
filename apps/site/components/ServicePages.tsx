@@ -140,7 +140,7 @@ export function FaqPage() {
         setOpen((current) => (current.includes(qa.question) ? current : [...current, qa.question]));
         setFlash(qa.id);
         // M-note FAQ: the flash on the target question lasts 600 мс on phones (1.2 с on desktop).
-        window.setTimeout(() => setFlash(""), window.matchMedia("(max-width: 760px)").matches ? 600 : 1200);
+        window.setTimeout(() => setFlash(""), window.matchMedia("(max-width: 767px)").matches ? 600 : 1200);
         window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
         return;
       }
@@ -356,7 +356,7 @@ export function LabsPage() {
   }, [points]);
 
   useEffect(() => {
-    const query = window.matchMedia("(min-width: 1100px)");
+    const query = window.matchMedia("(min-width: 1101px)");
     const apply = () => setWide(query.matches);
     apply();
     query.addEventListener("change", apply);
@@ -837,7 +837,7 @@ export function ReviewsPage() {
   const [phone, setPhone] = useState(false);
   const [limit, setLimit] = useState(5);
   useEffect(() => {
-    const media = window.matchMedia("(max-width: 760px)");
+    const media = window.matchMedia("(max-width: 767px)");
     const sync = () => setPhone(media.matches);
     sync();
     media.addEventListener("change", sync);
@@ -865,7 +865,7 @@ export function ReviewsPage() {
   const [ratePending, setRatePending] = useState(true);
   useEffect(() => {
     setRatePending(false);
-    if (!window.matchMedia("(max-width: 760px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!window.matchMedia("(max-width: 767px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const start = performance.now();
     let raf = 0;
     const tick = (now: number) => {

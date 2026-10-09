@@ -71,7 +71,7 @@ article.is-open .f-answer > div { padding-bottom: 12px; }
 .f-num { margin-right: 10px; color: #0b0c08; background: #e7f551; border-radius: 999px; padding: 2px 8px; font-size: 14px; font-weight: 500; }
 .f-groups article > button strong { font-weight: 400; }
 .f-more { margin-top: 8px; }
-@media (min-width: 1100px) {
+@media (min-width: 1101px) {
   .f-groups > section.is-rest { display: none; }
   [data-s="f01"] { padding: 56px 0 88px; }
   .f01-visual { height: 440px; }
@@ -83,7 +83,7 @@ article.is-open .f-answer > div { padding-bottom: 12px; }
   .f03-card { min-height: 460px; padding: 64px; }
   .f03-photo, .f03-photo img { min-height: 360px; height: 360px; }
 }
-@media (max-width: 1099px) {
+@media (max-width: 1100px) {
   .f-more { display: none; }
 }
 .f-answer p { font-size: 16px; line-height: 22px; max-width: 760px; }
@@ -100,7 +100,7 @@ article.is-open .f-answer > div { padding-bottom: 12px; }
 .f03-photo p { position: absolute; left: 16px; bottom: 16px; background: #fff; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; max-width: calc(100% - 32px); }
 .f03-photo b { font-weight: 500; }
 
-@media (max-width: 1099px) {
+@media (max-width: 1100px) {
   [data-s="f01"] h1, .f03-card h2 { font-size: 40px; line-height: 44px; }
   .f01-row, .f02, .f03-card { grid-template-columns: 1fr; }
   .f01-visual { height: 320px; }

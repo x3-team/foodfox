@@ -1,5 +1,5 @@
 // usage: node tops.mjs <base> <outdir> — header contrast + first-screen shots for all 16 pages at 1440 and 390
-import { chromium } from "@playwright/test";
+import { chromium } from "../../../apps/site/node_modules/playwright/index.mjs";
 const [base, dir] = process.argv.slice(2);
 const PAGES = ["/", "/specialists", "/report", "/course", "/course/lessons", "/labs", "/blog", "/blog/skrytaya-neperenosimost-laktozy-i-glyutena", "/blog/authors", "/blog/authors/kseniya-ellinskaya", "/faq", "/certificates", "/reviews", "/contacts", "/privacy", "/no-such-page-404"];
 const browser = await chromium.launch();

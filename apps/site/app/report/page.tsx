@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { ReportFaq, ReportViewer } from "@/components/ReportStage";
 import { ReportToc, ShareButton } from "@/components/ReportToc";
 import "./frame.css";
+import "@/app/adaptive/report.css";
 
 export const metadata = { title: "Отчёт FOX: как читать" };
 

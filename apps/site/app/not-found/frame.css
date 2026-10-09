@@ -35,7 +35,7 @@
 .e-tiles h3 { font-weight: 500; font-size: 20px; }
 .e-tiles p { color: rgba(11, 12, 8, 0.65); }
 
-@media (max-width: 1099px) {
+@media (max-width: 1100px) {
   [data-s="e01"] h1:not(.e-a11y) { font-size: 40px; line-height: 44px; }
   .e01, .e-tiles { grid-template-columns: 1fr; }
   .e-plate { order: -1; }

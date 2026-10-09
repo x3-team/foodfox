@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import "./frame.css";
+import "@/app/adaptive/service.css";
 
 export const metadata: Metadata = { title: "Политика конфиденциальности" };
 

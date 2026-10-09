@@ -245,7 +245,7 @@ export function HomePage() {
     if (!section || !card) return;
     let inSection = false;
     let cardSeen = false;
-    const sync = () => setCheckerBar(inSection && !cardSeen && window.matchMedia("(max-width: 760px)").matches);
+    const sync = () => setCheckerBar(inSection && !cardSeen && window.matchMedia("(max-width: 767px)").matches);
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.target === section) inSection = entry.isIntersecting;
@@ -637,7 +637,7 @@ export function HomePage() {
                   data-contrast="photo"
                   onClick={() => {
                     // M42: on phones a tap scrolls to the checker and opens the matching group.
-                    if (!window.matchMedia("(max-width: 760px)").matches) return;
+                    if (!window.matchMedia("(max-width: 767px)").matches) return;
                     const id = ["skin", "gut", "well", "weight"][index];
                     setOpenGroups((list) => (list.includes(id) ? list : [...list, id]));
                     window.requestAnimationFrame(() => document.getElementById(`s06-${id}`)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }));

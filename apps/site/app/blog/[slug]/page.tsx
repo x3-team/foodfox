@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleView } from "@/components/ArticleView";
 import { articles, authorBySlug, articleBySlug } from "@/lib/content";
+import "@/app/adaptive/blog.css";
 
 export function generateStaticParams() {
   return articles.map((article) => ({ slug: article.slug }));

@@ -763,7 +763,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .sp-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .sp-spec-row { display: contents; }
 }
@@ -936,7 +936,7 @@
   [data-s="p08"] { background: #efe6d4; }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   [data-s="p01"] h1 { font-size: 34px; line-height: 38px; }
   .sp-table article { grid-template-columns: 36px minmax(0, 1fr) auto; gap: 8px 12px; padding: 18px 16px; align-items: center; }
   .sp-table b { grid-column: auto; justify-self: end; font-size: 13px; line-height: 16px; }
