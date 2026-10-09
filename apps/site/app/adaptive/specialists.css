@@ -1,3 +1,135 @@
 /* Адаптив: specialists. Брейкпоинты сайта (единые):
    телефон ≤767 · планшет 768–1100 · десктоп ≥1101 (подшаги 1280 / 1440).
    Подшаги телефона: ≤480, ≤374. Этот файл подключается после globals.css и frame.css страницы. */
+
+/* Десктоп и планшет: .inner hero — flex-элемент строки .dark-hero, и flex: 1 съедал margin: auto у .wrap —
+   контент hero прилипал к левому краю (x = 0) на 1101–1920. Ширина — как у остальных секций. */
+@media (min-width: 768px) {
+  [data-s="p01"].dark-hero > .wrap.inner { flex: 0 1 auto; margin-left: auto; margin-right: auto; }
+}
+
+/* 1101–1439: врач на фото сдвигается влево — лид не должен заходить на халат. */
+@media (min-width: 1101px) and (max-width: 1439px) {
+  [data-s="p01"] .sp-hero-copy { max-width: min(760px, 55%); }
+  /* P09: колонка лекторов 280px на 1280 ломала подписи в 4 строки */
+  [data-s="p09"] .sp-course { grid-template-columns: minmax(0, 1fr) minmax(320px, 360px); gap: 48px; }
+}
+
+/* ===== Планшет 768–1100: десктопная композиция (1120:3113), ужатая; не растянутый телефон ===== */
+@media (min-width: 768px) and (max-width: 1100px) {
+  [data-s^="p0"] .wrap { width: calc(100% - 64px); }
+  .sp-sec { padding: 72px 0; }
+  .sp-report { padding: 80px 0; }
+  .sp-stack-48 { gap: 40px; }
+  .sp-stack-72 { gap: 48px; }
+
+  /* Типографика: общие правила ≤1100 из globals.css делают h2 24px, лиды 16px, h3 карточек 14px. */
+  body [data-s^="p0"] .sp-h2 { font-size: 36px; line-height: 40px; letter-spacing: -1px; }
+  body [data-s^="p0"] .sp-lead,
+  body [data-s^="p0"] .sp-lead-inv { font-size: 18px; line-height: 24px; }
+  body [data-s^="p0"] .sp-arg h3,
+  body [data-s^="p0"] .sp-table h3 { font-size: 22px; line-height: 26px; }
+
+  /* P01 hero: тёмный, фото врача справа сверху целиком (лицо не режется), текст слева, плитки 3 / 2 колонки. */
+  [data-s="p01"].dark-hero { display: block; min-height: 0; border-radius: 0 0 24px 24px; }
+  [data-s="p01"].dark-hero > img.bg {
+    position: absolute; inset: 0 0 auto 0; width: 100%; max-width: none;
+    height: calc(380px + 33vw); object-fit: cover; object-position: 100% 0; opacity: 1;
+  }
+  [data-s="p01"].dark-hero > .shade {
+    position: absolute; inset: 0 0 auto 0; height: calc(380px + 33vw);
+    background:
+      linear-gradient(180deg, rgba(31, 36, 26, 0) 55%, #1f241a 100%),
+      linear-gradient(90deg, rgba(31, 36, 26, 0.94) 0%, rgba(31, 36, 26, 0.7) 38%, rgba(31, 36, 26, 0) 62%);
+  }
+  [data-s="p01"].dark-hero > .wrap.inner {
+    position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: flex-start; gap: 40px;
+    padding: calc(var(--header) + 32px) 0 48px;
+  }
+  [data-s="p01"] .sp-hero-copy { gap: 24px; max-width: min(560px, 55%); }
+  [data-s="p01"] h1 { font-size: clamp(34px, 4.3vw, 44px); line-height: 1.1; letter-spacing: -1px; }
+  [data-s="p01"] .sp-lead-inv { font-size: 18px; line-height: 24px; }
+  [data-s="p01"] .sp-body-inv { font-size: 15px; line-height: 20px; }
+  [data-s="p01"] .sp-specs { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  [data-s="p01"] .sp-spec-row { display: contents; }
+  [data-s="p01"] .sp-spec-row .sp-tile { min-height: 0; padding: 22px 24px; gap: 10px; }
+  [data-s="p01"] .sp-tile h2 { font-size: 22px; line-height: 26px; }
+  [data-s="p01"] .sp-tile p { font-size: 15px; line-height: 20px; }
+
+  /* P02: панель сценария — текст + колонка «Смежные материалы». */
+  [data-s="p02"] .area-panel.sp-panel { grid-template-columns: minmax(0, 1fr) minmax(220px, 34%); gap: 32px; padding: 32px; }
+  [data-s="p02"] .sp-panel-copy { gap: 20px; }
+  [data-s="p02"] .sp-panel-copy h3 { font-size: 28px; line-height: 32px; }
+  [data-s="p02"] .sp-panel-copy > p { font-size: 18px; line-height: 24px; }
+  [data-s="p02"] .sp-gives { padding: 20px; }
+  [data-s="p02"] .sp-related > img { height: 180px; }
+
+  /* P03: список карточек (общее правило ≤1100 делало из него карусель). */
+  [data-s="p03"] .sp-args { display: flex; flex-direction: column; gap: 12px; overflow: visible; scroll-snap-type: none; }
+  [data-s="p03"] .sp-args > * { flex: none; width: auto; }
+  [data-s="p03"] .sp-arg { grid-template-columns: 120px minmax(0, 1fr) minmax(0, 1fr); gap: 16px 24px; padding: 20px; }
+  [data-s="p03"] .sp-arg-visual { grid-row: 1 / span 2; width: 120px; height: 120px; }
+  [data-s="p03"] .sp-arg h3 { margin-top: 6px; }
+  [data-s="p03"] .sp-practice { grid-column: 2 / -1; }
+  [data-s="p03"] .sp-args { container-type: inline-size; }
+
+  /* P04: фон-фото и тонировка как на десктопе, 4 шага → сетка 2 × 2, линия скрыта
+     (заметка P04: «На 1024 — шаги 2×2, линия скрывается»). */
+  [data-s="p04"] .sp-route-line { display: none; }
+  body [data-s="p04"].sp-dark { background-image: url("/figma/specialists/route-bg.webp"); background-size: cover; background-position: center; }
+  body [data-s="p04"].sp-dark::before { content: ""; position: absolute; inset: 0; background: rgba(33, 37, 29, 0.86); pointer-events: none; }
+  body [data-s="p04"].sp-dark > .wrap { position: relative; z-index: 1; }
+  [data-s="p04"] .sp-steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; overflow: visible; scroll-snap-type: none; }
+  [data-s="p04"] .sp-steps > * { flex: none; width: auto; min-height: 0; }
+  [data-s="p04"] .sp-step { padding: 24px; }
+
+  /* P05: таблица протокола — десктопная, плотнее. */
+  [data-s="p05"] .sp-proto-head { align-items: flex-end; }
+  [data-s="p05"] .sp-proto-head .btn { flex: none; }
+  [data-s="p05"] .sp-table article { gap: 16px 20px; padding: 20px 24px; }
+
+  /* P06: анатомия отчёта — 2 колонки на ≥ ~900, стопкой на 768. */
+  [data-s="p06"] .sp-anatomy { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 48px; align-items: center; }
+  [data-s="p06"] .sp-anatomy-copy { gap: 24px; }
+  [data-s="p06"] .sp-anatomy-copy h2 { font-size: 40px; line-height: 44px; }
+  [data-s="p06"] .sp-report-tabs strong { font-size: 22px; line-height: 26px; }
+  [data-s="p06"] .sp-stage { justify-self: center; width: min(480px, 100%); }
+  [data-s="p06"] .sp-absent { padding: 28px; }
+  [data-s="p06"] .sp-absent h3 { font-size: 28px; line-height: 32px; }
+  [data-s="p06"] .sp-negatives span { padding: 12px 16px; }
+
+  /* P07: три эксперта сеткой (общее правило ≤1100 делало карусель с одной огромной карточкой). */
+  [data-s="p07"] .sp-experts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; overflow: visible; scroll-snap-type: none; }
+  [data-s="p07"] .sp-experts > * { flex: none; width: auto; }
+  [data-s="p07"] .sp-portrait { height: calc(150px + 22vw); }
+  [data-s="p07"] .sp-experts article { gap: 16px; }
+  [data-s="p07"] .sp-experts h3 { font-size: 22px; line-height: 26px; }
+  [data-s="p07"] .sp-experts li,
+  [data-s="p07"] .sp-experts article > div:nth-child(2) p { font-size: 15px; line-height: 20px; }
+
+  /* P08: лаборатории сеткой 3 колонки. */
+  [data-s="p08"] .sp-labs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; overflow: visible; }
+  [data-s="p08"] .sp-labs a { min-height: 140px; padding: 20px; width: auto; }
+  [data-s="p08"] .sp-partner { padding: 24px; }
+
+  /* P09: курс — 2 колонки на ≥ ~900, стопкой на 768. */
+  [data-s="p09"] .sp-course { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; padding: 40px; }
+  [data-s="p09"] .sp-lectors { padding: 20px; gap: 8px; }
+  [data-s="p09"] .sp-fan, [data-s="p09"] .sp-fan-cap { display: none; }
+  [data-s="p09"] .sp-lectors > div { padding: 12px 0; }
+}
+
+/* P03 на узком планшете (контейнер < 760px, т. е. ~768–830): описание под заголовком, а не третьей колонкой. */
+@media (min-width: 768px) and (max-width: 1100px) {
+  @container (max-width: 759px) {
+    [data-s="p03"] .sp-arg { grid-template-columns: 120px minmax(0, 1fr); gap: 12px 24px; }
+    [data-s="p03"] .sp-arg-visual { grid-row: 1 / span 3; }
+    [data-s="p03"] .sp-arg > div:nth-child(3) { grid-column: 2; }
+  }
+}
+
+/* Телефон: текстовые ссылки P02 «Клинические кейсы» и P08 «Оставить заявку» были 20px высотой — зона нажатия 44px. */
+@media (max-width: 767px) {
+  body [data-s="p02"] .sp-related a:first-of-type { min-height: 44px; margin-top: -12px; margin-bottom: 4px; }
+  body [data-s="p08"] .sp-partner > a { min-height: 44px; }
+}

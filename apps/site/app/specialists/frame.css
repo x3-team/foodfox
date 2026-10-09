@@ -628,7 +628,7 @@
   .sp-controls { position: static; margin-top: 16px; }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 767px) {
   .sp-sec { padding: 64px 0; }
   .sp-report { padding: 72px 0; }
   .sp-h2, .sp-anatomy-copy h2 { font-size: 32px; line-height: 36px; }
@@ -924,7 +924,7 @@
   [data-s="p01"] .sp-lead-inv, [data-s="p01"] .sp-body-inv { font-size: 16px; line-height: 22px; }
 }
 
-@media (min-width: 1101px) {
+@media (min-width: 768px) {
   .is-mob { display: none; }
   .is-desk { display: inline; }
   [data-s="p05"] .sp-compliance { display: block; }
@@ -943,7 +943,7 @@
   .sp-table h3 { font-size: 18px; line-height: 22px; }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 767px) {
   [data-s="p09"] .sp-course { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
   [data-s="p09"] .sp-course-copy { display: contents; }
   [data-s="p09"] .sp-bar {
