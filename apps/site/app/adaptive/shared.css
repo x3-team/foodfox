@@ -1,3 +1,197 @@
 /* Адаптив: shared. Брейкпоинты сайта (единые):
    телефон ≤767 · планшет 768–1100 · десктоп ≥1101 (подшаги 1280 / 1440).
    Подшаги телефона: ≤480, ≤374. Этот файл подключается после globals.css и frame.css страницы. */
+
+/* ==== Header (Figma Header 1386:220 · B2B 1120:3114 · Course 1133:717) ====
+   1440: logo 94×44, logo→nav 32, nav step 24 (B2B / Course 20), side padding 48.
+   1280–1439: same sizes, nav step 20, «Пример результата» moves out (it would touch the nav).
+   1101–1279: nav 15px, step 14–16, logo→nav 24. Tablet 768–1100: phone header on the 32px gutter. */
+@media (min-width: 1101px) {
+  body .site-header { padding: 0 48px; }
+  body .site-header .logo { width: 94px; height: 44px; }
+  body .site-header .header-left { gap: 32px; }
+  body .site-header.header-site .nav { gap: 24px; }
+  body .site-header.header-b2b .nav { gap: 20px; }
+  body .site-header .nav a { font-size: 16px; }
+  body .site-header.header-course .header-left { gap: 24px; }
+  body .site-header.header-course .nav { gap: 20px; }
+  body .site-header .example-link { display: inline-flex; }
+}
+@media (min-width: 1101px) and (max-width: 1439px) {
+  body .site-header .example-link { display: none; }
+  body .site-header.header-site .nav { gap: 20px; }
+  body .site-header.header-b2b .nav { gap: 16px; }
+  body .site-header.header-b2b .nav a { font-size: 15px; }
+}
+@media (min-width: 1101px) and (max-width: 1279px) {
+  body .site-header .header-left { gap: 24px; }
+  body .site-header.header-site .nav { gap: 16px; }
+  body .site-header.header-b2b .nav { gap: 14px; }
+  body .site-header .nav a { font-size: 15px; }
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  body .site-header { padding: 0 32px; }
+}
+
+/* G05 «Menu open»: the header sits on the dark panel — light logo and partner circle. */
+body .site-header:has(.mobile-menu) { color: #f8f9f6; background: transparent; border-bottom-color: transparent; box-shadow: none; }
+body .site-header:has(.mobile-menu) .partner-dot { border-color: rgba(248, 249, 246, 0.4); }
+
+/* ==== Mobile menu (Figma 1298:1430, notes G05 / G06) ====
+   Items 24px with hairlines, tap height ≥48; the bottom block sits at the bottom: white CTA, two outline pills, phone + Telegram. */
+body .mobile-menu { padding: 72px 16px calc(24px + env(safe-area-inset-bottom)); gap: 0; }
+body .mobile-menu > a {
+  font-size: 24px; line-height: 28px; font-weight: 300; min-height: 48px; padding: 10px 0; box-sizing: border-box;
+  border-bottom: 1px solid rgba(248, 249, 246, 0.14); gap: 12px;
+}
+body .mobile-menu > a[aria-current="page"] { padding-left: 20px; }
+body .mobile-menu > a[aria-current="page"]::before { left: 2px; }
+body .mobile-menu > a img { width: 20px; height: 20px; flex: 0 0 20px; }
+body .mobile-menu .mm-bottom { margin-top: auto; padding-top: 32px; display: flex; flex-direction: column; gap: 12px; }
+body .mobile-menu .mm-bottom .mm-cta { width: 100%; height: 48px; margin: 0; border-radius: 4px; align-self: stretch; font-size: 16px; }
+body .mobile-menu .mm-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+body .mobile-menu .mm-pill {
+  display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; min-height: 44px; padding: 0 12px;
+  border-radius: 999px; border: 1px solid rgba(248, 249, 246, 0.24); background: transparent; color: #f8f9f6;
+  font-size: 14px; line-height: 18px; font-weight: 400; animation: none; white-space: nowrap;
+}
+body .mobile-menu .mm-pill:hover { background: rgba(248, 249, 246, 0.08); }
+body .mobile-menu .mm-pill img { width: 16px; height: 16px; }
+body .mobile-menu .mm-contacts { display: flex; align-items: center; gap: 16px; }
+body .mobile-menu .mm-contacts a {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0; justify-content: flex-start;
+  font-size: 14px; line-height: 18px; font-weight: 400; color: rgba(248, 249, 246, 0.75); animation: none;
+}
+body .mobile-menu .mm-contacts img { width: 16px; height: 16px; filter: invert(1); opacity: 0.75; }
+@media (min-width: 768px) and (max-width: 1100px) {
+  body .mobile-menu { padding-left: 32px; padding-right: 32px; padding-top: 88px; }
+  body .mobile-menu > a { font-size: 32px; line-height: 36px; min-height: 60px; }
+  body .mobile-menu .mm-bottom { max-width: 520px; }
+}
+@media (max-width: 374px) {
+  body .mobile-menu .mm-pill { font-size: 13px; padding: 0 8px; }
+}
+
+/* ==== Footer (Figma 1404:780 desktop · 1311:15729 phone) ==== */
+/* The global .disclaimer card (article callout: padding 24, border, margins) leaked into the footer. */
+body .footer .disclaimer { padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; }
+@media (min-width: 1101px) {
+  body .footer { padding: 64px max(48px, calc(50% - 672px)) 32px; gap: 48px; }
+  body .footer .cols a { white-space: nowrap; }
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  body .footer { padding: 56px 32px 32px; gap: 40px; }
+  body .footer .footer-top { display: flex; flex-direction: column; gap: 40px; }
+  body .footer .brand { width: auto; max-width: 440px; gap: 24px; }
+  body .footer .brand p { font-size: 16px; line-height: 20px; }
+  body .footer .cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 24px; row-gap: 28px; }
+  body .footer .cols > div { width: auto; gap: 14px; }
+  body .footer .cols .foot-links, body .footer .cols .foot-links.is-open { gap: 12px; }
+  body .footer .disclaimer { font-size: 14px; line-height: 18px; max-width: 760px; }
+  body .footer .footer-bottom { gap: 24px; }
+  body .footer .legal { flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 24px; }
+  body .footer .legal > div { flex-direction: row; gap: 24px; }
+  body .footer .legal span { white-space: nowrap; }
+}
+@media (max-width: 767px) {
+  body .footer { padding: 48px 20px 32px; gap: 32px; }
+  body .footer .footer-top { gap: 36px; }
+  body .footer .brand p { font-size: 16px; line-height: 20px; }
+  body .footer .disclaimer { font-size: 14px; line-height: 18px; }
+  body .footer .legal { gap: 0; }
+  body .footer .legal > div { gap: 8px; }
+}
+
+/* ==== Cookie banner (Figma Cookie / Banner 1299:2174 desktop · 1299:2398 at 390; notes G07, G09) ==== */
+body .cookie.fox-cookie {
+  left: 50%; right: auto; bottom: 24px; width: min(1120px, calc(100% - 48px)); box-sizing: border-box;
+  translate: -50% 0;
+  display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 24px;
+  padding: 20px 28px; border-radius: 20px; background: #fff; color: #0b0c08;
+  box-shadow: 0 24px 64px -8px rgba(11, 12, 8, 0.16), 0 4px 12px rgba(11, 12, 8, 0.08);
+  max-height: none; overflow: visible; z-index: 45;
+}
+body .fox-cookie .ck-graphic { width: 56px; height: 56px; flex: 0 0 56px; }
+body .fox-cookie .ck-copy { flex: 1 1 auto; min-width: 0; max-width: 518px; margin-right: auto; display: flex; flex-direction: column; gap: 4px; }
+body .fox-cookie .ck-copy strong { font-weight: 500; font-size: 14px; line-height: 18px; }
+body .fox-cookie .ck-copy p { margin: 0; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+body .fox-cookie .ck-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; }
+body .fox-cookie .ck-actions .btn { height: 48px; padding: 0 16px; border-radius: 4px; font-size: 16px; line-height: 20px; white-space: nowrap; }
+body .btn.ck-outline { background: #fff; color: #0b0c08; box-shadow: inset 0 0 0 1px rgba(11, 12, 8, 0.2); border-radius: 4px; height: 48px; }
+body .btn.ck-outline:hover { background: rgba(11, 12, 8, 0.06); }
+body .fox-cookie .ck-text { background: transparent; color: #0b0c08; }
+body .fox-cookie .ck-text:hover { background: rgba(11, 12, 8, 0.06); }
+@media (min-width: 768px) and (max-width: 1100px) {
+  /* Tablet: copy on the first row, the three buttons under it on the right — the 1120 row does not fit. */
+  body .cookie.fox-cookie { width: calc(100% - 64px); flex-wrap: wrap; row-gap: 16px; column-gap: 16px; padding: 20px 24px; }
+  body .fox-cookie .ck-copy { flex: 1 1 calc(100% - 72px); max-width: none; }
+  body .fox-cookie .ck-actions { flex: 1 1 100%; justify-content: flex-end; }
+}
+@media (max-width: 767px) {
+  /* G09: a card over the bottom CTA bar (gap 12); buttons in one row, «Настроить» as a text button. */
+  body .cookie.fox-cookie {
+    left: 16px; right: 16px; width: auto; translate: none; bottom: calc(12px + env(safe-area-inset-bottom));
+    flex-wrap: wrap; align-items: center; column-gap: 16px; row-gap: 16px; padding: 20px; border-radius: 20px; z-index: 44;
+    transition: bottom 200ms var(--ease);
+  }
+  body:has(.m04.is-on) .cookie.fox-cookie { bottom: calc(92px + env(safe-area-inset-bottom)); }
+  body .fox-cookie .ck-graphic { width: 40px; height: 40px; flex-basis: 40px; }
+  body .fox-cookie .ck-copy { flex: 1 1 0; max-width: none; }
+  body .fox-cookie .ck-actions { flex: 1 1 100%; display: grid; grid-template-columns: auto 1fr; gap: 8px; }
+  body .fox-cookie .ck-actions .btn { padding: 0 12px; }
+  body .fox-cookie .ck-text { justify-self: start; grid-column: 1; }
+}
+@media (max-width: 374px) {
+  body .fox-cookie .ck-actions .btn { font-size: 15px; padding: 0 10px; }
+}
+
+/* Cookie settings (Figma 1299:2239, note G08): 568, padding 32; rows on #D7D8CD plates r16; the required toggle is
+   the Disabled state (on, greyed); buttons «Сохранить выбор» (fills the row) + «Принять все» (outline). */
+body .ck-modal { padding: 32px; }
+body .ck-modal .lead-x { top: 40px; right: 32px; width: 40px; height: 40px; background: #fff; box-shadow: inset 0 0 0 1px rgba(11, 12, 8, 0.12); font-size: 22px; }
+body .ck-modal .ck-head { display: flex; align-items: center; gap: 12px; padding-right: 52px; }
+body .ck-modal .ck-head img { width: 56px; height: 56px; flex: 0 0 56px; }
+body .ck-modal .ck-head h2 { margin: 0; padding: 0; font-weight: 300; font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
+body .ck-modal .lead-note { margin: 20px 0 20px; font-size: 16px; line-height: 20px; color: rgba(11, 12, 8, 0.65); }
+body .ck-modal .switch-row { background: #d7d8cd; border-radius: 16px; padding: 16px 20px; margin-top: 20px; min-height: 70px; box-sizing: border-box; }
+body .ck-modal .lead-note + .switch-row { margin-top: 0; }
+body .ck-modal .switch-row strong { font-size: 14px; line-height: 18px; }
+body .ck-modal .switch-row small { font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+body .ck-modal .switch:not(.is-on) { background: rgba(11, 12, 8, 0.2); }
+body .ck-modal .switch.is-on:disabled { background: rgba(11, 12, 8, 0.12); }
+body .ck-modal .switch.is-on:disabled::after { background: #fff; }
+body .ck-modal .cookie-modal-actions { margin-top: 20px; flex-wrap: nowrap; }
+body .ck-modal .cookie-modal-actions .btn { height: 48px; border-radius: 4px; }
+body .ck-modal .cookie-modal-actions .btn-dark { flex: 1 1 auto; }
+@media (max-width: 767px) {
+  body .ck-modal { padding: 28px 20px calc(20px + env(safe-area-inset-bottom)); }
+  body .ck-modal .lead-x { top: 28px; right: 20px; }
+  body .ck-modal .ck-head img { width: 40px; height: 40px; flex-basis: 40px; }
+  body .ck-modal .ck-head h2 { font-size: 26px; line-height: 30px; }
+  body .ck-modal .switch-row { padding: 14px 16px; margin-top: 12px; }
+}
+
+/* ==== Windows: phone ≤767 — bottom sheet; tablet and desktop — a centred dialog (G10 / G12 / G08) ==== */
+@media (min-width: 768px) and (max-width: 1100px) {
+  body .modal-back:has(.lead-modal), body .modal-back:has(.cookie-modal), body .modal-back:has(.book-sheet) { align-items: center; padding: 32px; }
+  body .lead-modal, body .cookie-modal, body .book-sheet {
+    width: min(568px, 100%); max-height: calc(100vh - 64px); border-radius: 20px; padding-top: 28px;
+    animation: modal-in 240ms ease-out both; align-self: center;
+  }
+  body .lead-modal .sheet-grab, body .cookie-modal .sheet-grab, body .book-sheet .sheet-grab { display: none; }
+  body .lead-modal .lf-actions .btn { width: auto; }
+}
+
+/* Toasts sit above the bottom CTA bar only while it is shown. */
+@media (max-width: 1100px) {
+  body .fox-toasts { bottom: calc(24px + env(safe-area-inset-bottom)); transition: bottom 200ms var(--ease); }
+  body:has(.m04.is-on) .fox-toasts { bottom: calc(96px + env(safe-area-inset-bottom)); }
+}
+
+/* G01: «Всё — 200мс ease-out» — the hide/return slide was 280 мс. */
+body .site-header { transition-duration: 200ms; }
+/* G04: the course progress in the header grows when a lesson is finished (600 мс). */
+body .header-course .lesson-progress b { transition: width 600ms var(--ease); }
+@media (prefers-reduced-motion: reduce) {
+  body .cookie.fox-cookie, body .fox-toasts { transition: none; }
+}

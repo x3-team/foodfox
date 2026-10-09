@@ -313,7 +313,7 @@ function Toast({ item, onLeave, onGone }: { item: ToastItem; onLeave: () => void
 }
 
 /**
- * Modal frame from Figma 07: 568 · r20 · scrim 50%; on ≤1100px a bottom sheet with a grabber —
+ * Modal frame from Figma 07: 568 · r20 · scrim 50% (desktop and tablet); on phones ≤767px a bottom sheet with a grabber —
  * a drag down by more than 30% of the sheet height closes it (G12).
  */
 function ModalShell({
@@ -353,7 +353,7 @@ function ModalShell({
           // Swipe-to-close from anywhere on the sheet while its content is scrolled to the top (phones only).
           const node = ref.current;
           const target = event.target as HTMLElement;
-          if (!node || drag.current || event.touches.length !== 1 || !window.matchMedia("(max-width: 1100px)").matches) return;
+          if (!node || drag.current || event.touches.length !== 1 || !window.matchMedia("(max-width: 767px)").matches) return;
           if (node.scrollTop > 0 || target.closest("input, textarea, select, [role=listbox], .sheet-grab")) return;
           touchDrag.current = { y: event.touches[0].clientY, h: node.offsetHeight };
         }}
