@@ -3,9 +3,9 @@
 import { useRef, useState } from "react";
 
 const PAGES = [
-  "/figma/report/sheet1.png",
-  "/figma/report/p2.png",
-  "/figma/report/p4.png",
+  "/figma/report/p4.webp",
+  "/figma/report/p2.webp",
+  "/figma/report/p4.webp",
 ];
 
 const MARKERS = [

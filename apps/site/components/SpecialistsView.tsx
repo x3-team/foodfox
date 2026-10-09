@@ -188,40 +188,40 @@ const EXPERTS = [
   {
     name: "Алёна Вавилова",
     role: "Клинический нутрициолог, health-coach",
-    src: "/figma/specialists/alyona.png",
+    src: "/figma/specialists/alyona.webp",
     facts: ["7+ лет в нутрициологии", "Основатель сообщества нутрициологов Москвы", "Член Международной ассоциации нутрициологов и коучей"],
   },
   {
     name: "Ксения Эллинская",
     role: "К. м. н., врач-дерматовенеролог, косметолог, нутрициолог",
-    src: "/figma/specialists/ksenia.png",
+    src: "/figma/specialists/ksenia.webp",
     facts: ["21 год клинической практики", "Автор профессионального блога с аудиторией 85 000+ подписчиков", "Эксперт по связи питания и состояния кожи"],
   },
   {
     name: "Дмитрий Эллинский",
     role: "Врач-дерматовенеролог, трихолог, нутрициолог",
-    src: "/figma/specialists/dmitry.png",
+    src: "/figma/specialists/dmitry.webp",
     facts: ["15 лет клинической практики", "Главный дерматолог холдинга «СМ-Клиника»", "Наставник более 100 врачей-дерматологов"],
   },
 ];
 
 const LABS: Array<[string, string]> = [
-  ["Ситилаб", "/figma/labs/fig/citilab.png"],
-  ["Гемотест", "/figma/labs/fig/gemotest.png"],
-  ["KDL", "/figma/labs/fig/kdl.png"],
-  ["ДНКОМ", "/figma/labs/fig/dnkom.png"],
-  ["Инвитро", "/figma/labs/fig/invitro.png"],
-  ["CMD", "/figma/labs/fig/cmd.png"],
-  ["Хеликс", "/figma/labs/fig/helix.png"],
-  ["Хромолаб", "/figma/labs/fig/chromolab.png"],
-  ["Юнимед", "/figma/labs/fig/unimed.png"],
+  ["Ситилаб", "/figma/labs/fig/citilab.svg"],
+  ["Гемотест", "/figma/labs/fig/gemotest.svg"],
+  ["KDL", "/figma/labs/fig/kdl.svg"],
+  ["ДНКОМ", "/figma/labs/fig/dnkom.svg"],
+  ["Инвитро", "/figma/labs/fig/invitro.svg"],
+  ["CMD", "/figma/labs/fig/cmd.svg"],
+  ["Хеликс", "/figma/labs/fig/helix.svg"],
+  ["Хромолаб", "/figma/labs/fig/chromolab.svg"],
+  ["Юнимед", "/figma/labs/fig/unimed.svg"],
 ];
 
 const LECTURERS = [
-  ["Светлана Каневская", "Д. м. н., профессор, гастроэнтеролог-нутрициолог · уроки 1, 2, 6", "/figma/specialists/svetlana.png"],
-  ["Алёна Вавилова", "Клинический нутрициолог · урок 3", "/figma/specialists/alyona.png"],
-  ["Ксения Эллинская", "К. м. н., дерматовенеролог · урок 4", "/figma/specialists/ksenia.png"],
-  ["Дмитрий Эллинский", "Дерматовенеролог, трихолог · урок 5", "/figma/specialists/dmitry.png"],
+  ["Светлана Каневская", "Д. м. н., профессор, гастроэнтеролог-нутрициолог · уроки 1, 2, 6", "/figma/specialists/svetlana.webp"],
+  ["Алёна Вавилова", "Клинический нутрициолог · урок 3", "/figma/specialists/alyona.webp"],
+  ["Ксения Эллинская", "К. м. н., дерматовенеролог · урок 4", "/figma/specialists/ksenia.webp"],
+  ["Дмитрий Эллинский", "Дерматовенеролог, трихолог · урок 5", "/figma/specialists/dmitry.webp"],
 ];
 
 const HERO_TILES: Array<[string, string, string, string]> = [
@@ -324,8 +324,8 @@ export function SpecialistsView() {
       <Header />
       <main>
         <section className="dark-hero" data-s="p01">
-          <img className="bg" src="/figma/specialists/hero.jpeg" alt="" />
-          <img className="sp-hero-m" src="/figma/specialists/hero-m.webp" alt="" />
+          <img className="bg" src="/figma/specialists/hero-1440.webp" srcSet="/figma/specialists/hero-1440.webp 1440w, /figma/specialists/hero.webp 2400w" sizes="(min-width: 1440px) 100vw, 1440px" alt="" />
+          <img className="sp-hero-m" src="/figma/specialists/hero-m.webp" srcSet="/figma/specialists/hero-m.webp 780w, /figma/specialists/hero-m@3x.webp 1170w" sizes="100vw" alt="" />
           <div className="shade" />
           <div className="wrap inner">
             <div className="sp-hero-copy">
@@ -440,7 +440,7 @@ export function SpecialistsView() {
               {ARGS.map((item) => (
                 <article className="sp-arg" key={item.k}>
                   <div className="sp-arg-visual">
-                    <img className="sp-arg-bg" src="/figma/specialists/arg-bg.png" alt="" />
+                    <img className="sp-arg-bg" src="/figma/home/hero-panel-texture.webp" alt="" />
                     <img className="sp-arg-graphic" src={item.graphic} alt="" />
                   </div>
                   <div>
@@ -564,13 +564,13 @@ export function SpecialistsView() {
               </div>
               <div className="sp-stage" ref={stageRef}>
                 <div className="sp-sheet is-back-2" aria-hidden>
-                  <img src="/figma/report/front.png" alt="" />
+                  <img src="/figma/report/front.webp" alt="" />
                 </div>
                 <div className="sp-sheet is-back-1" aria-hidden>
-                  <img src="/figma/report/front.png" alt="" />
+                  <img src="/figma/report/front.webp" alt="" />
                 </div>
                 <div className={`sp-sheet is-front is-zone-${report + 1}${turning ? " is-turning" : ""}`}>
-                  <img src="/figma/report/front.png" alt="" />
+                  <img src="/figma/report/front.webp" alt="" />
                   <span className="sp-highlight" />
                   <b>{String(report + 1).padStart(2, "0")}</b>
                 </div>
@@ -626,7 +626,7 @@ export function SpecialistsView() {
               {EXPERTS.map((person) => (
                 <article key={person.name}>
                   <div className="sp-portrait">
-                    <img src={person.src} alt={person.name} />
+                    <img src={person.src} srcSet={`${person.src.replace(".webp", "-512.webp")} 512w, ${person.src} 1024w`} sizes="(min-width: 1101px) 480px, 290px" alt={person.name} />
                   </div>
                   <div>
                     <h3>{person.name}</h3>
@@ -704,14 +704,14 @@ export function SpecialistsView() {
               <aside className="sp-lectors">
                 <div className="sp-fan" aria-hidden="true">
                   {LECTURERS.map(([name, , src]) => (
-                    <img key={name} src={src} alt="" />
+                    <img key={name} src={src.replace(".webp", "-256.webp")} srcSet={`${src.replace(".webp", "-256.webp")} 256w, ${src.replace(".webp", "-512.webp")} 512w`} sizes="64px" alt="" />
                   ))}
                 </div>
                 <p className="sp-fan-cap">4 лектора · врачи и нутрициологи</p>
                 <p className="sp-lector-label">Лекторы</p>
                 {LECTURERS.map(([name, role, src]) => (
                   <div key={name}>
-                    <img src={src} alt="" />
+                    <img src={src.replace(".webp", "-256.webp")} srcSet={`${src.replace(".webp", "-256.webp")} 256w, ${src.replace(".webp", "-512.webp")} 512w`} sizes="64px" alt="" />
                     <div>
                       <strong>{name}</strong>
                       <span>{role}</span>

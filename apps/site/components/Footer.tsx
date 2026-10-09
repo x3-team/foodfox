@@ -73,7 +73,7 @@ export function Footer() {
 
   return (
     <footer className="footer" ref={ref}>
-      <img className="bokeh" src="/blog/footer-bokeh.png" alt="" />
+      <img className="bokeh" src="/figma/course/cta-bg.webp" alt="" />
       <div className="shade" />
       <div className="footer-top">
         <div className="brand">

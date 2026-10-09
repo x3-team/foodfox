@@ -140,7 +140,7 @@ const LECTURERS = [
     facts: ["Более 25 лет клинической практики", "Автор клинических протоколов по пищевой непереносимости"],
     chip: "Ведёт уроки 1, 2 и 6",
     href: "/blog/authors/svetlana-kanevskaya",
-    photo: "/figma/course/lector-1a.png",
+    photo: "/figma/specialists/svetlana.webp",
   },
   {
     name: "Алёна Вавилова",
@@ -148,7 +148,7 @@ const LECTURERS = [
     facts: ["Более семи лет в нутрициологии", "Основатель сообщества нутрициологов Москвы"],
     chip: "Ведёт урок 3",
     href: "/blog/authors/alyona-vavilova",
-    photo: "/figma/course/lector-2a.png",
+    photo: "/figma/specialists/alyona.webp",
   },
   {
     name: "Ксения Эллинская",
@@ -156,7 +156,7 @@ const LECTURERS = [
     facts: ["21 год клинической практики", "Автор профессионального блога, 85 000+ подписчиков"],
     chip: "Ведёт урок 4",
     href: "/blog/authors/kseniya-ellinskaya",
-    photo: "/figma/course/lector-3a.png",
+    photo: "/figma/specialists/ksenia.webp",
   },
   {
     name: "Дмитрий Эллинский",
@@ -164,7 +164,7 @@ const LECTURERS = [
     facts: ["15 лет клинической практики", "Главный дерматолог холдинга «СМ-Клиника»"],
     chip: "Ведёт урок 5",
     href: "/blog/authors/dmitry-ellinskiy",
-    photo: "/figma/course/lector-4a.png",
+    photo: "/figma/specialists/dmitry.webp",
   },
 ];
 
@@ -393,7 +393,7 @@ export function CoursePage() {
       <Header />
       <main>
         <section className="dark-hero" data-s="k01">
-          <img className="bg" src="/figma/course/hero-bg.png" alt="" />
+          <img className="bg" src="/figma/course/hero-bg.webp" alt="" />
           <div className="shade" />
           <div className="wrap inner">
             <div className="kf-hero-row">
@@ -504,7 +504,7 @@ export function CoursePage() {
             <div className="kf-lectors" data-allow-x>
               {LECTURERS.map((person) => (
                 <Link key={person.name} href={person.href} className="kf-lector">
-                  <img src={person.photo} alt="" />
+                  <img src={person.photo} srcSet={`${person.photo.replace(".webp", "-512.webp")} 512w, ${person.photo} 1024w`} sizes="(min-width: 1101px) 380px, max(380px, 100vw)" alt="" />
                   <span className="kf-lector-body">
                     <span>
                       <strong>{person.name}</strong>
@@ -522,7 +522,7 @@ export function CoursePage() {
         </section>
 
         <section className="kf-includes" id="includes" data-s="k05">
-          <img className="kf-includes-bg" src="/figma/course/hero-bg.png" alt="" />
+          <img className="kf-includes-bg" src="/figma/course/hero-bg.webp" alt="" />
           <div className="kf-includes-shade" />
           <div className="wrap kf-includes-in">
             <h2>Что входит в курс</h2>
@@ -568,7 +568,7 @@ export function CoursePage() {
         </section>
 
         <section className="kf-final" data-s="k07">
-          <img src="/figma/course/cta-bg.png" alt="" />
+          <img src="/figma/course/cta-bg.webp" alt="" />
           <div className="kf-includes-shade" />
           <div className="wrap kf-final-in">
             <i className="kf-bar" />

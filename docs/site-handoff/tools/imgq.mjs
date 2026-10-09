@@ -21,15 +21,20 @@ for (const [w, h, m] of [[1440, 900, false], [390, 844, true]]) {
         if (r.width < 40 || r.height < 40 || !img.naturalWidth) continue;
         const src = img.currentSrc || img.src;
         if (/\.svg(\?|$)/.test(src)) continue;
+        // naturalWidth of a srcset candidate is density-corrected (file px / descriptor density), so read the file size itself.
+        const file = new Image(); file.src = src; try { await file.decode(); } catch { continue; }
+        const nw = file.naturalWidth, nh = file.naturalHeight;
         // object-fit: cover needs the larger ratio
         const fit = getComputedStyle(img).objectFit;
-        const need = fit === "cover" ? Math.max(r.width / img.naturalWidth, r.height / img.naturalHeight) : Math.min(r.width / img.naturalWidth, r.height / img.naturalHeight);
-        out.push({ kind: "img", src, nat: `${img.naturalWidth}x${img.naturalHeight}`, shown: `${Math.round(r.width)}x${Math.round(r.height)}`, scale: +need.toFixed(2) });
+        const need = fit === "cover" ? Math.max(r.width / nw, r.height / nh) : Math.min(r.width / nw, r.height / nh);
+        out.push({ kind: "img", src, nat: `${nw}x${nh}`, shown: `${Math.round(r.width)}x${Math.round(r.height)}`, scale: +need.toFixed(2) });
       }
       const bgs = [];
       for (const el of document.querySelectorAll("body *")) {
         const bg = getComputedStyle(el).backgroundImage;
-        const mm = bg && bg.match(/url\("?([^")]+\.(?:png|jpe?g|webp|avif))"?\)/);
+        // image-set(): take the last (highest-density) candidate, which is what a DPR 2 screen loads.
+        const all = bg ? [...bg.matchAll(/url\("?([^")]+\.(?:png|jpe?g|webp|avif))"?\)/g)] : [];
+        const mm = all.length ? (/image-set\(/.test(bg) ? all[all.length - 1] : all[0]) : null;
         if (!mm) continue;
         const r = el.getBoundingClientRect();
         if (r.width < 80 || r.height < 80) continue;

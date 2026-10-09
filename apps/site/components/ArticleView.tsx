@@ -80,7 +80,7 @@ function Blocks({ blocks }: { blocks: Block[] }) {
           );
         return (
           <aside className="article-cta reveal" key={index}>
-            <img className="bokeh" src="/blog/footer-bokeh.png" alt="" />
+            <img className="bokeh" src="/figma/course/cta-bg.webp" alt="" />
             <div className="shade" />
             <h2>{block.title}</h2>
             <p>{block.text}</p>
@@ -319,7 +319,7 @@ export function ArticleView({ article }: { article: Article }) {
             </div>
             <aside className="aside">
               <div className="aside-card">
-                <img className="bokeh" src="/blog/footer-bokeh.png" alt="" />
+                <img className="bokeh" src="/figma/course/cta-bg.webp" alt="" />
                 <div className="shade" />
                 <h2>Записаться на тест</h2>
                 <p>286 продуктов, один забор крови, результат через 7–10 дней. Стоимость устанавливает лаборатория.</p>

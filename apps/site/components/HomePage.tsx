@@ -99,21 +99,21 @@ const PRODUCTS: Product[] = [
 const MOBILE_PICKS = ["Казеин", "Коровье молоко", "Козье молоко", "Куриное яйцо, белок", "Пшеница", "Глютен", "Гречка", "Рис", "Соя", "Томат", "Банан", "Миндаль", "Лосось", "Курица"];
 
 const LABS: Array<[string, string]> = [
-  ["Ситилаб", "/figma/labs/fig/citilab.png"],
-  ["Гемотест", "/figma/labs/fig/gemotest.png"],
-  ["KDL", "/figma/labs/fig/kdl.png"],
-  ["ДНКОМ", "/figma/labs/fig/dnkom.png"],
-  ["Инвитро", "/figma/labs/fig/invitro.png"],
-  ["CMD", "/figma/labs/fig/cmd.png"],
-  ["Хеликс", "/figma/labs/fig/helix.png"],
-  ["Хромолаб", "/figma/labs/fig/chromolab.png"],
-  ["Юнимед", "/figma/labs/fig/unimed.png"],
+  ["Ситилаб", "/figma/labs/fig/citilab.svg"],
+  ["Гемотест", "/figma/labs/fig/gemotest.svg"],
+  ["KDL", "/figma/labs/fig/kdl.svg"],
+  ["ДНКОМ", "/figma/labs/fig/dnkom.svg"],
+  ["Инвитро", "/figma/labs/fig/invitro.svg"],
+  ["CMD", "/figma/labs/fig/cmd.svg"],
+  ["Хеликс", "/figma/labs/fig/helix.svg"],
+  ["Хромолаб", "/figma/labs/fig/chromolab.svg"],
+  ["Юнимед", "/figma/labs/fig/unimed.svg"],
 ];
 
 const REPORT_SLIDES = [
-  ["/figma/report/p4.png", "Точные значения", "Уровень IgG в U/mL по каждому продукту."],
-  ["/figma/report/p2.png", "Группы продуктов", "13 групп вместо сплошного списка."],
-  ["/figma/report/front.png", "Понятная градация", "Сразу видно, что убрать в первую очередь."],
+  ["/figma/report/p4.webp", "Точные значения", "Уровень IgG в U/mL по каждому продукту."],
+  ["/figma/report/p2.webp", "Группы продуктов", "13 групп вместо сплошного списка."],
+  ["/figma/report/front.webp", "Понятная градация", "Сразу видно, что убрать в первую очередь."],
 ];
 
 let antigenAnimated = false;
@@ -533,11 +533,12 @@ export function HomePage() {
             <picture>
               <source
                 media="(max-width: 767px)"
-                srcSet="/figma/home/hero-photo-mobile.webp"
+                srcSet="/figma/home/hero-photo-mobile.webp 780w, /figma/home/hero-photo-mobile@3x.webp 1170w"
+                sizes="100vw"
                 type="image/webp"
               />
               <source media="(max-width: 767px)" srcSet="/figma/home/hero-photo-mobile.jpg" />
-              <source srcSet="/figma/home/hero-desktop.webp 1x, /figma/home/hero-desktop@2x.webp 2x" type="image/webp" />
+              <source srcSet="/figma/home/hero-desktop.webp 1440w, /figma/home/hero-desktop@2x.webp 2880w" sizes="max(100vw, min(1440px, max(896px, 160vh)))" type="image/webp" />
               <img className="bg" src="/figma/home/hero-desktop.jpg" alt="" />
             </picture>
           </div>
@@ -610,7 +611,7 @@ export function HomePage() {
           <div className="deck-stage">
             {DECK.map(([title, text, tail], index) => (
               <article className="deck-card" key={title} data-i={index} style={{ ["--i" as string]: index }}>
-                <img className="deck-bg" src={`/figma/home/deck/card-${index + 1}.webp`} alt="" />
+                <img className="deck-bg" src={`/figma/home/deck/card-${index + 1}.webp`} srcSet={`/figma/home/deck/card-${index + 1}.webp 1118w, /figma/home/deck/card-${index + 1}@2x.webp 2236w`} sizes="(min-width: 768px) 1118px, 800px" alt="" />
                 <h2>{title.split("|")[0]}<br className="deck-br" /> {title.split("|")[1]}</h2>
                 <div className="deck-foot">
                   <img className="deck-icon" src={`/figma/home/deck/icon-${index + 1}.svg`} alt="" />
@@ -626,10 +627,10 @@ export function HomePage() {
             <h2 className="page-title">Симптомы, при которых стоит обсудить тест со специалистом</h2>
             <div className="cards-4 sym-row" data-allow-x ref={symRowRef}>
               {[
-                ["Кожные реакции", ["Высыпания", "Экзема", "Дерматиты и зуд"], "/figma/symptoms/skin.png"],
-                ["Проблемы с ЖКТ", ["Вздутие живота", "Газообразование", "Диарея", "Тошнота", "Спазмы или боли"], "/figma/symptoms/gut.png"],
-                ["Самочувствие", ["Хроническая усталость", "Общая слабость", "Тяжесть после еды", "Нарушения сна", "Упадок сил", "Перепады настроения"], "/figma/symptoms/well.png"],
-                ["Вес и отёчность", ["Трудно снизить вес", "Стойкая отёчность", "Отёки лица по утрам", "Колебания веса"], "/figma/symptoms/s6.png"],
+                ["Кожные реакции", ["Высыпания", "Экзема", "Дерматиты и зуд"], "/figma/symptoms/skin-card.webp"],
+                ["Проблемы с ЖКТ", ["Вздутие живота", "Газообразование", "Диарея", "Тошнота", "Спазмы или боли"], "/figma/symptoms/gut-card.webp"],
+                ["Самочувствие", ["Хроническая усталость", "Общая слабость", "Тяжесть после еды", "Нарушения сна", "Упадок сил", "Перепады настроения"], "/figma/symptoms/well-card.webp"],
+                ["Вес и отёчность", ["Трудно снизить вес", "Стойкая отёчность", "Отёки лица по утрам", "Колебания веса"], "/figma/symptoms/s6.webp"],
               ].map(([title, chips, src], index) => (
                 <article
                   className="sym-card"
@@ -643,7 +644,12 @@ export function HomePage() {
                     window.requestAnimationFrame(() => document.getElementById(`s06-${id}`)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }));
                   }}
                 >
-                  <img src={src as string} alt="" />
+                  <img
+                    src={src as string}
+                    srcSet={(src as string).endsWith("-card.webp") ? `${src} 324w, ${(src as string).replace(".webp", "@2x.webp")} 648w` : undefined}
+                    sizes="(min-width: 1101px) 324px, 78vw"
+                    alt=""
+                  />
                   <div className="sym-shade" />
                   <h3>{title as string}</h3>
                   <div className="sym-chips">
@@ -949,7 +955,7 @@ export function HomePage() {
             </div>
           </div>
           <div className="aus-photo" data-allow-x>
-            <img className="parallax" src="/figma/austria/a1.png" alt="" />
+            <img className="parallax" src="/figma/austria/a1.webp" alt="" />
             <div className="aus-cards">
               {[
                 ["CE-IVDR", "Европейский стандарт для медизделий in vitro диагностики"],
@@ -992,7 +998,7 @@ export function HomePage() {
             <div className="review-track">
             {[0, 1].flatMap((copy) => [
               <article className="review-card is-photo" key={`p1-${copy}`} aria-hidden={copy === 1 || undefined}>
-                <img src="/figma/home/reviews/p1.webp" alt="" />
+                <img src="/figma/home/reviews/p1.webp" srcSet="/figma/home/reviews/p1-512.webp 512w, /figma/home/reviews/p1.webp 1024w" sizes="500px" alt="" />
                 <span className="review-play" aria-hidden><img src="/figma/home/reviews/play.svg" alt="" /></span>
               </article>,
               <article className="review-card is-oval" key={`${REVIEWS[0][0]}-${copy}`} aria-hidden={copy === 1 || undefined}>
@@ -1004,7 +1010,7 @@ export function HomePage() {
                 <h3>{REVIEWS[0][0]}</h3>
               </article>,
               <article className="review-card is-photo" key={`p2-${copy}`} aria-hidden={copy === 1 || undefined}>
-                <img src="/figma/home/reviews/p2.webp" alt="" />
+                <img src="/figma/home/reviews/p2.webp" srcSet="/figma/home/reviews/p2-512.webp 512w, /figma/home/reviews/p2.webp 1024w" sizes="500px" alt="" />
                 <span className="review-play" aria-hidden><img src="/figma/home/reviews/play.svg" alt="" /></span>
               </article>,
               <article className="review-card is-dark" key={`${REVIEWS[1][0]}-${copy}`} aria-hidden={copy === 1 || undefined}>
@@ -1013,7 +1019,7 @@ export function HomePage() {
                 <h3>{REVIEWS[1][0]}</h3>
               </article>,
               <article className="review-card is-photo" key={`p3-${copy}`} aria-hidden={copy === 1 || undefined}>
-                <img src="/figma/home/reviews/p3.webp" alt="" />
+                <img src="/figma/home/reviews/p3.webp" srcSet="/figma/home/reviews/p3-512.webp 512w, /figma/home/reviews/p3.webp 1024w" sizes="500px" alt="" />
                 <span className="review-play" aria-hidden><img src="/figma/home/reviews/play.svg" alt="" /></span>
               </article>,
             ])}
