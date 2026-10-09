@@ -170,7 +170,7 @@ export function BlogFeed() {
   return (
     <>
       <Header />
-      <main>
+      <main className="blog-page blog-feed">
         <section className="wrap hero" data-s="b01">
           <p className="crumbs rise">
             <Link href="/blog">Главная</Link>

@@ -32,7 +32,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
   return (
     <>
       <Header />
-      <main>
+      <main className="blog-page blog-author">
         <section className="wrap" style={{ paddingTop: 24 }}>
           <p className="crumbs">
             <Link href="/blog">Главная</Link>

@@ -198,7 +198,7 @@ export function ArticleView({ article }: { article: Article }) {
       <div className="progress" aria-hidden>
         <span style={{ transform: `scaleX(${progress})` }} />
       </div>
-      <main>
+      <main className="blog-page blog-article">
         {/* Mobile frame 1313:5686: collapsed sticky contents bar under the progress line. */}
         {useToc && (
           <div className={`art-toc-m${tocOpen ? " is-open" : ""}`}>
