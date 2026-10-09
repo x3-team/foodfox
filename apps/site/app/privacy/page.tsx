@@ -84,6 +84,8 @@ export default function Page() {
                     </tbody>
                   </table>
                 </div>
+                {/* PR02 (Figma 1338:9474): on phones the table scrolls inside its own container, with this hint under it. */}
+                <p className="pr-swipe" aria-hidden="true">← свайпните таблицу →</p>
               </section>
               <section id="s3">
                 <h2>3. Цели обработки</h2>
