@@ -119,3 +119,9 @@
 @media (max-width: 767px) {
   .report-page .rf-viewer-nav .rf-icon-btn { width: 44px; height: 44px; }
 }
+
+/* Хлебные крошки: правило d-only в globals.css ставит display:block и съедает gap из .crumbs —
+   получалось «Главная/Отчёт» без пробелов на всех ширинах, где крошки видны. */
+@media (min-width: 768px) {
+  body .report-page .crumbs.d-only { display: flex; }
+}
