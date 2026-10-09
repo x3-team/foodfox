@@ -242,7 +242,7 @@
   z-index: 3;
   color: #a03a22;
 }
-.report-page .uml-card:hover { transform: translateY(-12px) rotate(0deg); z-index: 4; }
+.report-page .uml-card:hover { transform: translateY(-24px) rotate(0deg); z-index: 4; }
 .rf-deck-top { display: flex; justify-content: space-between; align-items: center; color: rgba(11, 12, 8, 0.65); font-size: 14px; line-height: 18px; font-weight: 500; }
 .rf-deck-chip {
   display: inline-flex;
@@ -354,7 +354,7 @@
 .rf-cta-copy div { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
 .rf-light-link { color: #f8f9f6; }
 
-@media (max-width: 1100px) {
+@media (max-width: 767px) {
   .rf-hero-row, .rf-body, .rf-anatomy, .rf-ccd, .rf-zones, .rf-actions { grid-template-columns: 1fr; }
   .rf-hero { min-height: 0; }
   .rf-hero-in, .rf-hero-row, .rf-hero-visual, [data-s="zones"], [data-s="anatomy"], [data-s="units"], [data-s="ccd"], [data-s="after"], [data-s="limits"], [data-s="faq"], [data-s="cta"] { min-height: 0; }
