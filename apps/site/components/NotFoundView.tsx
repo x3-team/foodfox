@@ -24,7 +24,8 @@ export function NotFoundView() {
   const searchRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     document.title = "Страница не найдена — FOX Food Xplorer";
-    searchRef.current?.focus();
+    // E01: the search is focused on load on desktop only — on touch screens it would pop the keyboard over the plate.
+    if (window.matchMedia("(min-width: 1101px) and (hover: hover) and (pointer: fine)").matches) searchRef.current?.focus({ preventScroll: true });
     const mq = window.matchMedia("(max-width: 767px)");
     const sync = () => setPhone(mq.matches);
     sync();
