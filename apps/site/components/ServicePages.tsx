@@ -318,6 +318,37 @@ function closesAt(hours: string) {
 
 const NETS = ["Все сети", "Ситилаб", "Гемотест", "KDL", "ДНКОМ"];
 
+// Card / Lab partner (1248:249): logos as in the L02 grid 1250:252 — no grey plate, own size inside a 120×36 slot.
+const LAB_LOGOS: Record<string, [string, number, number]> = {
+  "Ситилаб": ["/figma/labs/partners/citilab.svg", 91, 30],
+  "Гемотест": ["/figma/labs/partners/gemotest.svg", 98, 10],
+  KDL: ["/figma/labs/partners/kdl.svg", 101, 30],
+  "ДНКОМ": ["/figma/labs/partners/dnkom.svg", 63, 30],
+  INVITRO: ["/figma/labs/partners/invitro.png", 98, 27],
+  CMD: ["/figma/labs/partners/cmd.svg", 120, 23],
+  CHROMOLAB: ["/figma/labs/partners/chromolab.png", 112, 17],
+  "Хеликс": ["/figma/labs/partners/helix.svg", 80, 30],
+  "Юнимед": ["/figma/labs/partners/unimed.svg", 86, 30],
+};
+
+// «Смена города — поиск с подсказками» (1257:1065): the hint shows what we actually have for the city.
+const CITY_HINTS: Array<[string, string]> = [
+  ["Москва", "8 сетей · 128 отделений"],
+  ["Санкт-Петербург", "3 сети · 3 отделения"],
+  ["Екатеринбург", "пока нет партнёров"],
+  ["Казань", "пока нет партнёров"],
+  ["Краснодар", "пока нет партнёров"],
+  ["Нижний Новгород", "пока нет партнёров"],
+  ["Новосибирск", "пока нет партнёров"],
+  ["Ростов-на-Дону", "пока нет партнёров"],
+  ["Самара", "пока нет партнёров"],
+];
+const CITY_COOKIE = "fox_city";
+
+function labName(lab: string) {
+  return lab === "Инвитро" ? "INVITRO" : lab;
+}
+
 export function LabsPage() {
   const [city, setCity] = useState("Москва");
   const [labView, setLabView] = useState<"list" | "map">("list");
@@ -332,6 +363,11 @@ export function LabsPage() {
   const [told, setTold] = useState(false);
   const [sendingMail, setSendingMail] = useState(false);
   const [flash, setFlash] = useState("");
+  const [hovered, setHovered] = useState("");
+  const [askCity, setAskCity] = useState(false);
+  const [hints, setHints] = useState(false);
+  const [hintAt, setHintAt] = useState(0);
+  const [hintAll, setHintAll] = useState(false);
   const key = city.trim().toLowerCase();
   const points = useMemo(() => {
     if (key === "санкт-петербург" || key === "спб" || key === "петербург") return SPB;
@@ -363,6 +399,44 @@ export function LabsPage() {
     query.addEventListener("change", apply);
     return () => query.removeEventListener("change", apply);
   }, []);
+
+  // 1257:1044: first visit — ask to confirm the city; the choice is kept in a cookie.
+  useEffect(() => {
+    const saved = document.cookie.split("; ").find((item) => item.startsWith(`${CITY_COOKIE}=`));
+    if (saved) {
+      try {
+        const value = decodeURIComponent(saved.slice(CITY_COOKIE.length + 1));
+        if (value) setCity(value);
+      } catch {
+        /* ignore a broken cookie */
+      }
+    } else setAskCity(true);
+  }, []);
+
+  function keepCity(value: string) {
+    document.cookie = `${CITY_COOKIE}=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+  }
+
+  const cityQuery = city.trim().toLowerCase();
+  const cityHints = CITY_HINTS.filter(([name]) => hintAll || !cityQuery || name.toLowerCase().split(/[\s-]+/).some((part) => part.startsWith(cityQuery)) || name.toLowerCase().startsWith(cityQuery)).slice(0, hintAll ? CITY_HINTS.length : 6);
+  const hintsOpen = hints && cityHints.length > 0 && (hintAll || !(cityHints.length === 1 && cityHints[0][0].toLowerCase() === cityQuery));
+
+  function openCityHints() {
+    const input = document.querySelector<HTMLInputElement>("[aria-label='Город']");
+    input?.focus();
+    input?.select();
+    setHints(true);
+    setHintAll(true);
+    setHintAt(Math.max(0, CITY_HINTS.findIndex(([name]) => name.toLowerCase() === city.trim().toLowerCase())));
+  }
+
+  function pickCity(name: string) {
+    setCity(name);
+    setHints(false);
+    setHintAll(false);
+    setAskCity(false);
+    keepCity(name);
+  }
 
   // L03: a click on a pin scrolls the list to the branch and tints it lime for 1.2 s.
   // Stable identity: LabsMap rebuilds the Leaflet map whenever onSelect changes.
@@ -398,6 +472,22 @@ export function LabsPage() {
     }
   }
 
+  // 1257:1002: tooltip over the active pin — «INVITRO · ул. Таганская, 3» / «Марксистская · 400 м · до 20:00».
+  const branchTip = (item: Branch): [string, string] => [`${labName(item.lab)} · ${item.address}`, `${item.metro} · до ${closesAt(item.hours)}`];
+
+  function resetFilters() {
+    setAddr("");
+    setNet("Все сети");
+    setOpenNow(false);
+  }
+
+  function showNearest() {
+    resetFilters();
+    const id = points[0]?.id;
+    // Wait for the reset list to render, then select it like a pin click (scroll + tint).
+    if (id) window.setTimeout(() => pickFromMap(id), 60);
+  }
+
   function pickNet(name: string) {
     setNet(name);
     if (name === "Все сети") return;
@@ -422,18 +512,87 @@ export function LabsPage() {
                     <span className="l-pin"><img src="/icons/pin.svg" alt="" /></span>
                     <div className="l-city-name">
                       <span>Ваш город · определили по IP</span>
-                      <input value={city} onChange={(event) => setCity(event.target.value)} aria-label="Город" />
+                      <input
+                        value={city}
+                        onChange={(event) => {
+                          setCity(event.target.value);
+                          setHints(true);
+                          setHintAll(false);
+                          setHintAt(0);
+                          setAskCity(false);
+                        }}
+                        onFocus={() => setHints(true)}
+                        onBlur={() => {
+                          setHints(false);
+                          setHintAll(false);
+                        }}
+                        onKeyDown={(event) => {
+                          if (!hintsOpen) return;
+                          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                            event.preventDefault();
+                            setHintAt((value) => (value + (event.key === "ArrowDown" ? 1 : cityHints.length - 1)) % cityHints.length);
+                          } else if (event.key === "Enter") {
+                            event.preventDefault();
+                            pickCity(cityHints[Math.min(hintAt, cityHints.length - 1)][0]);
+                          } else if (event.key === "Escape") setHints(false);
+                        }}
+                        aria-label="Город"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-expanded={hintsOpen}
+                        aria-controls="l-city-hints"
+                        aria-activedescendant={hintsOpen ? `l-city-hint-${Math.min(hintAt, cityHints.length - 1)}` : undefined}
+                        autoComplete="off"
+                      />
                     </div>
-                    <button type="button" className="l-change" onClick={() => document.querySelector<HTMLInputElement>("[aria-label='Город']")?.focus()}>
+                    <button type="button" className="l-change" onClick={() => openCityHints()}>
                       <span>Изменить<span className="d-only">&nbsp;город</span></span> <img src="/icons/chevron-down.svg" alt="" />
                     </button>
                   </div>
+                  {hintsOpen && (
+                    <ul className="l-city-hints" id="l-city-hints" role="listbox" aria-label="Подсказки">
+                      {cityHints.map(([name, note], index) => (
+                        <li
+                          key={name}
+                          id={`l-city-hint-${index}`}
+                          role="option"
+                          aria-selected={index === Math.min(hintAt, cityHints.length - 1)}
+                          className={index === Math.min(hintAt, cityHints.length - 1) ? "is-on" : ""}
+                          onMouseDown={(event) => event.preventDefault()}
+                          onMouseEnter={() => setHintAt(index)}
+                          onClick={() => pickCity(name)}
+                        >
+                          <span>{name}</span>
+                          <small>{note}</small>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   <div className="l-stats">
                     <p><b>8</b><span>сетей-партнёров в городе</span></p>
-                    <p><b>{empty ? "0" : key.startsWith("санкт") || key === "спб" || key === "петербург" ? String(points.length) : "128"}</b><span>{empty ? "отделений рядом" : `отделений в ${city || "городе"}`}</span></p>
+                    <p><b>{empty ? "0" : key.startsWith("санкт") || key === "спб" || key === "петербург" ? String(points.length) : "128"}</b><span>{empty ? "отделений рядом" : `отделений в ${cityTitle}`}</span></p>
                     <p><b>7–10 дней</b><span>до готового отчёта</span></p>
                   </div>
                 </article>
+                {askCity && (
+                  // 1257:1044 «Подтверждение города (первый визит)».
+                  <div className="l-ask">
+                    <p><span className="l-ask-pin"><img src="/icons/pin.svg" alt="" /></span>Ваш город — {city.trim() || "Москва"}?</p>
+                    <div>
+                      <button type="button" className="btn btn-dark" onClick={() => pickCity(city.trim() || "Москва")}>Да, верно</button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => {
+                          setAskCity(false);
+                          openCityHints();
+                        }}
+                      >
+                        Выбрать другой
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {/* Mobile frame 1261:1099: the list/map toggle sits in the grey top block. */}
                 <div className="l-mode-m" role="tablist" aria-label="Вид отделений">
                   <button type="button" className={labView === "list" ? "is-active" : ""} onClick={() => setLabView("list")}>Список</button>
@@ -464,25 +623,25 @@ export function LabsPage() {
               <p className="l-legend"><i className="on" />есть в вашем городе <i />пока нет — покажем ближайшие города</p>
             </header>
             <div className="l-partners">
-              {PARTNERS.map((item) =>
-                item.here ? (
+              {PARTNERS.map((item) => {
+                const [logo, logoW, logoH] = LAB_LOGOS[item.name] ?? [item.logo, 120, 36];
+                const mark = <span className="l-logo"><img src={logo} alt={item.name} width={logoW} height={logoH} /></span>;
+                return item.here ? (
                   // L02: a network card opens the booking modal straight on step 2 with this network.
                   <button key={item.name} type="button" onClick={() => window.dispatchEvent(new CustomEvent("fox:book", { detail: { lab: item.name } }))}>
-                    <img src={item.logo} alt="" />
-                    <strong>{item.name}</strong>
-                    <span><i />{item.count}</span>
-                    <em>Сдать тест на сайте сети <img src="/icons/arrow-up-right.svg" alt="" /></em>
+                    {mark}
+                    <span className="l-status"><i />{key === "москва" || key === "" ? `Есть в Москве · ${item.count}` : item.count}</span>
+                    <em>Сдать тест на сайте сети <b className="l-arrow"><img src="/icons/arrow-up-right.svg" alt="" /></b></em>
                   </button>
                 ) : (
-                  // L02: Unavailable — 50%, «Нет в вашем городе», no hover and no hand cursor; the action leads to the nearest cities.
+                  // 1258:1151 Unavailable — opacity 0.55, grey dot «Нет в вашем городе», action «Смотреть города».
                   <div key={item.name} className="is-away" aria-disabled="true">
-                    <img src={item.logo} alt="" />
-                    <strong>{item.name}</strong>
-                    <span className="l-away-badge">Нет в вашем городе</span>
-                    <a href="#l05">Смотреть города <img src="/icons/arrow-right.svg" alt="" /></a>
+                    {mark}
+                    <span className="l-status"><i />Нет в вашем городе</span>
+                    <a href="#l05">Смотреть города <b className="l-arrow"><img src="/icons/arrow-right.svg" alt="" /></b></a>
                   </div>
-                ),
-              )}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -515,9 +674,21 @@ export function LabsPage() {
                   </label>
                   <p className="l-count">{net === "Все сети" && !openNow && !addr.trim() && points === BRANCHES ? "128 отделений" : `${shown.length} ${shown.length === 1 ? "отделение" : shown.length > 1 && shown.length < 5 ? "отделения" : "отделений"}`} · сначала ближайшие</p>
                   <p className="l-found"><span>Найдено {shown.length} {shown.length === 1 ? "отделение" : "отделений"}</span><span>Сначала ближайшие</span></p>
-                  <div data-lab-list>
+                  <div data-lab-list onMouseLeave={() => setHovered("")}>
+                    {shown.length === 0 && (
+                      // 1258:1061 «Пустой поиск» — not a dead end: reset filters or jump to the nearest branch.
+                      <div className="l-nores" role="status">
+                        <span className="l-nores-icon"><img src="/figma/labs/state/search.svg" alt="" /></span>
+                        <p className="l-nores-title">{addr.trim() ? `Ничего не нашли по «${addr.trim()}»` : "Ничего не нашли"}</p>
+                        <p className="l-nores-text">{net !== "Все сети" ? `Проверьте адрес или сбросьте фильтр «${net}».` : openNow ? "Проверьте адрес или сбросьте фильтр «Открыто сейчас»." : "Проверьте адрес."}</p>
+                        <div className="l-nores-actions">
+                          <button type="button" className="btn btn-dark" onClick={resetFilters}>Сбросить фильтры</button>
+                          {points[0] && <button type="button" className="btn btn-ghost" onClick={showNearest}>Показать ближайшее</button>}
+                        </div>
+                      </div>
+                    )}
                     {shown.map((item) => (
-                      <article key={item.id} data-branch={item.id} className={`${selected === item.id ? "is-on" : ""}${flash === item.id ? " is-flash" : ""}`} onClick={() => setSelected(item.id)}>
+                      <article key={item.id} data-branch={item.id} className={`${selected === item.id ? "is-on" : ""}${flash === item.id ? " is-flash" : ""}`} onClick={() => setSelected(item.id)} onMouseEnter={() => setHovered(item.id)}>
                         <h3>{item.lab === "Инвитро" ? "INVITRO" : item.lab}</h3>
                         <p className="l-open"><i />Открыто до {closesAt(item.hours)}</p>
                         <p className="l-addr">{item.address}</p>
@@ -535,7 +706,7 @@ export function LabsPage() {
                 </div>
                 {(wide || labView === "map") && (
                   <div className="l03-map">
-                    <LabsMap points={points} selected={selected} onSelect={pickFromMap} />
+                    <LabsMap points={points} selected={selected} onSelect={pickFromMap} hovered={hovered} tooltip={branchTip} fallback />
                     {selectedLab && (
                       // Mobile map frame 1261:1311: the selected branch sits in a bottom sheet as a full Branch / Item.
                       <article className="l-map-card">

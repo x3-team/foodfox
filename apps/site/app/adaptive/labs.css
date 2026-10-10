@@ -105,3 +105,122 @@
   html body .l03-map .l-map-card .l-actions .btn { height: 48px; padding: 12px 16px; border-radius: 4px; font-size: 16px; line-height: 20px; }
   html body .l03-map .l-map-card .l-actions .btn-ghost { border-color: transparent; background: transparent; }
 }
+
+/* ======================================================================
+   Состояния /labs — Figma 1257:929 «Состояния · /labs» (все ширины)
+   ====================================================================== */
+
+/* ---------- 1258:1101 Card / Lab partner: Default · Hover · Focus-visible · Unavailable ---------- */
+html body [data-s="l02"] .l-partners > * { justify-content: flex-start; gap: 0; transform: none; }
+html body [data-s="l02"] .l-partners .l-logo { display: grid; place-items: center start; width: 120px; height: 36px; flex: 0 0 36px; }
+html body [data-s="l02"] .l-partners .l-logo img { display: block; width: auto; height: auto; max-width: 120px; max-height: 36px; object-fit: contain; }
+html body [data-s="l02"] .l-partners .l-status { margin-top: auto; display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+html body [data-s="l02"] .l-partners .l-status i { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 99px; background: #4a6b1f; }
+html body [data-s="l02"] .l-partners > * > em,
+html body [data-s="l02"] .l-partners > * > a { margin-top: 16px; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-style: normal; font-weight: 500; font-size: 14px; line-height: 18px; color: #0b0c08; }
+html body [data-s="l02"] .l-partners .l-arrow { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 999px; border: 1px solid rgba(11, 12, 8, 0.3); display: grid; place-items: center; box-sizing: border-box; transition: background-color 200ms var(--ease), border-color 200ms var(--ease); }
+html body [data-s="l02"] .l-partners .l-arrow img { width: 16px; height: 16px; transition: transform 200ms var(--ease); }
+html body [data-s="l02"] .l-partners > button { transition: box-shadow 200ms var(--ease), border-color 200ms var(--ease); }
+html body [data-s="l02"] .l-partners > button:hover { transform: none; border-color: rgba(11, 12, 8, 0.3); box-shadow: 0 2px 6px rgba(11, 12, 8, 0.05), 0 8px 24px -4px rgba(11, 12, 8, 0.1); }
+html body [data-s="l02"] .l-partners > button:hover .l-arrow { background: #e7f551; border-color: #e7f551; }
+html body [data-s="l02"] .l-partners > button:hover .l-arrow img { transform: translate(2px, -2px); }
+html body [data-s="l02"] .l-partners > button:focus-visible { outline: none; transform: none; box-shadow: 0 0 0 3px #e7f551; }
+html body [data-s="l02"] .l-partners > .is-away { opacity: 0.55; }
+html body [data-s="l02"] .l-partners > .is-away .l-status i { background: #c5c7bc; }
+@media (prefers-reduced-motion: reduce) {
+  html body [data-s="l02"] .l-partners > button:hover .l-arrow img { transform: none; }
+}
+
+/* ---------- 1257:931 Связка список ↔ карта: Map / Pin Default · Hover · Active + тултип ---------- */
+html body [data-s="l03"] [data-lab-list] article:not(.is-on):not(.is-flash):hover { background: #f2f2f2; }
+html body [data-s="l03"] [data-lab-list] article:not(.is-on):hover .l-actions .btn-ghost { color: rgba(11, 12, 8, 0.65); }
+html body [data-s="l03"] .fox-pin span[data-pin] {
+  position: absolute; left: 50%; top: 50%; box-sizing: border-box;
+  width: 32px; height: 32px; margin: 0; border-radius: 99px;
+  background: radial-gradient(circle, #e7f551 0 4px, #21251d 4.5px);
+  border: 2px solid #fff; box-shadow: 0 2px 8px rgba(11, 12, 8, 0.06);
+  transform: translate(-50%, -50%);
+  transition: width 150ms ease-out, height 150ms ease-out, background 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out;
+  animation: l-pin-drop 260ms ease-out both; animation-delay: calc(var(--i, 0) * 30ms);
+}
+html body [data-s="l03"] .fox-pin span[data-pin].is-hover {
+  width: 38px; height: 38px; border-color: #0b0c08;
+  background: radial-gradient(circle, #0b0c08 0 5px, #e7f551 5.5px);
+  box-shadow: 0 2px 6px rgba(11, 12, 8, 0.05), 0 8px 24px -4px rgba(11, 12, 8, 0.1);
+}
+html body [data-s="l03"] .fox-pin span[data-pin].is-on {
+  width: 46px; height: 46px; border-color: #0b0c08;
+  background: radial-gradient(circle, #0b0c08 0 6px, #e7f551 6.5px);
+  box-shadow: 0 0 32px rgba(231, 245, 81, 0.35);
+}
+html body [data-s="l03"] .fox-pin .fox-tip {
+  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 12px; background: #fff;
+  white-space: nowrap; pointer-events: none; text-align: left; font-weight: 400;
+  box-shadow: 0 4px 12px rgba(11, 12, 8, 0.08), 0 24px 64px -8px rgba(11, 12, 8, 0.16);
+  animation: fade 150ms ease-out;
+}
+html body [data-s="l03"] .fox-tip strong { font-weight: 500; font-size: 14px; line-height: 18px; color: #0b0c08; }
+html body [data-s="l03"] .fox-tip small { font-size: 12px; line-height: 16px; letter-spacing: 0.2px; color: rgba(11, 12, 8, 0.65); }
+@keyframes l-pin-drop { from { opacity: 0; margin-top: -12px; } to { opacity: 1; margin-top: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  html body [data-s="l03"] .fox-pin span[data-pin] { animation: none; transition: none; }
+}
+/* Телефон: в режиме «Карта» выбранное отделение уже в шторке (1261:1311) — тултип над пином не дублируем. */
+@media (max-width: 767px) {
+  html body [data-s="l03"] .fox-pin .fox-tip { display: none; }
+}
+
+/* ---------- 1257:1044 Подтверждение города (первый визит) ---------- */
+html body .l01 .l-ask {
+  display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 20px; background: #fff;
+  border: 1px solid rgba(11, 12, 8, 0.1); box-shadow: 0 2px 6px rgba(11, 12, 8, 0.05), 0 8px 24px -4px rgba(11, 12, 8, 0.1);
+  max-width: 520px; box-sizing: border-box; animation: fade 200ms ease-out;
+}
+html body .l01 .l-ask p { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 20px; line-height: 24px; color: #0b0c08; }
+html body .l01 .l-ask-pin { width: 40px; height: 40px; flex: 0 0 40px; border-radius: 999px; background: #e7f551; display: grid; place-items: center; }
+html body .l01 .l-ask-pin img { width: 18px; height: 18px; }
+html body .l01 .l-ask > div { display: flex; flex-wrap: wrap; gap: 8px; }
+html body .l01 .l-ask .btn { height: 48px; padding: 12px 16px; border-radius: 4px; font-size: 16px; line-height: 20px; }
+html body .l01 .l-ask .btn-ghost { border-color: transparent; background: transparent; }
+html body .l01 .l-ask .btn-ghost:hover { background: rgba(11, 12, 8, 0.06); }
+
+/* ---------- 1257:1065 Смена города — поиск с подсказками ---------- */
+html body .l01 .l-city { position: relative; }
+html body .l01 .l-city-hints {
+  position: absolute; z-index: 30; left: 12px; right: 12px; top: calc(100% - 12px);
+  margin: 0; padding: 12px; list-style: none; display: flex; flex-direction: column; gap: 8px;
+  background: #fff; border: 1px solid rgba(11, 12, 8, 0.1); border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(11, 12, 8, 0.05), 0 8px 24px -4px rgba(11, 12, 8, 0.1);
+  max-height: 320px; overflow: auto; overscroll-behavior: contain;
+}
+html body .l01 .l-city-hints li { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; cursor: pointer; }
+html body .l01 .l-city-hints li.is-on { background: #f6fbc8; }
+html body .l01 .l-city-hints span { flex: 1 1 auto; min-width: 0; font-size: 16px; line-height: 20px; color: #0b0c08; }
+html body .l01 .l-city-hints small { flex: 0 0 auto; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+@media (min-width: 768px) {
+  html body .l01 .l-city-hints { top: 84px; left: 24px; right: auto; width: min(520px, calc(100% - 48px)); box-sizing: border-box; }
+}
+
+/* ---------- 1258:1061 Пустой поиск ---------- */
+html body [data-s="l03"] .l-nores { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 32px; text-align: center; }
+html body [data-s="l03"] .l-nores-icon { width: 56px; height: 56px; border-radius: 999px; background: #f6fbc8; display: grid; place-items: center; }
+html body [data-s="l03"] .l-nores-icon img { width: 22px; height: 22px; }
+html body [data-s="l03"] .l-nores-title { margin: 0; font-size: 20px; line-height: 24px; color: #0b0c08; overflow-wrap: anywhere; }
+html body [data-s="l03"] .l-nores-text { margin: 0; max-width: 400px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+html body [data-s="l03"] .l-nores-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+html body [data-s="l03"] .l-nores .btn { height: 48px; padding: 12px 16px; border-radius: 4px; font-size: 16px; line-height: 20px; }
+html body [data-s="l03"] .l-nores .btn-ghost { border-color: transparent; background: transparent; }
+html body [data-s="l03"] .l-nores .btn-ghost:hover { background: rgba(11, 12, 8, 0.06); }
+
+/* ---------- 1258:1083 Ошибка карты ---------- */
+html body [data-s="l03"] .l03-map .map-fail {
+  position: absolute; inset: 0; z-index: 1001; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 32px; background: #ecede4; text-align: center;
+}
+html body [data-s="l03"] .map-fail-icon { width: 56px; height: 56px; border-radius: 999px; background: #f8e3de; display: grid; place-items: center; }
+html body [data-s="l03"] .map-fail-icon img { width: 22px; height: 22px; }
+html body [data-s="l03"] .map-fail-title { margin: 0; font-size: 20px; line-height: 24px; color: #0b0c08; }
+html body [data-s="l03"] .map-fail-text { margin: 0; max-width: 380px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+html body [data-s="l03"] .map-fail .btn { height: 48px; padding: 12px 16px; border-radius: 4px; border-color: transparent; background: transparent; font-size: 16px; line-height: 20px; }
+html body [data-s="l03"] .map-fail .btn:hover { background: rgba(11, 12, 8, 0.06); }
