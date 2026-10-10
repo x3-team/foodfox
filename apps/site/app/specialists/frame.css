@@ -986,3 +986,21 @@
   from { width: 0; }
   to { width: 100%; }
 }
+
+/* ---------- Состояния (Figma 1138:986 «Состояния · Специалистам и отчёт») ---------- */
+/* S2 табы областей: Hover — заливка #f2f2f2 (Active — тёмная, без изменений). */
+.sp-tab { transition: background-color 200ms var(--ease), color 200ms var(--ease), border-color 200ms var(--ease); }
+.sp-tab:not(.is-active):hover { background: #f2f2f2; }
+/* S3 строка аргумента: Hover — граница strong, тень S → M, номер темнеет, 200 мс. */
+.sp-arg { transition: box-shadow 200ms var(--ease), border-color 200ms var(--ease); }
+.sp-arg .sp-note { transition: color 200ms var(--ease); }
+.sp-arg:hover { border-color: rgba(11, 12, 8, 0.3); box-shadow: 0 8px 24px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
+.sp-arg:hover .sp-note { color: #0b0c08; }
+/* S4 карточка лаборатории: Hover — #f2f2f2 + тень M. */
+.sp-labs a { transition: background 200ms var(--ease), transform 200ms var(--ease), box-shadow 200ms var(--ease); }
+.sp-labs a:hover { box-shadow: 0 8px 24px -4px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
+/* 08 плитка техарактеристики: граница default → strong, 150 мс (на тёмном hero — светлая граница, без тени). */
+.sp-tile { transition: border-color 150ms var(--ease), background-color 150ms var(--ease); }
+@media (hover: hover) and (min-width: 768px) {
+  [data-s="p01"] .sp-tile:hover { border-color: rgba(248, 249, 246, 0.5); background: rgba(255, 255, 255, 0.14); }
+}
