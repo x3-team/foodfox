@@ -116,7 +116,8 @@ export function ReportFaq() {
               <span>{item.q}</span>
               <img src="/icons/chevron-down.svg" alt="" width={20} height={20} />
             </button>
-            <p hidden={!on}>{item.a}</p>
+            {/* S7: one open, height 300 мс, the answer always in the DOM. */}
+            <div className="rf-faq-a" inert={!on}><div><p>{item.a}</p></div></div>
           </div>
         );
       })}

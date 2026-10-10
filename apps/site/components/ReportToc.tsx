@@ -1,28 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export function ReportToc({ items }: { items: Array<[string, string]> }) {
   const [active, setActive] = useState(items[0]?.[0] ?? "");
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
   const index = Math.max(0, items.findIndex(([id]) => id === active));
+  // S6 (Figma 1138:1306): the lime marker slides to the active item (250 мс).
+  const navRef = useRef<HTMLElement>(null);
+  const [marker, setMarker] = useState<{ top: number; height: number } | null>(null);
+  useLayoutEffect(() => {
+    const place = () => {
+      const link = navRef.current?.querySelector<HTMLAnchorElement>(`a[href="#${active}"]`);
+      if (!link || !link.offsetHeight) { setMarker(null); return; }
+      setMarker({ top: link.offsetTop + (link.offsetHeight - 20) / 2, height: 20 });
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [active, open]);
 
+  // S6: the active item is the last section whose top has passed 35% of the viewport. (An IntersectionObserver with
+  // ratio thresholds never fired for sections taller than the observed band, so the item stayed on «Три зоны».)
   useEffect(() => {
-    const nodes = items
-      .map(([id]) => document.getElementById(id))
-      .filter((node): node is HTMLElement => Boolean(node));
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target.id) setActive(visible.target.id);
-      },
-      { rootMargin: "-30% 0px -55% 0px", threshold: [0.15, 0.4, 0.75] },
-    );
-    nodes.forEach((node) => io.observe(node));
-    return () => io.disconnect();
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = window.innerHeight * 0.35;
+      let current = items[0]?.[0] ?? "";
+      for (const [id] of items) {
+        const node = document.getElementById(id);
+        if (node && node.getBoundingClientRect().top <= line) current = id;
+      }
+      setActive(current);
+    };
+    const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, [items]);
 
   // The page URL is read after mount: reading window during render made the server and client hrefs differ (hydration error).
@@ -30,7 +51,8 @@ export function ReportToc({ items }: { items: Array<[string, string]> }) {
   useEffect(() => { setShareUrl(window.location.href); }, []);
 
   return (
-    <nav className={`toc${open ? " is-open" : ""}`} data-allow-x aria-label="Содержание">
+    <nav ref={navRef} className={`toc${open ? " is-open" : ""}`} data-allow-x aria-label="Содержание">
+      {marker ? <span className="rf-toc-marker" aria-hidden style={{ transform: `translateY(${marker.top}px)`, height: marker.height }} /> : null}
       <button type="button" className="rf-toc-m m-only" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         <span>
           <small>На этой странице · {index + 1} из {items.length}</small>

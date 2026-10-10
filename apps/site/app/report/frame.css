@@ -387,3 +387,28 @@
   .rf-paper { height: 200px; }
   .rf-paper img, .rf-paper-back { height: 180px; }
 }
+
+/* ---------- Состояния (Figma 1138:986 «Состояния · Специалистам и отчёт») ---------- */
+/* S6 оглавление: Hover — серая риска 2×20 и тёмный текст; Active — лаймовая риска переезжает за 250 мс. */
+.report-page .toc > a::before { content: ""; position: absolute; left: 0; top: 50%; width: 2px; height: 20px; margin-top: -10px; border-radius: 2px; background: rgba(11, 12, 8, 0.1); opacity: 0; transition: opacity 150ms var(--ease); }
+.report-page .toc > a:hover { color: var(--ink); }
+.report-page .toc > a:hover::before { opacity: 1; }
+.rf-toc-marker { position: absolute; left: 0; top: 0; z-index: 1; width: 2px; border-radius: 2px; background: #e7f551; pointer-events: none; transition: transform 250ms var(--ease); }
+@media (max-width: 1100px) { .rf-toc-marker, .report-page .toc > a::before { display: none; } }
+@media (prefers-reduced-motion: reduce) { .rf-toc-marker { transition: none; } }
+/* S7 FAQ: Hover — вопрос подчёркнут; ответ раскрывается по высоте 300 мс и всегда в DOM. */
+.rf-faq-item button:hover > span { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.rf-faq-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 300ms ease-out; }
+.rf-faq-item.is-open .rf-faq-a { grid-template-rows: 1fr; }
+.rf-faq-a > div { overflow: hidden; min-height: 0; }
+@media (prefers-reduced-motion: reduce) { .rf-faq-a { transition: none; } }
+/* 08 зона реактивности: Hover — граница strong, тень S → M, точка scale 1.15, 200 мс. */
+.rf-zone { border: 1px solid transparent; transition: border-color 200ms var(--ease), box-shadow 200ms var(--ease); }
+.rf-zone-head i { transition: transform 200ms var(--ease); }
+.rf-zone:hover { border-color: rgba(11, 12, 8, 0.3); box-shadow: 0 8px 24px -4px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
+.rf-zone:hover .rf-zone-head i { transform: scale(1.15); }
+/* Card / Zone deck (1377:4708): Hover — обводка 2 px цветом зоны и глубокая тень. */
+@media (min-width: 768px) {
+  .report-page .uml-card { transition: transform 300ms var(--ease), box-shadow 300ms var(--ease); }
+  .report-page .uml-card:hover { box-shadow: inset 0 0 0 1px currentColor, 0 28px 56px rgba(11, 12, 8, 0.18), 0 4px 10px rgba(11, 12, 8, 0.08); }
+}
