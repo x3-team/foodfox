@@ -42,13 +42,13 @@ export function SkeletonGrid() {
   return (
     <div className="grid" aria-hidden>
       {Array.from({ length: 6 }, (_, i) => (
+        // Card / Skeleton (1066:230): cover 300 · two meta pills · two title lines · two excerpt lines · avatar + name.
         <div className="card skeleton" key={i}>
           <div className="card-cover bone" />
-          <div className="card-body">
-            <div className="bone title" />
-            <div className="bone text" />
-            <div className="bone author" />
-          </div>
+          <div className="sk-meta"><i className="bone" /><i className="bone" /></div>
+          <div className="sk-title"><i className="bone" /><i className="bone" /></div>
+          <div className="sk-text"><i className="bone" /><i className="bone" /></div>
+          <div className="sk-author"><i className="bone" /><i className="bone" /></div>
         </div>
       ))}
     </div>
