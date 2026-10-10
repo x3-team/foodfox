@@ -270,3 +270,104 @@
   .kf-acc button { padding: 20px 16px; gap: 12px; min-height: 0; }
 }
 body:has(.ls-layout) .footer { display: none; }
+
+/* ---------- Состояния (Figma 1139:798 «Состояния · Курс и кабинет», 1136:561 модалка регистрации) ---------- */
+/* C2 аккордеон урока: Hover — фон #f2f2f2 + подчёркнутый заголовок; высота 300 мс ease-out, текст всегда в DOM. */
+.kf-fold { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 300ms ease-out; }
+.is-open > .kf-fold { grid-template-rows: 1fr; }
+.kf-fold > div { overflow: hidden; min-height: 0; }
+.kf-acc article { transition: background-color 200ms var(--ease); }
+.kf-acc article:not(.is-open):hover { background: #f2f2f2; }
+.kf-acc article:not(.is-open) button:hover strong,
+.kf-faq button:hover > span { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+/* C3 карточка аудитории: Default — без стрелки; Hover — фон #f2f2f2, тень M, стрелка проявляется, заголовок подчёркнут. */
+.kf-aud { transition: background-color 200ms var(--ease), box-shadow 200ms var(--ease); }
+.kf-aud-title img { opacity: 0; transform: translateX(-4px); transition: opacity 200ms var(--ease), transform 200ms var(--ease); }
+.kf-aud:hover, .kf-aud:focus-visible { background: #f2f2f2; box-shadow: 0 8px 24px -4px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
+.kf-aud:hover .kf-aud-title img, .kf-aud:focus-visible .kf-aud-title img { opacity: 1; transform: none; }
+.kf-aud:hover .kf-aud-title strong { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+@media (hover: none) { .kf-aud-title img { opacity: 1; transform: none; } }
+/* 08 «Что входит»: Hover — фон светлее, граница ярче, иконка на 2 px вверх, 150 мс; без теней на тёмном. */
+.kf-include-row article { transition: background-color 150ms var(--ease), border-color 150ms var(--ease); }
+.kf-include-row article img { transition: transform 150ms var(--ease); }
+.kf-include-row article:hover { background: rgba(255, 255, 255, 0.16); border-color: rgba(248, 249, 246, 0.36); }
+.kf-include-row article:hover img { transform: translateY(-2px); }
+/* C5 список уроков: Hover — фон #f2f2f2 + подчёркнутый заголовок. */
+.ls-item { transition: background-color 150ms var(--ease); }
+.ls-item:not(.is-current):hover { background: #f2f2f2; }
+.ls-item:not(.is-current):hover strong { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+/* C6 плеер: Playing — без центральной кнопки (клик по кадру ставит на паузу), Paused — кнопка «Смотреть». */
+.ls-play { transition: opacity 150ms var(--ease); }
+.ls-player.is-playing .ls-play { opacity: 0; pointer-events: none; }
+.ls-player.is-playing .ls-play:focus-visible { opacity: 1; pointer-events: auto; }
+.ls-stage video { cursor: pointer; }
+/* C09 «Видео не загрузилось» (1206:1322) — карточка поверх постера. */
+.ls-fail { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3; width: min(420px, calc(100% - 32px)); box-sizing: border-box; padding: 24px; border-radius: 16px; background: #fff; color: #0b0c08; border: 1px solid rgba(11, 12, 8, 0.1); box-shadow: 0 2px 8px rgba(11, 12, 8, 0.06); display: flex; flex-direction: column; gap: 10px; }
+.ls-fail h2 { margin: 0; font-weight: 300; font-size: 24px; line-height: 28px; letter-spacing: -0.5px; }
+.ls-fail p { margin: 0; font-size: 16px; line-height: 20px; color: #5c5e57; }
+.ls-fail > div { display: flex; flex-wrap: wrap; gap: 10px; }
+.ls-fail .btn { height: 38px; padding: 0 18px; border-radius: 999px; font-size: 14px; line-height: 18px; }
+.ls-fail .ls-fail-pdf { background: #fff; color: #0b0c08; border: 1px solid rgba(11, 12, 8, 0.1); }
+@media (max-width: 767px) {
+  /* Плеер на телефоне ~200 px высотой: карточка занимает кадр целиком, на тёмном фоне. */
+  .ls-fail { inset: 0; transform: none; width: auto; justify-content: center; gap: 6px; padding: 12px 16px; border: 0; border-radius: 0; background: rgba(16, 20, 0, 0.9); color: #f8f9f6; box-shadow: none; }
+  .ls-fail h2 { font-size: 18px; line-height: 22px; }
+  .ls-fail p { font-size: 13px; line-height: 17px; color: rgba(248, 249, 246, 0.72); }
+  .ls-fail > div { gap: 8px; margin-top: 4px; }
+  .ls-fail .btn { height: 34px; padding: 0 14px; font-size: 13px; }
+  .ls-fail .btn-dark { background: #f8f9f6; color: #0b0c08; }
+  .ls-fail .ls-fail-pdf { background: transparent; color: #f8f9f6; border-color: rgba(248, 249, 246, 0.3); }
+}
+
+/* K08 модалка регистрации (1136:561): заголовок → подзаголовок → индикатор → поле; отступы 24. */
+html body .reg-modal { padding: 32px; }
+html body .reg-modal .reg-x { top: 32px; right: 32px; width: 32px; height: 32px; background: transparent; font-size: 24px; color: #0b0c08; }
+html body .reg-modal .reg-x:hover { background: rgba(11, 12, 8, 0.06); }
+html body .reg-modal .reg-head h2 { margin: 0 40px 0 0; }
+html body .reg-modal .reg-head .lead { margin: 8px 40px 0 0; max-width: none; font-size: 16px; line-height: 20px; color: #5c5e57; }
+html body .reg-modal .reg-steps { width: 132px; gap: 6px; margin: 24px 0; }
+html body .reg-modal .reg-steps i { background: rgba(11, 12, 8, 0.1); }
+html body .reg-modal .reg-steps i.is-on { background: #101400; }
+html body .reg-modal form { gap: 24px; }
+html body .reg-modal .field { margin: 0; gap: 0; font-size: 14px; line-height: 18px; color: #5c5e57; }
+html body .reg-modal .field input, html body .reg-modal .field select { margin-top: 8px; height: 48px; box-sizing: border-box; padding: 0 16px; font-size: 16px; line-height: 20px; color: #0b0c08; }
+html body .reg-modal .field select { -webkit-appearance: none; appearance: none; padding-right: 48px; background: #fff url("/icons/chevron-down.svg") right 16px center / 16px no-repeat; cursor: pointer; }
+html body .reg-modal .field.is-error input { border-width: 1.5px; border-color: #c8452e; }
+html body .reg-modal .lf-err.is-on { margin-top: 8px; }
+html body .reg-modal .lf-err > .err { font-size: 14px; line-height: 18px; color: #c8452e; }
+html body .reg-modal .check-row { padding: 0; gap: 12px; align-items: flex-start; font-size: 14px; line-height: 18px; color: #5c5e57; cursor: pointer; }
+html body .reg-modal .check-row input { -webkit-appearance: none; appearance: none; flex: 0 0 20px; width: 20px; height: 20px; margin: 0; border: 1.5px solid rgba(11, 12, 8, 0.3); border-radius: 6px; background: #fff center / 12px no-repeat; transition: background-color 150ms, border-color 150ms; cursor: pointer; }
+html body .reg-modal .check-row input:checked { background-color: #101400; background-image: url("/figma/home/checker/check.svg"); border-color: #101400; }
+html body .reg-modal .btn { height: 48px; border-radius: 4px; }
+html body .reg-modal form .btn-dark:disabled { opacity: 1; background: rgba(11, 12, 8, 0.1); color: rgba(255, 255, 255, 0.3); }
+html body .reg-modal .reg-hint { margin: 0; font-size: 14px; line-height: 18px; color: #0b0c08; text-decoration: underline; text-underline-offset: 3px; }
+html body .reg-modal .reg-hint .reg-link, html body .reg-modal .reg-hint a { font-size: inherit; line-height: inherit; text-decoration: inherit; }
+/* Шаг 4 «Проверьте почту» (1136:641): иллюстрация 504×200, текст 20/24, ряд «Отправить снова (0:47)» + «Изменить e-mail». */
+html body .reg-modal .reg-sent { display: flex; flex-direction: column; gap: 24px; }
+html body .reg-modal .reg-illu { display: block; width: 100%; height: auto; aspect-ratio: 504 / 200; object-fit: cover; border-radius: 16px; background: #d7d8cd; box-shadow: 0 24px 64px -8px rgba(11, 12, 8, 0.16), 0 4px 12px rgba(11, 12, 8, 0.08); }
+html body .reg-modal .reg-sent-lead { margin: 0; font-size: 20px; line-height: 24px; color: #0b0c08; }
+html body .reg-modal .reg-sent-hint { margin: 0; font-size: 16px; line-height: 20px; color: #5c5e57; }
+html body .reg-modal .reg-sent-actions { display: flex; flex-wrap: wrap; gap: 16px; }
+html body .reg-modal .reg-sent-actions .btn { width: auto; padding: 0 16px; font-size: 16px; line-height: 20px; }
+html body .reg-modal .reg-resend { background: #fff; color: #0b0c08; border: 1px solid rgba(11, 12, 8, 0.1); }
+html body .reg-modal .reg-resend:disabled { opacity: 1; background: rgba(255, 255, 255, 0.05); border-color: transparent; color: rgba(11, 12, 8, 0.3); }
+html body .reg-modal .reg-change { background: none; color: #0b0c08; }
+html body .reg-modal .reg-change:hover { background: rgba(11, 12, 8, 0.06); }
+/* Шаг 5 «Доступ открыт» (1136:670). */
+html body .access-modal .reg-body { gap: 24px; }
+html body .access-modal .reg-body h2 { margin: 0 40px 0 0; }
+html body .access-modal .reg-steps { margin: 0; }
+html body .access-modal .access-ok .lead { font-size: 20px; line-height: 24px; color: #0b0c08; }
+html body .access-modal .access-check img { filter: brightness(0); }
+html body .access-modal .access-chips li { background: #d7d8cd; font-size: 16px; line-height: 20px; color: #0b0c08; }
+html body .access-modal .reg-hint { text-decoration: none; color: #5c5e57; }
+@media (max-width: 767px) {
+  html body .reg-modal { padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); }
+  html body .reg-modal .reg-x { top: 20px; right: 16px; }
+  html body .reg-modal .reg-steps { margin: 20px 0; }
+  html body .reg-modal form, html body .reg-modal .reg-sent, html body .access-modal .reg-body { gap: 20px; }
+  html body .reg-modal .reg-sent-lead, html body .access-modal .access-ok .lead { font-size: 18px; line-height: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kf-fold { transition: none; }
+}

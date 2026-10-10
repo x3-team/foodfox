@@ -273,25 +273,31 @@ function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration>
     ["Ваша специальность", "Подберём примеры и порядок уроков под вашу практику. Шаг 3 из 3."],
   ];
   const [title, lead] = flow.sent ? ["Проверьте почту", ""] : heads[flow.step];
+  // Figma 1136:561: title + sub, then the 3-segment indicator (all three filled on «Проверьте почту»), then the step body.
   return (
     <div className="modal-back" role="presentation" onClick={() => { if (!flow.email.trim() && !flow.name.trim()) flow.close(); }}>
       <div className="modal reg-modal" ref={ref} role="dialog" aria-modal="true" aria-labelledby="reg-title" onClick={(event) => event.stopPropagation()}>
         <button type="button" className="lead-x reg-x" aria-label="Закрыть" onClick={flow.close}>×</button>
-        {!flow.sent && <div className="reg-steps" aria-hidden>{[0, 1, 2].map((index) => <i key={index} className={index <= flow.step ? "is-on" : ""} />)}</div>}
-        <div className="reg-body" key={flow.sent ? "sent" : flow.step}>
+        <div className="reg-body reg-head" key={flow.sent ? "sent-head" : `head-${flow.step}`}>
           <h2 id="reg-title">{title}</h2>
+          {lead ? <p className="lead">{flow.step === 0 && flow.error ? "Проверьте адрес — на него придёт ссылка для входа." : lead}</p> : null}
+        </div>
+        <div className="reg-steps" aria-hidden>{[0, 1, 2].map((index) => <i key={index} className={flow.sent || index <= flow.step ? "is-on" : ""} />)}</div>
+        <div className="reg-body" key={flow.sent ? "sent" : flow.step}>
           {flow.sent ? (
-            <>
-              <p className="lead">Мы отправили ссылку для входа на {flow.email}. Ссылка действует 24 часа и открывает кабинет без пароля.</p>
-              <p className="reg-hint">Не пришло письмо? Проверьте папку «Спам» или отправьте повторно через 60 секунд.</p>
-              <button type="button" className="btn btn-ghost" disabled={flow.wait > 0 || flow.busy} onClick={() => void flow.send()}>
-                Отправить снова{flow.wait > 0 ? ` (${Math.floor(flow.wait / 60)}:${String(flow.wait % 60).padStart(2, "0")})` : ""}
-              </button>
-              <button type="button" className="text-link reg-link" onClick={() => { flow.setSent(false); flow.setStep(0); }}>Изменить e-mail</button>
-            </>
+            <div className="reg-sent">
+              <img className="reg-illu" src="/figma/course/reg-mail.webp" alt="" width={504} height={200} />
+              <p className="reg-sent-lead">Мы отправили ссылку для входа на {flow.email}. Ссылка действует 24 часа и открывает кабинет без пароля.</p>
+              <p className="reg-sent-hint">Не пришло письмо? Проверьте папку «Спам» или отправьте повторно через 60 секунд.</p>
+              <div className="reg-sent-actions">
+                <button type="button" className="btn reg-resend" disabled={flow.wait > 0 || flow.busy} onClick={() => void flow.send()}>
+                  Отправить снова{flow.wait > 0 ? ` (${Math.floor(flow.wait / 60)}:${String(flow.wait % 60).padStart(2, "0")})` : ""}
+                </button>
+                <button type="button" className="btn reg-change" onClick={() => { flow.setSent(false); flow.setStep(0); }}>Изменить e-mail</button>
+              </div>
+            </div>
           ) : (
             <form noValidate onSubmit={(event) => { event.preventDefault(); flow.next(); }}>
-              <p className="lead">{flow.step === 0 && flow.error ? "Проверьте адрес — на него придёт ссылка для входа." : lead}</p>
               {flow.step === 0 && (
                 <>
                   <label className={`field${flow.error ? " is-error" : ""}`}>E-mail
@@ -349,9 +355,9 @@ function AccessDialog({ onClose }: { onClose: () => void }) {
     <div className="modal-back" role="presentation" onClick={() => closeRef.current()}>
       <div className="modal reg-modal access-modal" ref={ref} role="dialog" aria-modal="true" aria-labelledby="access-title" onClick={(event) => event.stopPropagation()}>
         <button type="button" className="lead-x reg-x" aria-label="Закрыть" onClick={() => closeRef.current()}>×</button>
-        <div className="reg-steps" aria-hidden>{[0, 1, 2].map((index) => <i key={index} className="is-on" />)}</div>
         <div className="reg-body">
           <h2 id="access-title">Доступ открыт</h2>
+          <div className="reg-steps" aria-hidden>{[0, 1, 2].map((index) => <i key={index} className="is-on" />)}</div>
           <p className="access-ok">
             <span className="access-check" aria-hidden><img src="/figma/icons/check.svg" alt="" width={16} height={16} /></span>
             <span className="lead">Все шесть уроков и материалы доступны в личном кабинете.</span>
@@ -477,15 +483,20 @@ export function CoursePage() {
                       </span>
                       <img src="/icons/chevron-down.svg" alt="" width={24} height={24} />
                     </button>
-                    <div className="kf-lesson-body" hidden={!on}>
+                    {/* C2: height 300 мс ease-out, the lesson text stays in the DOM. */}
+                    <div className="kf-fold" inert={!on}>
                       <div>
-                        <span>Содержание урока</span>
-                        <p>{lesson.content}</p>
+                        <div className="kf-lesson-body">
+                          <div>
+                            <span>Содержание урока</span>
+                            <p>{lesson.content}</p>
+                          </div>
+                          <aside>
+                            <span>После урока</span>
+                            <p>{lesson.after}</p>
+                          </aside>
+                        </div>
                       </div>
-                      <aside>
-                        <span>После урока</span>
-                        <p>{lesson.after}</p>
-                      </aside>
                     </div>
                   </article>
                 );
@@ -559,7 +570,7 @@ export function CoursePage() {
                       <span>{question}</span>
                       <img src="/icons/chevron-down.svg" alt="" width={20} height={20} />
                     </button>
-                    <p hidden={!on}>{answer}</p>
+                    <div className="kf-fold" inert={!on}><div><p>{answer}</p></div></div>
                   </div>
                 );
               })}
@@ -602,6 +613,7 @@ export function LessonsPage() {
   const [done, setDone] = useState<number[]>([0]);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [failed, setFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const lesson = LESSONS[current];
 
@@ -610,6 +622,7 @@ export function LessonsPage() {
   useEffect(() => {
     setProgress(0);
     setPlaying(false);
+    setFailed(false);
     if (videoRef.current) videoRef.current.currentTime = 0;
   }, [current]);
 
@@ -631,10 +644,28 @@ export function LessonsPage() {
 
   function toggle() {
     const node = videoRef.current;
-    if (!node) return;
-    if (node.paused) void node.play();
+    if (!node || failed) return;
+    if (node.paused) void node.play().catch(() => {});
     else node.pause();
   }
+
+  // The source can fail before hydration attaches onError — read the element state once mounted / on lesson change.
+  useEffect(() => {
+    const node = videoRef.current;
+    if (node && (node.error || node.networkState === HTMLMediaElement.NETWORK_NO_SOURCE)) setFailed(true);
+  }, [current]);
+
+  // C09 (Figma 1206:1322): «Видео не загрузилось» — «Повторить» reloads the source; progress is kept by the player.
+  function retry() {
+    const node = videoRef.current;
+    setFailed(false);
+    node?.load();
+  }
+
+  // C6: the clock follows the timeline (elapsed share of the lesson length).
+  const [mm, ss] = lesson.clock.split(":").map(Number);
+  const elapsed = Math.round(progress * (mm * 60 + ss));
+  const elapsedLabel = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
 
   const passed = Math.max(done.length, current + 1);
   const lastTap = useRef<{ t: number; side: "back" | "fwd" | null } | null>(null);
@@ -732,7 +763,7 @@ export function LessonsPage() {
               <h1>{lesson.title}</h1>
             </div>
             {/* L01: Space — play/pause, ←/→ — ±5 с (when the player has focus). */}
-            <div className={`ls-player${playing && idle ? " is-idle" : ""}`} aria-label="Плеер урока" tabIndex={0} onMouseMove={wake} onFocus={wake} onKeyDown={(event) => {
+            <div className={`ls-player${playing ? " is-playing" : ""}${playing && idle ? " is-idle" : ""}`} aria-label="Плеер урока" tabIndex={0} onMouseMove={wake} onFocus={wake} onKeyDown={(event) => {
               const node = videoRef.current;
               if (!node || (event.target as HTMLElement).tagName === "INPUT") return;
               if (event.key === " ") { event.preventDefault(); toggle(); }
@@ -775,13 +806,27 @@ export function LessonsPage() {
                   poster="/figma/course/lesson-poster.webp"
                   src="/course/lesson-loop.mp4"
                   playsInline
+                  onClick={toggle}
                   onPlay={() => setPlaying(true)}
                   onPause={() => setPlaying(false)}
+                  onError={() => { setFailed(true); setPlaying(false); }}
+                  onLoadedData={() => setFailed(false)}
                 />
                 {!playing && <img className="ls-poster" src="/figma/course/lesson-poster.webp" alt="" />}
-                <button type="button" className="ls-play" onClick={toggle} aria-label={playing ? "Пауза" : "Смотреть"}>
-                  <img src="/figma/icons/play.svg" alt="" width={24} height={24} />
-                </button>
+                {failed ? (
+                  <div className="ls-fail" role="alert">
+                    <h2>Видео не загрузилось</h2>
+                    <p>Проверьте соединение и повторите. Прогресс урока сохранён — продолжите с той же секунды.</p>
+                    <div>
+                      <button type="button" className="btn btn-dark" onClick={retry}>Повторить</button>
+                      <a className="btn ls-fail-pdf" href="/report">Скачать конспект PDF</a>
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" className="ls-play" onClick={toggle} aria-label={playing ? "Пауза" : "Смотреть"}>
+                    <img src="/figma/icons/play.svg" alt="" width={24} height={24} />
+                  </button>
+                )}
               </div>
               <div className="ls-controls">
                 <button type="button" className="ls-ctrl" onClick={toggle} aria-label={playing ? "Пауза" : "Смотреть"}>
@@ -799,7 +844,7 @@ export function LessonsPage() {
                     node.currentTime = (Number(event.target.value) / 1000) * node.duration;
                   }}
                 />
-                <span>00:00 / {lesson.clock}</span>
+                <span>{elapsedLabel} / {lesson.clock}</span>
                 <span className="ls-chip">CC</span>
                 <span className="ls-chip">1×</span>
               </div>
