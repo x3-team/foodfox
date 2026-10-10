@@ -804,14 +804,17 @@ export function LessonsPage() {
                   ref={videoRef}
                   className="player-poster"
                   poster="/figma/course/lesson-poster.webp"
-                  src="/course/lesson-loop.mp4"
                   playsInline
                   onClick={toggle}
                   onPlay={() => setPlaying(true)}
                   onPause={() => setPlaying(false)}
                   onError={() => { setFailed(true); setPlaying(false); }}
                   onLoadedData={() => setFailed(false)}
-                />
+                >
+                  {/* VP9 — для сборок Chromium без H.264; ошибка «Видео не загрузилось» — только если не подошёл ни один источник */}
+                  <source src="/course/lesson-loop.webm" type="video/webm" />
+                  <source src="/course/lesson-loop.mp4" type="video/mp4" onError={() => { setFailed(true); setPlaying(false); }} />
+                </video>
                 {!playing && <img className="ls-poster" src="/figma/course/lesson-poster.webp" alt="" />}
                 {failed ? (
                   <div className="ls-fail" role="alert">
