@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requestPhoneOtp } from "@/lib/db";
-import { normalizePhone } from "@/lib/otp";
+import { normalizePhone, otpRequestPayload } from "@/lib/otp";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,13 +14,7 @@ export async function POST(req: NextRequest) {
 
     const { resendAfterMs, demoCode } = await requestPhoneOtp(phone);
 
-    return NextResponse.json({
-      ok: true,
-      phone,
-      resendAfterMs,
-      // Only present for allow-listed demo numbers.
-      demoCode: demoCode ?? undefined,
-    });
+    return NextResponse.json(otpRequestPayload(phone, resendAfterMs, demoCode));
   } catch (e) {
     const message = e instanceof Error ? e.message : "Не удалось отправить код";
     const status = message.startsWith("Повторная отправка") ? 429 : 500;

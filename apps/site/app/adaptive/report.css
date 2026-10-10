@@ -1,0 +1,127 @@
+/* Адаптив: report. Брейкпоинты сайта (единые):
+   телефон ≤767 · планшет 768–1100 · десктоп ≥1101 (подшаги 1280 / 1440).
+   Подшаги телефона: ≤480, ≤374. Этот файл подключается после globals.css и frame.css страницы. */
+
+/* ===== Планшет 768–1100: десктопная композиция 1130:611, ужатая.
+   Левая колонка «На этой странице» не помещается рядом с контентом — вместо неё липкая плашка
+   «На этой странице · n из 7» из мобильного макета 1320:6856 (тот же компонент ReportToc). ===== */
+@media (min-width: 768px) and (max-width: 1100px) {
+  .report-page .wrap { width: calc(100% - 64px); }
+
+  /* Типографика: общие правила ≤1100 из globals.css делают h2 24px (а «Три зоны» — 14px). */
+  body .report-page [data-s] h2,
+  body .report-page .rf-h2 { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
+  body .report-page .rf-lead,
+  body .report-page .rf-uml-lead,
+  body .report-page .rf-ccd-copy p:first-child { font-size: 18px; line-height: 24px; }
+
+  /* R01 hero: текст слева, листы отчёта справа (как на десктопе), статистика 2 × 2 под текстом. */
+  .report-page .rf-hero-in { padding: 32px 0 56px; gap: 24px; }
+  .report-page .rf-hero-row { grid-template-columns: minmax(0, 1fr) minmax(250px, 38%); gap: 40px; min-height: 0; align-items: start; }
+  .report-page .rf-hero h1 { font-size: clamp(40px, 4.8vw, 48px); line-height: 1.08; }
+  .report-page .rf-hero-copy { gap: 24px; }
+  .report-page .rf-hero-cta { flex-wrap: wrap; gap: 16px 24px; }
+  body .report-page .rf-stats.d-only { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-top: 0; }
+  body .report-page .rf-stats > div { padding: 16px 18px; }
+  body .report-page .rf-stats span { max-width: none; }
+  body .report-page .rf-audiences span { height: auto; min-height: 34px; padding: 7px 14px; }
+  .report-page .rf-hero-visual { min-height: 0; gap: 16px; container-type: inline-size; }
+  .report-page .rf-paper { position: relative; height: 104cqw; overflow: visible; }
+  .report-page .rf-paper-back { left: auto; right: 2cqw; top: 0; width: 72cqw; height: 93.6cqw; }
+  .report-page .rf-paper img { left: 6cqw; top: 6cqw; width: 72cqw; height: 93.6cqw; }
+
+  /* Тело: одна колонка, сверху липкая плашка содержания. */
+  .report-page .rf-body { display: flex; flex-direction: column; align-items: stretch; gap: 32px; padding-bottom: 72px; }
+  .report-page .rf-col { gap: 56px; }
+  body .report-page .toc {
+    position: sticky; top: var(--header); z-index: 6; display: block; width: auto; max-width: none; height: auto;
+    align-self: stretch; min-height: 61px; margin: 0 -32px; padding: 0; overflow: visible;
+    background: rgba(255, 255, 255, 0.96); border-bottom: 1px solid rgba(11, 12, 8, 0.1);
+  }
+  body .report-page .toc > .rf-toc-label,
+  body .report-page .toc > a,
+  body .report-page .toc > .rf-share { display: none; }
+  body .report-page .toc.is-open > a { display: block; padding: 12px 32px; font-size: 16px; line-height: 20px; border-top: 1px solid rgba(11, 12, 8, 0.06); }
+  body .report-page .toc.is-open > a.is-active { font-weight: 500; }
+  body .report-page .rf-toc-m.m-only { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 61px; padding: 10px 32px; text-align: left; background: none; border: 0; }
+  body .report-page .rf-toc-m > span { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  body .report-page .rf-toc-m small { font-size: 12px; line-height: 16px; color: rgba(11, 12, 8, 0.65); }
+  body .report-page .rf-toc-m strong { font-weight: 500; font-size: 16px; line-height: 20px; color: #0b0c08; }
+  body .report-page .toc.is-open .rf-toc-m img { transform: rotate(180deg); }
+
+  /* 01 Зоны: 3 колонки; на узком планшете — строками (см. @container ниже). */
+  .report-page .rf-col { container-type: inline-size; }
+  .report-page .rf-zones { min-height: 0; gap: 12px; }
+  .report-page .rf-zone { min-height: 0; padding: 24px; }
+
+  /* 02 Анатомия: лист с маркерами + список, лист сохраняет пропорции (маркеры стоят в % от листа). */
+  .report-page .rf-anatomy { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; }
+  .report-page .rf-sheet { height: auto; aspect-ratio: 540 / 700; }
+  .report-page .rf-sheet img { height: 100%; }
+  .report-page .rf-markers { gap: 8px; }
+  .report-page .rf-marker { padding: 14px 16px; }
+
+  /* 03 U/mL: веер карточек как на десктопе. */
+  .report-page .rf-uml-lead { min-height: 0; }
+  .report-page .rf-deck { height: 360px; }
+  .report-page .uml-card,
+  .report-page .uml-card.mid { width: min(380px, 48%); height: 280px; min-height: 280px; padding: 24px; }
+  .report-page .uml-card strong { font-size: clamp(44px, 5.4vw, 56px); line-height: 1.05; }
+
+  /* 04 CCD: фото слева на всю высоту, текст и «В отчёте» справа друг под другом. */
+  .report-page .rf-ccd { grid-template-columns: minmax(180px, 32%) minmax(0, 1fr); gap: 20px 32px; min-height: 0; }
+  .report-page .rf-ccd img { grid-row: 1 / span 2; width: 100%; height: 100%; min-height: 320px; }
+  .report-page .rf-ccd aside { grid-column: 2; padding: 20px; }
+
+  /* 05–06 */
+  .report-page .rf-after { padding: 32px; }
+  .report-page .rf-actions article { min-height: 0; padding: 20px; }
+  .report-page .rf-actions h3 { font-size: 22px; line-height: 26px; }
+  body .report-page .rf-limits { padding: 32px; }
+  .report-page .rf-limits ul { min-height: 0; }
+
+  /* CTA: текст и кнопки переносятся, а не сжимаются. */
+  body .report-page .rf-cta { flex-wrap: wrap; align-items: flex-end; gap: 24px 32px; padding: 40px 32px; }
+  body .report-page .rf-cta-copy { flex: 1 1 380px; }
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  @container (max-width: 759px) {
+    .report-page .rf-zones { grid-template-columns: minmax(0, 1fr); }
+    .report-page .rf-zone { display: grid; grid-template-columns: minmax(180px, 38%) minmax(0, 1fr); gap: 10px 24px; align-items: start; }
+    .report-page .rf-zone > p { grid-column: 2; grid-row: 1 / span 2; }
+
+  }
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  @container (max-width: 899px) {
+    /* веер U/mL, если контент уже ~900px, перекрывает текст карточек — три карточки в ряд */
+    .report-page .rf-deck { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; height: auto; }
+    .report-page .uml-card,
+    .report-page .uml-card.low,
+    .report-page .uml-card.mid,
+    .report-page .uml-card.high { position: relative; inset: auto; width: auto; height: auto; min-height: 260px; padding: 20px; transform: none; }
+    .report-page .uml-card:hover { transform: translateY(-6px); }
+    .report-page .uml-card strong { font-size: 40px; line-height: 44px; }
+    .report-page .rf-deck-value small { font-size: 18px; line-height: 22px; margin-bottom: 4px; }
+  }
+}
+
+/* Якоря оглавления: раздел не уезжает под шапку (десктоп — sticky-оглавление top 120)
+   и под шапку + липкую плашку «На этой странице» (планшет и телефон). */
+.report-page .rf-sec[id] { scroll-margin-top: 120px; }
+@media (max-width: 1100px) {
+  .report-page .rf-sec[id] { scroll-margin-top: 140px; }
+}
+
+/* Зона нажатия маркеров листа 32px → 44px (визуально маркер прежний). */
+.report-page .rf-sheet .rf-pin::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; }
+@media (max-width: 767px) {
+  .report-page .rf-viewer-nav .rf-icon-btn { width: 44px; height: 44px; }
+}
+
+/* Хлебные крошки: правило d-only в globals.css ставит display:block и съедает gap из .crumbs —
+   получалось «Главная/Отчёт» без пробелов на всех ширинах, где крошки видны. */
+@media (min-width: 768px) {
+  body .report-page .crumbs.d-only { display: flex; }
+}

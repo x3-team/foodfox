@@ -1,6 +1,12 @@
 #!/usr/bin/env npx tsx
 import assert from "node:assert/strict";
-import { demoCodeFor, normalizePhone } from "../src/lib/otp";
+import {
+  demoCodeFor,
+  isDemoMode,
+  isPartnerDemoPhone,
+  normalizePhone,
+  otpRequestPayload,
+} from "../src/lib/otp";
 
 function test(name: string, fn: () => void) {
   try {
@@ -61,6 +67,52 @@ test("garbage entries are dropped instead of matching everything", () => {
   withEnv({ FOX_DEMO_PHONES: "not-a-phone,,+79251111111" }, () => {
     assert.equal(demoCodeFor("79251111111"), "1111");
     assert.equal(demoCodeFor("79991234567"), null);
+  });
+});
+
+test("partner demo shares the app demo number and code", () => {
+  const savedPhone = process.env.FOX_PARTNER_DEMO_PHONE;
+  const savedOtp = process.env.FOX_PARTNER_DEMO_OTP;
+  delete process.env.FOX_PARTNER_DEMO_PHONE;
+  delete process.env.FOX_PARTNER_DEMO_OTP;
+  try {
+    withEnv(
+      { FOX_DEMO_PHONES: "79251111111,79991234567", FOX_DEMO_OTP: "1111" },
+      () => {
+        assert.equal(demoCodeFor("79251111111"), "1111");
+        assert.equal(isPartnerDemoPhone("79251111111"), true);
+        assert.equal(isPartnerDemoPhone("79991234567"), false);
+        assert.equal(demoCodeFor("79990001122"), null);
+        assert.equal(demoCodeFor("79000000001"), null);
+      },
+    );
+  } finally {
+    if (savedPhone === undefined) delete process.env.FOX_PARTNER_DEMO_PHONE;
+    else process.env.FOX_PARTNER_DEMO_PHONE = savedPhone;
+    if (savedOtp === undefined) delete process.env.FOX_PARTNER_DEMO_OTP;
+    else process.env.FOX_PARTNER_DEMO_OTP = savedOtp;
+  }
+});
+
+test("otp response includes demoCode only in demo mode and only when a code exists", () => {
+  const saved = process.env.FOX_DEMO_MODE;
+  delete process.env.FOX_DEMO_MODE;
+  try {
+    assert.equal(isDemoMode(), false);
+    for (const code of [null, "1111"]) {
+      const body = otpRequestPayload("79251111111", 42000, code);
+      assert.equal("demoCode" in body, false);
+    }
+  } finally {
+    if (saved === undefined) delete process.env.FOX_DEMO_MODE;
+    else process.env.FOX_DEMO_MODE = saved;
+  }
+
+  withEnv({ FOX_DEMO_MODE: "1" }, () => {
+    assert.equal(isDemoMode(), true);
+    const hidden = otpRequestPayload("79000000001", 42000, null);
+    assert.equal("demoCode" in hidden, false);
+    assert.equal(otpRequestPayload("79251111111", 42000, "1111").demoCode, "1111");
   });
 });
 

@@ -30,7 +30,7 @@ export default function PartnerApplyPage() {
         <Field label="Фамилия и имя">
           <input className={inputClass} defaultValue={partner.fullName} />
         </Field>
-        <div className="grid grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
           <Field label="Email">
             <input className={inputClass} defaultValue={partner.email} />
           </Field>

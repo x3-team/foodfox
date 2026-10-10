@@ -1,0 +1,103 @@
+/* Адаптив: course. Брейкпоинты сайта (единые):
+   телефон ≤767 · планшет 768–1100 · десктоп ≥1101 (подшаги 1280 / 1440).
+   Подшаги телефона: ≤480, ≤374. Этот файл подключается после globals.css и frame.css страницы.
+   Все селекторы — классы курса (.kf-*, .ls-*): [data-s="k0x"] и [data-s="l01"] встречаются и на /contacts, /labs. */
+
+/* ---------- /course · десктоп 1101–1279: карточки «Для кого» по высоте текста (на 1280 текст упирался в разделитель) ---------- */
+@media (min-width: 1101px) and (max-width: 1439px) {
+  html body .kf-aud { height: auto; min-height: 369px; }
+}
+/* 1101–1279: фото 536 px оставляло заголовку колонку ~480 px (H1 в 5 строк) — фото в долю ширины, H1 48 */
+@media (min-width: 1101px) and (max-width: 1279px) {
+  html body [data-s="k01"] .kf-hero-row { grid-template-columns: minmax(0, 1fr) minmax(0, 42%); gap: 40px; align-items: center; }
+  html body [data-s="k01"] .kf-hero-visual { width: 100%; height: 400px; }
+  html body [data-s="k01"] .kf-hero-copy h1 { font-size: 48px; line-height: 52px; }
+}
+
+/* ---------- /course · планшет 768–1100: композиция десктопа 1133:716, а не растянутый телефон ---------- */
+@media (min-width: 768px) and (max-width: 1100px) {
+  html body main:has(> [data-s="k01"] .kf-hero-row) .wrap { width: min(var(--content), calc(100% - 64px)); }
+
+  /* K01 hero: текст слева, фото справа (как 1440), без фото на всю ширину (KRIVOSTI #8) */
+  html body [data-s="k01"].dark-hero .inner { padding: 48px 0 40px; gap: 32px; }
+  html body [data-s="k01"] .kf-hero-row { grid-template-columns: minmax(0, 1fr) minmax(0, 40%); gap: 32px; align-items: center; }
+  html body [data-s="k01"] .kf-hero-copy { gap: 20px; }
+  html body [data-s="k01"] .kf-hero-copy h1 { font-size: 40px; line-height: 44px; letter-spacing: -1px; }
+  html body [data-s="k01"] .kf-hero-copy p { font-size: 18px; line-height: 22px; }
+  html body [data-s="k01"] .kf-hero-copy p.kf-caption { font-size: 14px !important; line-height: 18px !important; }
+  html body [data-s="k01"] .kf-hero-cta { flex-wrap: wrap; gap: 12px 24px; }
+  html body [data-s="k01"] .kf-light-link { font-size: 16px; line-height: 20px; }
+  html body [data-s="k01"] .kf-hero-visual { display: block; width: 100%; height: 360px; object-fit: cover; object-position: 40% center; border-radius: 20px; }
+
+  /* Заголовки секций и лиды */
+  html body .kf-band h2, html body .kf-includes h2, html body .kf-faq h2, html body .kf-program-head h2 { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
+  html body .kf-head p { font-size: 18px; line-height: 22px; }
+  html body .kf-band { padding: 64px 0; }
+  html body .kf-stack { gap: 32px; }
+
+  /* K02 «Для кого»: сетка 3/2 колонки вместо карусели в одну карточку */
+  html body [data-s="k02"] .kf-audience { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; overflow: visible; scroll-snap-type: none; }
+  html body [data-s="k02"] .kf-audience > * { flex: none; width: auto; min-width: 0; }
+  html body [data-s="k02"] .kf-aud { height: auto; min-height: 0; padding: 24px; gap: 16px; }
+  html body .kf-aud-title strong { font-size: 20px; line-height: 24px; letter-spacing: -0.3px; }
+  html body .kf-aud-text { font-size: 14px; line-height: 18px; }
+
+  /* K03 программа */
+  html body [data-s="k03"] .kf-acc button { padding: 24px; gap: 20px; }
+  html body [data-s="k03"] .kf-acc strong { font-size: 20px; line-height: 24px; letter-spacing: -0.3px; }
+  html body [data-s="k03"] .kf-lesson-body { flex-direction: row; gap: 24px; padding: 20px 24px 24px; }
+  html body [data-s="k03"] .kf-lesson-body > div { width: 60%; }
+
+  /* K04 лекторы: 2 колонки, портрет 4:3, лица не режутся */
+  html body [data-s="k04"] .kf-lectors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 16px; overflow: visible; scroll-snap-type: none; }
+  html body [data-s="k04"] .kf-lectors > * { flex: none; width: auto; min-width: 0; }
+  html body [data-s="k04"] .kf-lector img { height: auto; aspect-ratio: 4 / 3; object-position: center 25%; }
+  html body [data-s="k04"] .kf-lector strong { font-size: 22px; line-height: 26px; }
+
+  /* K05 «Что входит»: 3 + 2×2 */
+  html body .kf-includes-in { padding: 64px 0; gap: 32px; }
+  html body .kf-include-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); min-height: 0; }
+  html body .kf-include-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: 0; }
+  html body .kf-include-row article { padding: 24px 20px; }
+  html body .kf-include-row h3 { font-size: 20px; line-height: 24px; letter-spacing: -0.3px; }
+  html body .kf-include-row p { font-size: 14px; line-height: 18px; }
+
+  /* K06 вопросы: заголовок слева, аккордеон справа (как 1440) */
+  html body [data-s="k06"] .kf-faq { grid-template-columns: minmax(0, 0.34fr) minmax(0, 1fr); gap: 32px; }
+  html body [data-s="k06"] .kf-faq button { font-size: 18px; line-height: 22px; padding: 20px 0; }
+
+  /* K07 финальный CTA: светлая лаймовая карточка, как 1322:7204 (правило «08 · Адаптив» на 1245:3484:
+     «тёмный CTA перед тёмным футером не ставим»), но с центровкой и кеглем десктопа */
+  html body [data-s="k07"].kf-final { background: transparent; color: #0b0c08; padding: 0 0 64px; }
+  html body [data-s="k07"].kf-final > img, html body [data-s="k07"] .kf-includes-shade { display: none; }
+  html body [data-s="k07"] .kf-final-in { width: min(var(--content), calc(100% - 64px)); margin: 0 auto; box-sizing: border-box; padding: 56px 48px; border-radius: 24px; background: #f6fbc8; align-items: center; text-align: center; gap: 20px; }
+  html body [data-s="k07"].kf-final h2 { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; color: #0b0c08 !important; }
+  html body [data-s="k07"].kf-final p { font-size: 18px; line-height: 22px; color: rgba(11, 12, 8, 0.65) !important; }
+  html body [data-s="k07"].kf-final p.kf-disclaimer { font-size: 14px !important; line-height: 18px !important; }
+  html body [data-s="k07"] .kf-bar { width: 64px; background: #e7f551; }
+  html body [data-s="k07"] .kf-facts { justify-content: center; }
+  html body [data-s="k07"] .kf-facts span { min-height: 32px; padding: 6px 14px; background: #fff; color: #0b0c08 !important; font-size: 14px; line-height: 18px; }
+  html body [data-s="k07"] .btn { height: 48px; background: #0b0c08; color: #f8f9f6; border-color: #0b0c08; }
+  html body [data-s="k01"] .kf-facts span, html body [data-s="k01"] .kf-facts span:nth-child(-n+2) { font-size: 14px; line-height: 18px; }
+}
+
+/* ---------- /course/lessons · планшет 768–1100: порядок и пропорции десктопа 1137:623
+   (заголовок → плеер 16:9 → действия в строку → карточка «О чём этот урок» с тегами);
+   программа — шторка по липкой плашке снизу, как на телефоне (колонке 324px места нет). ---------- */
+@media (min-width: 768px) and (max-width: 1100px) {
+  html body [data-s="l01"].ls-layout { width: min(var(--content), calc(100% - 64px)); padding-top: 32px; }
+  html body .ls-layout .ls-main { gap: 20px; }
+  html body .ls-layout .ls-progress { order: -2; font-size: 14px; line-height: 18px; gap: 12px; }
+  html body .ls-layout .ls-title { order: -1; gap: 8px; }
+  html body .ls-layout .ls-title h1 { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
+  html body .ls-layout .ls-player { order: 0; height: auto; aspect-ratio: 16 / 9; max-height: max(320px, calc(100vh - 300px)); border-radius: 16px; }
+  html body .ls-layout .ls-actions { order: 1; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+  html body .ls-layout .ls-actions .btn-dark { width: auto; }
+  html body .ls-layout .ls-pair { display: contents; }
+  html body .ls-layout .ls-tabs { display: none; }
+  html body .ls-layout .ls-about { order: 2; background: #d7d8cd; border-radius: 16px; padding: 24px 28px; gap: 16px; }
+  html body .ls-layout .ls-about .ls-kicker, html body .ls-layout .ls-tags { display: flex; }
+  html body .ls-layout .ls-about-desk { display: inline; }
+  html body .ls-layout .ls-about-mob { display: none; }
+  html body .ls-layout .ls-after { background: transparent; border-radius: 0; border-top: 1px solid rgba(11, 12, 8, 0.3); padding: 20px 0 0; }
+}

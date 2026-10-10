@@ -18,21 +18,27 @@ Render и Supabase **не нужны**.
 ```bash
 cd /var/www/foodfox
 git pull
-export FOODFOX_AUTH_USER=demo
-export FOODFOX_AUTH_PASS='ваш-секретный-пароль'
 sudo bash deploy/vps/setup-foodfox-subdomain.sh
 ```
 
 - URL: **https://foodfox.yuri.guru/upload**
-- Доступ: nginx **Basic Auth**
+- Доступ: открыт, без Basic Auth. Индексация закрыта: `X-Robots-Tag: noindex, nofollow` (nginx и Next.js), `robots.txt` с `Disallow: /`, meta robots noindex
 - Приложение на `127.0.0.1:3030`, снаружи только через поддомен
 
-Сменить пароль:
+Живой nginx-конфиг поддомена приводит к этому виду `deploy/vps/nginx-apply.sh` при каждом деплое (`update.sh`): убирает `auth_basic`, добавляет `X-Robots-Tag`, проверяет `nginx -t` и делает reload; при ошибке возвращает прежний файл (копии в `/var/backups/nginx-foodfox/`).
 
-```bash
-sudo htpasswd /etc/nginx/.htpasswd-foodfox demo
-sudo systemctl reload nginx
-```
+### Один домен — два приложения
+
+На `foodfox.yuri.guru` работают два Next.js-процесса (pm2), оба собираются из ветки `cursor/partner-cabinet-auth-5e5b` в `update.sh` по очереди:
+
+| Процесс | Порт | Что обслуживает |
+|---|---|---|
+| `foodfox` (`apps/web`) | 3030 | `/api/*` (API мобильного приложения), `/partner*`, `/login`, `/account`, `/chat`, `/plan`, `/recipes`, `/results`, `/upload`, `/_next/*`, `/robots.txt`, `/favicon.ico`, `/icon.png`, `/fox-logo.png`, `/onboarding-hero.jpg` |
+| `foodfox-site` (`apps/site`) | 3041, только 127.0.0.1 | `/` и все остальные пути (маркетинговый сайт и его 404), `/api/lead`, статика сайта под `/_site/_next/*` (`SITE_ASSET_PREFIX=/_site`, nginx срезает префикс) |
+
+Блок `location` между `# BEGIN foodfox routing` и `# END foodfox routing` пишет `nginx-apply.sh`, только если сайт ответил на health-check. Новый путь у `apps/web` нужно добавить в `WEB_PAGES` / `WEB_FILES` в `nginx-apply.sh`, иначе он уйдёт на сайт. Старый `/` у `apps/web` (редирект на `/upload`) теперь недоступен: на `/` главная сайта.
+
+Workflow запускается по путям `apps/web/**`, `deploy/vps/**` и др.; правки только в `apps/site/**` его не запускают — запустите вручную (`gh workflow run deploy-web-vps.yml --ref cursor/partner-cabinet-auth-5e5b`) или добавьте `apps/site/**` в `paths` (нужен токен со scope `workflow`).
 
 ## Быстрый старт (отдельный домен)
 

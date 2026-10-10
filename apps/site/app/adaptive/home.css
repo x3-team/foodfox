@@ -1,0 +1,490 @@
+/* Адаптив: home. Брейкпоинты сайта (единые):
+   телефон ≤767 · планшет 768–1100 · десктоп ≥1101 (подшаги 1280 / 1440).
+   Подшаги телефона: ≤480, ≤374. Этот файл подключается после globals.css и frame.css страницы. */
+
+/* ===========================================================================
+   S01 · Hero. Only 1440 (1385:283) and 390 (1424:48354) exist, so the tablet keeps
+   the desktop photo but never lays the copy over the face:
+   900–1279 — copy column on the olive ground on the left, the photo (face + apple) on the right
+              (at 1101–1279 the 1440 layout puts the lead over the hand and the apple);
+   768–899  — the whole desktop photo on top, the copy under it (as on 390).
+   From 1280 up — the 1440 frame as is.
+   =========================================================================== */
+@media (min-width: 768px) and (max-width: 1279px) {
+  body [data-s="s01"].home-hero .hero-media::after {
+    content: ""; display: block; position: absolute; pointer-events: none; z-index: 1;
+  }
+  body [data-s="s01"].home-hero h1 .hero-h1-desktop { display: none; }
+  body [data-s="s01"].home-hero h1 .hero-h1-mobile { display: block; }
+  body [data-s="s01"].home-hero h1 { font-size: 44px; line-height: 48px; letter-spacing: -1.5px; max-width: none; }
+  body [data-s="s01"].home-hero .hero-top { flex-direction: column; gap: 20px; }
+  body [data-s="s01"].home-hero .hero-side { width: auto; flex: none; padding: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
+  body [data-s="s01"].home-hero .lead { max-width: 420px; font-size: 18px; line-height: 22px; color: rgba(248, 249, 246, 0.72); }
+  body [data-s="s01"].home-hero .hero-actions { flex-wrap: wrap; }
+  body [data-s="s01"].home-hero .hero-report-btn { color: #f8f9f6; }
+  body [data-s="s01"].home-hero .facts > div { padding: 12px 16px; }
+  body [data-s="s01"].home-hero .facts strong { font-size: 22px; line-height: 26px; }
+}
+@media (min-width: 900px) and (max-width: 1279px) {
+  body [data-s="s01"].home-hero .hero-media { left: 42%; }
+  body [data-s="s01"].home-hero .hero-media img.bg { object-position: 47% 100%; }
+  /* the photo melts into the olive ground on its left edge */
+  body [data-s="s01"].home-hero .hero-media::after {
+    inset: 0 auto 0 0; width: 30%; height: auto;
+    background: linear-gradient(90deg, #21251d 0%, rgba(33, 37, 29, 0.75) 40%, rgba(33, 37, 29, 0) 100%);
+  }
+  body [data-s="s01"].home-hero .inner {
+    left: 32px; right: auto; width: calc(42% - 24px); margin: 0; bottom: 48px; gap: 28px;
+  }
+  body [data-s="s01"].home-hero .facts { flex-direction: column; align-items: flex-start; }
+}
+@media (min-width: 768px) and (max-width: 899px) {
+  body [data-s="s01"].dark-hero.home-hero { height: auto; display: flex; flex-direction: column; padding-top: var(--header); }
+  body [data-s="s01"].home-hero .hero-media { position: relative; inset: auto; width: 100%; align-self: stretch; height: calc(100vw * 900 / 1440); flex: none; }
+  body [data-s="s01"].home-hero .hero-media img.bg { object-position: 50% 100%; }
+  body [data-s="s01"].home-hero .hero-media::after {
+    inset: auto 0 0 0; width: auto; height: 30%;
+    background: linear-gradient(180deg, rgba(33, 37, 29, 0) 0%, #21251d 100%);
+  }
+  body [data-s="s01"].home-hero .inner,
+  body:has(.cookie:not(.is-leaving)) [data-s="s01"].home-hero .inner {
+    position: relative; inset: auto; width: auto; margin: -24px 0 0; padding: 0 32px 48px; gap: 28px;
+  }
+  body [data-s="s01"].home-hero .hero-side { flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; }
+  body [data-s="s01"].home-hero .lead { max-width: 360px; }
+}
+@media (min-width: 900px) and (max-width: 1279px) {
+  body [data-s="s01"].home-hero h1 { text-wrap: balance; }
+}
+
+/* ===========================================================================
+   Tablet 768–1100: the desktop compositions scaled down (32px gutter), instead of
+   the phone carousels stretched to 1100px. Note «/ · Главная» (1415:2400):
+   «1280 — чекер и поиск сохраняют правую карточку 380px; 1024 — карточка уходит под список».
+   =========================================================================== */
+@media (min-width: 768px) and (max-width: 1100px) {
+  body [data-s="s06"].wrap,
+  body [data-s="s09"].wrap,
+  body [data-s="s10"].wrap,
+  body [data-s="s12"].wrap,
+  body [data-s="s05"] > .wrap,
+  body [data-s="s07"] > .wrap,
+  body [data-s="s14"] > .wrap { width: auto; max-width: none; margin-left: 32px; margin-right: 32px; padding-left: 0; padding-right: 0; box-sizing: border-box; }
+  body [data-s="s05"] .page-title,
+  body [data-s="s06"] .page-title,
+  body [data-s="s07"] .page-title,
+  body [data-s="s09"] .page-title,
+  body [data-s="s10"] .page-title,
+  body [data-s="s11"] .page-title,
+  body [data-s="s12"] .page-title,
+  body [data-s="s13"] .page-title,
+  body [data-s="s14"] .page-title,
+  body [data-s="s15"] .page-title { font-size: 44px; line-height: 48px; letter-spacing: -1.5px; font-weight: 300; }
+
+  /* S02 · labs strip: caption centred with the gutter, logos fade out at both edges (KRIVOSTI #3) */
+  body [data-s="s02"].lab-marquee { padding: 64px 0 40px; }
+  body [data-s="s02"] .meta-line { justify-content: center; margin: 0 32px 32px; font-size: 18px; line-height: 22px; }
+  body [data-s="s02"] .marquee {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 72px, #000 calc(100% - 72px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 72px, #000 calc(100% - 72px), transparent);
+  }
+  body [data-s="s02"] .marquee > div { gap: 0; padding-left: 0; }
+  body [data-s="s02"] .marquee a { width: 184px; height: 48px; }
+  body [data-s="s02"] .marquee img.lab-logo { width: 136px; height: 40px; }
+
+  /* S05 · symptom cards: 2 × 2 grid instead of a one-card carousel */
+  body [data-s="s05"].symptom-band { padding: 96px 0; }
+  body [data-s="s05"] .page-title { margin: 0 auto 48px; max-width: 760px; text-align: center; }
+  body [data-s="s05"] .cards-4.sym-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; overflow: visible; scroll-snap-type: none; }
+  body [data-s="s05"] .cards-4.sym-row > .sym-card { flex: none; width: auto; height: 460px; padding: 24px; }
+  body [data-s="s05"] .sym-card img { object-position: center 30%; }
+  body [data-s="s05"] .sym-card h3 { font-size: 28px; line-height: 32px; }
+  body [data-s="s05"] .sym-chips { gap: 8px; }
+  body [data-s="s05"] .sym-note { margin-top: 32px; text-align: center; }
+
+  /* S06 · checker: groups 2 × 2, the summary card goes under the list (note 1415:2400) and lays out in two columns */
+  body [data-s="s06"].band { padding: 96px 0; display: flex; flex-direction: column; gap: 40px; }
+  body [data-s="s06"] .s06-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); align-items: end; gap: 24px 40px; }
+  body [data-s="s06"] .s06-head .page-title { margin: 16px 0 0; }
+  body [data-s="s06"] .s06-head .lead { margin: 0; max-width: none; font-size: 16px; line-height: 20px; }
+  body [data-s="s06"] .checker-grid { display: flex; flex-direction: column; align-items: stretch; gap: 24px; margin: 0; }
+  body [data-s="s06"] .symptom-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+  body [data-s="s06"] .s06-foot { grid-column: 1 / -1; }
+  body [data-s="s06"] .checker-card {
+    position: static; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-auto-flow: dense;
+    column-gap: 40px; row-gap: 0; align-items: start; padding: 32px;
+  }
+  body [data-s="s06"] .checker-card > * { grid-column: 2; }
+  body [data-s="s06"] .checker-card > .checker-top,
+  body [data-s="s06"] .checker-card > h3,
+  body [data-s="s06"] .checker-card > .checker-meters { grid-column: 1; }
+  body [data-s="s06"] .checker-card > .checker-top { grid-row: 1; }
+  body [data-s="s06"] .checker-card > h3 { grid-row: 2; margin: 20px 0 24px; }
+  body [data-s="s06"] .checker-card > .checker-meters { grid-row: 3 / span 6; display: flex; flex-direction: column; gap: 14px; margin: 0; }
+  body [data-s="s06"] .checker-card > .checker-kicker:first-of-type { grid-row: 1; margin: 0 0 12px; }
+  body [data-s="s06"] .checker-card > .checker-specs-x { grid-row: 2 / span 2; margin: 0 0 20px; }
+  body [data-s="s06"] .checker-card > .checker-bring { margin: 0 0 20px; }
+  body [data-s="s06"] .checker-card > .btn { width: 100%; margin: 0 0 8px; }
+  body [data-s="s06"] .checker-card > .checker-fine { margin: 8px 0 0; }
+
+  /* S07 · what the test shows: head on top, all three cards in a row (no scroll swap) */
+  body [data-s="s07"].shows-band { padding: 96px 0; }
+  body [data-s="s07"] .shows { display: flex; flex-direction: column; gap: 40px; min-height: 0; }
+  body [data-s="s07"] .shows-pin { position: static; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); align-items: end; gap: 24px 40px; min-height: 0; }
+  body [data-s="s07"] .shows-pin .page-title { margin: 0; font-size: 44px; line-height: 48px; letter-spacing: -1.5px; }
+  body [data-s="s07"] .shows-pin .page-title br { display: none; }
+  body [data-s="s07"] .shows-foot { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
+  body [data-s="s07"] .shows-pin .lead { margin: 0; max-width: none; font-size: 16px; line-height: 20px; color: rgba(11,12,8,.65); }
+  body [data-s="s07"] .shows-cta { display: inline-flex; width: auto; height: 44px; padding: 12px 16px; }
+  body [data-s="s07"] .shows-cta-m { display: none; }
+  body [data-s="s07"] .shows-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 0; }
+  body [data-s="s07"] .show-card,
+  body [data-s="s07"] .show-card.is-off { display: flex; width: auto; max-width: none; min-height: 440px; opacity: 1; transform: none; gap: 32px; padding: 24px 24px 32px; }
+  body [data-s="s07"] .show-card h3 { font-size: 32px; line-height: 36px; }
+  body [data-s="s07"] .show-card p { font-size: 16px; line-height: 20px; }
+  body [data-s="s07"] .show-dots { width: 100%; height: auto; margin: auto 0 0; }
+  body [data-s="s07"] .show-rings { margin-top: auto; }
+  body [data-s="s07"] .igg-levels { margin-top: auto; gap: 12px; padding-top: 0; }
+  body [data-s="s07"] .igg-levels li span { padding: 10px 14px; font-size: 15px; line-height: 20px; }
+  body [data-s="s07"] .igg-levels li b { flex: 1 1 24px; margin-right: 0; }
+
+  /* S08 · report card: copy + report pages side by side, three glass facts under them */
+  body [data-s="s08"] { padding: 96px 32px; }
+  body [data-s="s08"] > .wrap { width: 100%; max-width: none; margin: 0; padding: 0; }
+  body [data-s="s08"] .s08-card {
+    position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "copy stack" "copy pager" "glass glass";
+    align-items: start; gap: 16px 32px; height: auto; padding: 40px; border-radius: 8px; overflow: hidden;
+    background: rgba(0,0,0,.25); -webkit-backdrop-filter: blur(36px); backdrop-filter: blur(36px);
+  }
+  body [data-s="s08"] .s08-copy { grid-area: copy; display: flex; flex-direction: column; justify-content: space-between; align-self: stretch; gap: 32px; width: auto; max-width: none; height: auto; }
+  body [data-s="s08"] .s08-copy h2,
+  body [data-s="s08"] .s08-copy p,
+  body [data-s="s08"] .s08-copy .btn,
+  body [data-s="s08"] .s08-more { order: 0; }
+  body [data-s="s08"] .s08-copy h2 { font-size: 40px; line-height: 44px; letter-spacing: -1px; color: #f8f9f6; }
+  body [data-s="s08"] .s08-foot { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; width: auto; }
+  body [data-s="s08"] .s08-copy p { max-width: 380px; font-size: 16px; line-height: 20px; color: rgba(248,249,246,.65); }
+  body [data-s="s08"] .s08-copy .btn { width: auto; height: 44px; padding: 12px 16px; }
+  body [data-s="s08"] .s08-more { display: inline-block; padding: 0; text-align: left; color: #f8f9f6; font-size: 16px; line-height: 20px; text-decoration: underline; text-underline-offset: 3px; }
+  body [data-s="s08"] .s08-stack { grid-area: stack; position: relative; width: 100%; height: 480px; overflow: visible; }
+  body [data-s="s08"] .s08-stack .s08-shot { position: absolute; left: calc(50% - 190px); top: 0; width: 360px; height: 440px; border-radius: 0; object-fit: cover; object-position: top; background: #fff; box-shadow: none; transform: none; z-index: 2; }
+  body [data-s="s08"] .s08-sheet { display: block; }
+  body [data-s="s08"] .s08-sheet-2 { left: calc(50% - 166px); top: 14px; width: 346px; height: 424px; background: #707267; z-index: 1; }
+  body [data-s="s08"] .s08-sheet-3 { left: calc(50% - 152px); top: 28px; width: 346px; height: 424px; background: rgba(255,255,255,.2); z-index: 0; }
+  body [data-s="s08"] .s08-nav { top: 200px; z-index: 4; }
+  body [data-s="s08"] .s08-pager { grid-area: pager; display: flex; justify-content: center; gap: 6px; margin: 0; }
+  body [data-s="s08"] .s08-glass { grid-area: glass; position: static; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 16px 0 0; }
+  body [data-s="s08"] .s08-glass article { height: auto; padding: 20px; gap: 8px; border-radius: 8px; background: rgba(0,0,0,.25); }
+  body [data-s="s08"] .s08-glass h3 { font-weight: 300; font-size: 20px; line-height: 24px; color: #e7f551; white-space: normal; }
+  body [data-s="s08"] .s08-glass p { font-size: 14px; line-height: 18px; color: rgba(248,249,246,.65); }
+
+  /* S09 · three steps in a row, as on 1440 */
+  body [data-s="s09"].band { padding: 96px 0; }
+  body [data-s="s09"] .page-title { margin: 0 0 48px; text-align: center; }
+  body [data-s="s09"] .cards-3.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; overflow: visible; }
+  body [data-s="s09"] .cards-3.steps > .step { flex: none; width: auto; min-height: 380px; border-radius: 0; }
+  body [data-s="s09"] .step-copy h3 { font-size: 30px; line-height: 34px; letter-spacing: -0.8px; }
+  body [data-s="s09"] .step-copy p:last-child { font-size: 16px; line-height: 20px; }
+  body [data-s="s09"] > p > .btn { width: auto; height: 44px; padding: 12px 16px; }
+
+  /* S10 · products: chip cloud wraps, the card goes under the list (note 1415:2400) and is not a sheet */
+  body [data-s="s10"].band { padding: 96px 0; gap: 32px; background: #d7d8cd; box-shadow: 0 0 0 100vmax #d7d8cd; clip-path: inset(0 -100vmax); }
+  body [data-s="s10"] .s10-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px 40px; padding: 0; }
+  body [data-s="s10"] .s10-head .lead { display: block; margin: 16px 0 0; max-width: 520px; font-size: 18px; line-height: 22px; }
+  body [data-s="s10"] .count-line { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin: 0; text-align: right; }
+  body [data-s="s10"] .count-line strong { font-size: 120px; line-height: .9; letter-spacing: -5px; font-weight: 300; }
+  body [data-s="s10"] .count-line span.d-only { display: block; max-width: 220px; font-size: 14px; line-height: 18px; }
+  body [data-s="s10"] .count-line span.m-only { display: none; }
+  body [data-s="s10"] .suggest { padding: 0; }
+  body [data-s="s10"] .chips, body [data-s="s10"] .chips.is-open { display: flex; flex-wrap: wrap; overflow: visible; gap: 8px; padding: 0; margin: 0; }
+  body [data-s="s10"] .chips .chip, body [data-s="s10"] .chips:not(.is-open) .chip:nth-child(n+5):not(.chip-more) { display: inline-flex !important; flex: none; }
+  body [data-s="s10"] .chips .chip-more { display: none !important; }
+  body [data-s="s10"] .checker-grid { display: flex; flex-direction: column; align-items: stretch; gap: 24px; padding: 0; margin: 0; }
+  body [data-s="s10"] .product-picks { display: flex; flex-wrap: wrap; flex-direction: row; gap: 10px 8px; overflow: visible; max-height: none; }
+  body [data-s="s10"] .product-picks button { display: inline-flex; flex: 0 0 auto; height: 44px; padding: 12px 18px; font-size: 16px; line-height: 20px; }
+  body [data-s="s10"] .product-picks button:nth-child(n+15) { display: inline-flex; }
+  .s10-more { flex-direction: row; align-items: center; gap: 20px; }
+  .s10-more .btn { width: auto; }
+  body [data-s="s10"] .s10-card,
+  body [data-s="s10"] .s10-card.is-open {
+    position: static; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 40px; row-gap: 20px; align-items: start;
+    min-height: 0; max-height: none; overflow: visible; padding: 32px; border-radius: 28px; box-shadow: none; z-index: auto;
+  }
+  body [data-s="s10"] .s10-card > * { grid-column: 2; }
+  body [data-s="s10"] .s10-card > .s10-card-top { grid-column: 1; grid-row: 1; }
+  body [data-s="s10"] .s10-card > .s10-card-head { grid-column: 1; grid-row: 2; }
+  body [data-s="s10"] .s10-card > .s10-swap { grid-column: 1; grid-row: 3; }
+  body [data-s="s10"] .s10-card > .s10-facts { grid-row: 1 / span 2; }
+  body [data-s="s10"] .s10-card > .s10-blog { grid-row: 3; }
+  body [data-s="s10"] .s10-facts dd { width: auto; max-width: 60%; text-align: right; }
+
+  /* S11 · Austria: dark copy + photo with the 2 × 2 glass tiles, as on 1440 */
+  body [data-s="s11"].austria { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; min-height: 720px; padding: 0; background: #424235; }
+  body [data-s="s11"] .aus-copy { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 48px; padding: 96px 32px; background: none; }
+  body [data-s="s11"] .aus-foot { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
+  body [data-s="s11"] .aus-photo { display: block; position: relative; overflow: hidden; min-height: 0; }
+  body [data-s="s11"] .aus-eyebrow { display: none; }
+  body [data-s="s11"] .aus-br { display: inline; }
+  body [data-s="s11"] .aus-copy .page-title { order: 0; margin: 0; color: #f8f9f6; font-size: 44px; line-height: 48px; letter-spacing: -1.5px; }
+  body [data-s="s11"] .aus-p1, body [data-s="s11"] .aus-p2, body [data-s="s11"] .aus-cards { order: 0; }
+  body [data-s="s11"] .aus-foot p { max-width: 440px; font-size: 16px; line-height: 20px; color: rgba(248,249,246,.65); }
+  body [data-s="s11"] .aus-foot .btn { margin-top: 12px; height: 44px; padding: 12px 16px; }
+  body [data-s="s11"] .aus-photo .parallax { position: absolute; inset: -40px 0; width: 100%; height: calc(100% + 80px); margin: 0; border-radius: 0; object-fit: cover; }
+  body [data-s="s11"] .aus-cards { position: absolute; left: 24px; right: 24px; bottom: 24px; gap: 8px; }
+  body [data-s="s11"] .aus-cards a,
+  body [data-s="s11"] .aus-cards a:nth-child(-n+2),
+  body [data-s="s11"] .aus-cards a:last-child { min-height: 112px; padding: 16px; gap: 8px; border-radius: 8px; background: rgba(0,0,0,.25); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); color: #f8f9f6; }
+  body [data-s="s11"] .aus-cards h3 { font-size: 22px; line-height: 26px; color: #f8f9f6; }
+  body [data-s="s11"] .aus-cards p { font-size: 14px; line-height: 18px; color: rgba(248,249,246,.65); }
+
+  /* S12 · labs: 5 × 2 grid with the map tile, as on 1440 */
+  body [data-s="s12"].band { padding: 96px 0; text-align: center; display: block; }
+  body [data-s="s12"] .page-title { margin: 0 auto; max-width: 720px; text-align: center; }
+  body [data-s="s12"] .s12-br { display: inline; }
+  body [data-s="s12"] .lead { margin: 20px auto 0; font-size: 18px; line-height: 22px; text-align: center; color: rgba(11,12,8,.65); }
+  body [data-s="s12"] .s12-count, body [data-s="s12"] .s12-cta { display: none; }
+  body [data-s="s12"] .lab-grid { margin-top: 56px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; }
+  body [data-s="s12"] .lab-tile { min-height: 168px; height: 168px; padding: 20px 12px; gap: 16px; border-radius: 0; background: transparent; justify-content: flex-end; }
+  body [data-s="s12"] .lab-tile:nth-child(-n+5) { border-bottom: 1px solid rgba(11,12,8,.1); }
+  body [data-s="s12"] .lab-tile:not(:nth-child(5n+1)) { border-left: 1px solid rgba(11,12,8,.1); }
+  body [data-s="s12"] .lab-tile .lab-go { display: inline-flex; white-space: nowrap; }
+  body [data-s="s12"] .lab-logo-box { width: 100%; max-width: 150px; height: 40px; }
+  body [data-s="s12"] .lab-tile .lab-logo { height: 40px; max-width: 100%; }
+  body [data-s="s12"] .lab-tile-all { align-items: center; justify-content: center; padding: 16px; gap: 12px; border: 0 !important; border-radius: 16px; background: #21251d url("/figma/home/s12-map.webp") center / cover; }
+  body [data-s="s12"] .lab-tile-all::before { display: block; }
+  body [data-s="s12"] .lab-tile-all strong, body [data-s="s12"] .lab-tile-all small:not(.lab-all-m) { display: block; }
+  body [data-s="s12"] .lab-tile-all strong { font-size: 28px; line-height: 32px; }
+  body [data-s="s12"] .lab-tile-all small:not(.lab-all-m) { margin-top: -8px; }
+  body [data-s="s12"] .lab-tile-all em, body [data-s="s12"] .lab-tile-all .lab-all-m { display: none; }
+
+  /* S13 · reviews: the desktop marquee with smaller type */
+  body [data-s="s13"].s13 { padding: 96px 0; gap: 56px; }
+  body [data-s="s13"] .page-title { padding: 0 32px; }
+  body [data-s="s13"] .review-row { padding: 0 32px; }
+  body [data-s="s13"] .review-card { width: 280px; flex-basis: 280px; height: 440px; padding: 40px 22px; }
+
+  /* S14 · blog */
+  body [data-s="s14"].blog-band { padding: 96px 0; }
+  body [data-s="s14"] .page-title { margin-bottom: 56px; }
+  body [data-s="s14"] .blog-home-card > img { height: 220px; }
+  body [data-s="s14"] .blog-home-card h3 { font-size: 22px; line-height: 26px; }
+
+  /* S15 · FAQ */
+  body [data-s="s15"] .s15-grid { padding: 96px 32px 48px; }
+  body [data-s="s15"] .s15-cta.d-only { padding: 0 32px 64px; }
+  body [data-s="s15"] .s15-box { min-height: 0; padding: 64px 24px; }
+  body [data-s="s15"] .s15-box .btn { margin-top: 40px; }
+}
+@media (min-width: 900px) and (max-width: 1100px) {
+  body [data-s="s14"] .blog-home { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  body [data-s="s14"] .blog-home-card > img { height: 180px; }
+  body [data-s="s14"] .blog-home-card h3 { font-size: 20px; line-height: 24px; }
+  body [data-s="s14"] .blog-home-card p { font-size: 14px; line-height: 18px; }
+  body [data-s="s15"] .s15-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 48px; }
+}
+@media (min-width: 768px) and (max-width: 899px) {
+  body [data-s="s06"] .s06-head,
+  body [data-s="s07"] .shows-pin,
+  body [data-s="s10"] .s10-head { grid-template-columns: 1fr; }
+  body [data-s="s10"] .count-line { flex-direction: row; align-items: flex-end; text-align: left; gap: 16px; }
+  body [data-s="s10"] .count-line strong { font-size: 96px; }
+  body [data-s="s07"] .shows-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body [data-s="s07"] .show-card-3 { grid-column: 1 / -1; min-height: 0; }
+  body [data-s="s07"] .show-card-3 .igg-levels { flex-direction: row; flex-wrap: wrap; }
+  body [data-s="s07"] .show-card-3 .igg-levels li b { display: none; }
+  body [data-s="s08"] .s08-card { grid-template-columns: minmax(0, 1fr); grid-template-areas: "copy" "stack" "pager" "glass"; }
+  body [data-s="s08"] .s08-copy { gap: 20px; }
+  body [data-s="s08"] .s08-copy h2 br { display: none; }
+  body [data-s="s11"].austria { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  body [data-s="s11"] .aus-copy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; padding: 72px 32px; }
+  body [data-s="s11"] .aus-photo { height: 520px; }
+  body [data-s="s12"] .lab-tile { min-height: 136px; height: 136px; padding: 16px 8px; }
+  body [data-s="s12"] .lab-tile .lab-go { font-size: 14px; }
+  body [data-s="s12"] .lab-tile-all strong { font-size: 24px; line-height: 28px; }
+  body [data-s="s12"] .lab-tile-all .lab-go { display: none; }
+}
+
+/* ===========================================================================
+   Desktop sub-steps 1101–1439: the 1440 compositions without collisions.
+   =========================================================================== */
+@media (min-width: 1101px) and (max-width: 1279px) {
+  /* S01: same split as the tablet — at this width the 1440 layout puts the lead over the hand and the apple */
+  body [data-s="s01"].home-hero .inner { left: 48px; width: calc(42% - 40px); bottom: 64px; }
+  body [data-s="s01"].home-hero h1 { font-size: 48px; line-height: 52px; }
+
+  /* S05: four 240px columns cut the chips — 2 × 2 as on the tablet */
+  body [data-s="s05"] .cards-4.sym-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body [data-s="s05"] .cards-4.sym-row > .sym-card { height: 440px; }
+  body [data-s="s05"] .sym-chips { min-height: 0; }
+
+  /* S08: copy and report side by side in a grid (the absolute 1440 layout clips the report) */
+  body [data-s="s08"] .s08-card {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "copy stack" "copy pager" "glass glass";
+    align-items: start; gap: 16px 32px; height: auto;
+  }
+  body [data-s="s08"] .s08-copy { grid-area: copy; width: auto; height: auto; align-self: stretch; }
+  body [data-s="s08"] .s08-stack { grid-area: stack; position: relative; left: auto; right: auto; top: auto; width: 100%; height: 560px; }
+  body [data-s="s08"] .s08-stack .s08-shot { left: calc(50% - 230px); width: 440px; height: 529px; }
+  body [data-s="s08"] .s08-sheet-2 { left: calc(50% - 202px); top: 14px; width: 424px; height: 509px; }
+  body [data-s="s08"] .s08-sheet-3 { left: calc(50% - 188px); top: 28px; width: 424px; height: 509px; }
+  body [data-s="s08"] .s08-nav { top: 244px; }
+  body [data-s="s08"] .s08-pager { grid-area: pager; display: flex; justify-content: center; gap: 6px; margin: 0; }
+  body [data-s="s08"] .s08-glass { grid-area: glass; position: static; padding: 16px 0 0; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  body [data-s="s08"] .s08-glass h3 { white-space: normal; }
+}
+@media (min-width: 1280px) and (max-width: 1439px) {
+  /* S08: the report stack keeps the 1440 geometry, scaled down (.82) so the sheets and the arrow stay inside the card */
+  body [data-s="s08"] .s08-stack { right: auto; width: 765px; transform: scale(.82); transform-origin: 0 0; }
+}
+@media (min-width: 1101px) and (max-width: 1439px) {
+  /* S06: the head never squeezes the lead; groups keep their own column, the card is 380px (note 1415:2400) */
+  body [data-s="s06"] .s06-head { display: grid; grid-template-columns: minmax(0, 1fr) 340px; align-items: end; gap: 48px; }
+  body [data-s="s06"] .s06-head .lead { width: auto; max-width: none; }
+  body [data-s="s06"] .s06-head .page-title { width: auto; max-width: 100%; min-width: 0; }
+  body [data-s="s06"] .checker-grid { grid-template-columns: minmax(0, 1fr) 380px; }
+  body [data-s="s06"] .checker-card.checker-dark { width: auto; padding: 28px; }
+  body [data-s="s06"] .symptom-groups { min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body [data-s="s06"] .symptom-group { min-width: 0; padding: 24px; }
+
+  /* S07: two equal columns instead of 551 + 551 (which overflow below 1200) */
+  body [data-s="s07"] .shows { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
+  body [data-s="s07"] .shows-cards { display: flex; justify-content: flex-end; padding-right: 0; }
+  body [data-s="s07"] .show-card { width: min(438px, 100%); }
+
+  /* S10: the product card stays on the right at 380px (note 1415:2400) */
+  body [data-s="s10"] .checker-grid { grid-template-columns: minmax(0, 1fr) 380px; }
+  body [data-s="s10"] .s10-head > div { min-width: 0; }
+}
+
+/* S04 · deck under reduced motion on desktop: no pinned scene, so the three cards are listed one under
+   another (before, cards 2 and 3 stayed hidden behind the first one). */
+@media (min-width: 1101px) and (prefers-reduced-motion: reduce) {
+  body [data-s="s04"] .deck-stage { display: flex; flex-direction: column; gap: 16px; height: auto; }
+  body [data-s="s04"] .deck-card { position: relative; inset: auto; transform: none; }
+}
+
+/* S01 · entrance (note 1401:766): photo 1.04 → 1 over 1.2s, H1 rises, facts stagger 80ms, buttons come last.
+   Before, the facts went 80 / 240 / 320ms and the buttons rose together with the lead at 80ms;
+   on the tablet the photo did not zoom at all. */
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s01"].home-hero .facts > div:nth-child(1) { animation-delay: 80ms; }
+  body [data-s="s01"].home-hero .facts > div:nth-child(2) { animation-delay: 160ms; }
+  body [data-s="s01"].home-hero .facts > div:nth-child(3) { animation-delay: 240ms; }
+  body [data-s="s01"].home-hero .hero-actions { animation: riseY 600ms var(--ease) 320ms both; }
+}
+@media (min-width: 768px) and (max-width: 1279px) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s01"].home-hero .hero-media img.bg { transform-origin: center; animation: hero-zoom 1.2s var(--ease) both; }
+}
+
+/* S02 · labs strip (note 1401:772, frame 1385:283): logos monochrome at 40%, colour on hover in 200ms;
+   under reduced motion the strip does not run but can be scrolled by hand. */
+@media (min-width: 768px) {
+  body [data-s="s02"] .marquee img.lab-logo { filter: grayscale(1); opacity: .4; transition: opacity 200ms, filter 200ms; }
+  body [data-s="s02"] .marquee a:hover img.lab-logo,
+  body [data-s="s02"] .marquee a:focus-visible img.lab-logo { filter: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body [data-s="s02"] .marquee { overflow-x: auto; scrollbar-width: none; }
+  body [data-s="s02"] .marquee::-webkit-scrollbar { display: none; }
+}
+
+/* S08 · report pages on desktop (note 1401:802): the leaving page fades out and moves 24px to the left,
+   the new one comes in mirrored, 450ms power2.out (before: the old page vanished, the new one turned in by rotateY). */
+@media (min-width: 1101px) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s08"] .s08-stack .s08-shot { animation: s08-in 450ms cubic-bezier(.33, 1, .68, 1) both; }
+  body [data-s="s08"] .s08-stack .s08-shot.is-back { animation-name: s08-in-back; }
+  body [data-s="s08"] .s08-stack .s08-shot.s08-curl { display: block; z-index: 3; pointer-events: none; animation: s08-out 450ms cubic-bezier(.33, 1, .68, 1) forwards; }
+  body [data-s="s08"] .s08-stack .s08-shot.s08-curl.is-back { animation-name: s08-out-back; }
+}
+@keyframes s08-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes s08-in-back { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+@keyframes s08-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(-24px); } }
+@keyframes s08-out-back { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(24px); } }
+
+/* S12 · lab tile hover (note 1401:820): #F2F2F2, logo 1.04, the ↗ arrow nudges. S13 · photo reviews: hover zoom 1.10 (note 1401:826). */
+@media (hover: hover) and (min-width: 768px) {
+  body [data-s="s12"] .lab-tile .lab-logo,
+  body [data-s="s12"] .lab-tile .lab-go img { transition: transform 200ms var(--ease); }
+  body [data-s="s12"] .lab-tile:not(.lab-tile-all):hover { background-color: #f2f2f2; }
+  body [data-s="s12"] .lab-tile:hover .lab-logo { transform: scale(1.04); }
+  body [data-s="s12"] .lab-tile:hover .lab-go img { transform: translate(2px, -2px); }
+  body [data-s="s13"] .review-card.is-photo { overflow: hidden; }
+  body [data-s="s13"] .review-card.is-photo > img { transition: transform 600ms var(--ease); }
+  body [data-s="s13"] .review-card.is-photo:hover > img { transform: scale(1.1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body [data-s="s12"] .lab-tile:hover .lab-logo,
+  body [data-s="s12"] .lab-tile:hover .lab-go img,
+  body [data-s="s13"] .review-card.is-photo:hover > img { transform: none; }
+}
+
+/* S15 · the open question lost its chevron (the generic `.acc.is-open .acc-plus { background: lime }` reset the image). */
+body [data-s="s15"] .acc.is-open .acc-plus { background-image: url("/figma/icons/chevron-down-light.svg"); background-repeat: no-repeat; background-position: center; background-size: 24px; }
+@media (max-width: 767px) {
+  body [data-s="s15"] .acc.is-open .acc-plus { background-image: url("/figma/icons/chevron-down-dark.svg"); background-size: 20px; }
+}
+
+/* S10 on phones: the grey band is full-bleed in 1430:48646 (its rows already carry their own 20px padding);
+   the .wrap width left 20px white strips on both sides. */
+@media (max-width: 767px) {
+  body [data-s="s10"].wrap { width: 100%; max-width: none; margin-left: 0; margin-right: 0; }
+}
+
+/* S01 hero ≥1280: сетка 2×2 вместо «колонка справа сверху вниз».
+   Ряд 1 — H1 и лид по одной верхней линии (лид выше рукава на фото), ряд 2 — плашки фактов и кнопки по одной средней.
+   Раньше кнопки заканчивались на 161 px от верха блока: ниже H1 (136) и выше плашек (193–253) — «висели» между рядами. */
+@media (min-width: 1280px) {
+  body [data-s="s01"].home-hero .inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 367px;
+    grid-template-areas: "title lead" "facts actions";
+    column-gap: 48px;
+    row-gap: 32px;
+    top: auto;
+  }
+  body [data-s="s01"].home-hero .hero-top,
+  body [data-s="s01"].home-hero .hero-side { display: contents; }
+  body [data-s="s01"].home-hero h1 { grid-area: title; align-self: start; }
+  body [data-s="s01"].home-hero .lead { grid-area: lead; align-self: start; margin: 0; padding-top: 7px; /* верх заглавных лида = верх заглавных H1 (11,5 − 4,5 px) */ max-width: 335px; }
+  body [data-s="s01"].home-hero .facts { grid-area: facts; align-self: center; }
+  body [data-s="s01"].home-hero .hero-actions { grid-area: actions; align-self: center; margin: 0; }
+  /* разделитель 1px слева от лида (Rectangle 1966 во фрейме, перенесён с текста на x = колонка − 24) */
+  body [data-s="s01"].home-hero .lead { position: relative; }
+  body [data-s="s01"].home-hero .lead::before { content: ""; position: absolute; left: -24px; top: 7px; height: 72px; width: 1px; background: rgba(248, 249, 246, 0.2); }
+}
+@media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
+  /* hero-side стал display: contents — его появление (80 мс) переезжает на лид */
+  body [data-s="s01"].home-hero .lead { animation: riseY 600ms var(--ease) 80ms both; }
+}
+@media (min-width: 1280px) and (max-width: 1439px) {
+  /* на 1280 три плашки (812 px) + кнопки (364 px) встают в один ряд только с зазором 24 и полями плашек 16 */
+  body [data-s="s01"].home-hero .inner { column-gap: 24px; }
+  body [data-s="s01"].home-hero .facts { flex-wrap: nowrap; }
+  body [data-s="s01"].home-hero .facts > div { padding-left: 16px; padding-right: 16px; }
+}
+@media (min-width: 1280px) and (max-width: 1439px) {
+  /* фото 1440×900 обрезается по ширине; центрированный кадр клал пальцы с яблоком под лид справа.
+     Режем всё лишнее слева — рука уходит на (1440 − W) / 2 левее, лицо остаётся в кадре. */
+  body [data-s="s01"].home-hero .hero-media img.bg { object-position: 100% 100%; }
+}
+
+/* ── Выравнивание по сетке 48 / 1344 (правка по замечаниям заказчика 09.10) ── */
+/* S02: подпись над лентой — .meta-line во flex, текст прижимался к левому краю экрана */
+body [data-s="s02"] .meta-line { justify-content: center; }
+@media (min-width: 1101px) {
+  /* S09, S12: у .wrap.band были ещё 48px полей внутри уже отступившего контейнера — шаги и сетка
+     лабораторий стояли на 96–1344 вместо 48–1392, уже соседних секций */
+  body [data-s="s09"].band,
+  body [data-s="s12"].band { padding-left: 0; padding-right: 0; }
+  /* S12: заголовок 890px был прижат влево (центр 541 вместо 720), подзаголовок переносился —
+     во фрейме он в одну строку */
+  body [data-s="s12"] .page-title { margin-left: auto; margin-right: auto; }
+  body [data-s="s12"] .lead { max-width: 720px; }
+  /* S15: сетка — .wrap (1344) с полями 48 → список вопросов кончался на 1296, а блок
+     «Остались вопросы?» под ним — на 1392 */
+  body [data-s="s15"] .s15-grid { width: 100%; }
+  /* S07: карточка 438 в колонке 551 (фрейм) оставляла 113px пустоты справа — край не совпадал
+     ни с контейнером, ни с текстовой колонкой слева; карточка на всю ширину колонки */
+  body [data-s="s07"] .shows-cards { padding-right: 0; }
+  body [data-s="s07"] .show-card { width: 100%; }
+}
