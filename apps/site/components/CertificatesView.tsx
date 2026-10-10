@@ -281,7 +281,7 @@ function DocViewer({ code, index, from, onClose }: { code: string; index: number
     }
     try {
       await navigator.clipboard.writeText(url);
-      window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Ссылка скопирована" }));
+      window.dispatchEvent(new CustomEvent("fox:toast", { detail: { text: "Ссылка скопирована", type: "info" } }));
     } catch {
       /* clipboard is not available */
     }

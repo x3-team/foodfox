@@ -62,6 +62,16 @@ export function BlogFeed() {
     return () => window.clearTimeout(id);
   }, [draftQuery]);
 
+  // Esc закрывает меню тегов (подсказки поиска закрываются в onKeyDown поля)
+  useEffect(() => {
+    if (!tagOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setTagOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [tagOpen]);
+
   useEffect(() => {
     const close = (event: MouseEvent) => {
       if (!searchRef.current?.contains(event.target as Node)) setSuggestOpen(false);
@@ -275,9 +285,10 @@ export function BlogFeed() {
                     onChange={(event) => {
                       setDraftQuery(event.target.value);
                       setSuggestOpen(true);
+                      setTagOpen(false);
                       setActiveSuggest(0);
                     }}
-                    onFocus={() => setSuggestOpen(true)}
+                    onFocus={() => { setSuggestOpen(true); setTagOpen(false); }}
                     onKeyDown={(event) => {
                       const options = suggestions.length + 1;
                       if (event.key === "ArrowDown") {

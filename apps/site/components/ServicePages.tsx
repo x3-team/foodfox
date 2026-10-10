@@ -245,7 +245,7 @@ export function FaqPage() {
                                   const url = `${window.location.origin}${window.location.pathname}#${anchor}`;
                                   void navigator.clipboard?.writeText(url);
                                   window.history.replaceState(null, "", `#${anchor}`);
-                                  window.dispatchEvent(new CustomEvent("fox:toast", { detail: { text: "Ссылка скопирована", duration: 2500 } }));
+                                  window.dispatchEvent(new CustomEvent("fox:toast", { detail: { text: "Ссылка скопирована", duration: 2500, type: "info" } }));
                                 }}
                               >
                                 Ссылка на ответ
@@ -834,7 +834,7 @@ function RouteSheet({ onClose }: { onClose: () => void }) {
         type="button"
         onClick={() => {
           void navigator.clipboard?.writeText(OFFICE_ADDRESS).then(
-            () => window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Адрес скопирован" })),
+            () => window.dispatchEvent(new CustomEvent("fox:toast", { detail: { text: "Адрес скопирован", type: "info" } })),
             () => undefined,
           );
           onClose();
@@ -893,7 +893,7 @@ export function ContactsPage() {
               <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-phone.svg)" }} aria-hidden />
               <div>
                 <h2>Телефон</h2>
-                <button type="button" className="k-strong" onClick={() => { void navigator.clipboard?.writeText("+7 (495) 374-83-05"); window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Номер скопирован" })); }}>+7 (495) 374-83-05</button>
+                <button type="button" className="k-strong" onClick={() => { void navigator.clipboard?.writeText("+7 (495) 374-83-05"); window.dispatchEvent(new CustomEvent("fox:toast", { detail: { text: "Номер скопирован", type: "info" } })); }}>+7 (495) 374-83-05</button>
                 <p>Пн–Пт 10:00–19:00 (МСК)</p>
                 <p role="status">{officeOpen ? "Сейчас офис на связи" : "Сейчас офис закрыт — напишите, ответим утром"}</p>
                 <a className="k-go" href="tel:+74953748305">Позвонить <img src="/icons/arrow-right.svg" alt="" /></a>
