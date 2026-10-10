@@ -135,7 +135,7 @@ html.is-scrolled { --header: 72px; }
 .btn-dark { background: var(--ink); color: var(--paper); }
 .btn-dark:hover { background: color-mix(in srgb, var(--ink) 84%, white); }
 .btn-light { background: white; color: var(--ink); }
-.btn-light:hover { background: color-mix(in srgb, white 84%, var(--ink)); }
+.btn-light:hover { background: #f7f7f5; } /* Figma «Contrast · Hover» 1301:2646 */
 .btn-ghost {
   height: 44px;
   border-radius: 999px;
@@ -1257,9 +1257,11 @@ body:has(.mobile-menu) .ls-sticky { display: none !important; }
   opacity: 0;
   transform: translateY(24px);
 }
+/* Fill «backwards», not «both»: once the entrance ends nothing keeps a transform/opacity on the block, so it does not
+   stay a stacking context and dropdowns / popovers inside a section (tag menu, search suggestions) paint above later content. */
 [data-s].is-in:not(.dark-hero) > .wrap > *,
 [data-s].is-in.wrap:not(.dark-hero) > * {
-  animation: riseY 600ms var(--ease) both;
+  animation: riseY 600ms var(--ease) backwards;
 }
 [data-s].is-in:not(.dark-hero) > .wrap > *:nth-child(2),
 [data-s].is-in.wrap:not(.dark-hero) > *:nth-child(2) { animation-delay: 80ms; }
@@ -1270,11 +1272,11 @@ body:has(.mobile-menu) .ls-sticky { display: none !important; }
 [data-s].is-in:not(.dark-hero) > .wrap > *:nth-child(5),
 [data-s].is-in.wrap:not(.dark-hero) > *:nth-child(5) { animation-delay: 320ms; }
 [data-s] .fx-rise { opacity: 0; transform: translateY(24px); }
-[data-s].is-in .fx-rise { animation: riseY 600ms var(--ease) both; }
+[data-s].is-in .fx-rise { opacity: 1; transform: none; animation: riseY 600ms var(--ease) backwards; }
 [data-s].rf-sec:not(.is-in) > *,
 [data-s].rf-cta:not(.is-in) > * { opacity: 0; transform: translateY(24px); }
 [data-s].rf-sec.is-in > *,
-[data-s].rf-cta.is-in > * { animation: riseY 600ms var(--ease) both; }
+[data-s].rf-cta.is-in > * { animation: riseY 600ms var(--ease) backwards; }
 [data-s].rf-sec.is-in > *:nth-child(2),
 [data-s].rf-cta.is-in > *:nth-child(2) { animation-delay: 80ms; }
 [data-s].rf-sec.is-in > *:nth-child(3) { animation-delay: 160ms; }
@@ -1367,6 +1369,10 @@ mark.hit { background: var(--lime); color: inherit; padding: 0 2px; }
 .acc-body, .f-answer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 320ms var(--ease); }
 .acc.is-open .acc-body, article.is-open .f-answer { grid-template-rows: 1fr; }
 .acc-body > div, .f-answer > div { overflow: hidden; }
+/* Figma «FAQ/Item · Hover» (1302:2862): the question gets a 1px underline. */
+@media (hover: hover) {
+  .acc > button:hover, article:has(> .f-answer) > button:hover strong { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+}
 .f-answer { }
 .e-plate { position: relative; }
 .e-four {
@@ -2388,16 +2394,25 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 .lf textarea { resize: vertical; min-height: 104px; }
 .lf-meta { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; line-height: 16px; color: var(--ink-65); }
 .lf-meta .is-warn { color: #c4462a; }
-.lf.is-sending input, .lf.is-sending textarea { opacity: 0.6; }
+/* Figma «Связаться · Отправляется» (1300:2445) / «Input · Disabled»: fields turn grey, labels fade, text 35%. */
+.lf.is-sending .field { color: rgba(11, 12, 8, 0.28); }
+.lf.is-sending .field input, .lf.is-sending .field textarea { background: rgba(11, 12, 8, 0.1); border-color: transparent; color: rgba(11, 12, 8, 0.4); box-shadow: none; }
+.lf.is-sending .lf-meta { color: var(--ink-65); }
 .lf-slide { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 200ms var(--ease); margin-top: -12px; }
 .lf-slide.is-open { grid-template-rows: 1fr; margin-top: 0; }
 .lf-slide > div { overflow: hidden; min-height: 0; }
 .lf-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .lf-actions .btn { min-width: 220px; }
 .lf-hint { font-size: 12px; line-height: 16px; color: var(--ink-65); }
-.lf-toast { display: flex; align-items: center; gap: 10px; align-self: center; background: #101400; color: #f8f9f6; border-radius: 999px; padding: 10px 16px; font-size: 14px; line-height: 18px; animation: toast-up 240ms var(--ease) both; }
-.lf-toast-x { width: 20px; height: 20px; border-radius: 99px; background: #c4462a; color: #fff; display: grid; place-items: center; font-size: 14px; line-height: 1; }
-.lf-toast button { color: var(--lime); text-decoration: underline; text-underline-offset: 3px; }
+/* Figma «Связаться» 1300:2356 / 1300:2400: before consent the button is 305 wide with the hint beside it, after — full width. */
+@media (min-width: 768px) {
+  .lf-modal .lf-actions { gap: 12px; flex-wrap: nowrap; }
+  body .lead-modal .lf-modal .lf-actions .btn { flex: 0 0 305px; width: auto; min-width: 0; height: 48px; }
+  body .lead-modal .lf-modal .lf-actions.is-ready .btn { flex: 1 1 auto; }
+}
+/* Figma «Primary · Disabled» in windows and forms: grey plate and grey label instead of a faded black button. */
+.modal .btn-dark:disabled:not(.is-loading), .lf .btn-dark:disabled:not(.is-loading),
+.modal .btn-dark:disabled:not(.is-loading):hover, .lf .btn-dark:disabled:not(.is-loading):hover { opacity: 1; background: rgba(11, 12, 8, 0.1); color: rgba(11, 12, 8, 0.35); }
 @keyframes toast-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 
 /* G15: segment — the active pill slides (one indicator, 240мс). */
@@ -2456,8 +2471,19 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 .fox-toasts { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 95; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; width: max-content; max-width: calc(100% - 32px); }
 .fox-toasts .fox-toast { position: static; left: auto; top: auto; bottom: auto; transform: none; pointer-events: auto; display: flex; align-items: center; gap: 10px; max-width: 100%; white-space: normal; animation: toast-up 240ms var(--ease) both; }
 .fox-toasts .fox-toast.is-out { animation: toast-down 200ms ease-in forwards; }
-.fox-toasts .fox-toast.is-error { background: #3a1408; }
-.fox-toasts .fox-toast button { color: var(--lime); font-size: 18px; line-height: 1; }
+/* Figma Toast / Status (1303:2880): 48px pill #0b0c08, icon circle 28 at 10px, message 16/20, action 14/18 lime underlined. */
+.fox-toasts .fox-toast { box-sizing: border-box; min-height: 48px; padding: 10px 20px 10px 10px; gap: 12px; background: #0b0c08; color: #f8f9f6; border-radius: 999px; font-size: 16px; line-height: 20px; box-shadow: 0 12px 32px rgba(11, 12, 8, 0.18); }
+.fox-toasts .ft-ico { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; }
+.fox-toasts .ft-ico svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.fox-toasts .is-success .ft-ico { background: var(--lime); color: #0b0c08; }
+.fox-toasts .is-error .ft-ico { background: #c4462a; color: #fff; }
+.fox-toasts .is-info .ft-ico { background: #fff; color: #0b0c08; }
+.fox-toasts .is-info .ft-ico svg { stroke-width: 1.3; }
+.fox-toasts .ft-msg { min-width: 0; }
+.fox-toasts .fox-toast .ft-act { flex: none; color: var(--lime); font-size: 14px; line-height: 18px; text-decoration: underline; text-underline-offset: 3px; }
+.fox-toasts .fox-toast .ft-x { flex: none; margin-right: -8px; width: 28px; height: 28px; color: rgba(248, 249, 246, 0.7); font-size: 18px; line-height: 1; }
+.fox-toasts .fox-toast .ft-x:hover { color: #f8f9f6; }
+@media (max-width: 480px) { .fox-toasts .fox-toast { font-size: 15px; line-height: 19px; } }
 @keyframes toast-down { to { opacity: 0; transform: translateY(16px); } }
 @media (max-width: 1100px) {
   .fox-toasts { bottom: calc(84px + env(safe-area-inset-bottom)); }
@@ -2479,6 +2505,17 @@ body:has(.mobile-menu) .m04 { display: none; }
 .switch::after { transition: transform 180ms var(--ease), background 180ms var(--ease); }
 .switch { transition: background 180ms var(--ease); }
 .switch.is-on { background: #101400; }
+/* Figma «Toggle · Off / On / Disabled» (1302:2819, cookie 1299:2260): off #9a9c92, on ink + lime knob, locked-on #cbccc1. */
+.switch:not(.is-on) { background: #9a9c92; }
+.switch.is-on:disabled { background: #cbccc1; }
+.switch.is-on:disabled::after { background: #fff; }
+/* Figma «Segment · Active / Hover / Default» (1302:2828): hover is a pale pill under the label. */
+.seg button { transition: color 150ms var(--ease), background-color 150ms var(--ease); }
+.seg button:hover:not(.is-active):not(:disabled) { background: rgba(255, 255, 255, 0.55); }
+/* Figma «Text · Hover» (1301:2703): the label greys out, no underline. */
+.btn-text:hover { text-decoration-color: transparent; color: rgba(11, 12, 8, 0.7); }
+/* Figma «Input · Success» (1302:2719): white tick in a 22px green circle at the right. */
+.lf-ok { box-sizing: border-box; width: 22px; height: 22px; margin-top: -11px; padding: 5px; border-radius: 999px; background: #4a6b1f; stroke: #fff; stroke-width: 3; }
 .cookie-modal-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
 @media (max-width: 1100px) {
   .cookie-sheet .cookie-necessary { display: inline-flex; }
@@ -2547,6 +2584,36 @@ article.is-open .f-answer > div { opacity: 1; transition-delay: 80ms; }
 .book-go .book-progress i { width: 40%; animation: book-load 1.4s ease-in-out infinite; }
 @keyframes book-load { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
 .book-go.is-center { align-items: center; text-align: center; }
+/* Figma 1253:796 step 1: suggestions in one dropdown card (padding 7, rows 44, lime row = chosen). */
+.book-list.book-suggest { gap: 2px; margin-top: 12px; padding: 7px; border: 1px solid var(--ink-10); border-radius: 16px; background: #fff; box-shadow: 0 12px 32px -8px rgba(11, 12, 8, 0.14); }
+.book-list.book-suggest button { min-height: 44px; padding: 10px 14px; border: 0; border-radius: 10px; }
+.book-list.book-suggest strong { font-weight: 400; font-size: 16px; line-height: 20px; }
+.book-list.book-suggest span { font-size: 14px; line-height: 18px; color: var(--ink-65); text-align: right; }
+/* Figma 1253:851 step 2: colour logo 96×29, count 16 and a 12px line under it, radio 20 on the right. */
+.book-list .book-lab { justify-content: flex-start; gap: 16px; min-height: 64px; padding: 12px 16px; }
+.book-lab img { width: 96px; height: 29px; flex: 0 0 96px; }
+.book-lab > span { flex: 1; min-width: 0; }
+.book-lab strong { display: block; font-weight: 400; font-size: 16px; line-height: 20px; }
+.book-lab small { font-size: 12px; line-height: 16px; margin-top: 2px; }
+.book-lab .book-radio { width: 20px; height: 20px; flex-basis: 20px; }
+@media (max-width: 767px) {
+  /* Figma 1255:982 (390 sheet): one line per network, logo 80×24, count 14; the CTA takes the full width. */
+  .book-list .book-lab { min-height: 60px; padding: 10px 15px; }
+  .book-lab img { width: 80px; height: 24px; flex-basis: 80px; }
+  .book-lab strong { font-size: 14px; line-height: 18px; color: var(--ink-65); }
+  .book-lab small { display: none; }
+  [data-book-step="labs"] .book-row > .btn { flex: 1 1 100%; }
+}
+/* Figma 1255:879 step 3: FOX tile · dots · network tile, title, text, 240px progress and the manual link — centred. */
+.book-go.is-center .book-logos { gap: 16px; margin: 8px 0; }
+.book-logos .book-tile { width: 72px; height: 72px; border-radius: 16px; display: grid; place-items: center; background: #f5f5f3; box-shadow: inset 0 0 0 1px var(--ink-10); }
+.book-logos .book-tile.is-fox { background: #21251d; box-shadow: none; color: var(--lime); font-size: 26px; line-height: 28px; font-weight: 300; letter-spacing: -0.5px; }
+.book-logos .book-tile:not(.is-fox) { width: 120px; }
+.book-logos .book-tile img { width: 96px; height: 29px; }
+.book-go .book-dots { gap: 16px; }
+.book-go .book-dots i { width: 8px; height: 8px; }
+.book-go.is-center .lead-note { max-width: 440px; }
+.book-go.is-center .book-progress { max-width: 240px; height: 4px; margin: 8px 0 4px; }
 
 @media (prefers-reduced-motion: reduce) {
   .mobile-menu-foot, .mobile-menu.is-closing, .mobile-menu.is-closing > a, .modal, .modal-back, .lead-modal, .cookie-modal, .book-sheet,

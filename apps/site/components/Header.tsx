@@ -16,6 +16,20 @@ export const NAV = [
   { href: "/blog", label: "Блог" },
 ];
 
+// Figma «Мобильное меню · 390×844» (1298:1430): ten items in this order; «Для специалистов» lives in the pill below.
+const MENU = [
+  { href: "/", label: "О тесте FOX" },
+  { href: "/#checker", label: "Симптомы" },
+  { href: "/#kak-sdat", label: "Как сдать тест" },
+  { href: "/labs", label: "Где сдать тест" },
+  { href: "/report", label: "Как читать отчёт" },
+  { href: "/certificates", label: "Сертификаты" },
+  { href: "/reviews", label: "Отзывы" },
+  { href: "/blog", label: "Блог" },
+  { href: "/faq", label: "Вопросы и ответы" },
+  { href: "/contacts", label: "Контакты" },
+];
+
 // Figma Header / B2B (1120:3114): anchors of /specialists + «Пациентам →» switch on the right.
 const B2B = [
   { href: "/specialists#method", label: "О методе" },
@@ -164,9 +178,9 @@ export function Header() {
           </span>
         ) : null}
         <a
-          className={`partner-dot${lessons ? " is-lessons" : ""}`}
+          className={`partner-dot${lessons ? " is-lessons" : ""}${variant === "course" && !lessons ? " has-label" : ""}`}
           href={PARTNER_LOGIN}
-          aria-label="Кабинет партнёра"
+          aria-label={variant === "course" && !lessons ? "Войти в кабинет партнёра" : "Кабинет партнёра"}
           onClick={(event) => {
             // M08: on phones the icon opens a sheet «Войти» / «Стать партнёром» instead of leaving the page.
             if (!window.matchMedia("(max-width: 1100px)").matches) return;
@@ -175,6 +189,8 @@ export function Header() {
           }}
         >
           <img src={onDark || menu ? "/icons/user-light.svg" : "/icons/user.svg"} alt="" />
+          {/* Figma Header / Course 1133:717 «partner-login»: icon + «Войти» on desktop; the phone header keeps the circle. */}
+          {variant === "course" && !lessons && <span className="partner-label">Войти</span>}
         </a>
         {lessons ? (
           <span className="cabinet-pill my-lessons">
@@ -189,6 +205,9 @@ export function Header() {
         ) : (
           path === "/course" ? (
             <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:course"))}>Получить доступ</button>
+          ) : variant === "b2b" ? (
+            // Figma Header / B2B 1120:3114 and «Специалистам · Default / Scrolled» 1296:488.
+            <Link className="btn btn-dark" href="/course">Зарегистрироваться на курс</Link>
           ) : (
             <Link className="btn btn-dark" href="/course">Получить доступ</Link>
           )
@@ -234,16 +253,25 @@ export function Header() {
           }}
         >
           {/* G06: items cascade from 120мс with a 30мс step; the bottom block comes last, +80мс. */}
-          {NAV.map((item, index) => (
-            <Link key={item.href} href={item.href} style={{ animationDelay: `${120 + index * 30}ms` }} aria-current={path.startsWith(item.href) ? "page" : undefined}>
+          {MENU.map((item, index) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => item.href.includes("#") && setMenu(false)}
+              style={{ animationDelay: `${120 + index * 30}ms` }}
+              aria-current={(item.href === "/" ? path === "/" : !item.href.includes("#") && path.startsWith(item.href)) ? "page" : undefined}
+            >
               {item.label} <img src="/icons/arrow-right-light.svg" alt="" />
             </Link>
           ))}
-          {/* Figma 1298:1430 bottom block: white CTA on the full width, two outline pills, phone + Telegram. */}
-          <div className="mobile-menu-foot mm-bottom" style={{ animationDelay: `${120 + (NAV.length - 1) * 30 + 80}ms` }}>
+          {/* Figma 1298:1430 bottom block: white CTA on the full width, «Для специалистов» + «Кабинет партнёра», phone + Telegram. */}
+          <div className="mobile-menu-foot mm-bottom" style={{ animationDelay: `${120 + (MENU.length - 1) * 30 + 80}ms` }}>
             <button className="btn btn-light mm-cta" type="button" onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:book")); }}>Записаться на тест</button>
             <div className="mm-pills">
-              <button className="mm-pill" type="button" onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:contact")); }}>Связаться</button>
+              <Link className="mm-pill" href="/specialists" aria-current={path.startsWith("/specialists") ? "page" : undefined}>
+                <img src="/icons/award-light.svg" alt="" />
+                Для специалистов
+              </Link>
               <a className="mm-pill" href={PARTNER_LOGIN}>
                 <img src="/icons/user-light.svg" alt="" />
                 Кабинет партнёра

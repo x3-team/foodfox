@@ -17,6 +17,11 @@
   body .site-header.header-course .nav { gap: 20px; }
   body .site-header .example-link { display: inline-flex; }
 }
+/* B2B «Зарегистрироваться на курс» (252px, Figma 1120:3114) needs the room: in the frame the nav already touches «Пациентам». */
+@media (min-width: 1440px) {
+  body .site-header.header-b2b .header-left { gap: 28px; }
+  body .site-header.header-b2b .nav { gap: 16px; }
+}
 @media (min-width: 1101px) and (max-width: 1439px) {
   body .site-header .example-link { display: none; }
   body .site-header.header-site .nav { gap: 20px; }
@@ -36,6 +41,25 @@
 /* G05 «Menu open»: the header sits on the dark panel — light logo and partner circle. */
 body .site-header:has(.mobile-menu) { color: #f8f9f6; background: transparent; border-bottom-color: transparent; box-shadow: none; }
 body .site-header:has(.mobile-menu) .partner-dot { border-color: rgba(248, 249, 246, 0.4); }
+/* Figma 1298:1431: logo and the partner circle stay visible above the open panel, next to «Закрыть». */
+body .site-header:has(.mobile-menu) .logo,
+body .site-header:has(.mobile-menu) .partner-dot { position: relative; z-index: 80; }
+
+/* Figma Header / Course 1133:717 «partner-login» (101×44): user icon + «Войти» in an outline pill (desktop). */
+@media (min-width: 1101px) {
+  body .site-header .partner-dot.has-label {
+    width: auto; height: 44px; padding: 0 16px 0 14px; display: inline-flex; align-items: center; gap: 8px;
+    border-color: rgba(11, 12, 8, 0.24); font-size: 15px; line-height: 18px; white-space: nowrap;
+  }
+  body .site-header .partner-dot.has-label img { width: 20px; height: 20px; }
+  body .site-header .partner-dot.has-label::after { display: none; }
+  /* Figma 1139:798 C1 / 1296:843: Guest at the top shows only «Получить доступ»; «Войти» fades in on Scrolled. */
+  body .site-header.header-course:not(.is-scrolled) .partner-dot.has-label { opacity: 0; visibility: hidden; }
+  body .site-header.header-course .partner-dot.has-label { transition: opacity 200ms var(--ease), visibility 200ms, background-color 150ms var(--ease); }
+}
+@media (max-width: 1100px) {
+  body .site-header .partner-label { display: none; }
+}
 
 /* ==== Mobile menu (Figma 1298:1430, notes G05 / G06) ====
    Items 24px with hairlines, tap height ≥48; the bottom block sits at the bottom: white CTA, two outline pills, phone + Telegram. */
@@ -67,6 +91,12 @@ body .mobile-menu .mm-contacts img { width: 16px; height: 16px; filter: invert(1
   body .mobile-menu { padding-left: 32px; padding-right: 32px; padding-top: 88px; }
   body .mobile-menu > a { font-size: 32px; line-height: 36px; min-height: 60px; }
   body .mobile-menu .mm-bottom { max-width: 520px; }
+}
+/* Landscape tablets: ten items at 32px push the bottom block off a 768px-high screen — use the phone size. */
+@media (min-width: 768px) and (max-width: 1100px) and (max-height: 900px) {
+  body .mobile-menu { padding-top: 72px; }
+  body .mobile-menu > a { font-size: 24px; line-height: 28px; min-height: 48px; }
+  body .mobile-menu .mm-bottom { padding-top: 20px; }
 }
 @media (max-width: 374px) {
   body .mobile-menu .mm-pill { font-size: 13px; padding: 0 8px; }
@@ -206,3 +236,9 @@ body .header-course .lesson-progress b { transition: width 600ms var(--ease); }
 @media (prefers-reduced-motion: reduce) {
   body .cookie.fox-cookie, body .fox-toasts { transition: none; }
 }
+
+/* Pill search fields (.search: blog, 404, FAQ, products; the /labs city card): the pill shows focus with the FOX lime ring,
+   the input inside gets no second ring from the global input:focus-visible. Page rules with their own pill ring keep it. */
+body :is(.search, .l-city) input:focus-visible { outline: none; box-shadow: none; }
+body .search:has(input:focus-visible) { box-shadow: 0 0 0 3px #e7f551; }
+body .l-city:has(input:focus-visible) { outline: 3px solid #e7f551; outline-offset: 2px; }
