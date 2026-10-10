@@ -83,6 +83,7 @@ export function LeadForm({
   const [status, setStatus] = useState<Status>("idle");
   const [shake, setShake] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const retryRef = useRef<() => void>(() => {});
   const sending = status === "sending";
   const fields: Field[] = who === "Лаборатория" ? ["name", "contact", "company", "text"] : ["name", "contact", "text"];
   // K04: «Оставить заявку» for labs scrolls to the page form with the «Лаборатория / партнёр» segment preselected.
@@ -95,6 +96,28 @@ export function LeadForm({
     window.addEventListener("fox:lead-who", pick);
     return () => window.removeEventListener("fox:lead-who", pick);
   }, [variant]);
+
+  // Figma «Связаться · Ошибка сети» (1300:2487): the error is the global Toast / Status at the bottom of the screen,
+  // «Нет соединения — текст сохранён · Повторить», no auto-close (G11). It goes away on retry, success or close.
+  const toastTag = useRef(`lead-${Math.random().toString(36).slice(2)}`);
+  useEffect(() => {
+    const tag = toastTag.current;
+    if (status === "error") {
+      window.dispatchEvent(
+        new CustomEvent("fox:toast", {
+          detail: { text: "Нет соединения — текст сохранён", type: "error", tag, action: { label: "Повторить", run: () => retryRef.current() } },
+        }),
+      );
+    } else {
+      window.dispatchEvent(new CustomEvent("fox:toast-clear", { detail: tag }));
+    }
+  }, [status]);
+  useEffect(() => {
+    const tag = toastTag.current;
+    return () => {
+      window.dispatchEvent(new CustomEvent("fox:toast-clear", { detail: tag }));
+    };
+  }, []);
 
   function update(field: Field, value: string) {
     const next = { ...values, [field]: value };
@@ -149,6 +172,8 @@ export function LeadForm({
       setStatus("error");
     }
   }
+
+  retryRef.current = () => void submit();
 
   function reset() {
     setValues({ name: "", contact: "", company: "", text: "" });
@@ -253,19 +278,12 @@ export function LeadForm({
         <span className="lf-box" aria-hidden />
         <span>{variant === "page" ? "Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности и обработкой персональных данных (152-ФЗ)" : "Согласен на обработку персональных данных (152-ФЗ)"}</span>
       </label>
-      <div className="lf-actions">
+      <div className={`lf-actions${consent ? " is-ready" : ""}`}>
         <button className={`btn btn-dark${sending ? " is-loading is-labelled" : ""}`} type="submit" disabled={!consent || sending}>
           {sending ? "Отправляем…" : "Отправить"}
         </button>
         {variant === "page" ? <span className="lf-hint">Отвечаем в течение 1 рабочего дня</span> : !consent && <span className="lf-hint">Кнопка активна после согласия</span>}
       </div>
-      {status === "error" && (
-        <div className="lf-toast" role="alert">
-          <span className="lf-toast-x" aria-hidden>×</span>
-          Нет соединения — текст сохранён
-          <button type="button" onClick={() => void submit()}>Повторить</button>
-        </div>
-      )}
     </form>
   );
 }

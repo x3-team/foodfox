@@ -7,8 +7,9 @@ import { LeadForm } from "@/components/LeadForm";
 import { useDialog } from "@/components/useDialog";
 import { PARTNERS, plural, withUtm, type Partner } from "@/lib/labs";
 
-type ToastItem = { id: number; text: string; type: "success" | "error" | "info"; duration: number; out?: boolean };
-type ToastDetail = string | { text: string; type?: ToastItem["type"]; duration?: number };
+type ToastAction = { label: string; run: () => void };
+type ToastItem = { id: number; text: string; type: "success" | "error" | "info"; duration: number; action?: ToastAction; tag?: string; out?: boolean };
+type ToastDetail = string | { text: string; type?: ToastItem["type"]; duration?: number; action?: ToastAction; tag?: string };
 
 function openBook() {
   window.dispatchEvent(new Event("fox:book"));
@@ -36,17 +37,26 @@ export function SiteOverlays() {
         type,
         // G17: Success/Info hang 3 s, Error stays until closed.
         duration: item.duration ?? (type === "error" ? 0 : 3000),
+        action: item.action,
+        tag: item.tag,
       };
       // No more than two toasts in the stack.
       setToasts((current) => [...current.filter((toast) => !toast.out).slice(-1), next]);
     };
+    // A form that raised a toast with an action takes it back when it retries, succeeds or closes.
+    const onToastClear = (event: Event) => {
+      const tag = (event as CustomEvent<string>).detail;
+      setToasts((current) => current.map((toast) => (toast.tag === tag ? { ...toast, out: true } : toast)));
+    };
     window.addEventListener("fox:book", onBook);
     window.addEventListener("fox:contact", onContact);
     window.addEventListener("fox:toast", onToast);
+    window.addEventListener("fox:toast-clear", onToastClear);
     return () => {
       window.removeEventListener("fox:book", onBook);
       window.removeEventListener("fox:contact", onContact);
       window.removeEventListener("fox:toast", onToast);
+      window.removeEventListener("fox:toast-clear", onToastClear);
     };
   }, []);
 
@@ -304,9 +314,28 @@ function Toast({ item, onLeave, onGone }: { item: ToastItem; onLeave: () => void
       onMouseEnter={pause}
       onMouseLeave={arm}
     >
-      {item.text}
-      {item.type === "error" && (
-        <button type="button" aria-label="Закрыть уведомление" onClick={onLeave}>×</button>
+      {/* Figma Toast / Status (1303:2880): 28px icon circle — lime check / red cross / white bubble, message 16px, lime action. */}
+      <span className="ft-ico" aria-hidden>
+        <svg viewBox="0 0 16 16" width="14" height="14">
+          {item.type === "success" ? <path d="M3.5 8.5l3 3 6-6.5" /> : item.type === "error" ? <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" /> : <path d="M8 2.75c-3.04 0-5.25 2-5.25 4.5 0 1.25.55 2.36 1.45 3.15L3.75 13l2.9-1.2c.43.1.88.15 1.35.15 3.04 0 5.25-2 5.25-4.7S11.04 2.75 8 2.75z" />}
+        </svg>
+      </span>
+      <span className="ft-msg">{item.text}</span>
+      {item.action ? (
+        <button
+          type="button"
+          className="ft-act"
+          onClick={() => {
+            onLeave();
+            item.action?.run();
+          }}
+        >
+          {item.action.label}
+        </button>
+      ) : (
+        item.type === "error" && (
+          <button type="button" className="ft-x" aria-label="Закрыть уведомление" onClick={onLeave}>×</button>
+        )
       )}
     </p>
   );
@@ -453,6 +482,11 @@ function cityMeta(city: BookCity) {
   return `${n} ${plural(n, "сеть", "сети", "сетей")} · ${b} ${plural(b, "отделение", "отделения", "отделений")}`;
 }
 
+// Figma 1253:840 draws the networks in colour; the flat grey set in /figma/labs is for the marquees.
+function colorLogo(src: string) {
+  return src.replace("/figma/labs/", "/figma/labs/fig/").replace(/\.png$/, ".svg");
+}
+
 function StepMark({ step }: { step: 1 | 2 }) {
   return (
     <p className="book-step">
@@ -586,7 +620,7 @@ function BookModal({ initialLab, onClose }: { initialLab?: string; onClose: () =
               </button>
             </div>
             {geo === "fail" && <span className="err">Не получилось определить город — выберите из списка</span>}
-            <div className="book-list" role="listbox" aria-label="Город">
+            <div className="book-list book-suggest" role="listbox" aria-label="Город">
               {(query.trim() && !city ? matches : BOOK_CITIES).map((item) => (
                 <button
                   key={item.name}
@@ -611,19 +645,21 @@ function BookModal({ initialLab, onClose }: { initialLab?: string; onClose: () =
         {step === "labs" && chosen && (
           <div className="book-steps">
             <StepMark step={2} />
-            <h2>Выберите лабораторию в {inCity(chosen.name)}</h2>
+            {/* Figma 1255:989 (390 sheet) shortens the title to «Лаборатория в Москве». */}
+            <h2 aria-label={`Выберите лабораторию в ${inCity(chosen.name)}`}><span className="d-only">Выберите лабораторию в {inCity(chosen.name)}</span><span className="m-only">Лаборатория в {inCity(chosen.name)}</span></h2>
             <div className="book-list" role="radiogroup" aria-label="Сеть лабораторий">
               {labs.map((item) => (
                 <button
                   key={item.name}
                   type="button"
                   role="radio"
+                  aria-label={`${item.name}, ${item.count}`}
                   aria-checked={lab?.name === item.name}
                   className={`book-lab${lab?.name === item.name ? " is-on" : ""}`}
                   onClick={() => setLab(item)}
                   onDoubleClick={() => go(item)}
                 >
-                  <img src={item.logo} alt="" width={88} height={28} />
+                  <img src={colorLogo(item.logo)} alt="" width={96} height={29} />
                   <span><strong>{item.count}</strong><small>{item.name}</small></span>
                   <i className="book-radio" />
                 </button>
@@ -644,11 +680,12 @@ function BookModal({ initialLab, onClose }: { initialLab?: string; onClose: () =
           </div>
         )}
         {step === "redirect" && lab && (
-          <div className="book-steps book-go">
+          <div className="book-steps book-go is-center">
+            {/* Figma 1255:880: dark FOX tile · three dots · light tile with the network logo, everything centred. */}
             <div className="book-logos">
-              <img src="/icons/logo-dark.svg" alt="FOX" width={72} height={32} />
+              <span className="book-tile is-fox">FOX</span>
               <span className="book-dots" aria-hidden><i /><i /><i /></span>
-              <img src={lab.logo} alt="" width={96} height={32} />
+              <span className="book-tile"><img src={colorLogo(lab.logo)} alt={lab.name} width={96} height={29} /></span>
             </div>
             <h2>Открываем сайт {lab.name}…</h2>
             <p className="lead-note">Страница теста FOX откроется в новой вкладке. На сайте сети можно выбрать отделение, время и оплатить исследование.</p>
@@ -657,7 +694,6 @@ function BookModal({ initialLab, onClose }: { initialLab?: string; onClose: () =
               Вкладка не открылась?{" "}
               <a href={withUtm(lab.href)} target="_blank" rel="noreferrer">Открыть ссылку вручную</a>
             </p>
-            <button className="book-back" type="button" onClick={() => setStep("labs")}>← Вернуться к списку</button>
           </div>
         )}
         {step === "empty" && (
