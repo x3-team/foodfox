@@ -88,8 +88,9 @@ function Blocks({ blocks }: { blocks: Block[] }) {
               <Link className="btn btn-light" href="/contacts">
                 {block.primary}
               </Link>
-              <Link className="btn btn-ghost" href="/contacts" style={{ color: "var(--paper)", borderColor: "rgba(248,249,246,.35)" }}>
-                {block.secondary}
+              {/* Article / CTA (1070:256): the second action is a Link / Arrow, not an outlined button. */}
+              <Link className="text-link cta-arrow" href="/labs">
+                {block.secondary} <img src="/icons/arrow-right-light.svg" alt="" />
               </Link>
             </div>
           </aside>
@@ -116,11 +117,24 @@ export function ArticleView({ article }: { article: Article }) {
   const [toast, setToast] = useState(false);
   const [copied, setCopied] = useState(false);
   const railRef = useRef<HTMLDivElement>(null);
+  const tocRef = useRef<HTMLElement>(null);
+  const [marker, setMarker] = useState({ top: 0, height: 0 });
   const [slide, setSlide] = useState(0);
   const [tocOpen, setTocOpen] = useState(false);
   const sameCategory = articles.filter((item) => item.slug !== article.slug && item.category === article.category);
   const related = [...sameCategory, ...articles.filter((item) => item.slug !== article.slug && item.category !== article.category)].slice(0, 4);
   const more = articles.filter((item) => item.author === author.slug && item.slug !== article.slug).slice(0, 3);
+  // Aside / Read next (1070:299): three editor picks — report guide, first-signs article, labs; the current
+  // article is never linked to itself, its slot falls back to a material of the same category.
+  const firstSigns = articles.find((item) => item.slug === "pervye-priznaki-pishchevoy-neperenosimosti");
+  const fallback = [...more, ...related].find((item) => item.slug !== firstSigns?.slug);
+  const readNext = [
+    { href: "/report", title: "Как читать отчёт FOX: три зоны реактивности" },
+    firstSigns && firstSigns.slug !== article.slug
+      ? { href: `/blog/${firstSigns.slug}`, title: "Первые признаки пищевой непереносимости" }
+      : fallback && { href: `/blog/${fallback.slug}`, title: fallback.title },
+    { href: "/labs", title: "Где сдать тест: 1500+ лабораторий" },
+  ].filter(Boolean) as Array<{ href: string; title: string }>;
 
   useEffect(() => {
     const nodes = headings.flatMap((block) => (block.type === "h2" ? [document.getElementById(block.id)] : [])).filter(Boolean) as HTMLElement[];
@@ -141,6 +155,17 @@ export function ArticleView({ article }: { article: Article }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [article.slug]);
+
+  // ToC / Item (1063:159): the lime marker follows the active item. Items wrap to 1–2 lines, so measure them.
+  useEffect(() => {
+    const measure = () => {
+      const link = tocRef.current?.querySelector<HTMLElement>(`a[href="#${active}"]`);
+      if (link) setMarker({ top: link.offsetTop, height: link.offsetHeight });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [active]);
 
   useEffect(() => {
     const node = railRef.current;
@@ -184,7 +209,7 @@ export function ArticleView({ article }: { article: Article }) {
       <div>
         <a href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(article.title)}`} target="_blank" rel="noreferrer" aria-label="Поделиться в Telegram"><img src="/icons/share/telegram.svg" alt="" /></a>
         <a href={`https://vk.com/share.php?url=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noreferrer" aria-label="Поделиться во ВКонтакте"><img src="/icons/share/vk.svg" alt="" /></a>
-        <button type="button" onClick={copyLink} aria-label="Скопировать ссылку">{copied ? "✓" : <img src="/icons/share/copy.svg" alt="" />}</button>
+        <button type="button" onClick={copyLink} aria-label="Скопировать ссылку" className={copied ? "is-copied" : undefined}><img src="/icons/share/copy.svg" alt="" /></button>
       </div>
     </div>
   );
@@ -253,16 +278,13 @@ export function ArticleView({ article }: { article: Article }) {
             </div>
           </div>
           <div className="wrap article-grid">
-            <nav className="toc" aria-label="Содержание">
+            <nav className="toc" aria-label="Содержание" ref={tocRef}>
               {useToc && (
                 <>
                   <p>Содержание</p>
                   <i
                     className="toc-marker"
-                    style={{
-                      height: 36,
-                      transform: `translateY(${Math.max(0, headings.findIndex((b) => b.type === "h2" && b.id === active)) * 36}px)`,
-                    }}
+                    style={{ top: 0, height: marker.height, transform: `translateY(${marker.top}px)` }}
                   />
                   {headings.map(
                     (block) =>
@@ -331,9 +353,10 @@ export function ArticleView({ article }: { article: Article }) {
               </div>
               <div className="next-reads">
                 <h2>Читать дальше</h2>
-                {(more.length ? more : related).slice(0, 3).map((item) => (
-                  <Link key={item.slug} href={`/blog/${item.slug}`}>
-                    {item.title}
+                {readNext.map((item) => (
+                  <Link key={item.href} href={item.href}>
+                    <span>{item.title}</span>
+                    <img src="/icons/arrow-right.svg" alt="" />
                   </Link>
                 ))}
               </div>
@@ -362,7 +385,10 @@ export function ArticleView({ article }: { article: Article }) {
       </main>
       <Footer />
       {toast && (
-        <div className="toast" role="status">
+        <div className="toast art-toast" role="status" aria-live="polite">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8.5L6.5 12L13 4.5" stroke="#E7F551" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           Ссылка скопирована
         </div>
       )}

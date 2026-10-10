@@ -219,7 +219,8 @@ export function BlogFeed() {
                     setSuggestOpen(false);
                   }}
                 >
-                  {tags.length ? `Теги · ${tags.length}` : "Все теги"}
+                  {/* F1 (1080:1739): the trigger keeps «Все теги» while tags are on — the choice is in the meta line. */}
+                  Все теги
                   <img src="/icons/chevron-down.svg" alt="" />
                 </button>
                 {tagOpen && (
@@ -239,20 +240,18 @@ export function BlogFeed() {
                             )
                           }
                         >
-                          <span style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                            <i className={`check${on ? " on" : ""}`} />
-                            {tag}
-                          </span>
+                          <i className={`check${on ? " on" : ""}`} />
+                          <span className="tag-label">{tag}</span>
                           <span className="count">{count}</span>
                         </button>
                       );
                     })}
                     <div className="popover-foot">
-                      <button className="text-link" onClick={() => setDraftTags([])}>
+                      <button className="tag-reset" onClick={() => setDraftTags([])}>
                         Сбросить
                       </button>
                       <button
-                        className="btn btn-dark"
+                        className="tag-apply"
                         onClick={() => {
                           setTagOpen(false);
                           write({ tag: draftTags, page: 1 });
@@ -303,7 +302,7 @@ export function BlogFeed() {
                   />
                 </label>
                 {suggestOpen && suggestQuery.trim().length >= 3 && (
-                  <div className="popover" role="listbox">
+                  <div className="popover suggest-pop" role="listbox">
                     {suggestions.map((item, index) => (
                       <button
                         key={item.label}
@@ -316,23 +315,21 @@ export function BlogFeed() {
                           write({ q: item.label, page: 1 });
                         }}
                       >
-                        <span>
-                          <strong style={{ fontWeight: suggestQuery && item.label.toLowerCase().includes(suggestQuery.toLowerCase()) ? 500 : 400 }}>
-                            {item.label}
-                          </strong>
-                          {item.hint && <em className="hint">{item.hint}</em>}
-                        </span>
+                        <img src="/icons/search.svg" alt="" />
+                        {/* F2: «лактаза · фермент» — the hint sits on the same line after a middle dot. */}
+                        <span className="suggest-label">{item.hint ? `${item.label} · ${item.hint}` : item.label}</span>
                         <span className="count">{item.count}</span>
                       </button>
                     ))}
                     <button
-                      className={`suggest-row${activeSuggest === suggestions.length ? " is-active" : ""}`}
+                      className={`suggest-row suggest-all${activeSuggest === suggestions.length ? " is-active" : ""}`}
                       onClick={() => {
                         setSuggestOpen(false);
                         write({ q: draftQuery, page: 1 });
                       }}
                     >
                       <span>Все результаты по «{suggestQuery.trim()}»</span>
+                      <img src="/icons/arrow-right.svg" alt="" />
                     </button>
                   </div>
                 )}
@@ -399,23 +396,39 @@ export function BlogFeed() {
           {skeleton ? (
             <SkeletonGrid />
           ) : pageItems.length === 0 ? (
-            <div className="empty">
+            <div className="empty" aria-live="polite">
               <h2>Ничего не нашлось</h2>
               <p>
                 {query
                   ? `По запросу «${query}»${category !== "all" || tags.length ? " с выбранными фильтрами" : ""} материалов нет. Попробуйте другую формулировку или сбросьте фильтры.`
                   : "С выбранными фильтрами материалов нет. Сбросьте фильтры, чтобы увидеть ленту."}
               </p>
-              <button
-                className="btn btn-dark"
-                onClick={() => {
-                  setDraftQuery("");
-                  setDraftTags([]);
-                  write({ category: "all", tag: [], q: "", page: 1 });
-                }}
-              >
-                Смотреть все материалы
-              </button>
+              {/* F3 (1080:1971): «Сбросить фильтры» drops category and tags but keeps the query
+                  (when only a query is set it clears that); «Смотреть все материалы» resets everything. */}
+              <div className="empty-actions">
+                <button
+                  className="btn btn-dark"
+                  onClick={() => {
+                    setDraftTags([]);
+                    if (category === "all" && !tags.length) {
+                      setDraftQuery("");
+                      write({ q: "", page: 1 });
+                    } else write({ category: "all", tag: [], page: 1 });
+                  }}
+                >
+                  Сбросить фильтры
+                </button>
+                <button
+                  className="btn btn-ghost empty-all"
+                  onClick={() => {
+                    setDraftQuery("");
+                    setDraftTags([]);
+                    write({ category: "all", tag: [], q: "", page: 1 });
+                  }}
+                >
+                  Смотреть все материалы
+                </button>
+              </div>
             </div>
           ) : (
             <div className={`grid blog-grid${leaving ? " is-leaving" : ""}${expanded ? " is-more" : ""}`}>
