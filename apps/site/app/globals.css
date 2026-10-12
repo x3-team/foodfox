@@ -19,13 +19,19 @@
   --shadow: 0 2px 8px rgba(11, 12, 8, 0.06);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --cover: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* --header: the header's resting height — page flow (main padding, hero paddings, scroll margins) is laid out under it,
+     so it never changes while scrolling. --header-now: what the header measures right now (96 → 72 once scrolled, G01)
+     for things that hug its bottom edge. Shrinking --header itself moved every page up by 24 px at scrollY 80. */
   --header: 96px;
+  --header-now: 96px;
   --content: 1344px;
   color-scheme: light;
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+/* scrollbar-gutter: windows, sheets and the menu lock the page with body overflow hidden (useDialog); with a classic
+   scrollbar (Windows, Linux) the bar vanished and the whole page and the fixed header jumped sideways by its width. */
+html { scroll-behavior: smooth; scrollbar-gutter: stable; }
 body {
   margin: 0;
   background: var(--bg);
@@ -71,7 +77,7 @@ main:has(> .dark-hero) { padding-top: 0; }
   box-shadow: var(--shadow);
   color: var(--ink);
 }
-html.is-scrolled { --header: 72px; }
+html.is-scrolled { --header-now: 72px; }
 .site-header.is-hidden { transform: translateY(-100%); }
 .site-header.on-dark { color: white; }
 .nav a {
@@ -574,7 +580,7 @@ html.is-scrolled { --header: 72px; }
 
 .progress {
   position: fixed;
-  top: var(--header);
+  top: var(--header-now);
   left: 0;
   right: 0;
   height: 2px;
@@ -1390,7 +1396,7 @@ mark.hit { background: var(--lime); color: inherit; padding: 0 2px; }
 .sp-experts article:hover img, .kf-lector:hover img, .e-tiles a:hover { transform: translateY(-2px) scale(1.02); }
 .sp-sheet.is-front.is-turning { transform: rotateY(-165deg); transition: transform 700ms cubic-bezier(.6,.05,.3,1); }
 @media (max-width: 1100px) {
-  :root, html.is-scrolled { --header: 64px; }
+  :root, html.is-scrolled { --header: 64px; --header-now: 64px; }
   .site-header, .site-header.is-scrolled { height: 64px; }
   .site-header.is-hidden { transform: translateY(-100%); }
   .header-contact, .cabinet-pill { display: none; }
@@ -4565,8 +4571,14 @@ main img.sk-in { animation: sk-in 200ms ease-out; }
 
 /* ===== Block 5 · prefers-reduced-motion (adaptive rule 08): every animation becomes a 100 мс fade, nothing moves ===== */
 @media (prefers-reduced-motion: reduce) {
-  /* Section entrances: the existing per-element motion is already off; the section itself fades in. */
+  /* Section entrances: the section itself fades in. The block above that meant to switch the per-block rise off
+     ([data-s] > .wrap > *) lost on specificity to the entrance rules, so with reduced motion the blocks still rose
+     24 px over 600 мс under the fade. Same selectors as the entrance rules, later in the file. */
   [data-s].is-in { animation: rm-fade 100ms ease-out both !important; }
+  [data-s]:not(.dark-hero):not(.is-in) > .wrap > *, [data-s].wrap:not(.dark-hero):not(.is-in) > *,
+  [data-s]:not(.is-in) .fx-rise, [data-s].rf-sec:not(.is-in) > *, [data-s].rf-cta:not(.is-in) > * { opacity: 1; transform: none; }
+  [data-s].is-in:not(.dark-hero) > .wrap > *, [data-s].is-in.wrap:not(.dark-hero) > *,
+  [data-s].is-in .fx-rise, [data-s].rf-sec.is-in > *, [data-s].rf-cta.is-in > * { animation: none; }
   /* Windows, sheets, menus, toasts, bars: fade instead of slide / scale. */
   .modal-back, .modal, .doc-viewer, .bs, .bs-back::before, .mobile-menu:not(.is-closing), .mobile-menu:not(.is-closing) > *, .fox-toasts .fox-toast:not(.is-out), .s06-bar, .ls-stage, main img.sk-in, .s10-card.is-open {
     animation: rm-fade 100ms ease-out both !important;

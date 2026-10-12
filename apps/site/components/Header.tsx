@@ -109,23 +109,44 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      const mobile = window.matchMedia("(max-width: 1100px)").matches;
-      const hideAfter = mobile ? 80 : 400;
-      setScrolled(y > 80);
-      if (menu) {
-        setHidden(false);
-      } else if (y > hideAfter && y > lastY.current + 6) {
-        setHidden(true);
-      } else if (y < lastY.current - 6 || y < 40) {
-        setHidden(false);
-      }
+    // G01: Scrolled after 80 px; hidden after 400 px (80 on phones) while scrolling down, back on any scroll up.
+    // Direction is measured from the point where it last turned, not per event: slow trackpad / finger scrolling
+    // fires 1–5 px steps, which never passed the old «> 6 px per event» test (the header never hid or came back),
+    // while ±6 px jitter could flip it. A turn has to travel 10 px before the header reacts.
+    const mq = window.matchMedia("(max-width: 1100px)");
+    let turn = window.scrollY;
+    let dir = 0;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const y = Math.max(0, window.scrollY);
+      const last = lastY.current;
       lastY.current = y;
+      // 8 px of hysteresis around 80 px: resting right on the threshold (touch bounce, a wheel tick of a few px)
+      // must not flip the background and the logo colour back and forth.
+      setScrolled((was) => (was ? y > 72 : y > 80));
+      if (menu || y < 40) {
+        turn = y;
+        setHidden(false);
+        return;
+      }
+      if (y === last) return;
+      const down = y > last;
+      if ((down && dir < 0) || (!down && dir > 0)) turn = last;
+      dir = down ? 1 : -1;
+      if (down && y > (mq.matches ? 80 : 400) && y - turn >= 10) setHidden(true);
+      else if (!down && turn - y >= 10) setHidden(false);
     };
-    onScroll();
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    lastY.current = window.scrollY;
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.cancelAnimationFrame(frame);
+    };
   }, [menu]);
 
   useEffect(() => {
