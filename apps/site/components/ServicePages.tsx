@@ -568,14 +568,9 @@ export function LabsPage() {
                       ))}
                     </ul>
                   )}
-                  <div className="l-stats">
-                    <p><b>8</b><span>сетей-партнёров в городе</span></p>
-                    <p><b>{empty ? "0" : key.startsWith("санкт") || key === "спб" || key === "петербург" ? String(points.length) : "128"}</b><span>{empty ? "отделений рядом" : `отделений в ${cityTitle}`}</span></p>
-                    <p><b>7–10 дней</b><span>до готового отчёта</span></p>
-                  </div>
-                </article>
                 {askCity && (
-                  // 1257:1044 «Подтверждение города (первый визит)».
+                  // 1257:1044 «Подтверждение города (первый визит)» — a popover under the city card. It only appears after hydration
+                  // (the city cookie is read on the client), so it floats over the content instead of pushing it down (no layout shift).
                   <div className="l-ask">
                     <p><span className="l-ask-pin"><img src="/icons/pin.svg" alt="" /></span>Ваш город — {city.trim() || "Москва"}?</p>
                     <div>
@@ -593,6 +588,12 @@ export function LabsPage() {
                     </div>
                   </div>
                 )}
+                  <div className="l-stats">
+                    <p><b>8</b><span>сетей-партнёров в городе</span></p>
+                    <p><b>{empty ? "0" : key.startsWith("санкт") || key === "спб" || key === "петербург" ? String(points.length) : "128"}</b><span>{empty ? "отделений рядом" : `отделений в ${cityTitle}`}</span></p>
+                    <p><b>7–10 дней</b><span>до готового отчёта</span></p>
+                  </div>
+                </article>
                 {/* Mobile frame 1261:1099: the list/map toggle sits in the grey top block. */}
                 <div className="l-mode-m" role="tablist" aria-label="Вид отделений">
                   <button type="button" className={labView === "list" ? "is-active" : ""} onClick={() => setLabView("list")}>Список</button>
@@ -1038,29 +1039,81 @@ export function ReviewsPage() {
       first.focus({ preventScroll: true });
     }
   };
-  // M32: on phones the rating counts up 0,0 → 4,9 and 0 → +48 (900 мс, ease-out) and the stars fill with it.
-  const [rate, setRate] = useState<number | null>(null);
-  // Until hydration the phone hides the final numbers, so they do not flash 4,9 → 0,0 before the count-up.
+  // V01 / M32: the rating counts up 0,0 → 4,9 and 0 → +48 (1 с on desktop, 900 мс on a phone, ease-out) and the stars
+  // fill left to right with it. Written straight into the DOM from rAF — no React render per frame.
+  // Until hydration the numbers are hidden, so they do not flash 4,9 → 0,0 before the count-up.
   const [ratePending, setRatePending] = useState(true);
+  const rateRef = useRef<HTMLElement>(null);
+  const moreRef = useRef<HTMLElement>(null);
+  const starsRef = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     setRatePending(false);
-    if (!window.matchMedia("(max-width: 767px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const stars = starsRef.current;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !stars) return;
+    const ms = window.matchMedia("(max-width: 767px)").matches ? 900 : 1000;
+    const paint = (share: number) => {
+      if (rateRef.current) rateRef.current.textContent = (4.9 * share).toFixed(1).replace(".", ",");
+      if (moreRef.current) moreRef.current.textContent = `+${Math.round(48 * share)}`;
+      stars.style.setProperty("--fill", `${share * 98}%`);
+    };
+    stars.classList.add("is-filling");
+    paint(0);
     const start = performance.now();
     let raf = 0;
     const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / 900);
-      if (t >= 1) {
-        setRate(null);
-        return;
-      }
-      setRate(1 - Math.pow(1 - t, 3));
-      raf = requestAnimationFrame(tick);
+      const t = Math.min(1, (now - start) / ms);
+      paint(1 - Math.pow(1 - t, 3));
+      if (t < 1) raf = requestAnimationFrame(tick);
+      else stars.classList.remove("is-filling");
     };
-    setRate(0);
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      paint(1);
+      stars.classList.remove("is-filling");
+    };
   }, []);
-  const rateShare = rate ?? 1;
+  // V01: the collage follows the cursor a little (±8 px, a different depth for every layer); rAF-throttled, `translate`
+  // only — the cards keep their own rotation. Not on touch screens / reduced motion.
+  const collageRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const box = collageRef.current;
+    const row = box?.parentElement;
+    if (!box || !row || !window.matchMedia("(hover: hover) and (pointer: fine)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const layers: Array<[HTMLElement | null, number]> = [
+      [box.querySelector<HTMLElement>(".v-dot"), 0.35],
+      [box.querySelector<HTMLElement>(".v-photo-a"), 0.6],
+      [box.querySelector<HTMLElement>(".v-photo-b"), 1],
+      [box.querySelector<HTMLElement>(".v-quote"), 0.8],
+    ];
+    let frame = 0;
+    let x = 0;
+    let y = 0;
+    const apply = () => {
+      frame = 0;
+      layers.forEach(([node, depth]) => {
+        if (node) node.style.translate = `${(x * 8 * depth).toFixed(2)}px ${(y * 8 * depth).toFixed(2)}px`;
+      });
+    };
+    const move = (event: PointerEvent) => {
+      const rect = box.getBoundingClientRect();
+      x = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width - 0.5) * 2));
+      y = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height - 0.5) * 2));
+      if (!frame) frame = requestAnimationFrame(apply);
+    };
+    const leave = () => {
+      x = 0;
+      y = 0;
+      if (!frame) frame = requestAnimationFrame(apply);
+    };
+    row.addEventListener("pointermove", move);
+    row.addEventListener("pointerleave", leave);
+    return () => {
+      cancelAnimationFrame(frame);
+      row.removeEventListener("pointermove", move);
+      row.removeEventListener("pointerleave", leave);
+    };
+  }, []);
   // V02 (Figma note): the grid rebuilds with FLIP 300 мс — leaving cards fade + scale .96, staying cards glide, new ones rise from +12px.
   const flip = (f: string, t: string, apply: () => void) => {
     const grid = gridRef.current;
@@ -1097,18 +1150,18 @@ export function ReviewsPage() {
                 <h1>Отзывы</h1>
                 <p className="fx-lead">Истории людей, которые сдали тест, и отзывы специалистов, которые работают с отчётом. Все отзывы проходят модерацию.</p>
                 <div className={`v-rate-card${ratePending ? " is-pending" : ""}`}>
-                  <p className="v-rate" aria-label="Средняя оценка 4,9"><b aria-hidden>{(4.9 * rateShare).toFixed(1).replace(".", ",")}</b><span className={`v-stars${rate === null ? "" : " is-filling"}`} aria-hidden="true" style={rate === null ? undefined : { ["--fill" as string]: `${rateShare * 98}%` }}>★★★★★</span></p>
+                  <p className="v-rate" aria-label="Средняя оценка 4,9"><b aria-hidden ref={rateRef}>4,9</b><span className="v-stars" aria-hidden="true" ref={starsRef}>★★★★★</span></p>
                   <div className="v-rate-side">
                     <p className="v-rate-note">312 отзывов после модерации</p>
                     <p className="v-avatars">
-                      <span><img src="/figma/reviews/r1-640.webp" alt="" /><img src="/figma/reviews/r2-640.webp" alt="" /><img src="/figma/reviews/r3-640.webp" alt="" /><img src="/figma/reviews/r1-640.webp" alt="" /><i className="v-more">+{Math.round(48 * rateShare)}</i></span>
+                      <span><img src="/figma/reviews/r1-640.webp" alt="" /><img src="/figma/reviews/r2-640.webp" alt="" /><img src="/figma/reviews/r3-640.webp" alt="" /><img src="/figma/reviews/r1-640.webp" alt="" /><i className="v-more" ref={moreRef}>+48</i></span>
                     </p>
                     <p className="v-rate-foot">из них 48 — от врачей и нутрициологов</p>
                   </div>
                 </div>
               </div>
               {/* visual · коллаж (1277:858): lime circle, Алексей behind, Елена (video) in front, quote bubble with stars. */}
-              <div className="v-collage2" aria-hidden="true" data-contrast>
+              <div className="v-collage2" aria-hidden="true" data-contrast ref={collageRef}>
                 <i className="v-dot" />
                 <img className="v-photo-a" src="/figma/reviews/r3-640.webp" srcSet="/figma/reviews/r3-640.webp 640w, /figma/reviews/r3.webp 1205w" sizes="(min-width: 1101px) 320px, 45vw" alt="" />
                 <div className="v-photo-b">

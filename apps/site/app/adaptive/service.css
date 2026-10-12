@@ -245,3 +245,95 @@ body [data-s="e01"] .e-plate .e-four { white-space: nowrap; }
   body main .pr-body .table-wrap { margin-bottom: 8px; }
   body main .pr-body .pr-swipe { display: block; margin: 0 0 16px; font-size: 12px; line-height: 16px; color: rgba(11, 12, 8, 0.5); }
 }
+
+/* ===== Motion (Figma 1271:116: F01–F03, C01–C05, V01–V03, K01–K04, PR01–PR02, E01–E02; phone M21–M39) =====
+   First screens run their own entrance from the first paint. Before, the light heroes (c01, pr01, e01) waited for
+   hydration + the section IntersectionObserver, and their own effects (C01 fan, 404 digits) had already played
+   while the block was still invisible; the dark heroes (f01, k01, v01) had no entrance at all.
+   Keyframes only have «from», so every element ends on its own resting style (e.g. a dimmed card stays dimmed);
+   fill «backwards» — nothing keeps a transform after the entrance. */
+@keyframes sv-up { from { opacity: 0; transform: translateY(24px); } }
+@keyframes sv-up16 { from { opacity: 0; transform: translateY(16px); } }
+@keyframes sv-up12 { from { opacity: 0; transform: translateY(12px); } }
+@keyframes sv-from-right { from { opacity: 0; transform: translateX(24px); } }
+@keyframes sv-zoom { from { transform: scale(1.04); } }
+@keyframes sv-plate { from { opacity: 0; transform: scale(0.92); } }
+@keyframes sv-pop { 0% { opacity: 0; transform: scale(0.8); } 60% { opacity: 1; transform: scale(1.05); } 100% { transform: none; } }
+
+/* the global section entrance is off for the blocks that animate by themselves */
+body main [data-s="c01"]:not(.dark-hero) > .wrap.c01 > *,
+body main [data-s="pr01"]:not(.dark-hero) > .wrap.pr01 > *,
+body main [data-s="e01"]:not(.dark-hero) > .wrap.e01 > *,
+body main [data-s="f03"]:not(.dark-hero) > .wrap > .f03-card { opacity: 1; transform: none; animation: none; }
+
+/* F01 · K01 (as in FAQ) · V01 · C01 · PR01: lines of the head one after another (stagger 80 мс), 600 мс. */
+body main .f01 > .crumbs, body main .f01-copy > *,
+body main .k01 > .crumbs, body main .k01-row > div:first-child > *,
+body main .v01 > .crumbs, body main .v01-row > div:first-child > *,
+body main .c01-row > div:first-child > *,
+body main [data-s]:not(.dark-hero) > .wrap.c01 > .crumbs,
+body main [data-s]:not(.dark-hero) > .wrap.pr01 > .crumbs, body main [data-s]:not(.dark-hero) > .wrap.pr01 > .pr01-top { animation: sv-up 600ms var(--ease) backwards; }
+body main .f01-copy > :nth-child(2), body main .k01-row > div:first-child > :nth-child(1), body main .v01-row > div:first-child > :nth-child(1),
+body main .c01-row > div:first-child > :nth-child(2), body main [data-s]:not(.dark-hero) > .wrap.pr01 > .pr01-top { animation-delay: 80ms; }
+body main .f01-copy > :nth-child(3), body main .k01-row > div:first-child > :nth-child(2), body main .v01-row > div:first-child > :nth-child(2),
+body main .c01-row > div:first-child > :nth-child(3) { animation-delay: 160ms; }
+body main .f01-copy > :nth-child(4), body main .k01-row > div:first-child > :nth-child(3), body main .v01-row > div:first-child > :nth-child(3),
+body main .c01-row > div:first-child > :nth-child(4) { animation-delay: 240ms; }
+body main .f01-copy > :nth-child(n+5) { animation-delay: 320ms; }
+/* photo — scale 1.04→1 over 900 мс inside its rounded frame; the floating card comes up 16 px after 300 мс */
+body main .f01-visual > img, body main .k-hero-photo > img { animation: sv-zoom 900ms var(--ease) backwards; }
+body main .k-hero-photo { overflow: hidden; border-radius: 24px; }
+body main .f01-visual > article, body main .k-hero-photo .k-hero-card { animation: sv-up16 600ms var(--ease) 300ms backwards; }
+body main .f01-visual > .f01-expert { animation: sv-up16 600ms var(--ease) 380ms backwards; }
+/* PR01: «Коротко» comes in from the right, +24 px, 500 мс */
+body main [data-s]:not(.dark-hero) > .wrap.pr01 > .pr-short { animation: sv-from-right 500ms var(--ease) 160ms backwards; }
+
+/* F03: the photo slides in from the right by 24 px with a fade, 600 мс, when the block enters */
+body main [data-s="f03"]:not(.is-in) .f03-photo { opacity: 0; transform: translateX(24px); }
+body main [data-s="f03"].is-in .f03-photo { animation: sv-from-right 600ms var(--ease) backwards; }
+
+/* K02 (M24): contact cards come in a staircase — +16 px, 500 мс, step 80 мс (60 мс on a phone) */
+body main [data-s].is-in:not(.dark-hero) > .wrap.k-cards > article { animation-name: sv-up16; animation-duration: 500ms; }
+@media (max-width: 767px) {
+  body main [data-s].is-in:not(.dark-hero) > .wrap.k-cards > article:nth-child(2) { animation-delay: 60ms; }
+  body main [data-s].is-in:not(.dark-hero) > .wrap.k-cards > article:nth-child(3) { animation-delay: 120ms; }
+  body main [data-s].is-in:not(.dark-hero) > .wrap.k-cards > article:nth-child(4) { animation-delay: 180ms; }
+}
+
+/* E01 · M23 (404): plate fade + scale .92→1 (500 мс), digits rise one by one (stagger 90 мс, 700 мс, ease-out-back),
+   the «Здесь пусто» chip pops with an overshoot after 300 мс and then floats; heading, text, search and buttons
+   cascade up 12 px, step 60 мс. */
+body main [data-s]:not(.dark-hero) > .wrap.e01 > .e-plate { animation: sv-plate 500ms cubic-bezier(.2, .8, .2, 1) backwards; }
+body main [data-s]:not(.dark-hero) > .wrap.e01 > .e-crumbs, body main .e01-copy > * { animation: sv-up12 500ms var(--ease) backwards; }
+body main .e01-copy > :nth-child(2) { animation-delay: 60ms; }
+body main .e01-copy > :nth-child(3) { animation-delay: 120ms; }
+body main .e01-copy > :nth-child(4) { animation-delay: 180ms; }
+body main .e01-copy > :nth-child(5) { animation-delay: 240ms; }
+body main .e-plate .e-chip { animation: sv-pop 360ms cubic-bezier(.2, .8, .2, 1) 300ms backwards, e-chip-float 3s ease-in-out 660ms infinite; }
+
+/* C03 · C04 · C05 desktop scroll scenes (classes and variables set by CertificatesView, ≥1101 only). */
+@keyframes sv-zoom106 { from { transform: scale(1.06); } }
+@keyframes sv-pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 245, 81, 0.7); } 60%, 100% { box-shadow: 0 0 0 10px rgba(231, 245, 81, 0); } }
+@media (min-width: 1101px) and (prefers-reduced-motion: no-preference) {
+  body main [data-s="c03"] .c03-visual > img { will-change: transform; }
+  body main [data-s="c04"].is-in .c04-visual { overflow: hidden; border-radius: 24px; }
+  body main [data-s="c04"].is-in .c04-visual > img { animation: sv-zoom106 900ms var(--ease) backwards; }
+  body main [data-s="c04"] .c04 ol.is-scrub { position: relative; padding-bottom: 14px; }
+  body main [data-s="c04"] .c04 ol.is-scrub > li { opacity: 0.35; transition: opacity 250ms var(--ease); }
+  body main [data-s="c04"] .c04 ol.is-scrub > li.is-on { opacity: 1; }
+  body main [data-s="c04"] .c04 ol.is-scrub::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 2px; background: #e7f551; transform-origin: 0 50%; transform: scaleX(var(--c04-p, 0)); }
+  body main [data-s="c05"] .c05 ol.is-draw::after { content: ""; position: absolute; left: 0; right: 0; top: 62px; height: 1px; background: #0b0c08; transform-origin: 0 50%; transform: scaleX(var(--c05-p, 0)); }
+  body main [data-s="c05"] .c05 ol.is-draw > li::before { position: relative; z-index: 1; transform: scale(0); transition: transform 420ms cubic-bezier(.34, 1.56, .64, 1); }
+  body main [data-s="c05"] .c05 ol.is-draw > li.is-reached::before { transform: none; }
+  body main [data-s="c05"] .c05 ol.is-draw > li:last-child.is-reached::before { animation: sv-pulse 2s ease-out 420ms infinite; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body main .f01 > .crumbs, body main .f01-copy > *, body main .k01 > .crumbs, body main .k01-row > div:first-child > *,
+  body main .v01 > .crumbs, body main .v01-row > div:first-child > *, body main .c01 > .crumbs, body main .c01-row > div:first-child > *,
+  body main [data-s]:not(.dark-hero) > .wrap.pr01 > *, body main .f01-visual > *, body main .k-hero-photo > *, body main .k-hero-photo .k-hero-card,
+  body main [data-s="f03"].is-in .f03-photo, body main [data-s]:not(.dark-hero) > .wrap.e01 > .e-plate, body main [data-s]:not(.dark-hero) > .wrap.e01 > .e-crumbs,
+  body main [data-s]:not(.dark-hero) > .wrap.c01 > .crumbs, body main .e01-copy > * { animation: fade 100ms linear backwards; animation-delay: 0ms; }
+  body main [data-s="f03"]:not(.is-in) .f03-photo { opacity: 1; transform: none; }
+  body main .e-plate .e-chip { animation: none; }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArticleCard } from "@/components/ArticleCard";
+import { ArticleCard, RevealNoScript, useReveal } from "@/components/ArticleCard";
 import { CATEGORIES, type Article } from "@/lib/content";
 
 const STEP = 6;
@@ -9,39 +9,66 @@ const STEP = 6;
 export function AuthorPosts({ posts }: { posts: Article[] }) {
   const [filter, setFilter] = useState("all");
   const [limit, setLimit] = useState(STEP);
+  const [leaving, setLeaving] = useState(false);
+  const [touched, setTouched] = useState<"" | "filter" | "more">("");
   const gridRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const shown = useMemo(
     () => posts.filter((item) => filter === "all" || item.category === filter),
     [posts, filter],
   );
   useEffect(() => setLimit(STEP), [filter]);
-  // M50: pagination is replaced by «Показать ещё»; new cards come in a cascade and focus moves to the first one.
+  // R02 / A1: cards enter at 85% of the viewport, stagger 80 мс in a row; after a filter — 400 мс / 60 мс;
+  // M50 «Показать ещё» — the new cards come in a cascade (step 60 мс) and focus moves to the first one.
+  useReveal(gridRef, `${filter}|${limit}`, { fast: touched !== "", cascade: touched === "more" });
+  useEffect(() => {
+    // A2: the grid keeps its height while the cards swap, then lets go
+    const grid = sectionRef.current;
+    if (!grid?.style.minHeight) return;
+    const id = window.setTimeout(() => { grid.style.minHeight = ""; }, 760);
+    return () => window.clearTimeout(id);
+  }, [filter]);
+  // R02 = S02: old cards opacity→0 + scale .98 (200 мс), then the new set enters.
+  const pick = (id: string) => {
+    if (id === filter) return;
+    setTouched("filter");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setFilter(id);
+      return;
+    }
+    const grid = sectionRef.current;
+    if (grid) grid.style.minHeight = `${grid.offsetHeight}px`;
+    setLeaving(true);
+    window.setTimeout(() => {
+      setLeaving(false);
+      setFilter(id);
+    }, 200);
+  };
   const more = () => {
     const from = limit;
+    setTouched("more");
     setLimit(limit + STEP);
     window.requestAnimationFrame(() => {
       const cards = [...(gridRef.current?.children ?? [])].slice(from) as HTMLElement[];
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      cards.forEach((card, index) => card.animate(reduce ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: "translateY(16px)" }, { opacity: 1, transform: "none" }], { duration: reduce ? 100 : 300, delay: reduce ? 0 : index * 60, easing: "cubic-bezier(.2,.8,.2,1)", fill: "backwards" }));
-      const link = cards[0]?.querySelector<HTMLElement>("a");
-      link?.focus({ preventScroll: true });
+      cards[0]?.focus({ preventScroll: true });
     });
   };
   return (
-    <section className="wrap related">
+    <section className="wrap related" ref={sectionRef}>
+      <RevealNoScript />
       <div className="related-head">
         <h2>{shown.length} публикаций</h2>
         <div className="chips" data-allow-x>
           {CATEGORIES.map((item) => (
-            <button key={item.id} type="button" className={`chip${filter === item.id ? " is-active" : ""}`} onClick={() => setFilter(item.id)}>
+            <button key={item.id} type="button" className={`chip${filter === item.id ? " is-active" : ""}`} onClick={() => pick(item.id)}>
               {item.label}
             </button>
           ))}
         </div>
       </div>
-      <div className="grid" ref={gridRef}>
-        {shown.slice(0, limit).map((article, index) => (
-          <ArticleCard key={article.slug} article={article} index={index} />
+      <div className={`grid${leaving ? " is-leaving" : ""}`} ref={gridRef} key={filter}>
+        {shown.slice(0, limit).map((article) => (
+          <ArticleCard key={article.slug} article={article} />
         ))}
       </div>
       {shown.length > limit && (
