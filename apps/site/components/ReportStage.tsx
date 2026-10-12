@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const PAGES = [
   "/figma/report/p4.webp",
@@ -43,16 +43,29 @@ export function ReportViewer() {
   const [page, setPage] = useState(0);
   const [marker, setMarker] = useState(1);
   const [dir, setDir] = useState(0);
+  // The page that is leaving: it stays on top and fades out while the next one fades in (a real crossfade — before,
+  // the old page vanished at once and the new one faded in over the empty grey sheet).
+  const [leaving, setLeaving] = useState<number | null>(null);
   const busy = useRef(false);
+  const cards = useRef<HTMLDivElement>(null);
 
   // R02 (Figma note): crossfade 250 мс + 16px shift in the paging direction; clicks are ignored while it runs; ←/→ page.
   function go(next: number) {
     if (busy.current || next < 0 || next >= PAGES.length || next === page) return;
     busy.current = true;
-    window.setTimeout(() => { busy.current = false; }, 250);
+    window.setTimeout(() => { busy.current = false; setLeaving(null); }, 250);
     setDir(next > page ? 1 : -1);
+    setLeaving(page);
     setPage(next);
     setMarker(1);
+  }
+
+  // M13 (phone): a tap on a marker of the sheet scrolls to its description below (the card lights up lime).
+  function pickPin(n: number) {
+    setMarker(n);
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+    const card = cards.current?.children[n - 1] as HTMLElement | undefined;
+    card?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
   }
 
   return (
@@ -63,6 +76,7 @@ export function ReportViewer() {
       }}>
         <div className="rf-sheet">
           <img key={page} className={dir ? (dir > 0 ? "rf-in-next" : "rf-in-prev") : undefined} src={PAGES[page]} alt="" />
+          {leaving !== null ? <img key={`out-${leaving}`} className={`rf-out ${dir > 0 ? "rf-out-next" : "rf-out-prev"}`} src={PAGES[leaving]} alt="" aria-hidden /> : null}
           {MARKERS.map((item) => (
             <button
               key={item.n}
@@ -70,7 +84,7 @@ export function ReportViewer() {
               className={`rf-pin${marker === item.n ? " is-on" : ""}`}
               style={{ left: `${item.x}%`, top: `${item.y}%` }}
               aria-pressed={marker === item.n}
-              onClick={() => setMarker(item.n)}
+              onClick={() => pickPin(item.n)}
             >
               {item.n}
             </button>
@@ -86,7 +100,7 @@ export function ReportViewer() {
           </button>
         </div>
       </div>
-      <div className="rf-markers">
+      <div className="rf-markers" ref={cards}>
         {MARKERS.map((item) => (
           <button key={item.n} type="button" className={`rf-marker${marker === item.n ? " is-on" : ""}`} aria-pressed={marker === item.n} onClick={() => setMarker(item.n)}>
             <span className={`rf-pin${marker === item.n ? " is-on" : ""}`}>{item.n}</span>
@@ -103,16 +117,31 @@ export function ReportViewer() {
 
 export function ReportFaq() {
   const [open, setOpen] = useState(0);
+  const list = useRef<HTMLDivElement>(null);
+  // M14: the previous answer collapses while the new one opens; if that pulls the new question above the screen
+  // edge (under the sticky header), the page is turned back so the question stays in view.
+  const opened = useRef(false);
+  useEffect(() => {
+    if (!opened.current || open < 0) return;
+    const timer = window.setTimeout(() => {
+      const button = list.current?.children[open]?.querySelector("button");
+      if (!button) return;
+      const header = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header")) || 72;
+      const top = button.getBoundingClientRect().top;
+      if (top < header + 8) window.scrollBy({ top: top - header - 16, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    }, 320);
+    return () => window.clearTimeout(timer);
+  }, [open]);
   return (
     <section id="faq" data-s="faq" className="rf-sec rf-faq">
       <span className="rf-num">07</span>
       <h2 className="rf-h2">Частые вопросы</h2>
-      <div className="rf-faq-list">
+      <div className="rf-faq-list" ref={list}>
       {FAQ.map((item, index) => {
         const on = open === index;
         return (
           <div className={`rf-faq-item${on ? " is-open" : ""}`} key={item.q}>
-            <button type="button" aria-expanded={on} onClick={() => setOpen(on ? -1 : index)}>
+            <button type="button" aria-expanded={on} onClick={() => { opened.current = true; setOpen(on ? -1 : index); }}>
               <span>{item.q}</span>
               <img src="/icons/chevron-down.svg" alt="" width={20} height={20} />
             </button>
