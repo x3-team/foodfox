@@ -716,3 +716,35 @@ body [data-s="s12"] .lab-tile:hover { transform: none; }
   body [data-s="s10"] .s10-card .s10-card-head,
   body [data-s="s10"] .s10-card .s10-facts { animation: m40-fade 200ms ease-out both; }
 }
+
+/* M42 · phone pager under the symptom cards (frame 1424:48354; note: the active dot stretches to 20px) */
+.sym-pager { display: none; }
+@media (max-width: 767px) {
+  body [data-s="s05"] .sym-pager { display: flex; gap: 6px; margin: 16px 0 0; }
+  body [data-s="s05"] .sym-pager i { width: 6px; height: 6px; border-radius: 3px; background: rgba(248, 249, 246, .3); transition: width 200ms var(--ease), background-color 200ms var(--ease); }
+  body [data-s="s05"] .sym-pager i.is-on { width: 20px; background: #f8f9f6; }
+}
+
+/* M48 · the chat bubble of «Не нашли ответ?» types (three dots, ~1s) and then shows the greeting */
+.s15-typing { display: none; }
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s15"] .s15-chat p { position: relative; }
+  body [data-s="s15"] .s15-typing { display: flex; gap: 4px; position: absolute; left: 14px; bottom: 14px; opacity: 0; }
+  body [data-s="s15"] .s15-typing i { width: 6px; height: 6px; border-radius: 50%; background: rgba(11, 12, 8, .45); }
+  body [data-s="s15"] .s15-help-card:not([data-played]) .s15-chat b { opacity: 0; }
+  body [data-s="s15"] .s15-help-card[data-played] .s15-typing { animation: s15-typing 1000ms linear both; }
+  body [data-s="s15"] .s15-help-card[data-played] .s15-typing i { animation: s15-dot 600ms ease-in-out 2; }
+  body [data-s="s15"] .s15-help-card[data-played] .s15-typing i:nth-child(2) { animation-delay: 150ms; }
+  body [data-s="s15"] .s15-help-card[data-played] .s15-typing i:nth-child(3) { animation-delay: 300ms; }
+  body [data-s="s15"] .s15-help-card[data-played] .s15-chat b { animation: m40-fade 240ms ease-out 1000ms both; }
+}
+@keyframes s15-typing { 0%, 95% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes s15-dot { 0%, 100% { transform: none; opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
+
+/* M47 · blog card on touch: pressed — the card 0.98, its cover 1.04 (there was no press state) */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s14"] .blog-home-card { transition: scale 120ms ease-out, background-color 200ms; }
+  body [data-s="s14"] .blog-home-card img { transition: transform 200ms ease-out; }
+  body [data-s="s14"] .blog-home-card:active { scale: .98; }
+  body [data-s="s14"] .blog-home-card:active img { transform: scale(1.04); }
+}

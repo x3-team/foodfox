@@ -220,6 +220,7 @@ export function HomePage() {
   const deckRef = useRef<HTMLElement>(null);
   const countRef = useRef<HTMLElement>(null);
   const stepsRef = useRef<HTMLDivElement>(null);
+  const helpRef = useRef<HTMLDivElement>(null);
   const austriaRef = useRef<HTMLElement>(null);
   const reviewsRef = useRef<HTMLDivElement>(null);
   const [reviewDot, setReviewDot] = useState(0);
@@ -278,11 +279,25 @@ export function HomePage() {
   useEffect(() => {
     const row = symRowRef.current;
     if (!row) return;
+    // the pager under the row (frame 1424:48354): the dot of the most visible card stretches to 20px
+    const cards = [...row.querySelectorAll<HTMLElement>(".sym-card")];
+    const dots = [...(row.parentElement?.querySelectorAll<HTMLElement>(".sym-pager i") ?? [])];
+    const ratio = new Map<Element, number>();
     const io = new IntersectionObserver(
-      (entries) => entries.forEach((entry) => entry.target.classList.toggle("is-active", entry.intersectionRatio >= 0.75)),
-      { root: row, threshold: [0, 0.75, 1] },
+      (entries) => {
+        entries.forEach((entry) => {
+          ratio.set(entry.target, entry.intersectionRatio);
+          entry.target.classList.toggle("is-active", entry.intersectionRatio >= 0.75);
+        });
+        let best = 0;
+        cards.forEach((card, index) => {
+          if ((ratio.get(card) ?? 0) > (ratio.get(cards[best]) ?? 0) + 0.01) best = index;
+        });
+        dots.forEach((dot, index) => dot.classList.toggle("is-on", index === best));
+      },
+      { root: row, threshold: [0, 0.25, 0.5, 0.75, 1] },
     );
-    row.querySelectorAll(".sym-card").forEach((card) => io.observe(card));
+    cards.forEach((card) => io.observe(card));
     return () => io.disconnect();
   }, []);
 
@@ -500,6 +515,20 @@ export function HomePage() {
       return handler;
     });
     return () => steps.forEach((step, index) => step.removeEventListener("pointerenter", handlers[index]));
+  }, []);
+
+  // M48: «Не нашли ответ?» — the chat bubble first «types» (three dots), then shows the text; once, when the
+  // card comes into view.
+  useEffect(() => {
+    const card = helpRef.current;
+    if (!card) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      card.dataset.played = "1";
+      io.disconnect();
+    }, { threshold: 0.6 });
+    io.observe(card);
+    return () => io.disconnect();
   }, []);
 
   // S07: the graphics of a card (dots wave, rings drawn, level chips) play once — when the card is first
@@ -888,6 +917,7 @@ export function HomePage() {
                 </article>
               ))}
             </div>
+            <div className="sym-pager" aria-hidden>{[0, 1, 2, 3].map((dot) => <i key={dot} className={dot === 0 ? "is-on" : undefined} />)}</div>
             <p className="sym-note">
               Тест также обсуждают со специалистом при аутоиммунных заболеваниях — как часть комплексной работы с питанием. Тест не ставит диагноз.
             </p>
@@ -1335,8 +1365,8 @@ export function HomePage() {
             </div>
           </div>
           <div className="s15-help m-only">
-            <div className="s15-help-card">
-              <div className="s15-chat"><img src="/figma/home/anna.webp" alt="" /><p><small>Анна, служба заботы</small><b>Здравствуйте! Чем помочь?</b></p></div>
+            <div className="s15-help-card" ref={helpRef}>
+              <div className="s15-chat"><img src="/figma/home/anna.webp" alt="" /><p><small>Анна, служба заботы</small><b>Здравствуйте! Чем помочь?</b><span className="s15-typing" aria-hidden><i /><i /><i /></span></p></div>
               <h2>Не нашли ответ?</h2>
               <p>Напишите нам — ответим в течение одного рабочего дня и добавим вопрос в подборку.</p>
               <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:contact"))}>Задать вопрос</button>
