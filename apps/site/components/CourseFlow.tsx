@@ -1,11 +1,37 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { BottomSheet } from "@/components/BottomSheet";
 import { useDialog } from "@/components/useDialog";
+import { useReveal } from "@/components/useReveal";
+
+/** Scrolls the window to `top` in `ms` (ease-in-out) and calls `done` on arrival; a wheel / touch by the visitor
+    stops it (done is still called). The native smooth scroll has no duration and takes 0.5–1 s on long jumps. */
+function scrollPageTo(top: number, ms: number, done: () => void) {
+  const from = window.scrollY;
+  const t0 = performance.now();
+  let stopped = false;
+  const stop = () => { stopped = true; };
+  window.addEventListener("wheel", stop, { passive: true, once: true });
+  window.addEventListener("touchstart", stop, { passive: true, once: true });
+  const step = (now: number) => {
+    const k = Math.min(1, (now - t0) / ms);
+    const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    if (!stopped) window.scrollTo({ top: from + (top - from) * e, behavior: "instant" as ScrollBehavior });
+    if (k < 1 && !stopped) window.requestAnimationFrame(step);
+    else {
+      window.removeEventListener("wheel", stop);
+      window.removeEventListener("touchstart", stop);
+      done();
+    }
+  };
+  window.requestAnimationFrame(step);
+}
+
+const reduceMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const AUDIENCE = [
   {
@@ -266,6 +292,37 @@ function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration>
   const closeRef = useRef(flow.close);
   closeRef.current = flow.close;
   useDialog(ref, () => closeRef.current(), flow.open);
+  /* K5 / K08: between steps the modal height animates 250 мс (it used to jump to the new height in one frame while
+     the new step was still fading in). The previous height is read after every commit. */
+  const stepKey = flow.sent ? "sent" : String(flow.step);
+  const lastHeight = useRef(0);
+  const lastKey = useRef(stepKey);
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) { lastHeight.current = 0; return; }
+    const before = lastHeight.current;
+    const changed = lastKey.current !== stepKey;
+    lastKey.current = stepKey;
+    node.style.height = "";
+    const after = node.offsetHeight;
+    lastHeight.current = after;
+    if (!changed || !before || Math.abs(after - before) < 2 || reduceMotion()) return;
+    node.style.height = `${before}px`;
+    node.style.overflow = "hidden";
+    void node.offsetHeight;
+    node.classList.add("is-resizing");
+    node.style.height = `${after}px`;
+    const timer = window.setTimeout(() => {
+      node.classList.remove("is-resizing");
+      node.style.height = "";
+      node.style.overflow = "";
+      lastHeight.current = node.offsetHeight;
+    }, 270);
+    return () => window.clearTimeout(timer);
+  });
+  // M15 (phone): the registration sheet follows a downward drag; past 96px it closes (asking first if something
+  // was typed — «Прервать регистрацию?»), otherwise it springs back.
+  const drag = useRef<{ y: number; dy: number } | null>(null);
   if (!flow.open) return null;
   const heads = [
     ["Начнём с e-mail", "На него придёт ссылка для входа — без пароля. Шаг 1 из 3."],
@@ -276,7 +333,36 @@ function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration>
   // Figma 1136:561: title + sub, then the 3-segment indicator (all three filled on «Проверьте почту»), then the step body.
   return (
     <div className="modal-back" role="presentation" onClick={() => { if (!flow.email.trim() && !flow.name.trim()) flow.close(); }}>
-      <div className="modal reg-modal" ref={ref} role="dialog" aria-modal="true" aria-labelledby="reg-title" onClick={(event) => event.stopPropagation()}>
+      <div
+        className="modal reg-modal"
+        ref={ref}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reg-title"
+        onClick={(event) => event.stopPropagation()}
+        onTouchStart={(event) => {
+          if (!window.matchMedia("(max-width: 767px)").matches || (event.target as HTMLElement).closest("input, select, textarea")) return;
+          drag.current = { y: event.touches[0].clientY, dy: 0 };
+        }}
+        onTouchMove={(event) => {
+          const d = drag.current;
+          const node = ref.current;
+          if (!d || !node) return;
+          d.dy = Math.max(0, event.touches[0].clientY - d.y);
+          node.style.transition = "none";
+          node.style.transform = d.dy ? `translateY(${d.dy}px)` : "";
+        }}
+        onTouchEnd={() => {
+          const d = drag.current;
+          const node = ref.current;
+          drag.current = null;
+          if (!d || !node) return;
+          node.style.transition = "transform 240ms cubic-bezier(.2,.8,.2,1)";
+          node.style.transform = "";
+          window.setTimeout(() => { node.style.transition = ""; }, 260);
+          if (d.dy > 96) flow.close();
+        }}
+      >
         <button type="button" className="lead-x reg-x" aria-label="Закрыть" onClick={flow.close}>×</button>
         <div className="reg-body reg-head" key={flow.sent ? "sent-head" : `head-${flow.step}`}>
           <h2 id="reg-title">{title}</h2>
@@ -388,10 +474,57 @@ export function CoursePage() {
   const [opened, setOpened] = useState(0);
   const [allAud, setAllAud] = useState(false);
   const [faq, setFaq] = useState(0);
+  const [flash, setFlash] = useState(-1);
+  const [lit, setLit] = useState("");
+  const acc = useRef<HTMLDivElement>(null);
+  const flashTimer = useRef<number | undefined>(undefined);
+  useReveal();
 
+  // M17 / M10: the first time the lecturer carousel is 40% on screen (phone) it nudges 24px and back, once per session.
+  useEffect(() => {
+    if (reduceMotion()) return;
+    const row = document.querySelector<HTMLElement>(".kf-lectors");
+    if (!row) return;
+    let timer = 0;
+    const io = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      io.disconnect();
+      if (row.scrollWidth <= row.clientWidth + 4 || row.scrollLeft > 0) return;
+      try {
+        if (window.sessionStorage.getItem("fox-nudge:k04")) return;
+        window.sessionStorage.setItem("fox-nudge:k04", "1");
+      } catch { /* storage blocked: nudge anyway */ }
+      row.classList.add("kf-nudge");
+      timer = window.setTimeout(() => row.classList.remove("kf-nudge"), 700);
+    }, { threshold: 0.4 });
+    io.observe(row);
+    return () => { io.disconnect(); window.clearTimeout(timer); };
+  }, []);
+
+  /* K2: a click on an audience card scrolls to its lesson (smooth, ~400 мс), then the accordion opens (300 мс) and
+     the lesson gets a lime frame for 600 мс. Before: the page scrolled to the top of the programme (not to the lesson)
+     and the lesson opened at the same moment, often off screen. The scroll target already accounts for the open
+     lesson above it, which collapses when the new one opens. */
   function openLesson(index: number) {
-    setOpened(index);
-    document.getElementById("program")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const card = acc.current?.children[index] as HTMLElement | undefined;
+    if (!card) { setOpened(index); return; }
+    const header = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header")) || 72;
+    let shift = 0;
+    if (opened >= 0 && opened < index) {
+      const fold = acc.current?.children[opened]?.querySelector<HTMLElement>(".kf-fold");
+      shift = fold?.offsetHeight ?? 0;
+    }
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const top = Math.max(0, Math.min(max, Math.round(card.getBoundingClientRect().top + window.scrollY - shift - header - 24)));
+    const instant = reduceMotion();
+    const finish = () => {
+      setOpened(index);
+      setFlash(index);
+      window.clearTimeout(flashTimer.current);
+      flashTimer.current = window.setTimeout(() => setFlash(-1), 900);
+    };
+    if (instant || Math.abs(top - window.scrollY) < 4) { window.scrollTo({ top, behavior: "auto" }); finish(); return; }
+    scrollPageTo(top, 400, finish);
   }
 
   return (
@@ -439,7 +572,7 @@ export function CoursePage() {
             </div>
             <div className={`kf-audience${allAud ? " is-all" : ""}`} data-allow-x>
               {AUDIENCE.map((card) => (
-                <button key={card.title} type="button" className="kf-aud" onClick={() => openLesson(card.lesson)}>
+                <button key={card.title} type="button" className="kf-aud" data-rv="80" onClick={() => openLesson(card.lesson)}>
                   <span className="kf-aud-top">
                     <span className="kf-badge"><img src={card.icon} alt="" width={28} height={28} /></span>
                     <span className="kf-aud-title">
@@ -470,11 +603,11 @@ export function CoursePage() {
               <h2>Программа курса</h2>
               <p>6 уроков · ≈ 90 минут · конспекты PDF</p>
             </div>
-            <div className="kf-acc">
+            <div className="kf-acc" ref={acc}>
               {LESSONS.map((lesson, index) => {
                 const on = opened === index;
                 return (
-                  <article key={lesson.title} className={on ? "is-open" : ""}>
+                  <article key={lesson.title} className={`${on ? "is-open" : ""}${flash === index ? " is-flash" : ""}`} onMouseEnter={() => setLit(lesson.lecturer)} onMouseLeave={() => setLit("")}>
                     <button type="button" aria-expanded={on} onClick={() => setOpened(on ? -1 : index)}>
                       <span className="kf-num">{index + 1}</span>
                       <span>
@@ -515,7 +648,7 @@ export function CoursePage() {
             <div className="kf-lectors" data-allow-x>
               {LECTURERS.map((person) => (
                 <Link key={person.name} href={person.href} className="kf-lector">
-                  <img src={person.photo} srcSet={`${person.photo.replace(".webp", "-512.webp")} 512w, ${person.photo} 1024w`} sizes="(min-width: 1101px) 380px, max(380px, 100vw)" alt="" />
+                  <span className="kf-lector-photo"><img src={person.photo} srcSet={`${person.photo.replace(".webp", "-512.webp")} 512w, ${person.photo} 1024w`} sizes="(min-width: 1101px) 380px, max(380px, 100vw)" alt="" /></span>
                   <span className="kf-lector-body">
                     <span>
                       <strong>{person.name}</strong>
@@ -524,7 +657,7 @@ export function CoursePage() {
                         {person.facts.map((fact) => <span key={fact}>— {fact}</span>)}
                       </span>
                     </span>
-                    <span className="kf-chip-lime">{person.chip}</span>
+                    <span className={`kf-chip-lime${lit === person.name ? " is-lit" : ""}`}>{person.chip}</span>
                   </span>
                 </Link>
               ))}
@@ -539,7 +672,7 @@ export function CoursePage() {
             <h2>Что входит в курс</h2>
             <div className="kf-include-row kf-include-3">
               {INCLUDES.slice(0, 3).map(([icon, title, text]) => (
-                <article key={title}>
+                <article key={title} data-rv="60">
                   <img src={icon} alt="" width={24} height={24} />
                   <h3>{title}</h3>
                   <p>{text}</p>
@@ -548,7 +681,7 @@ export function CoursePage() {
             </div>
             <div className="kf-include-row kf-include-4">
               {INCLUDES.slice(3).map(([icon, title, text]) => (
-                <article key={title}>
+                <article key={title} data-rv="60">
                   <img src={icon} alt="" width={24} height={24} />
                   <h3>{title}</h3>
                   <p>{text}</p>
@@ -582,17 +715,14 @@ export function CoursePage() {
           <img src="/figma/course/cta-bg.webp" alt="" />
           <div className="kf-includes-shade" />
           <div className="wrap kf-final-in">
-            <i className="kf-bar" />
-            <h2>Зарегистрируйтесь на курс</h2>
-            <p className="kf-lead-d">Доступ к шести урокам, конспектам и гайду по отчёту — сразу после регистрации. Около 30 секунд и только e-mail.</p>
-            <p className="kf-lead-m">Доступ к шести урокам, конспектам и гайду — сразу после регистрации.</p>
+            <i className="kf-bar" data-rv="0" />
+            <h2 data-rv="0" data-rv-base="160">Зарегистрируйтесь на курс</h2>
+            <p className="kf-lead-d" data-rv="0" data-rv-base="220">Доступ к шести урокам, конспектам и гайду по отчёту — сразу после регистрации. Около 30 секунд и только e-mail.</p>
+            <p className="kf-lead-m" data-rv="0" data-rv-base="220">Доступ к шести урокам, конспектам и гайду — сразу после регистрации.</p>
             <div className="kf-facts">
-              <span>6 уроков</span>
-              <span>Конспекты PDF</span>
-              <span>Гайд по отчёту</span>
-              <span>Сертификат</span>
+              {["6 уроков", "Конспекты PDF", "Гайд по отчёту", "Сертификат"].map((fact) => <span key={fact} data-rv="80" data-rv-base="360">{fact}</span>)}
             </div>
-            <button className="btn btn-light" type="button" onClick={flow.start}>Получить доступ</button>
+            <button className="btn btn-light" type="button" onClick={flow.start} data-rv="0" data-rv-base="680">Получить доступ</button>
             <p className="kf-disclaimer kf-lead-d">Сертификат подтверждает прохождение курса и не является документом о повышении квалификации и не даёт баллов НМО.</p>
             <p className="kf-disclaimer kf-lead-m">Сертификат подтверждает прохождение курса и не является документом о повышении квалификации.</p>
           </div>
@@ -618,6 +748,30 @@ export function LessonsPage() {
   const lesson = LESSONS[current];
 
   const [tab, setTab] = useState<"about" | "files" | "ask">("about");
+  /* M19: the white pill of the segment slides to the picked tab (240 мс), the content crossfades (160 мс) and the
+     block height animates between the two contents instead of jumping. */
+  const aboutRef = useRef<HTMLDivElement>(null);
+  const aboutHeight = useRef(0);
+  function pickTab(next: "about" | "files" | "ask") {
+    if (next === tab) return;
+    aboutHeight.current = aboutRef.current?.offsetHeight ?? 0;
+    setTab(next);
+  }
+  useLayoutEffect(() => {
+    const node = aboutRef.current;
+    const before = aboutHeight.current;
+    aboutHeight.current = 0;
+    if (!node || !before || reduceMotion()) return;
+    const after = node.offsetHeight;
+    if (Math.abs(after - before) < 2) return;
+    node.style.height = `${before}px`;
+    node.style.overflow = "hidden";
+    void node.offsetHeight;
+    node.style.transition = "height 240ms cubic-bezier(.2,.8,.2,1)";
+    node.style.height = `${after}px`;
+    const timer = window.setTimeout(() => { node.style.height = ""; node.style.overflow = ""; node.style.transition = ""; }, 260);
+    return () => window.clearTimeout(timer);
+  }, [tab]);
 
   useEffect(() => {
     setProgress(0);
@@ -676,7 +830,8 @@ export function LessonsPage() {
   const wake = useCallback(() => {
     setIdle(false);
     window.clearTimeout(idleTimer.current);
-    idleTimer.current = window.setTimeout(() => setIdle(true), 2000);
+    // L01: 2 s on a desktop; M18: 2.5 s on a touch screen.
+    idleTimer.current = window.setTimeout(() => setIdle(true), window.matchMedia("(hover: none)").matches ? 2500 : 2000);
   }, []);
   useEffect(() => { if (playing) wake(); else { window.clearTimeout(idleTimer.current); setIdle(false); } }, [playing, wake]);
   // L01: at 6/6 the certificate card unlocks (300 мс) and a toast confirms it.
@@ -816,6 +971,12 @@ export function LessonsPage() {
                   <source src="/course/lesson-loop.mp4" type="video/mp4" onError={() => { setFailed(true); setPlaying(false); }} />
                 </video>
                 {!playing && <img className="ls-poster" src="/figma/course/lesson-poster.webp" alt="" />}
+                {/* M18: at 90% of the video the lesson is marked watched and «Следующий урок →» slides up at the bottom of the player. */}
+                {progress >= 0.9 && current < 5 && !failed ? (
+                  <button type="button" className="ls-next-plate" onClick={(event) => { event.stopPropagation(); setCurrent(current + 1); }}>
+                    Следующий урок <span aria-hidden>→</span>
+                  </button>
+                ) : null}
                 {failed ? (
                   <div className="ls-fail" role="alert">
                     <h2>Видео не загрузилось</h2>
@@ -870,12 +1031,13 @@ export function LessonsPage() {
                 ) : null}
               </div>
             </div>
-            <div className="ls-tabs" role="tablist" aria-label="Материалы урока">
-              <button type="button" className={tab === "about" ? "is-on" : ""} onClick={() => setTab("about")}>Об уроке</button>
-              <button type="button" className={tab === "files" ? "is-on" : ""} onClick={() => setTab("files")}>Материалы</button>
-              <button type="button" className={tab === "ask" ? "is-on" : ""} onClick={() => setTab("ask")}>Вопрос</button>
+            <div className="ls-tabs" role="tablist" aria-label="Материалы урока" style={{ "--tab": ["about", "files", "ask"].indexOf(tab) } as React.CSSProperties}>
+              <i className="ls-tab-pill" aria-hidden />
+              <button type="button" className={tab === "about" ? "is-on" : ""} onClick={() => pickTab("about")}>Об уроке</button>
+              <button type="button" className={tab === "files" ? "is-on" : ""} onClick={() => pickTab("files")}>Материалы</button>
+              <button type="button" className={tab === "ask" ? "is-on" : ""} onClick={() => pickTab("ask")}>Вопрос</button>
             </div>
-            <div className="ls-about" key={tab}>
+            <div className="ls-about" key={tab} ref={aboutRef}>
               <p className="ls-kicker">{tab === "files" ? "Материалы" : tab === "ask" ? "Вопрос лектору" : "О чём этот урок"}</p>
               <p>
                 {tab === "ask" ? "Напишите вопрос к этому уроку — лектор ответит в кабинете курса." : (
