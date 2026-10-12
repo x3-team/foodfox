@@ -7,7 +7,8 @@
    1280–1439: same sizes, nav step 20, «Пример результата» moves out (it would touch the nav).
    1101–1279: nav 15px, step 14–16, logo→nav 24. Tablet 768–1100: phone header on the 32px gutter. */
 @media (min-width: 1101px) {
-  body .site-header { padding: 0 48px; }
+  /* шире 1440 шапка стоит по контейнеру контента (1344 по центру), как футер — иначе на 1920+ логотип у края, а контент в центре */
+  body .site-header { padding: 0 max(48px, calc(50% - 672px)); }
   body .site-header .logo { width: 94px; height: 44px; }
   body .site-header .header-left { gap: 32px; }
   body .site-header.header-site .nav { gap: 24px; }

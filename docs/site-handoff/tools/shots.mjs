@@ -3,7 +3,7 @@ import { chromium } from "../../../apps/site/node_modules/playwright/index.mjs";
 import fs from "node:fs";
 const [base, dir, widths] = process.argv.slice(2);
 const PAGES = { home: "/", specialists: "/specialists", report: "/report", course: "/course", "course-lessons": "/course/lessons", labs: "/labs", blog: "/blog", "blog-article": "/blog/skrytaya-neperenosimost-laktozy-i-glyutena", "blog-authors": "/blog/authors", "blog-author": "/blog/authors/kseniya-ellinskaya", faq: "/faq", certificates: "/certificates", reviews: "/reviews", contacts: "/contacts", privacy: "/privacy", "404": "/no-such-page-404" };
-const H = { 1440: 900, 1280: 800, 1100: 800, 1024: 768, 900: 1000, 768: 1024, 390: 844, 360: 780 };
+const H = { 2560: 1440, 1920: 1080, 1440: 900, 1280: 800, 1100: 800, 1024: 768, 900: 1000, 768: 1024, 390: 844, 360: 780 };
 const b = await chromium.launch();
 const log = [];
 for (const w of widths.split(",").map(Number)) {
