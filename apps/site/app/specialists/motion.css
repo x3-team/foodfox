@@ -1,0 +1,159 @@
+/* /specialists — motion by the Figma notes P01–P09 (page 1107:340) and the phone notes M09–M11.
+   Loaded after frame.css and adaptive/specialists.css. Section-level entrances stay global; where a note asks for
+   item-level motion the block is taken out of the global rise and its items animate instead (useReveal / data-rv). */
+
+/* ── P1 hero (note 1179:1329, storyboard 1383:4639): photo from blur(16px) + scale 1.06 over 1200 мс power2.out;
+   the title word by word (blur 12 → 0, stagger 60 мс); lead and buttons after it; glass tiles y 24 → 0, stagger 80 мс.
+   Before: the copy column and the tile block rose together in one 600 мс step, the photo only zoomed 1.04 → 1. ── */
+[data-s="p01"].dark-hero .inner > * { animation: none; }
+/* «From blur» without animating filter: a 128px pre-blurred copy lies under the photo (phone: the section background
+   behind the in-flow photo), the photo itself goes opacity 0 → 1 + scale 1.06 → 1 once it is decoded. */
+[data-s="p01"].dark-hero img.bg,
+[data-s="p01"].dark-hero img.sp-hero-m { animation: sp-photo-in 1200ms cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards; }
+[data-s="p01"].dark-hero img.sp-hero-blur { opacity: 1; animation: none; }
+[data-s="p01"].dark-hero img.is-wait { opacity: 0; animation: none; }
+@keyframes sp-photo-in { from { opacity: 0; transform: scale(1.06); } }
+@media (max-width: 767px) {
+  body [data-s="p01"].dark-hero { background: #1f241a url("/figma/specialists/hero-m-blur.webp") center top / 100% 480px no-repeat; background-origin: content-box; }
+  body [data-s="p01"].dark-hero > img.sp-hero-blur { display: none; }
+}
+[data-s="p01"] .sp-pills { animation: sp-rise 600ms var(--ease) 40ms backwards; }
+[data-s="p01"] .sp-w { display: inline-block; animation: sp-word 420ms cubic-bezier(0.25, 0.46, 0.45, 0.94) calc(80ms + var(--i, 0) * 60ms) backwards; }
+@keyframes sp-word { from { opacity: 0; filter: blur(12px); } }
+[data-s="p01"] .sp-lead-inv { animation: sp-rise 600ms var(--ease) 600ms backwards; }
+[data-s="p01"] .sp-body-inv { animation: sp-rise 600ms var(--ease) 660ms backwards; }
+[data-s="p01"] .sp-hero-copy > .sp-cta { animation: sp-rise 600ms var(--ease) 720ms backwards; }
+[data-s="p01"] .sp-tile { animation: sp-rise 500ms var(--ease) 760ms backwards; }
+[data-s="p01"] .sp-spec-row:first-child .sp-tile:nth-child(2) { animation-delay: 840ms; }
+[data-s="p01"] .sp-spec-row:first-child .sp-tile:nth-child(3) { animation-delay: 920ms; }
+[data-s="p01"] .sp-spec-row:last-child .sp-tile:nth-child(1) { animation-delay: 1000ms; }
+[data-s="p01"] .sp-spec-row:last-child .sp-tile:nth-child(2) { animation-delay: 1080ms; }
+[data-s="p01"] .sp-spec-row:last-child .sp-tile:nth-child(3) { animation-delay: 1160ms; }
+@keyframes sp-rise { from { opacity: 0; transform: translateY(24px); } }
+
+/* ── P2 tabs (note 1179:1335) / M09: chip fill 150 мс; panel crossfade (out 120 мс, in 200 мс + 8px, overlap 60 мс). ── */
+.sp-tab { transition-duration: 150ms; }
+[data-s="p02"] .sp-panel { position: relative; }
+[data-s="p02"] .sp-ghost { position: absolute; z-index: 1; margin: 0; pointer-events: none; animation: sp-out 120ms ease-out forwards; }
+@keyframes sp-out { to { opacity: 0; } }
+[data-s="p02"] .sp-panel-copy.is-in { animation: sp-panel-in 200ms ease-out 60ms backwards; }
+@keyframes sp-panel-in { from { opacity: 0; transform: var(--sp-from, translateY(8px)); } }
+@media (max-width: 767px) {
+  [data-s="p02"] .sp-panel { --sp-from: translateX(calc(var(--sp-dir, 1) * 8px)); }
+  [data-s="p02"] .sp-panel { overflow: hidden; }
+  [data-s="p02"] .sp-related > img.is-in { animation: sp-zoom 400ms ease-out backwards; }
+}
+@keyframes sp-zoom { from { transform: scale(1.04); } }
+
+/* ── P3 arguments (P-anim 1140:1279): rows enter at 85% of the viewport, opacity + y 24, stagger 70 мс. ── */
+[data-s="p03"]:not(.is-in) > .wrap > .sp-args { opacity: 1; transform: none; }
+[data-s="p03"].is-in:not(.dark-hero) > .wrap > .sp-args { animation: none; }
+
+/* ── P4 route (note 1179:1347): the connector draws on entry (scaleX 0 → 1 from the left, 800 мс ease-out), then the
+   step cards (opacity + y 16, stagger 100 мс). Before: the line drew on page load, long before anyone saw it. ── */
+[data-s="p04"]:not(.is-in) > .wrap > .sp-timeline { opacity: 1; transform: none; }
+[data-s="p04"].is-in:not(.dark-hero) > .wrap > .sp-timeline { animation: none; }
+[data-s="p04"] .sp-timeline[data-rv] { opacity: 1; transform: none; animation: none; }
+[data-s="p04"] .sp-route-line { transform-origin: left center; }
+[data-s="p04"] .sp-route-line line { animation: none; stroke-dashoffset: 0; }
+[data-s="p04"] .sp-timeline:not(.rv-in) .sp-route-line { transform: scaleX(0); }
+[data-s="p04"] .sp-timeline:not(.rv-in) .sp-step { opacity: 0; transform: translateY(16px); }
+[data-s="p04"] .sp-timeline.rv-in:not(.rv-now) .sp-route-line { animation: sp-line 800ms ease-out backwards; }
+@keyframes sp-line { from { transform: scaleX(0); } }
+[data-s="p04"] .sp-timeline.rv-in:not(.rv-now) .sp-step { animation: sp-step 500ms var(--ease) 300ms backwards; }
+[data-s="p04"] .sp-timeline.rv-in:not(.rv-now) .sp-step:nth-child(2) { animation-delay: 400ms; }
+[data-s="p04"] .sp-timeline.rv-in:not(.rv-now) .sp-step:nth-child(3) { animation-delay: 500ms; }
+[data-s="p04"] .sp-timeline.rv-in:not(.rv-now) .sp-step:nth-child(4) { animation-delay: 600ms; }
+@keyframes sp-step { from { opacity: 0; transform: translateY(16px); } }
+
+/* ── P5 protocol (note 1179:1353): the table has no entrance — it must read at once. ── */
+[data-s="p05"]:not(.is-in) > .wrap > .sp-table { opacity: 1; transform: none; }
+[data-s="p05"].is-in:not(.dark-hero) > .wrap > .sp-table { animation: none; }
+
+/* ── P6 report anatomy (note 1179:1359, storyboard 1382:4651). Before: the sheet folded around its centre (no
+   transform-origin), nothing lay under it below 1440, and it snapped back to the same page at the end. ── */
+[data-s="p06"] .sp-stage { perspective: 1800px; }
+[data-s="p06"] .sp-sheet.is-front { transform-origin: left center; backface-visibility: hidden; transition: rotate 300ms var(--ease); }
+[data-s="p06"] .sp-sheet.is-front::after {
+  content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, rgba(11, 12, 8, 0.45), rgba(11, 12, 8, 0.12) 65%, rgba(11, 12, 8, 0));
+}
+[data-s="p06"] .sp-sheet.is-front.is-turning { transform: rotateY(-165deg); rotate: none; transition: transform 700ms cubic-bezier(0.6, 0.05, 0.3, 1); }
+[data-s="p06"] .sp-sheet.is-front.is-turning::after { opacity: 1; transition: opacity 700ms cubic-bezier(0.6, 0.05, 0.3, 1); }
+[data-s="p06"] .sp-sheet.is-back-1.is-rising { z-index: 0; transform: translate(var(--dx, 0px), var(--dy, 0px)); transition: transform 700ms cubic-bezier(0.6, 0.05, 0.3, 1); }
+[data-s="p06"] .sp-sheet.is-back-1.is-rising img { opacity: 1; transition: opacity 700ms ease-out; }
+/* Zone frame and marker in % of the sheet (they were px for a 560×724 sheet: on narrower sheets — phone, tablet,
+   1101–1439 — the frame of zones 2–4 hung below the page over the arrows and the caption). */
+[data-s="p06"] .sp-highlight { height: 29.6%; }
+[data-s="p06"] .is-zone-1 .sp-highlight { top: 13.3%; }
+[data-s="p06"] .is-zone-2 .sp-highlight { top: 34.5%; }
+[data-s="p06"] .is-zone-3 .sp-highlight { top: 55.2%; }
+[data-s="p06"] .is-zone-4 .sp-highlight { top: 67.7%; height: 24.9%; }
+[data-s="p06"] .sp-sheet.is-front > b { top: 11%; }
+[data-s="p06"] .sp-stage.has-turned .sp-highlight,
+[data-s="p06"] .sp-stage.has-turned .sp-sheet.is-front > b { animation: sp-zone 200ms ease-out backwards; }
+@keyframes sp-zone { from { opacity: 0; transform: scale(0.98); } }
+/* Storyboard: hovering the page or the arrows lifts the corner. */
+@media (hover: hover) and (pointer: fine) {
+  [data-s="p06"] .sp-stage:hover .sp-sheet.is-front:not(.is-turning) { rotate: y -5deg; }
+  [data-s="p06"] .sp-anatomy:hover .sp-report-tabs i::after { animation-play-state: paused; }
+}
+/* Autoplay bar: scaleX instead of width (a width animation re-laid out the page every frame for 6 s, also off
+   screen); runs only while the block is on screen (it drives the 6 s autoplay). */
+[data-s="p06"] .sp-report-tabs i::after { width: 100%; transform-origin: left center; animation-name: sp-progress-x; }
+@keyframes sp-progress-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+[data-s="p06"] .sp-anatomy:not(.is-live) .sp-report-tabs i::after { animation-play-state: paused; }
+@media (max-width: 767px) {
+  /* The four captions under the sheet share one cell: the height no longer changes with the autoplay. */
+  body [data-s="p06"] .sp-active { display: grid; }
+  body [data-s="p06"] .sp-active > div { grid-area: 1 / 1; display: flex; flex-direction: column; gap: 8px; visibility: hidden; opacity: 0; transition: opacity 200ms ease-out, visibility 0s linear 200ms; }
+  body [data-s="p06"] .sp-active > div.is-on { visibility: visible; opacity: 1; transition: opacity 200ms ease-out 0s, visibility 0s; }
+  /* The bar is not drawn on a phone, but it still times the autoplay. */
+  body [data-s="p06"] .sp-report-tabs i { display: block; position: absolute; width: 0; height: 0; overflow: hidden; }
+}
+
+/* ── P8 labs (note 1179:1371): hover shadow eases with the fill and the scale. M11 (phone): tiles cascade in
+   (fade + scale .96 → 1, step 40 мс); a tap presses the tile to .97. ── */
+[data-s="p08"] .sp-labs a { transition: background-color 200ms var(--ease), transform 200ms var(--ease), box-shadow 200ms var(--ease); }
+@media (min-width: 768px) {
+  [data-s="p08"] .sp-labs a[data-rv] { opacity: 1; transform: none; animation: none; }
+}
+@media (max-width: 767px) {
+  [data-s="p08"]:not(.is-in) > .wrap > .sp-labs { opacity: 1; transform: none; }
+  [data-s="p08"].is-in:not(.dark-hero) > .wrap > .sp-labs { animation: none; }
+  [data-s="p08"] .sp-labs a { --rv-y: 0px; --rv-s: 0.96; --rv-dur: 400ms; transition-duration: 120ms; }
+  [data-s="p08"] .sp-labs a:active { transform: scale(0.97); }
+}
+
+/* ── P9 course CTA (note 1179:1377): lime bar → title and lead (opacity + y 24) → chips (stagger 80 мс) → button. ── */
+[data-s="p09"]:not(.is-in) > .wrap > .sp-course { opacity: 1; transform: none; }
+[data-s="p09"].is-in:not(.dark-hero) > .wrap > .sp-course { animation: none; }
+[data-s="p09"] .sp-bar[data-rv] { transform-origin: left center; }
+[data-s="p09"] .sp-bar[data-rv]:not(.rv-in) { opacity: 1; transform: scaleX(0); }
+[data-s="p09"] .sp-bar.rv-in:not(.rv-now) { animation: sp-bar 400ms ease-out backwards; }
+@keyframes sp-bar { from { transform: scaleX(0); } }
+
+/* ── M10 (phone carousels): the first time a carousel is 40% on screen it nudges 24px and comes back (600 мс), once per session. ── */
+[data-s] .sp-nudge.sp-nudge,
+[data-s].is-in:not(.dark-hero) > .wrap > .sp-nudge.sp-nudge { animation: sp-nudge 600ms ease-in-out; }
+@keyframes sp-nudge { 40% { transform: translateX(-24px); } }
+
+/* ── Reduced motion: no blur, no movement, no turn — the agreed 100 мс fades (P6: 200 мс crossfade of the zone). ── */
+@media (prefers-reduced-motion: reduce) {
+  [data-s="p01"].dark-hero img.bg, [data-s="p01"].dark-hero img.sp-hero-m, [data-s="p01"] .sp-pills, [data-s="p01"] .sp-w,
+  [data-s="p01"] .sp-lead-inv, [data-s="p01"] .sp-body-inv, [data-s="p01"] .sp-hero-copy > .sp-cta, [data-s="p01"] .sp-tile,
+  [data-s="p01"] .sp-spec-row .sp-tile {
+    animation: rv-fade 100ms ease-out backwards !important;
+  }
+  [data-s="p01"].dark-hero img.bg { translate: none !important; }
+  [data-s="p02"] .sp-ghost { display: none; }
+  [data-s="p02"] .sp-panel-copy.is-in, [data-s="p02"] .sp-related > img.is-in { animation: rv-fade 100ms ease-out backwards !important; }
+  [data-s="p04"] .sp-timeline .sp-route-line, [data-s="p04"] .sp-timeline .sp-step { transform: none !important; }
+  [data-s="p04"] .sp-timeline.rv-in .sp-route-line, [data-s="p04"] .sp-timeline.rv-in .sp-step { animation: rv-fade 100ms ease-out backwards !important; }
+  [data-s="p06"] .sp-sheet.is-front { rotate: none !important; }
+  [data-s="p06"] .sp-report-tabs i::after { animation: none; transform: none; }
+  [data-s="p06"] .sp-stage.has-turned .sp-highlight,
+  [data-s="p06"] .sp-stage.has-turned .sp-sheet.is-front > b { animation: rv-fade 200ms ease-out backwards !important; }
+  [data-s="p09"] .sp-bar[data-rv] { transform: none !important; }
+  [data-s] .sp-nudge.sp-nudge { animation: none !important; }
+}
