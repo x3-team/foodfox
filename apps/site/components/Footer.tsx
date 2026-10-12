@@ -55,12 +55,17 @@ export function Footer() {
     const img = node.querySelector<HTMLElement>(".bokeh");
     if (!img) return;
     let frame = 0;
+    let last = "";
     const update = () => {
       frame = 0;
       const rect = node.getBoundingClientRect();
       const progress = 1 - rect.top / window.innerHeight;
       const shift = Math.max(-24, Math.min(0, -24 * progress));
-      img.style.setProperty("--shift", `${shift}px`);
+      // Only on change: while the footer is off screen the value stays 0 and rewriting it restyled the picture every frame.
+      const value = `${shift.toFixed(1)}px`;
+      if (value === last) return;
+      last = value;
+      img.style.setProperty("--shift", value);
     };
     const onScroll = () => {
       if (frame) return;
@@ -68,7 +73,10 @@ export function Footer() {
     };
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   return (

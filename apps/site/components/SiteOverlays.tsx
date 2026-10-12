@@ -76,13 +76,19 @@ export function SiteOverlays() {
     };
     // focusout fires before focus lands on the next element, so look at it on the next tick.
     const onFocusOut = () => window.setTimeout(onScroll, 0);
+    // Scroll events come several times per frame on phones; measure the footer once per frame.
+    let frame = 0;
+    const onScrollFrame = () => {
+      if (!frame) frame = window.requestAnimationFrame(() => { frame = 0; onScroll(); });
+    };
     document.addEventListener("focusin", onScroll);
     document.addEventListener("focusout", onFocusOut);
     onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", onScrollFrame, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScrollFrame);
       window.removeEventListener("resize", onScroll);
       document.removeEventListener("focusin", onScroll);
       document.removeEventListener("focusout", onFocusOut);
@@ -92,6 +98,19 @@ export function SiteOverlays() {
   // G17: images that are still loading show a same-size skeleton with a 1.2 s shimmer (the <img> background),
   // then the picture fades in over 200 мс. Only real loading — already decoded images are left alone.
   useEffect(() => {
+    // The 200 мс fade class goes away once it has played: left on, any later change of the picture's `animation`
+    // (a hover or state rule of the page) would bring sk-in back and replay the fade — a blink.
+    const fadeIn = (img: HTMLImageElement) => {
+      img.classList.add("sk-in");
+      const off = (event: AnimationEvent) => {
+        if (event.animationName !== "sk-in" && event.animationName !== "rm-fade") return;
+        img.classList.remove("sk-in");
+        img.removeEventListener("animationend", off);
+        img.removeEventListener("animationcancel", off);
+      };
+      img.addEventListener("animationend", off);
+      img.addEventListener("animationcancel", off);
+    };
     const mark = () => {
       document.querySelectorAll<HTMLImageElement>("main img:not([data-sk])").forEach((img) => {
         img.dataset.sk = "1";
@@ -111,7 +130,7 @@ export function SiteOverlays() {
           img.after(veil);
           const done = (ok: boolean) => {
             img.classList.remove("is-sk-under");
-            if (ok) img.classList.add("sk-in");
+            if (ok) fadeIn(img);
             veil.classList.add("is-out");
             window.setTimeout(() => veil.remove(), 260);
           };
@@ -120,56 +139,70 @@ export function SiteOverlays() {
           return;
         }
         img.classList.add("is-sk");
-        img.addEventListener("load", () => { img.classList.remove("is-sk"); img.classList.add("sk-in"); }, { once: true });
+        img.addEventListener("load", () => { img.classList.remove("is-sk"); fadeIn(img); }, { once: true });
         img.addEventListener("error", () => img.classList.remove("is-sk"), { once: true });
       });
     };
     mark();
-    const mo = new MutationObserver(mark);
+    // Once per frame at most: every React commit anywhere on the page is a mutation, and mark() measures new pictures.
+    let queued = 0;
+    const mo = new MutationObserver(() => {
+      if (!queued) queued = window.requestAnimationFrame(() => { queued = 0; mark(); });
+    });
     mo.observe(document.body, { childList: true, subtree: true });
-    return () => mo.disconnect();
+    return () => {
+      mo.disconnect();
+      window.cancelAnimationFrame(queued);
+    };
   }, [path]);
 
+  // Section entrance: a section gets `is-in` once when its top passes 92% of the viewport and keeps it (no replay on
+  // the way back). Sections on the first screen are already marked before the first paint by the inline script in
+  // app/layout.tsx (REVEAL_BOOT), so they no longer wait for hydration hidden. One IntersectionObserver, no scroll
+  // handler: the old per-event getBoundingClientRect sweep and the 200 ms poll forced layout during scrolling.
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const seen = new Set<Element>();
-    const mark = () => {
-      const limit = window.scrollY + window.innerHeight * 0.92;
-      document.querySelectorAll<HTMLElement>("[data-s]:not(.is-in)").forEach((node) => {
-        if (reduce || node.getBoundingClientRect().top + window.scrollY <= limit) node.classList.add("is-in");
-      });
+    const seen = new WeakSet<Element>();
+    const reveal = (node: Element) => {
+      node.classList.add("is-in");
+      io.unobserve(node);
     };
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) entry.target.classList.add("is-in");
+          // Intersecting, or already above the viewport (restored scroll, anchor jump, a fast fling past it).
+          if (!entry.isIntersecting && entry.boundingClientRect.top >= 0) return;
+          reveal(entry.target);
+          // A fling can carry a short section from below the screen to above it between two frames, so the
+          // observer never sees it intersect: everything earlier in the page than a revealed section is revealed too.
+          for (const node of document.querySelectorAll("[data-s]:not(.is-in)")) {
+            if (!(node.compareDocumentPosition(entry.target) & Node.DOCUMENT_POSITION_FOLLOWING)) break;
+            reveal(node);
+          }
         });
       },
-      { rootMargin: "0px 0px -15% 0px", threshold: 0 },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0 },
     );
+    let queued = 0;
     const observeNew = () => {
+      queued = 0;
       document.querySelectorAll<HTMLElement>("[data-s]").forEach((node) => {
         if (seen.has(node)) return;
         seen.add(node);
+        if (node.classList.contains("is-in")) return;
         if (reduce) node.classList.add("is-in");
         else io.observe(node);
       });
-      mark();
     };
     observeNew();
-    const mo = new MutationObserver(observeNew);
+    const mo = new MutationObserver(() => {
+      if (!queued) queued = window.requestAnimationFrame(observeNew);
+    });
     mo.observe(document.body, { childList: true, subtree: true });
-    const poll = window.setInterval(observeNew, 200);
-    const stop = window.setTimeout(() => window.clearInterval(poll), 2500);
-    window.addEventListener("scroll", mark, { passive: true });
-    window.addEventListener("resize", mark);
     return () => {
       io.disconnect();
       mo.disconnect();
-      window.clearInterval(poll);
-      window.clearTimeout(stop);
-      window.removeEventListener("scroll", mark);
-      window.removeEventListener("resize", mark);
+      window.cancelAnimationFrame(queued);
     };
   }, [path]);
 
@@ -182,35 +215,23 @@ export function SiteOverlays() {
       lockHref = link.getAttribute("href") || "";
       lockUntil = performance.now() + 900;
     };
-    const marks = () => {
-      const header = document.querySelector(".site-header")?.getBoundingClientRect().height ?? 72;
-      const y = window.scrollY + header + 28;
-      const links = [...document.querySelectorAll<HTMLAnchorElement>(".f-nav a, .pr02 nav a")];
+    // Scroll-spy of the FAQ / privacy side menus and the «Прочитано N%» counter. It ran on every scroll event of every
+    // page, measured the header (a forced layout in the middle of scrolling — 30–40 мс frames at 4× CPU) and rewrote
+    // the classes and the counter text each time. Now: once per frame, only where these menus exist, writes only changes.
+    const pick = (links: HTMLAnchorElement[]) => {
+      if (lockHref && performance.now() < lockUntil) return links.find((link) => link.getAttribute("href") === lockHref) ?? null;
       const visible = links.filter((link) => {
         const id = link.getAttribute("href")?.replace("#", "");
         const target = id ? document.getElementById(id) : null;
         return !!target && target.offsetHeight >= 8;
       });
-      links.forEach((link) => link.classList.remove("is-on"));
-      const progress = document.querySelector<HTMLElement>(".pr-progress");
-      if (progress) {
-        const max = document.documentElement.scrollHeight - window.innerHeight;
-        const pct = max <= 0 ? 0 : Math.min(100, Math.round((window.scrollY / max) * 100));
-        progress.textContent = `Прочитано ${pct}%`;
-      }
-      if (lockHref && performance.now() < lockUntil) {
-        links.find((link) => link.getAttribute("href") === lockHref)?.classList.add("is-on");
-        return;
-      }
       const atEnd = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 8;
-      if (atEnd && visible.length) {
-        visible[visible.length - 1].classList.add("is-on");
-        return;
-      }
+      if (atEnd && visible.length) return visible[visible.length - 1];
+      const header = document.querySelector(".site-header")?.getBoundingClientRect().height ?? 72;
+      const y = window.scrollY + header + 28;
       const active: { link: HTMLAnchorElement | null; top: number } = { link: null, top: -1 };
       visible.forEach((link) => {
-        const id = link.getAttribute("href")?.replace("#", "") ?? "";
-        const target = document.getElementById(id);
+        const target = document.getElementById(link.getAttribute("href")?.replace("#", "") ?? "");
         if (!target) return;
         const top = target.getBoundingClientRect().top + window.scrollY;
         if (top <= y && top >= active.top) {
@@ -218,14 +239,33 @@ export function SiteOverlays() {
           active.top = top;
         }
       });
-      (active.link ?? visible[0])?.classList.add("is-on");
+      return active.link ?? visible[0] ?? null;
+    };
+    const marks = () => {
+      frame = 0;
+      const links = [...document.querySelectorAll<HTMLAnchorElement>(".f-nav a, .pr02 nav a")];
+      const progress = document.querySelector<HTMLElement>(".pr-progress");
+      if (!links.length && !progress) return;
+      if (progress) {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = max <= 0 ? 0 : Math.min(100, Math.round((window.scrollY / max) * 100));
+        const text = `Прочитано ${pct}%`;
+        if (progress.textContent !== text) progress.textContent = text;
+      }
+      const on = pick(links);
+      links.forEach((link) => link.classList.toggle("is-on", link === on));
+    };
+    let frame = 0;
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(marks);
     };
     marks();
     document.addEventListener("click", onClick);
-    window.addEventListener("scroll", marks, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       document.removeEventListener("click", onClick);
-      window.removeEventListener("scroll", marks);
+      window.removeEventListener("scroll", onScroll);
+      window.cancelAnimationFrame(frame);
     };
   }, [path]);
 
