@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -40,7 +40,7 @@ const SCALE_WORDS = "До 20% людей живут с пищевой непер
 
 const DECK: Array<[string, string, string]> = [
   ["Узнайте причину,|а не симптомы", "Реакция на продукт проявляется через 3–\u206072 часа после еды. Поэтому связь между тарелкой и самочувствием почти невозможно поймать самостоятельно", " — её называют «скрытой» гиперчувствительностью"],
-  ["Симптомы маскируются под|другие состояния", "Усталость, головная боль, высыпания и проблемы с пищеварением похожи на десятки других причин. Их лечат по отдельности, а связь с рационом может оставаться незамеченной", ""],
+  ["Симптомы маскируются|под другие состояния","Усталость, головная боль, высыпания и проблемы с пищеварением похожи на десятки других причин. Их лечат по отдельности, а связь с рационом может оставаться незамеченной", ""],
   ["Не предрасположенность,|а текущее состояние", "В отличие от генетических тестов, FOX показывает не общую склонность, а то, как организм реагирует сейчас. Результат меняется вместе с рационом", ""],
 ];
 
@@ -177,7 +177,6 @@ export function HomePage() {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState(GROUPS[0]);
   const [picked, setPicked] = useState<Product>(PRODUCTS[0]);
-  const [count, setCount] = useState(0);
   const [faq, setFaq] = useState(0);
   const showsRef = useRef<HTMLElement>(null);
   const [showOn, setShowOn] = useState(0);
@@ -190,7 +189,9 @@ export function HomePage() {
   const [turnDir, setTurnDir] = useState<1 | -1>(1);
   const turnReport = (dir: 1 | -1) => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!reduce && performance.now() - turnAt.current < 450) return;
+    // the lock lasts as long as the turn: 450 мс on the desktop, the M44 curl takes 520 мс
+    const lock = window.matchMedia("(max-width: 1100px)").matches ? 520 : 450;
+    if (!reduce && performance.now() - turnAt.current < lock) return;
     turnAt.current = performance.now();
     setTurnDir(dir);
     if (!reduce) setCurl({ src: REPORT_SLIDES[reportPage][0], n: Date.now(), dir });
@@ -218,6 +219,7 @@ export function HomePage() {
   const scaleRef = useRef<HTMLElement>(null);
   const deckRef = useRef<HTMLElement>(null);
   const countRef = useRef<HTMLElement>(null);
+  const stepsRef = useRef<HTMLDivElement>(null);
   const austriaRef = useRef<HTMLElement>(null);
   const reviewsRef = useRef<HTMLDivElement>(null);
   const [reviewDot, setReviewDot] = useState(0);
@@ -284,166 +286,358 @@ export function HomePage() {
     return () => io.disconnect();
   }, []);
 
+  // Scroll-linked scenes: S03 words, S04 deck, S11 photo parallax. One rAF-batched pass per frame —
+  // every rect is read first and styles are written after, and only for the scenes near the viewport
+  // (before: three handlers wrote styles on every scroll event, the deck read layout between writes).
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const words = scaleRef.current?.querySelectorAll<HTMLElement>("[data-word]");
-    const pin = scaleRef.current;
-    const onScroll = () => {
-      if (pin && words && !reduce) {
-        const rect = pin.getBoundingClientRect();
-        const total = pin.offsetHeight - window.innerHeight;
-        const progress = total <= 0 ? 1 : Math.min(1, Math.max(0, -rect.top / total));
-        words.forEach((word, index) => {
-          const start = index / words.length;
-          const local = Math.min(1, Math.max(0, (progress - start) / (1 / words.length)));
-          word.style.filter = `blur(${12 * (1 - local)}px)`;
-          word.style.opacity = String(0.18 + 0.82 * local);
-        });
+    const clamp = (value: number) => Math.min(1, Math.max(0, value));
+    const scale = scaleRef.current;
+    const words = scale ? [...scale.querySelectorAll<HTMLElement>("[data-word]")] : [];
+    const wordLast = words.map(() => -1);
+    const deck = deckRef.current;
+    const stage = deck?.querySelector<HTMLElement>(".deck-stage") ?? null;
+    const cards = deck ? [...deck.querySelectorAll<HTMLElement>(".deck-card")] : [];
+    const ghosts = cards.map((card) => card.querySelector<HTMLElement>(".deck-ghost"));
+    const edges = deck ? [...deck.querySelectorAll<HTMLElement>(".deck-edge")] : [];
+    const austria = austriaRef.current;
+    const photo = austria?.querySelector<HTMLElement>("img.parallax") ?? null;
+    // M40: on phones the hero photo scrolls away slower than the page (parallax 0.8)
+    const heroPhoto = document.querySelector<HTMLElement>('[data-s="s01"] .hero-media picture');
+    // S07: one card at a time (frame 1385:652); on the desktop the section is pinned while the three swap
+    const shows = showsRef.current;
+    const showsWrap = shows?.querySelector<HTMLElement>(".shows") ?? null;
+    let showLast = -1;
+    const phone = window.matchMedia("(max-width: 767px)");
+    // inline styles are written only when the value changes
+    const last = new Map<HTMLElement, Record<string, string>>();
+    const put = (node: HTMLElement | null, prop: string, value: string) => {
+      if (!node) return;
+      const seen = last.get(node) ?? {};
+      if (seen[prop] === value) return;
+      seen[prop] = value;
+      last.set(node, seen);
+      node.style.setProperty(prop, value);
+    };
+    const geo = { vh: 0, mode: "", pad: 0, top: 0, travel: 1, cardH: 558, start: 800, scaleH: 0, heights: [] as number[], showsPinned: false, showsPad: 0, showsTop: 0, showsTravel: 1, showsH: 1 };
+    const measure = () => {
+      geo.vh = window.innerHeight;
+      geo.scaleH = scale?.offsetHeight ?? 0;
+      if (shows && showsWrap) {
+        const cs = getComputedStyle(showsWrap);
+        geo.showsPinned = cs.position === "sticky";
+        geo.showsTop = parseFloat(cs.top) || 0;
+        geo.showsPad = parseFloat(getComputedStyle(shows).paddingTop) || 0;
+        geo.showsH = shows.offsetHeight;
+        geo.showsTravel = Math.max(1, shows.offsetHeight - showsWrap.offsetHeight - geo.showsPad * 2);
       }
-      if (deckRef.current) {
-        // S04 deck: on desktop the stage is pinned and the front card leaves upward
-        // while the cards behind step forward to the 1118 / 990 / 902 Figma sizes.
-        const section = deckRef.current;
-        const stage = section.querySelector<HTMLElement>(".deck-stage");
-        const cards = [...section.querySelectorAll<HTMLElement>(".deck-card")];
-        const pinned = stage && getComputedStyle(stage).position === "sticky" && !reduce;
-        let progress = 0;
-        if (pinned && stage) {
-          const rect = section.getBoundingClientRect();
-          const pad = parseFloat(getComputedStyle(section).paddingTop) || 0;
-          const top = parseFloat(getComputedStyle(stage).top) || 0;
-          const travel = Math.max(1, section.offsetHeight - stage.offsetHeight - pad * 2);
-          progress = Math.min(1, Math.max(0, (pad - top - rect.top) / travel)) * (cards.length - 1);
-        }
-        cards.forEach((card, index) => {
-          if (!pinned) {
-            card.style.transform = "";
-            card.style.opacity = "";
-            card.style.zIndex = "";
-            card.style.filter = "";
-            // M41: on phones the next sticky card slides over this one — it shrinks to 0.94 and darkens by 20%.
-            const next = cards[index + 1];
-            if (next && !reduce) {
-              const rect = card.getBoundingClientRect();
-              const cover = Math.min(1, Math.max(0, (rect.bottom - next.getBoundingClientRect().top) / rect.height));
-              card.style.setProperty("--cover", cover.toFixed(3));
-            } else card.style.removeProperty("--cover");
-            return;
-          }
-          card.style.removeProperty("--cover");
-          const rel = index - progress;
-          if (rel < 0) {
-            // Storyboard 1407:1817: the next card slides over this one; it goes back into the stack
-            // (scale .94, opacity .55, blur 3) and only its top edge stays visible, 12px per step.
-            const depth = -rel;
-            const near = Math.min(1, depth);
-            const scale = 1 - 0.06 * near - 0.03 * Math.max(0, depth - 1);
-            const lift = 12 * depth + (1 - scale) * card.offsetHeight;
-            card.style.transform = `translateY(${-lift}px) scale(${scale})`;
-            card.style.opacity = String(1 - 0.45 * near);
-            card.style.filter = `blur(${(3 * near).toFixed(2)}px)`;
-            card.style.zIndex = String(Math.round(50 - depth * 10));
-          } else {
-            const scale = rel <= 1 ? 1 - 0.1145 * rel : 0.8855 - 0.0785 * Math.min(1, rel - 1);
-            const shift = rel <= 1 ? 24 * rel : 24 + 25 * Math.min(1, rel - 1);
-            card.style.transform = `translateY(${shift}px) scale(${scale})`;
-            card.style.opacity = "1";
-            card.style.filter = "";
-            card.style.zIndex = String(Math.round(100 - rel * 10));
-          }
-        });
+      let mode = "list";
+      if (reduce) mode = "static";
+      else if (stage && getComputedStyle(stage).position === "sticky") mode = "pinned";
+      if (deck && stage) {
+        geo.top = parseFloat(getComputedStyle(stage).top) || 0;
+        geo.pad = parseFloat(getComputedStyle(deck).paddingTop) || 0;
+        geo.travel = Math.max(1, deck.offsetHeight - stage.offsetHeight - geo.pad * 2);
+        geo.cardH = cards[0]?.offsetHeight ?? 558;
+        // the next card waits just under the bottom edge of the viewport and slides up over the deck
+        geo.start = Math.max(geo.vh - geo.top, geo.cardH) + 16;
+        geo.heights = cards.map((card) => card.offsetHeight);
       }
-      if (!reduce && austriaRef.current) {
-        const img = austriaRef.current.querySelector<HTMLElement>("img.parallax");
-        if (img) {
-          const rect = austriaRef.current.getBoundingClientRect();
-          img.style.transform = `translateY(${Math.max(-40, Math.min(40, rect.top * -0.08))}px)`;
-        }
+      if (heroPhoto && (!phone.matches || reduce)) {
+        heroPhoto.style.removeProperty("transform");
+        last.delete(heroPhoto);
+      }
+      if (mode !== geo.mode) {
+        cards.forEach((card) => ["transform", "opacity", "--cover"].forEach((prop) => card.style.removeProperty(prop)));
+        ghosts.forEach((ghost) => ghost?.style.removeProperty("opacity"));
+        edges.forEach((edge) => ["transform", "opacity"].forEach((prop) => edge.style.removeProperty(prop)));
+        last.clear();
+        geo.mode = mode;
       }
     };
-    onScroll();
+    const near = (rect: DOMRect, margin = 200) => rect.bottom > -margin && rect.top < geo.vh + margin;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      // read
+      const scaleRect = scale && !reduce ? scale.getBoundingClientRect() : null;
+      const deckRect = deck && geo.mode !== "static" ? deck.getBoundingClientRect() : null;
+      const cardTops = deckRect && geo.mode === "list" && near(deckRect) ? cards.map((card) => card.getBoundingClientRect().top) : null;
+      const ausRect = austria && photo && !reduce ? austria.getBoundingClientRect() : null;
+      const showsRect = shows ? shows.getBoundingClientRect() : null;
+      // S07: which card is on
+      if (showsRect) {
+        const progress = geo.showsPinned
+          ? clamp((geo.showsTop - geo.showsPad - showsRect.top) / geo.showsTravel)
+          : clamp(-showsRect.top / Math.max(1, geo.showsH - geo.vh * 0.5));
+        const on = Math.min(SHOWS.length - 1, Math.floor(Math.min(0.999, progress) * SHOWS.length));
+        if (on !== showLast) {
+          showLast = on;
+          setShowOn(on);
+        }
+      }
+      // write · S03: words come out of blur 12 / opacity .18 one after another while the section is pinned
+      if (scaleRect && near(scaleRect, 0)) {
+        const total = geo.scaleH - geo.vh;
+        const progress = total <= 0 ? 1 : clamp(-scaleRect.top / (total * 0.85));
+        words.forEach((word, index) => {
+          const local = Math.round(clamp(progress * words.length - index) * 20) / 20;
+          if (local === wordLast[index]) return;
+          wordLast[index] = local;
+          word.style.filter = local >= 1 ? "none" : `blur(${(12 * (1 - local)).toFixed(1)}px)`;
+          word.style.opacity = local >= 1 ? "1" : (0.18 + 0.82 * local).toFixed(3);
+        });
+      }
+      // S04 · desktop: storyboard 1407:1817 on the pinned stage
+      if (deckRect && geo.mode === "pinned" && near(deckRect, 0)) {
+        const progress = clamp((geo.pad - geo.top - deckRect.top) / geo.travel) * (cards.length - 1);
+        cards.forEach((card, index) => {
+          const rel = index - progress;
+          let transform: string;
+          let opacity = 1;
+          let blur = 0;
+          if (rel <= 0) {
+            // goes into the stack: scale .94, opacity .55, blur 3; its top edge stays 12px above the next one
+            const depth = -rel;
+            const step = Math.min(1, depth);
+            const size = 1 - 0.06 * step - 0.03 * Math.max(0, depth - 1);
+            const lift = 12 * depth + (1 - size) * geo.cardH;
+            transform = `translate3d(0, ${(-lift).toFixed(1)}px, 0) scale(${size.toFixed(4)})`;
+            opacity = 1 - 0.45 * step;
+            blur = step;
+          } else {
+            // comes in over the deck from below the viewport: y → 0, scale .96 → 1
+            const t = Math.min(1, rel);
+            transform = `translate3d(0, ${(geo.start * t).toFixed(1)}px, 0) scale(${(1 - 0.04 * t).toFixed(4)})`;
+          }
+          put(card, "transform", transform);
+          put(card, "opacity", opacity.toFixed(3));
+          put(ghosts[index], "opacity", blur.toFixed(3));
+        });
+        // the strips under the first card: card 2's strip fades as card 2 leaves the deck,
+        // card 3's strip moves up into its place (hidden under card 2 by then) and fades when card 3 leaves
+        if (edges[0]) put(edges[0], "opacity", (1 - clamp(progress / 0.3)).toFixed(3));
+        if (edges[1]) {
+          const move = clamp((progress - 0.35) / 0.5);
+          const eased = move * move * (3 - 2 * move);
+          put(edges[1], "transform", `translate3d(0, ${(49 - 25 * eased).toFixed(1)}px, 0) scale(${(0.807 + 0.0785 * eased).toFixed(4)})`);
+          put(edges[1], "opacity", (1 - clamp((progress - 1) / 0.3)).toFixed(3));
+        }
+      }
+      // S04 · phone/tablet (M41): the next sticky card slides over this one — it shrinks to .94 and darkens by 20%
+      if (cardTops) {
+        cards.forEach((card, index) => {
+          const next = cardTops[index + 1];
+          const cover = next === undefined ? 0 : clamp((cardTops[index] + geo.heights[index] - next) / geo.heights[index]);
+          put(card, "--cover", cover.toFixed(3));
+        });
+      }
+      if (heroPhoto && phone.matches && !reduce) {
+        const y = window.scrollY;
+        if (y < geo.vh * 1.5) put(heroPhoto, "transform", `translate3d(0, ${(y * 0.2).toFixed(1)}px, 0)`);
+      }
+      // S11: the photo drifts ±40px
+      if (ausRect && photo && near(ausRect)) {
+        put(photo, "transform", `translate3d(0, ${Math.max(-40, Math.min(40, ausRect.top * -0.08)).toFixed(1)}px, 0)`);
+      }
+    };
+    const onScroll = () => {
+      if (!raf) raf = window.requestAnimationFrame(update);
+    };
+    const onResize = () => {
+      measure();
+      onScroll();
+    };
+    measure();
+    update();
+    // section heights above the deck settle once fonts and images arrive
+    const settle = window.setTimeout(onResize, 1200);
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.clearTimeout(settle);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
 
+  // S09 (note 1401:808, storyboard 1410:1799): the column under the pointer becomes active — the lime mask opens
+  // from the side the pointer came in (clip-path, 550ms); between neighbours it moves over without closing:
+  // the old one shuts towards the new column while the new one opens from the shared edge. Step 1 is active
+  // by default (frame; touch). Before: step 1 stayed green for good, the hover mask was dark #101400 and
+  // opened only from the left, two columns could look active at once.
   useEffect(() => {
-    if (antigenAnimated) {
-      setCount(286);
-      return;
-    }
-    const node = countRef.current;
-    if (!node) return;
+    const grid = stepsRef.current;
+    if (!grid || !window.matchMedia("(hover: hover)").matches) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      antigenAnimated = true;
-      setCount(286);
-      return;
-    }
+    const steps = [...grid.querySelectorAll<HTMLElement>(".step")];
+    const masks = steps.map((step) => step.querySelector<HTMLElement>(".step-mask"));
+    const SHUT_L = "inset(0 100% 0 0)";
+    const SHUT_R = "inset(0 0 0 100%)";
+    let active = 0;
+    const enter = (index: number, event: PointerEvent) => {
+      if (event.pointerType !== "mouse" || index === active) return;
+      const prev = active;
+      active = index;
+      steps[prev].removeAttribute("data-on");
+      steps[index].setAttribute("data-on", "");
+      if (reduce) return;
+      const old = masks[prev];
+      const mask = masks[index];
+      if (old) old.style.clipPath = index > prev ? SHUT_R : SHUT_L;
+      if (!mask) return;
+      const rect = steps[index].getBoundingClientRect();
+      mask.style.transition = "none";
+      mask.style.clipPath = event.clientX < rect.left + rect.width / 2 ? SHUT_L : SHUT_R;
+      void mask.offsetWidth;
+      mask.style.transition = "";
+      mask.style.clipPath = "inset(0 0 0 0)";
+    };
+    const handlers = steps.map((step, index) => {
+      const handler = (event: PointerEvent) => enter(index, event);
+      step.addEventListener("pointerenter", handler);
+      return handler;
+    });
+    return () => steps.forEach((step, index) => step.removeEventListener("pointerenter", handlers[index]));
+  }, []);
+
+  // S07: the graphics of a card (dots wave, rings drawn, level chips) play once — when the card is first
+  // shown — and do not replay on every swap or when scrolling back. `data-played` is not owned by React,
+  // so the class changes of the swap keep it.
+  useEffect(() => {
+    const section = showsRef.current;
+    if (!section) return;
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((entry) => {
+        const card = entry.target as HTMLElement;
+        if (entry.isIntersecting && getComputedStyle(card).visibility !== "hidden" && card.offsetHeight > 0) card.dataset.played = "1";
+      }),
+      { threshold: 0.35 },
+    );
+    section.querySelectorAll(".show-card").forEach((card) => io.observe(card));
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => {
+    const section = showsRef.current;
+    const card = section?.querySelectorAll<HTMLElement>(".show-card")[showOn];
+    if (!section || !card) return;
+    const rect = section.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) card.dataset.played = "1";
+  }, [showOn]);
+
+  // S10: the counter runs 0 → 286 (900ms) when it comes into view. The digits are written straight into the
+  // node — before, setCount re-rendered the whole HomePage on every frame of the count.
+  useEffect(() => {
+    const node = countRef.current?.querySelector<HTMLElement>("[data-antigen-count]");
+    if (!node || antigenAnimated || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    node.textContent = "0";
+    let raf = 0;
     const io = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting || antigenAnimated) return;
       antigenAnimated = true;
+      io.disconnect();
       const start = performance.now();
       const tick = (now: number) => {
         const t = Math.min(1, (now - start) / 900);
-        setCount(Math.round(286 * (1 - Math.pow(1 - t, 3))));
-        if (t < 1) requestAnimationFrame(tick);
+        node.textContent = String(Math.round(286 * (1 - Math.pow(1 - t, 3))));
+        if (t < 1) raf = requestAnimationFrame(tick);
       };
-      requestAnimationFrame(tick);
-      io.disconnect();
-    });
+      raf = requestAnimationFrame(tick);
+    }, { rootMargin: "0px 0px -10% 0px" });
     io.observe(node);
-    return () => io.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const node = showsRef.current;
-    if (!node) return;
-    const onScroll = () => {
-      const rect = node.getBoundingClientRect();
-      const total = Math.max(1, node.offsetHeight - window.innerHeight * 0.5);
-      const progress = Math.min(0.999, Math.max(0, -rect.top / total));
-      setShowOn(Math.min(SHOWS.length - 1, Math.floor(progress * SHOWS.length)));
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+      node.textContent = "286";
     };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // S13 (note 1401:826, storyboard 1411:1551): the reviews strip drifts left ~60px/s, stops under the pointer and
+  // can be dragged. Before, the loop ran forever (also off screen) and read `scrollWidth` on every frame —
+  // a forced layout per frame for the whole page.
   useEffect(() => {
     const row = reviewsRef.current;
-    if (!row || window.matchMedia("(prefers-reduced-motion: reduce)").matches || window.matchMedia("(max-width: 767px)").matches) return;
-    let stop = false;
-    let paused = false;
+    const track = row?.querySelector<HTMLElement>(".review-track");
+    if (!row || !track || window.matchMedia("(prefers-reduced-motion: reduce)").matches || window.matchMedia("(max-width: 767px), (hover: none)").matches) return;
+    let half = track.scrollWidth / 2;
+    const ro = new ResizeObserver(() => {
+      half = track.scrollWidth / 2;
+    });
+    ro.observe(track);
     let raf = 0;
-    let last = performance.now();
-    const track = row.querySelector<HTMLElement>(".review-track");
+    let visible = false;
+    let hover = false;
+    let drag: { x: number; from: number; id: number } | null = null;
     let offset = 0;
-    const tick = (now: number) => {
-      if (stop) return;
-      const dt = now - last;
-      last = now;
-      if (!paused && track) {
-        offset += (dt / 1000) * 48;
-        const half = track.scrollWidth / 2;
-        if (half > 0 && offset >= half) offset -= half;
-        track.style.transform = `translate3d(${-offset}px,0,0)`;
-      }
-      raf = requestAnimationFrame(tick);
+    let last = 0;
+    const paint = () => {
+      if (half > 0) offset = ((offset % half) + half) % half;
+      track.style.transform = `translate3d(${(-offset).toFixed(2)}px, 0, 0)`;
     };
-    raf = requestAnimationFrame(tick);
+    const tick = (now: number) => {
+      raf = 0;
+      const dt = last ? Math.min(64, now - last) : 0;
+      last = now;
+      if (!hover && !drag) {
+        offset += (dt / 1000) * 60;
+        paint();
+      }
+      if (visible) raf = requestAnimationFrame(tick);
+    };
+    const run = () => {
+      if (!raf && visible) {
+        last = 0;
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    const io = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) run();
+      else if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    });
+    io.observe(row);
     const enter = () => {
-      paused = true;
+      hover = true;
     };
     const leave = () => {
-      paused = false;
+      hover = false;
+    };
+    const down = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse" || event.button !== 0) return;
+      drag = { x: event.clientX, from: offset, id: event.pointerId };
+      row.setPointerCapture(event.pointerId);
+      row.classList.add("is-dragging");
+    };
+    const move = (event: PointerEvent) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      offset = drag.from - (event.clientX - drag.x);
+      paint();
+    };
+    const up = (event: PointerEvent) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      drag = null;
+      row.classList.remove("is-dragging");
     };
     row.addEventListener("mouseenter", enter);
     row.addEventListener("mouseleave", leave);
+    row.addEventListener("pointerdown", down);
+    row.addEventListener("pointermove", move);
+    row.addEventListener("pointerup", up);
+    row.addEventListener("pointercancel", up);
     return () => {
-      stop = true;
       cancelAnimationFrame(raf);
+      io.disconnect();
+      ro.disconnect();
       row.removeEventListener("mouseenter", enter);
       row.removeEventListener("mouseleave", leave);
+      row.removeEventListener("pointerdown", down);
+      row.removeEventListener("pointermove", move);
+      row.removeEventListener("pointerup", up);
+      row.removeEventListener("pointercancel", up);
     };
   }, []);
 
@@ -562,12 +756,15 @@ export function HomePage() {
           <div className="shade" aria-hidden />
           <div className="wrap inner">
             <div className="hero-top">
+              {/* S01 / M40: the title comes in line by line — each line is its own box */}
               <h1>
-                <span className="hero-h1-mobile">Узнайте, какие продукты не подходят именно вам</span>
+                <span className="hero-h1-mobile">
+                  <span className="h1-line">Узнайте, какие</span> <span className="h1-line">продукты не подходят</span> <span className="h1-line">именно вам</span>
+                </span>
                 <span className="hero-h1-desktop">
-                  Узнайте, какие продукты
+                  <span className="h1-line">Узнайте, какие продукты</span>
                   <br />
-                  не подходят именно вам
+                  <span className="h1-line">не подходят именно вам</span>
                 </span>
               </h1>
               <div className="hero-side">
@@ -618,24 +815,40 @@ export function HomePage() {
                 <span data-word key={`${word}-${index}`}>{word}{index === SCALE_WORDS.length - 1 && <sup>1</sup>}{" "}{(index === 3 || index === 6) && <br className="scale-br" />}</span>
               ))}
             </h2>
+            <img className="scale-bubbles" src="/figma/home/bubbles.svg" alt="" />
+            <p className="scale-note">¹ Оценка распространённости пищевой непереносимости. Источник — ссылка на исследование (предоставит клиент)</p>
           </div>
-          <img className="scale-bubbles" src="/figma/home/bubbles.svg" alt="" />
-          <p className="scale-note">¹ Оценка распространённости пищевой непереносимости. Источник — ссылка на исследование (предоставит клиент)</p>
         </section>
 
         <section className="deck" ref={deckRef} data-deck data-s="s04">
           {/* Figma S04 1385:578 (desktop deck 1385:579) · 1426:48571 (mobile list) */}
           <div className="deck-stage">
-            {DECK.map(([title, text, tail], index) => (
-              <article className="deck-card" key={title} data-i={index} style={{ ["--i" as string]: index }}>
-                <img className="deck-bg" src={`/figma/home/deck/card-${index + 1}.webp`} srcSet={`/figma/home/deck/card-${index + 1}.webp 1118w, /figma/home/deck/card-${index + 1}@2x.webp 2236w`} sizes="(min-width: 768px) 1118px, 800px" alt="" />
-                <h2>{title.split("|")[0]}<br className="deck-br" /> {title.split("|")[1]}</h2>
-                <div className="deck-foot">
-                  <img className="deck-icon" src={`/figma/home/deck/icon-${index + 1}.svg`} alt="" />
-                  <p>{text}{tail && <span className="deck-tail">{tail}</span>}<span className="deck-dot">.</span></p>
-                </div>
-              </article>
+            {/* Desktop rest state of 1385:579: the bottom edges of cards 2 and 3 peek under the first one.
+                They are separate strips, so the real next card can slide in over the deck from below. */}
+            {DECK.slice(1).map(([title], index) => (
+              <i className="deck-edge" key={title} aria-hidden style={{ ["--i" as string]: index + 1, backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0) 56%, rgba(0,0,0,.4)), url(/figma/home/deck/card-${index + 2}.webp)` }} />
             ))}
+            {DECK.map(([title, text, tail], index) => {
+              const body = (heading: ReactNode) => (
+                <>
+                  <img className="deck-bg" src={`/figma/home/deck/card-${index + 1}.webp`} srcSet={`/figma/home/deck/card-${index + 1}.webp 1118w, /figma/home/deck/card-${index + 1}@2x.webp 2236w`} sizes="(min-width: 768px) 1118px, 800px" alt="" />
+                  {heading}
+                  <div className="deck-foot">
+                    <img className="deck-icon" src={`/figma/home/deck/icon-${index + 1}.svg`} alt="" />
+                    <p>{text}{tail && <span className="deck-tail">{tail}</span>}<span className="deck-dot">.</span></p>
+                  </div>
+                </>
+              );
+              const words = <>{title.split("|")[0]}<br className="deck-br" /> {title.split("|")[1]}</>;
+              return (
+                <article className="deck-card" key={title} data-i={index} style={{ ["--i" as string]: index }}>
+                  {body(<h2>{words}</h2>)}
+                  {/* S04 note: a card that goes into the stack blurs 0 → 3px. A pre-blurred copy fades in over it
+                      instead of changing the `filter` radius of the whole 1118×558 card on every scroll frame. */}
+                  <div className="deck-ghost" aria-hidden><div className="deck-ghost-in">{body(<p className="deck-h">{words}</p>)}</div></div>
+                </article>
+              );
+            })}
           </div>
         </section>
 
@@ -798,7 +1011,9 @@ export function HomePage() {
                   </div>
                   {index === 0 && <img className="show-dots" src="/figma/home/shows/dots.svg" alt="" />}
                   {index === 1 && (
-                    <div className="show-rings" aria-hidden data-allow-x><i /><i /><i /></div>
+                    <div className="show-rings" aria-hidden data-allow-x>
+                      {[0, 1, 2].map((ring) => <i key={ring}><svg viewBox="0 0 216 216"><circle cx="108" cy="108" r="107.5" pathLength={1} /></svg></i>)}
+                    </div>
                   )}
                   {index === 2 && (
                     <ul className="igg-levels">
@@ -870,9 +1085,10 @@ export function HomePage() {
 
         <section className="wrap band" id="kak-sdat" data-s="s09">
           <h2 className="page-title">Как сдать тест</h2>
-          <div className="cards-3 steps">
+          <div className="cards-3 steps" ref={stepsRef}>
             {STEPS.map(([step, title, text], index) => (
-              <article className={`step ${index === 0 ? "is-green" : "is-paper"}`} key={step}>
+              // data-contrast: the lime of the active column is the mask layer, which the e2e contrast sampler cannot read
+              <article className="step is-paper" key={step} data-on={index === 0 ? "" : undefined} data-contrast="figma">
                 <div className="step-mask" aria-hidden />
                 <div className="step-copy">
                   <p>{step}</p>
@@ -892,7 +1108,7 @@ export function HomePage() {
               <h2 className="page-title">Продукты, которые исследует FOX</h2>
               <p className="lead">Самый частый вопрос перед тестом — «а мой продукт там есть?». Найдите его в составе панели за пару секунд.</p>
             </div>
-            <p className="count-line"><strong data-antigen-count>{count}</strong><span className="d-only">пищевых антигенов из 13 групп · один забор крови</span><span className="m-only">антигенов · 13 групп</span></p>
+            <p className="count-line"><strong data-antigen-count>286</strong><span className="d-only">пищевых антигенов из 13 групп · один забор крови</span><span className="m-only">антигенов · 13 групп</span></p>
           </div>
           <div className="suggest">
           <label className="search">
@@ -937,11 +1153,12 @@ export function HomePage() {
                 <span className="s10-tag">{picked.group}{picked.tag && picked.tag !== picked.group.toLowerCase() && /[A-Za-z]/.test(picked.tag) ? ` · ${picked.tag}` : ""}</span>
                 <button type="button" className="s10-close" aria-label="Сбросить выбор" onClick={() => { setCardOpen(false); setQuery(""); setGroup("Все 286"); setPicked(PRODUCTS[0]); }}>✕</button>
               </div>
-              <div className="s10-card-head">
+              {/* S10: the card switches with a 200 мс fade (head and facts re-mount per product) */}
+              <div className="s10-card-head" key={`h-${picked.name}`}>
                 <h3>{picked.name}</h3>
                 <p>{picked.desc ?? `${picked.group}. В панели это отдельная позиция, не полка целиком.`}</p>
               </div>
-              <dl className="s10-facts">
+              <dl className="s10-facts" key={`f-${picked.name}`}>
                 {(picked.facts ?? [
                   ["Группа", picked.group],
                   ["Родственные в панели", PRODUCTS.filter((item) => item.group === picked.group && item.name !== picked.name && !item.extra).slice(0, 2).map((item) => item.name).join(", ") || "—"],
