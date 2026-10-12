@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -436,7 +436,8 @@ function ReportSection() {
       pending.current = null;
       turnTimer.current = null;
       reportRef.current = target;
-      if (under) under.removeAttribute("style");
+      // the under sheet's inline box is cleared by the layout effect below, in the same frame as the front sheet
+      // comes back (clearing it here first left a frame or two with no page at all)
       // the zone fade-in is armed only now, so the old zone does not replay while the page turns
       setTurned(true);
       setReport(target);
@@ -445,6 +446,10 @@ function ReportSection() {
   }
 
   useEffect(() => () => { if (turnTimer.current) window.clearTimeout(turnTimer.current); }, []);
+  useLayoutEffect(() => {
+    if (turning) return;
+    stageRef.current?.querySelector<HTMLElement>(".sp-sheet.is-back-1")?.removeAttribute("style");
+  }, [turning]);
 
   // Autoplay every 6 s is driven by the progress bar under the active tab (its animationend), so the bar and the
   // turn are always in step; the bar pauses on hover over the block and while the block is off screen.
