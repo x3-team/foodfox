@@ -694,6 +694,7 @@ export function SpecialistsView() {
               (animating filter: blur on a full-bleed photo cost 80–120 ms frames at 4× CPU). */}
           <img className="bg sp-hero-blur" src="/figma/specialists/hero-blur.webp" alt="" aria-hidden data-no-sk />
           <img className="bg" data-no-sk src="/figma/specialists/hero-1440.webp" srcSet="/figma/specialists/hero-1440.webp 1440w, /figma/specialists/hero.webp 2400w" sizes="(min-width: 1440px) 100vw, 1440px" alt="" />
+          <img className="sp-hero-m-blur" src="/figma/specialists/hero-m-blur.webp" alt="" aria-hidden data-no-sk />
           <img className="sp-hero-m" data-no-sk src="/figma/specialists/hero-m.webp" srcSet="/figma/specialists/hero-m.webp 780w, /figma/specialists/hero-m@3x.webp 1170w" sizes="100vw" alt="" />
           <div className="shade" />
           <div className="wrap inner">
