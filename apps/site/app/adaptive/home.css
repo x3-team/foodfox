@@ -363,15 +363,56 @@
   body [data-s="s04"] .deck-card { position: relative; inset: auto; transform: none; }
 }
 
-/* S01 · entrance (note 1401:766): photo 1.04 → 1 over 1.2s, H1 rises, facts stagger 80ms, buttons come last.
-   Before, the facts went 80 / 240 / 320ms and the buttons rose together with the lead at 80ms;
-   on the tablet the photo did not zoom at all. */
-@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
-  body [data-s="s01"].home-hero .facts > div:nth-child(1) { animation-delay: 80ms; }
-  body [data-s="s01"].home-hero .facts > div:nth-child(2) { animation-delay: 160ms; }
-  body [data-s="s01"].home-hero .facts > div:nth-child(3) { animation-delay: 240ms; }
-  body [data-s="s01"].home-hero .hero-actions { animation: riseY 600ms var(--ease) 320ms both; }
+/* S04 · desktop deck, storyboard 1407:1817. Before, the next card jumped in front of the first one on the
+   first pixel of the pinned scroll (it already stood right under it, 24px lower), and the leaving card
+   was blurred by a `filter` whose radius changed on every scroll frame on the whole 1118×558 card.
+   Now: the strips of 1385:579 are separate .deck-edge layers, the next card slides up over the deck from under
+   the viewport (scale .96 → 1), the leaving one goes into the stack (.94 / .55, top edge 12px above) and its
+   blur is a pre-blurred copy (.deck-ghost) that fades in — transform and opacity only. Positions: HomePage.tsx. */
+.deck-ghost, .deck-edge { display: none; }
+@media (min-width: 1101px) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s04"] .deck-card {
+    z-index: calc(10 + var(--i));
+    transform: translate3d(0, calc(min(var(--i), 1) * 100vh), 0) scale(calc(1 - min(var(--i), 1) * .04));
+  }
+  body [data-s="s04"] .deck-edge {
+    display: block; position: absolute; left: 0; right: 0; top: 0; height: 558px; z-index: calc(3 - var(--i)); border-radius: 8px;
+    background-size: cover; background-position: center; transform-origin: 50% 100%; will-change: transform, opacity;
+    /* only the bottom strip is ever meant to show — never through the translucent card going into the stack */
+    clip-path: inset(calc(100% - 64px) 0 0 0 round 0 0 8px 8px);
+    transform: translate3d(0, calc(24px + (var(--i) - 1) * 25px), 0) scale(calc(.8855 - (var(--i) - 1) * .0785));
+  }
+  /* the wrapper is its own layer and only changes opacity; the blur sits on the inner box, which is
+     rasterised once into that layer instead of being re-applied by the compositor every frame */
+  body [data-s="s04"] .deck-ghost { display: block; position: absolute; inset: 0; z-index: 3; padding: inherit; opacity: 0; will-change: opacity; pointer-events: none; }
+  body [data-s="s04"] .deck-ghost-in {
+    display: flex; flex-direction: column; justify-content: space-between; position: absolute; inset: 0;
+    padding: inherit; isolation: isolate; background: #21251d; filter: blur(3px);
+  }
+  body [data-s="s04"] .deck-ghost-in::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(0,0,0,0) 56%, rgba(0,0,0,.6)); }
+  body [data-s="s04"] .deck-card:not([data-i="0"]) .deck-ghost-in::after { background: linear-gradient(180deg, rgba(0,0,0,0) 56%, rgba(0,0,0,.4)); }
+  body [data-s="s04"] .deck-ghost .deck-h { margin: 0; max-width: 683px; font-weight: 300; font-size: 56px; line-height: 60px; letter-spacing: -1px; color: #f8f9f6; align-self: auto; }
 }
+/* M41 · phone/tablet: the covered card darkens by 20% through a black layer's opacity instead of
+   `filter: brightness()` (a repaint of the whole card on every scroll frame). */
+@media (max-width: 1100px) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s04"] .deck-card { will-change: transform; }
+  body [data-s="s04"] .deck-card::before {
+    content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit;
+    background: #000; opacity: calc(.2 * var(--cover, 0)); will-change: opacity;
+  }
+}
+
+/* S03 · pinned scroll scene (note 1401:778, storyboard 1407:1771): the section is a 180vh scroll container,
+   the composition is held in the viewport while the words come out of blur. Before, the pin had been dropped
+   for the static frame height, the progress was always 1 and the words were simply sharp. Reduced motion: no pin. */
+body [data-s="s03"].scale .scale-pin { flex-direction: column; gap: inherit; }
+@media (prefers-reduced-motion: no-preference) {
+  body [data-s="s03"].scale { display: block; height: 180vh; min-height: 0; padding-top: 0; padding-bottom: 0; }
+  body [data-s="s03"].scale .scale-pin { position: sticky; top: 0; height: 100vh; height: 100svh; box-sizing: border-box; padding-top: var(--header, 72px); }
+}
+
+/* S01 · tablet: the photo zooms 1.04 → 1 over 1.2s as on the desktop (the rest of the entrance: below). */
 @media (min-width: 768px) and (max-width: 1279px) and (prefers-reduced-motion: no-preference) {
   body [data-s="s01"].home-hero .hero-media img.bg { transform-origin: center; animation: hero-zoom 1.2s var(--ease) both; }
 }
@@ -452,9 +493,60 @@ body [data-s="s15"] .acc.is-open .acc-plus { background-image: url("/figma/icons
   body [data-s="s01"].home-hero .lead { position: relative; }
   body [data-s="s01"].home-hero .lead::before { content: ""; position: absolute; left: -24px; top: 7px; height: 72px; width: 1px; background: rgba(248, 249, 246, 0.2); }
 }
-@media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
-  /* hero-side стал display: contents — его появление (80 мс) переезжает на лид */
-  body [data-s="s01"].home-hero .lead { animation: riseY 600ms var(--ease) 80ms both; }
+
+/* S01 · entrance by the notes. Before: the H1 rose as one block; the .facts row rose together with each fact
+   inside it (48px of travel, the stagger smeared), on the tablet the buttons rose inside the rising lead column;
+   on the phone M40 was not followed at all (no photo zoom, lead and buttons rose with the title).
+   ≥768 (1401:766, 1407:863): H1 line by line (y 24 → 0, 600ms, 80ms apart), lead, facts 80ms apart, buttons last. */
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s01"].home-hero h1,
+  body [data-s="s01"].home-hero .hero-side,
+  body [data-s="s01"].home-hero .facts { animation: none; }
+  body [data-s="s01"].home-hero .h1-line { display: inline-block; animation: riseY 600ms var(--ease) both; }
+  body [data-s="s01"].home-hero .h1-line:nth-of-type(2) { animation-delay: 80ms; }
+  body [data-s="s01"].home-hero .h1-line:nth-of-type(3) { animation-delay: 160ms; }
+  body [data-s="s01"].home-hero .lead { animation: riseY 600ms var(--ease) 160ms both; }
+  body [data-s="s01"].home-hero .facts > div:nth-child(1) { animation: riseY 600ms var(--ease) 160ms both; }
+  body [data-s="s01"].home-hero .facts > div:nth-child(2) { animation: riseY 600ms var(--ease) 240ms both; }
+  body [data-s="s01"].home-hero .facts > div:nth-child(3) { animation: riseY 600ms var(--ease) 320ms both; }
+  body [data-s="s01"].home-hero .hero-actions { animation: riseY 600ms var(--ease) 400ms both; }
+}
+/* ≤767 (M40): photo 1.06 → 1 over 900ms; the title line by line (y 16 → 0, blur 8 → 0, 80ms apart),
+   then the lead, the buttons and the facts fade in (240ms). The photo's scroll parallax (0.8) is in HomePage.tsx. */
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s01"].home-hero h1,
+  body [data-s="s01"].home-hero .hero-side,
+  body [data-s="s01"].home-hero .facts,
+  body [data-s="s01"].home-hero .facts > div { animation: none; }
+  body [data-s="s01"].home-hero .hero-media img.bg { animation: m40-zoom 900ms var(--ease) both; }
+  body [data-s="s01"].home-hero .hero-media picture { will-change: transform; }
+  /* own layers, so the blur runs on the compositor and does not freeze while the page hydrates */
+  body [data-s="s01"].home-hero .h1-line { display: inline-block; animation: m40-line 600ms var(--ease) both; will-change: transform, opacity, filter; }
+  body [data-s="s01"].home-hero .h1-line:nth-of-type(2) { animation-delay: 80ms; }
+  body [data-s="s01"].home-hero .h1-line:nth-of-type(3) { animation-delay: 160ms; }
+  body [data-s="s01"].home-hero .lead { animation: m40-fade 240ms ease-out 400ms both; }
+  body [data-s="s01"].home-hero .hero-actions { animation: m40-fade 240ms ease-out 480ms both; }
+  body [data-s="s01"].home-hero .facts { animation: m40-fade 240ms ease-out 560ms both; }
+}
+/* Reduced motion: no rise anywhere in the hero (the H1, lead column, facts and buttons kept their 24px riseY —
+   those rules are page-specific and had no reduced-motion variant); the section itself fades in over 100ms
+   with every other section (globals: [data-s].is-in → rm-fade). */
+@media (prefers-reduced-motion: reduce) {
+  body [data-s="s01"].home-hero h1,
+  body [data-s="s01"].home-hero .h1-line,
+  body [data-s="s01"].home-hero .hero-side,
+  body [data-s="s01"].home-hero .lead,
+  body [data-s="s01"].home-hero .hero-actions,
+  body [data-s="s01"].home-hero .facts,
+  body [data-s="s01"].home-hero .facts > div { animation: none; }
+}
+@keyframes m40-zoom { from { transform: scale(1.06); } to { transform: none; } }
+@keyframes m40-line { from { opacity: 0; transform: translateY(16px); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes m40-fade { from { opacity: 0; } to { opacity: 1; } }
+/* M40: the phone hero panel showed plain black until its texture arrived (~1s on load), then jumped to olive;
+   the fallback colour is the texture's average, so the swap is invisible. */
+@media (max-width: 767px) {
+  body [data-s="s01"].dark-hero.home-hero { background-color: #4c6031; }
 }
 @media (min-width: 1280px) and (max-width: 1439px) {
   /* на 1280 три плашки (812 px) + кнопки (364 px) встают в один ряд только с зазором 24 и полями плашек 16 */
@@ -487,4 +579,172 @@ body [data-s="s02"] .meta-line { justify-content: center; }
      ни с контейнером, ни с текстовой колонкой слева; карточка на всю ширину колонки */
   body [data-s="s07"] .shows-cards { padding-right: 0; }
   body [data-s="s07"] .show-card { width: 100%; }
+}
+
+/* S07 · «Что показывает тест FOX» (note 1401:796, storyboard 1410:1416; the frame shows one card at a time).
+   Before: the section was not pinned, the card swapped by `display` while the section was already leaving
+   the screen (the 2nd and 3rd cards were seen half off the top), the dots replayed on every swap and on
+   scrolling back. Now on the desktop the section holds (sticky) while the three cards cross-fade, and each
+   card's graphic plays once: 286 dots open as a wave from the centre, the 13-group rings are drawn
+   (stroke-dashoffset 1.2s), the three level chips come in 120ms apart. */
+body [data-s="s07"] .show-rings i { position: relative; border: 0; }
+body [data-s="s07"] .show-rings svg { display: block; width: 100%; height: 100%; overflow: visible; }
+body [data-s="s07"] .show-rings circle { fill: none; stroke: rgba(248, 249, 246, .8); stroke-width: 1; vector-effect: non-scaling-stroke; }
+@media (min-width: 1101px) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s07"].shows-band { box-sizing: border-box; height: calc(644px + 256px + 120vh); overflow: clip; }
+  body [data-s="s07"] .shows { position: sticky; top: max(96px, calc(50vh - 322px)); }
+  body [data-s="s07"] .shows-cards { display: grid; }
+  body [data-s="s07"] .show-card,
+  body [data-s="s07"] .show-card.is-off { display: flex; grid-area: 1 / 1; align-self: start; transition: opacity 400ms var(--ease), visibility 0s linear 400ms; }
+  body [data-s="s07"] .show-card.is-off { opacity: 0; visibility: hidden; }
+  body [data-s="s07"] .show-card.is-on { opacity: 1; visibility: visible; transition: opacity 400ms var(--ease); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  body [data-s="s07"] .show-card:not([data-played]) .show-dots { clip-path: circle(0% at 50% 50%); }
+  body [data-s="s07"] .show-card[data-played] .show-dots { animation: s07-wave 1.2s var(--ease) both; }
+  body [data-s="s07"] .show-card:not([data-played]) .show-rings circle { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  body [data-s="s07"] .show-card[data-played] .show-rings circle { stroke-dasharray: 1; animation: s07-ring 1.2s var(--ease) both; }
+  body [data-s="s07"] .show-card[data-played] .show-rings i:nth-child(2) circle { animation-delay: 120ms; }
+  body [data-s="s07"] .show-card[data-played] .show-rings i:nth-child(3) circle { animation-delay: 240ms; }
+  body [data-s="s07"] .show-card:not([data-played]) .igg-levels li { opacity: 0; }
+  body [data-s="s07"] .show-card[data-played] .igg-levels li { animation: riseY 500ms var(--ease) both; }
+  body [data-s="s07"] .show-card[data-played] .igg-levels li:nth-child(2) { animation-delay: 120ms; }
+  body [data-s="s07"] .show-card[data-played] .igg-levels li:nth-child(3) { animation-delay: 240ms; }
+}
+@keyframes s07-wave { from { clip-path: circle(0% at 50% 50%); } to { clip-path: circle(75% at 50% 50%); } }
+@keyframes s07-ring { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+/* S13 · reviews strip: drag with the mouse (note 1401:826); the moving track is its own layer. Under reduced
+   motion the strip does not drift, so it scrolls by hand instead of hiding the cards past the edge. */
+@media (min-width: 768px) {
+  body [data-s="s13"] .review-track { will-change: transform; }
+  body [data-s="s13"] .review-row { cursor: grab; touch-action: pan-y; }
+  body [data-s="s13"] .review-row.is-dragging { cursor: grabbing; user-select: none; }
+  body [data-s="s13"] .review-row img { -webkit-user-drag: none; user-select: none; }
+}
+/* M47: no auto-scroll on touch screens (a tablet included) — the strip is swiped instead. */
+@media (min-width: 768px) and (prefers-reduced-motion: reduce), (min-width: 768px) and (hover: none) {
+  body [data-s="s13"] .review-row { overflow-x: auto; scrollbar-width: none; cursor: auto; touch-action: auto; }
+  body [data-s="s13"] .review-row::-webkit-scrollbar { display: none; }
+}
+
+/* S10 · the 0 → 286 counter changed the width of its box on every frame (layout shifts, the row next to it
+   moved); tabular digits in a box that is always three digits wide. */
+body [data-s="s10"] .count-line strong { display: inline-block; min-width: 3ch; font-variant-numeric: tabular-nums; }
+
+/* M44 · phone/tablet: the next page already lies under the curling one — it no longer fades in from .2 with a
+   16° turn (shotIn) underneath the curl. */
+@media (max-width: 1100px) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s08"] .s08-stack .s08-shot:not(.s08-curl) { animation: none; }
+}
+
+/* S09 · «Как сдать тест»: one active column at a time (data-on, set by HomePage.tsx), its lime mask opens from the
+   side the pointer came in and moves to the neighbour without closing (note 1401:808, storyboard 1410:1799).
+   The green is the mask now (it used to be a fixed background of step 1 while the hover mask was dark). */
+body [data-s="s09"] .step-mask {
+  background:
+    radial-gradient(60% 45% at 18% 12%, rgba(240,246,170,.95), transparent 70%),
+    radial-gradient(55% 50% at 55% 40%, rgba(214,230,120,.85), transparent 75%),
+    radial-gradient(70% 60% at 10% 95%, #1f3a12, transparent 70%),
+    linear-gradient(160deg, #c9dc7a 0%, #7fa443 55%, #3d6224 100%);
+  opacity: 1; clip-path: inset(0 0 0 100%); transition: clip-path 550ms cubic-bezier(.65, 0, .35, 1);
+}
+body [data-s="s09"] .step[data-on] .step-mask { clip-path: inset(0 0 0 0); opacity: 1; }
+body [data-s="s09"] .step:not([data-on]):hover .step-mask { clip-path: inset(0 0 0 100%); opacity: 1; }
+body [data-s="s09"] .step { transition: border-color 250ms; }
+body [data-s="s09"] .step[data-on] { border-color: transparent; }
+body [data-s="s09"] .step .step-copy h3,
+body [data-s="s09"] .step .step-copy p { transition: color 250ms; }
+body [data-s="s09"] .step:not([data-on]) .step-copy h3 { color: #0b0c08; }
+body [data-s="s09"] .step:not([data-on]) .step-copy p:first-child { color: rgba(11,12,8,.5); }
+body [data-s="s09"] .step:not([data-on]) .step-copy p:last-child { color: rgba(11,12,8,.65); }
+body [data-s="s09"] .step[data-on] .step-copy h3,
+body [data-s="s09"] .step[data-on] .step-copy p:first-child { color: #f8f9f6; }
+body [data-s="s09"] .step[data-on] .step-copy p:last-child { color: rgba(248,249,246,.75); }
+@media (max-width: 1100px) {
+  body [data-s="s09"] .step:not([data-on]) .step-copy p:last-child { color: rgba(11,12,8,.5); }
+}
+/* reduced motion: the active column cross-fades (100ms) instead of the wipe */
+@media (prefers-reduced-motion: reduce) {
+  body [data-s="s09"] .step .step-mask,
+  body [data-s="s09"] .step:hover .step-mask { clip-path: inset(0 0 0 0); opacity: 0; transition: opacity 100ms; }
+  body [data-s="s09"] .step[data-on] .step-mask { opacity: 1; }
+}
+
+/* S06 · checker card (note 1393:494): the group bars grow 300ms ease-out (they jumped), the specialists
+   that come in after a mark slide up 8px while they fade in (the 200ms crossfade itself is M43). */
+body [data-s="s06"] .checker-meters b { transition: width 300ms ease-out; }
+@media (prefers-reduced-motion: no-preference) {
+  body [data-s="s06"] .checker-specs-x > .checker-specs.is-in li { animation: s06-spec-in 200ms ease-out both; }
+}
+@keyframes s06-spec-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* S11 · certificate tiles (note 1401:814, storyboard 1463:2400): they cascade in 80ms apart when the section
+   enters, and on hover get 6% lighter with a ↗ arrow (150ms) — neither existed. */
+@media (min-width: 1101px) {
+  body [data-s="s11"] .aus-cards a { position: relative; }
+  body [data-s="s11"] .aus-cards a::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; background: rgba(255, 255, 255, .06);
+    opacity: 0; transition: opacity 150ms; pointer-events: none;
+  }
+  body [data-s="s11"] .aus-cards a::after {
+    content: ""; position: absolute; top: 24px; right: 24px; width: 20px; height: 20px; background: #f8f9f6;
+    -webkit-mask: url("/icons/arrow-up-right.svg") center / contain no-repeat; mask: url("/icons/arrow-up-right.svg") center / contain no-repeat;
+    opacity: 0; transform: translate(-3px, 3px); transition: opacity 150ms, transform 150ms; pointer-events: none;
+  }
+  body [data-s="s11"] .aus-cards a:hover::before,
+  body [data-s="s11"] .aus-cards a:focus-visible::before,
+  body [data-s="s11"] .aus-cards a:hover::after,
+  body [data-s="s11"] .aus-cards a:focus-visible::after { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  body [data-s="s11"]:not(.is-in) .aus-cards a { opacity: 0; }
+  body [data-s="s11"].is-in .aus-cards a { animation: riseY 600ms var(--ease) backwards; }
+  body [data-s="s11"].is-in .aus-cards a:nth-child(2) { animation-delay: 80ms; }
+  body [data-s="s11"].is-in .aus-cards a:nth-child(3) { animation-delay: 160ms; }
+  body [data-s="s11"].is-in .aus-cards a:nth-child(4) { animation-delay: 240ms; }
+}
+
+/* S12 · the tile's #F2F2F2 hover background came in with a jump while the logo eased (200ms) */
+body [data-s="s12"] .lab-tile { transition: scale 120ms, background-color 200ms var(--ease); }
+/* the generic `.lab-tile:hover { transform: scale(1.04) }` also blew up the whole tile without a transition —
+   by the note only the logo grows */
+body [data-s="s12"] .lab-tile:hover { transform: none; }
+
+/* S10 · product card: a new product used to replace the text in place; now it fades in over 200ms (note 1399:605) */
+@media (prefers-reduced-motion: no-preference) {
+  body [data-s="s10"] .s10-card .s10-card-head,
+  body [data-s="s10"] .s10-card .s10-facts { animation: m40-fade 200ms ease-out both; }
+}
+
+/* M42 · phone pager under the symptom cards (frame 1424:48354; note: the active dot stretches to 20px) */
+.sym-pager { display: none; }
+@media (max-width: 767px) {
+  body [data-s="s05"] .sym-pager { display: flex; gap: 6px; margin: 16px 0 0; }
+  body [data-s="s05"] .sym-pager i { width: 6px; height: 6px; border-radius: 3px; background: rgba(248, 249, 246, .3); transition: width 200ms var(--ease), background-color 200ms var(--ease); }
+  body [data-s="s05"] .sym-pager i.is-on { width: 20px; background: #f8f9f6; }
+}
+
+/* M48 · the chat bubble of «Не нашли ответ?» types (three dots, ~1s) and then shows the greeting */
+.s15-typing { display: none; }
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s15"] .s15-chat p { position: relative; }
+  body [data-s="s15"] .s15-typing { display: flex; gap: 4px; position: absolute; left: 14px; bottom: 14px; opacity: 0; }
+  body [data-s="s15"] .s15-typing i { width: 6px; height: 6px; border-radius: 50%; background: rgba(11, 12, 8, .45); }
+  body [data-s="s15"] .s15-help-card:not([data-played]) .s15-chat b { opacity: 0; }
+  body [data-s="s15"] .s15-help-card[data-played] .s15-typing { animation: s15-typing 1000ms linear both; }
+  body [data-s="s15"] .s15-help-card[data-played] .s15-typing i { animation: s15-dot 600ms ease-in-out 2; }
+  body [data-s="s15"] .s15-help-card[data-played] .s15-typing i:nth-child(2) { animation-delay: 150ms; }
+  body [data-s="s15"] .s15-help-card[data-played] .s15-typing i:nth-child(3) { animation-delay: 300ms; }
+  body [data-s="s15"] .s15-help-card[data-played] .s15-chat b { animation: m40-fade 240ms ease-out 1000ms both; }
+}
+@keyframes s15-typing { 0%, 95% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes s15-dot { 0%, 100% { transform: none; opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
+
+/* M47 · blog card on touch: pressed — the card 0.98, its cover 1.04 (there was no press state) */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  body [data-s="s14"] .blog-home-card { transition: scale 120ms ease-out, background-color 200ms; }
+  body [data-s="s14"] .blog-home-card img { transition: transform 200ms ease-out; }
+  body [data-s="s14"] .blog-home-card:active { scale: .98; }
+  body [data-s="s14"] .blog-home-card:active img { transform: scale(1.04); }
 }

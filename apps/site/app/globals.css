@@ -2878,8 +2878,6 @@ body [data-s="s07"] .show-copy { display: flex; flex-direction: column; gap: 16p
 body [data-s="s07"] .show-card h3 { margin: 0; font-weight: 300; font-size: 40px; line-height: 44px; letter-spacing: -1px; color: #f8f9f6; }
 body [data-s="s07"] .show-card p { margin: 0; font-size: 20px; line-height: 24px; color: rgba(248,249,246,.65); }
 .show-dots { display: block; width: 306px; height: 288px; margin: 0 auto; }
-[data-s="s07"].is-in .show-card.is-on .show-dots { animation: showDots 1.2s var(--ease) both; }
-@keyframes showDots { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
 .show-rings { display: flex; justify-content: center; align-items: center; height: 264px; }
 .show-rings i { flex: none; width: 216px; height: 216px; border-radius: 50%; border: 1px solid rgba(248,249,246,.8); }
 body [data-s="s07"] .igg-levels { display: flex; flex-direction: column; gap: 24px; padding-top: 24px; margin: 0; }
@@ -4510,7 +4508,7 @@ body [data-s="l01"] .ls-seek b { position: relative; font-weight: 500; font-size
 /* ===== Block 3 · mobile motion (adaptive notes M41–M46) ===== */
 @media (max-width: 1100px) {
   /* M41: the covered deck card shrinks to 0.94 and darkens by 20% as the next one slides over it. */
-  body [data-s="s04"] .deck-card { scale: calc(1 - 0.06 * var(--cover, 0)); transform-origin: 50% 0; filter: brightness(calc(1 - 0.2 * var(--cover, 0))); }
+  body [data-s="s04"] .deck-card { scale: calc(1 - 0.06 * var(--cover, 0)); transform-origin: 50% 0; } /* darkening: ::before in adaptive/home.css */
   /* M44: page curl over the left edge (rotateY 0 → −160°, perspective 1200, 520 мс, shadow on the fold). */
   body [data-s="s08"] .s08-stack { perspective: 1200px; }
   body [data-s="s08"] .s08-stack .s08-shot.s08-curl { z-index: 4; transform-origin: 0 50%; animation: s08-curl 520ms cubic-bezier(.4, 0, .2, 1) forwards; backface-visibility: hidden; }
