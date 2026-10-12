@@ -343,14 +343,15 @@ const CITY_HINTS: Array<[string, string]> = [
   ["Ростов-на-Дону", "пока нет партнёров"],
   ["Самара", "пока нет партнёров"],
 ];
-const CITY_COOKIE = "fox_city";
+const CITY_COOKIE = "fox_city"; // also read on the server in app/labs/page.tsx
 
 function labName(lab: string) {
   return lab === "Инвитро" ? "INVITRO" : lab;
 }
 
-export function LabsPage() {
-  const [city, setCity] = useState("Москва");
+/** `savedCity` — the city cookie read on the server (null = first visit → the confirmation is rendered right away). */
+export function LabsPage({ savedCity = null }: { savedCity?: string | null }) {
+  const [city, setCity] = useState(savedCity || "Москва");
   const [labView, setLabView] = useState<"list" | "map">("list");
   const [wide, setWide] = useState(false);
   const [selected, setSelected] = useState(BRANCHES[0].id);
@@ -364,7 +365,9 @@ export function LabsPage() {
   const [sendingMail, setSendingMail] = useState(false);
   const [flash, setFlash] = useState("");
   const [hovered, setHovered] = useState("");
-  const [askCity, setAskCity] = useState(false);
+  // 1257:1044: first visit — ask to confirm the city; the choice is kept in a cookie. The cookie is read on the server,
+  // so the question is part of the first HTML in its final place (it used to pop in after hydration and push the page down).
+  const [askCity, setAskCity] = useState(savedCity === null);
   const [hints, setHints] = useState(false);
   const [hintAt, setHintAt] = useState(0);
   const [hintAll, setHintAll] = useState(false);
@@ -400,18 +403,6 @@ export function LabsPage() {
     return () => query.removeEventListener("change", apply);
   }, []);
 
-  // 1257:1044: first visit — ask to confirm the city; the choice is kept in a cookie.
-  useEffect(() => {
-    const saved = document.cookie.split("; ").find((item) => item.startsWith(`${CITY_COOKIE}=`));
-    if (saved) {
-      try {
-        const value = decodeURIComponent(saved.slice(CITY_COOKIE.length + 1));
-        if (value) setCity(value);
-      } catch {
-        /* ignore a broken cookie */
-      }
-    } else setAskCity(true);
-  }, []);
 
   function keepCity(value: string) {
     document.cookie = `${CITY_COOKIE}=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
@@ -568,9 +559,15 @@ export function LabsPage() {
                       ))}
                     </ul>
                   )}
+                  <div className="l-stats">
+                    <p><b>8</b><span>сетей-партнёров в городе</span></p>
+                    <p><b>{empty ? "0" : key.startsWith("санкт") || key === "спб" || key === "петербург" ? String(points.length) : "128"}</b><span>{empty ? "отделений рядом" : `отделений в ${cityTitle}`}</span></p>
+                    <p><b>7–10 дней</b><span>до готового отчёта</span></p>
+                  </div>
+                </article>
                 {askCity && (
-                  // 1257:1044 «Подтверждение города (первый визит)» — a popover under the city card. It only appears after hydration
-                  // (the city cookie is read on the client), so it floats over the content instead of pushing it down (no layout shift).
+                  // 1257:1044 «Подтверждение города (первый визит)» — server-rendered from the cookie, so it sits in its
+                  // final place from the first paint (no layout shift after hydration).
                   <div className="l-ask">
                     <p><span className="l-ask-pin"><img src="/icons/pin.svg" alt="" /></span>Ваш город — {city.trim() || "Москва"}?</p>
                     <div>
@@ -588,12 +585,6 @@ export function LabsPage() {
                     </div>
                   </div>
                 )}
-                  <div className="l-stats">
-                    <p><b>8</b><span>сетей-партнёров в городе</span></p>
-                    <p><b>{empty ? "0" : key.startsWith("санкт") || key === "спб" || key === "петербург" ? String(points.length) : "128"}</b><span>{empty ? "отделений рядом" : `отделений в ${cityTitle}`}</span></p>
-                    <p><b>7–10 дней</b><span>до готового отчёта</span></p>
-                  </div>
-                </article>
                 {/* Mobile frame 1261:1099: the list/map toggle sits in the grey top block. */}
                 <div className="l-mode-m" role="tablist" aria-label="Вид отделений">
                   <button type="button" className={labView === "list" ? "is-active" : ""} onClick={() => setLabView("list")}>Список</button>

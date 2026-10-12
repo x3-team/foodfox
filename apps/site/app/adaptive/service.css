@@ -285,7 +285,8 @@ body main .f01-visual > img, body main .k-hero-photo > img { animation: sv-zoom 
 body main .k-hero-photo { overflow: hidden; border-radius: 24px; }
 body main .f01-visual > article, body main .k-hero-photo .k-hero-card { animation: sv-up16 600ms var(--ease) 300ms backwards; }
 body main .f01-visual > .f01-expert { animation: sv-up16 600ms var(--ease) 380ms backwards; }
-/* PR01: «Коротко» comes in from the right, +24 px, 500 мс */
+/* PR01: «Коротко» comes in from the right, +24 px, 500 мс (the hero clips it, so the slide never adds a horizontal scroll) */
+body main [data-s="pr01"], body main [data-s="f03"] { overflow-x: clip; }
 body main [data-s]:not(.dark-hero) > .wrap.pr01 > .pr-short { animation: sv-from-right 500ms var(--ease) 160ms backwards; }
 
 /* F03: the photo slides in from the right by 24 px with a fade, 600 мс, when the block enters */
