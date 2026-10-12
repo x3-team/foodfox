@@ -264,3 +264,60 @@ main.blog-authors .author-card:hover .hover-arrow { opacity: 1; transform: none;
   main.blog-article .article-cta { padding: 24px; border-radius: 20px; }
   main.blog-article .article-cta .actions { gap: 16px; }
 }
+
+/* ===== Motion (A1–A7 · B1–B7 · C1–C4 · S01–S06 · A01–A04 · U01–U04 · R01–R02 · M01–M07, M49–M50) ===== */
+
+/* S01 / U01: the page heads animate by themselves from the first paint (.rise: H1, intro, links, filters — 600 мс,
+   stagger 80 мс). The global section entrance is off here: it waited for hydration + IntersectionObserver and then
+   moved the hero row *and* the .rise H1 inside it (48 px and two overlapping fades instead of one 24 px rise).
+   Grids enter card by card (useReveal), not as one block. */
+main.blog-feed [data-s="b01"]:not(.dark-hero).wrap > *,
+main.blog-feed [data-s="b02"]:not(.dark-hero).wrap > *,
+main.blog-feed [data-s="b03"]:not(.dark-hero).wrap > *,
+main.blog-authors [data-s="au01"]:not(.dark-hero).wrap > * { opacity: 1; transform: none; animation: none; }
+main.blog-feed [data-s]:not(.dark-hero).wrap > .rise,
+main.blog-authors [data-s]:not(.dark-hero).wrap > .rise { animation: rise 600ms var(--ease) backwards; }
+main.blog-page [data-s]:not(.dark-hero).wrap > .rise-d1 { animation-delay: 80ms; }
+main.blog-page [data-s]:not(.dark-hero).wrap > .rise-d2 { animation-delay: 160ms; }
+main.blog-page [data-s]:not(.dark-hero).wrap > .rise-d3 { animation-delay: 240ms; }
+main.blog-page [data-s]:not(.dark-hero).wrap > .rise-d4 { animation-delay: 320ms; }
+@media (prefers-reduced-motion: reduce) {
+  main.blog-feed [data-s]:not(.dark-hero).wrap > .rise,
+  main.blog-authors [data-s]:not(.dark-hero).wrap > .rise { animation: fade 150ms linear backwards; }
+}
+
+/* A2: leaving cards — opacity→0 + scale .98, 200 мс (only the ones that leave when just the tags change). */
+/* B5 quote: the lime line grows from the top (scaleY 0→1, 500 мс) when the quote enters. */
+main.blog-article .quote { position: relative; border-left-color: transparent; }
+main.blog-article .quote::before { content: ""; position: absolute; left: -2px; top: 0; bottom: 0; width: 2px; background: var(--lime); transform-origin: 50% 0; }
+main.blog-article .quote.rv:not(.is-shown)::before { transform: scaleY(0); }
+main.blog-article .quote.rv.is-shown::before { animation: quote-line 500ms var(--ease) var(--rv-d, 0ms) backwards; }
+@keyframes quote-line { from { transform: scaleY(0); } to { transform: none; } }
+
+/* B7: the sticky aside CTA appears after the cover (opacity 0→1, y 16→0, 300 мс) and leaves before the author block. */
+@media (min-width: 1101px) {
+  main.blog-article .aside-card { transition: opacity 300ms var(--ease), transform 300ms var(--ease), visibility 0s linear 0s; }
+  main.blog-article .aside-card.is-off { opacity: 0; transform: translateY(16px); visibility: hidden; pointer-events: none; transition: opacity 300ms var(--ease), transform 300ms var(--ease), visibility 0s linear 300ms; }
+}
+
+/* B6: the «Ссылка скопирована» toast leaves in 150 мс (it used to vanish on the spot). */
+.toast.art-toast.is-out { animation: art-toast-out 150ms ease-in forwards; }
+@keyframes art-toast-out { to { opacity: 0; transform: translate(-50%, 12px); } }
+
+/* M01: phone contents sheet (BottomSheet, rendered into <body>). */
+.art-toc-sheet .art-toc-sheet-h { margin: 0 0 8px; font-size: 12px; line-height: 16px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(11, 12, 8, 0.65); }
+.art-toc-sheet nav { display: flex; flex-direction: column; }
+.art-toc-sheet nav a { position: relative; display: block; padding: 12px 0 12px 14px; border-bottom: 1px solid rgba(11, 12, 8, 0.08); font-size: 16px; line-height: 20px; color: rgba(11, 12, 8, 0.65); }
+.art-toc-sheet nav a:last-child { border-bottom: 0; }
+.art-toc-sheet nav a.is-active { color: #0b0c08; font-weight: 500; }
+.art-toc-sheet nav a.is-active::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 2px; background: #e7f551; }
+
+@media (prefers-reduced-motion: reduce) {
+  main.blog-article .quote.rv::before { transform: none; animation: none !important; }
+  .rv.rv-24.is-shown { animation-name: fade; }
+  main.blog-article .aside-card, main.blog-article .aside-card.is-off { transition: none; }
+  .toast.art-toast.is-out { animation: none; opacity: 0; }
+}
+
+main.blog-page .blog-grid > .is-out-wrap > .card.rv,
+main.blog-page .grid.is-leaving > .card.rv { animation: leave 200ms var(--ease) both; pointer-events: none; }

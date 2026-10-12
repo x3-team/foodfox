@@ -399,9 +399,8 @@ html.is-scrolled { --header-now: 72px; }
   min-height: 518px;
   color: inherit;
   border-radius: 16px;
-  animation: rise 600ms var(--ease) both;
 }
-.card.is-out { animation: leave 200ms var(--ease) both; }
+.card.is-out { animation: leave 200ms var(--ease) both; pointer-events: none; }
 .card-cover {
   position: relative;
   height: 300px;
@@ -781,12 +780,15 @@ th { font-size: 14px; line-height: 18px; color: var(--ink-65); font-weight: 400;
 .columns ul, .columns ol { margin: 0; padding: 0; }
 .columns p { margin: 0 0 12px; color: var(--ink-65); }
 
-.rise { animation: rise 600ms var(--ease) both; }
+/* Blog page heads (A1 · B5): run from the first paint, fill «backwards» so nothing keeps a transform afterwards
+   (a lingering transform makes a stacking context and the tag menu / suggestions would paint under later blocks). */
+.rise { animation: rise 600ms var(--ease) backwards; }
 .rise-d1 { animation-delay: 80ms; }
 .rise-d2 { animation-delay: 160ms; }
 .rise-d3 { animation-delay: 240ms; }
-.featured-in { animation: featuredIn 700ms var(--ease) 150ms both; }
-.photo-in { animation: photoIn 1200ms var(--ease) both; }
+.rise-d4 { animation-delay: 320ms; }
+.featured-in { animation: featuredIn 700ms var(--ease) 150ms backwards; }
+.photo-in { animation: photoIn 1200ms var(--ease) backwards; }
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(24px); }
@@ -819,11 +821,20 @@ th { font-size: 14px; line-height: 18px; color: var(--ink-65); font-weight: 400;
   from { opacity: 0; transform: translate(-50%, 12px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
-.reveal {
-  opacity: 0;
-  transform: translateY(32px);
-  animation: riseY 600ms var(--ease) both;
-}
+/* Scroll entrance of cards and article media (useReveal in ArticleCard.tsx): hidden until the element crosses
+   85% (cards) / 80% (media) of the viewport, then opacity 0→1 + y 32→0, 600 мс, once. Fill «backwards» — after the
+   entrance nothing keeps a transform, so hover scale, FLIP and popovers work on a plain element. */
+.rv:not(.is-shown) { opacity: 0; transform: translateY(32px); }
+.rv.is-shown { animation: rv-up 600ms var(--ease) var(--rv-d, 0ms) backwards; }
+.rv.is-shown.is-fast { animation-duration: 400ms; }
+.rv.is-shown.is-instant { animation: none; }
+.rv.rv-24.is-shown { animation-name: rv-up-24; }
+.rv-g.is-shown > .rv { opacity: 1; transform: none; animation: rv-up 600ms var(--ease) backwards; }
+.rv-g.is-shown > .rv:nth-child(2) { animation-delay: 80ms; }
+.rv-g.is-shown > .rv:nth-child(3) { animation-delay: 160ms; }
+.rv-g.is-shown > .rv:nth-child(n+4) { animation-delay: 240ms; }
+@keyframes rv-up { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: none; } }
+@keyframes rv-up-24 { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 @keyframes riseY {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: none; }
@@ -831,9 +842,13 @@ th { font-size: 14px; line-height: 18px; color: var(--ink-65); font-weight: 400;
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .rise, .rise-d1, .rise-d2, .rise-d3, .featured-in, .photo-in, .article-cover img, .reveal, .card, .card.is-out {
+  .rise, .rise-d1, .rise-d2, .rise-d3, .featured-in, .photo-in, .article-cover img, .card.is-out {
     animation: fade 150ms linear both;
   }
+  .card.is-out { animation-direction: reverse; }
+  .rv:not(.is-shown) { transform: none; }
+  .rv.is-shown, .rv.is-shown.is-fast, .rv-g.is-shown > .rv { animation: fade 150ms linear backwards; animation-delay: 0ms !important; }
+  .rv.is-shown.is-instant { animation: none; }
   .featured-photo img, .card-cover img, .author-card .shot img, .bokeh, .text-link img, .hover-arrow {
     transition: none;
     transform: none;
@@ -4532,8 +4547,6 @@ body [data-s="s12"].is-in .lab-tile { animation: lab-in 360ms cubic-bezier(.2, .
   body [data-s="v02"] .v-pages { display: none; }
   body [data-s="v02"] .v-more-row { display: flex; justify-content: center; margin-top: 20px; }
   body [data-s="v02"] .v-more-btn { min-width: 200px; justify-content: center; }
-  body .v-rate b, body .v-avatars .v-more { font-variant-numeric: tabular-nums; }
-  body .v-rate .v-stars.is-filling { background: linear-gradient(90deg, #0b0c08 var(--fill), rgba(11, 12, 8, 0.18) var(--fill)); -webkit-background-clip: text; background-clip: text; color: transparent; }
   /* M32: collage photos rise one by one (20px, 120 мс step); the quote bubble comes last with an overshoot. */
   body .v-collage2 .v-photo-a, body .v-collage2 .v-photo-b { animation: v-rise 520ms cubic-bezier(.2, .8, .2, 1) backwards; }
   body .v-collage2 .v-photo-a { animation-delay: 120ms; }
@@ -4611,7 +4624,10 @@ main img.sk-in { animation: sk-in 200ms ease-out; }
 .access-modal .btn { justify-content: center; }
 @keyframes access-pop { from { transform: scale(0.8); opacity: 0; } 70% { transform: scale(1.05); } }
 .author-more { display: flex; justify-content: center; margin: 24px 0 0; }
-@media (max-width: 767px) and (prefers-reduced-motion: no-preference) { body .v-rate-card.is-pending .v-rate b, body .v-rate-card.is-pending .v-more { visibility: hidden; } }
+/* V01 / M32 rating count-up (all widths): tabular digits so the width does not jump; stars fill left to right. */
+body .v-rate b, body .v-avatars .v-more { font-variant-numeric: tabular-nums; }
+body .v-rate .v-stars.is-filling { background: linear-gradient(90deg, #0b0c08 var(--fill), rgba(11, 12, 8, 0.18) var(--fill)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+@media (prefers-reduced-motion: no-preference) { body .v-rate-card.is-pending .v-rate b, body .v-rate-card.is-pending .v-more { visibility: hidden; } }
 /* Pinch-zoom pane (M29, M44). */
 .zoom-pane { position: relative; width: 100%; height: 100%; overflow: hidden; touch-action: none; display: grid; place-items: center; }
 .zoom-pane .zoom-layer { width: 100%; height: 100%; display: grid; place-items: center; transform-origin: 50% 50%; will-change: transform; }

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ArticleCard, SkeletonGrid } from "@/components/ArticleCard";
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { ArticleCard, RevealNoScript, SkeletonGrid, useReveal } from "@/components/ArticleCard";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import {
@@ -21,6 +21,24 @@ import {
 } from "@/lib/content";
 
 const PAGE_SIZE = 6;
+// power2.inOut — FLIP of the cards that stay (A2 / U02)
+const FLIP_EASE = "cubic-bezier(.45, 0, .55, 1)";
+
+function feedList(category: string, tags: string[], query: string) {
+  return articles.filter((article) => {
+    if (category !== "all" && article.category !== category) return false;
+    if (tags.length && !tags.every((tag) => article.tags.includes(tag))) return false;
+    return matchesQuery(article, query);
+  });
+}
+
+function pageSlice(category: string, tags: string[], query: string, page: number) {
+  const featured = category === "all" && tags.length === 0 && !query.trim();
+  const list = feedList(category, tags, query).filter((article) => (featured ? !article.featured : true));
+  const total = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  const safe = Math.min(page, total);
+  return list.slice((safe - 1) * PAGE_SIZE, safe * PAGE_SIZE);
+}
 
 function pageList(current: number, total: number) {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -32,9 +50,21 @@ function pageList(current: number, total: number) {
   return items;
 }
 
+/**
+ * The URL filters (?category, ?tag, ?q, ?page) are read by this tiny child inside its own Suspense boundary, so the
+ * rest of the feed is rendered on the server (static HTML of the full feed, entrance from the first paint) instead of
+ * the whole page bailing out to client rendering because of useSearchParams.
+ */
+function SearchParamsSync({ onChange }: { onChange: (value: URLSearchParams) => void }) {
+  const search = useSearchParams();
+  const value = search.toString();
+  useEffect(() => onChange(new URLSearchParams(value)), [value, onChange]);
+  return null;
+}
+
 export function BlogFeed() {
   const router = useRouter();
-  const params = useSearchParams();
+  const [params, setParams] = useState(() => new URLSearchParams());
   const category = (params.get("category") as Category | null) ?? "all";
   const tags = (params.get("tag") ?? "").split(",").filter(Boolean);
   const query = params.get("q") ?? "";
@@ -46,8 +76,17 @@ export function BlogFeed() {
   const [activeSuggest, setActiveSuggest] = useState(0);
   const [tagOpen, setTagOpen] = useState(false);
   const [draftTags, setDraftTags] = useState(tags);
-  const [leaving, setLeaving] = useState(false);
+  // A2: cards fading out (opacity→0 + scale .98, 200 мс) — keyed by the list they belong to, so they come back
+  // only if that list is still on screen.
+  const [out, setOut] = useState<{ list: string; slugs: string[] | "all" } | null>(null);
+  const [fast, setFast] = useState(false);
+  // S02: the tapped chip fills right away (150 мс), not after the 200 мс fade-out and the URL update.
+  const [pendingCat, setPendingCat] = useState<string | null>(null);
+  useEffect(() => setPendingCat(null), [category]);
+  const shownCat = pendingCat ?? category;
   const [expanded, setExpanded] = useState(false);
+  const flipRects = useRef<Map<string, DOMRect> | null>(null);
+  const holdTimer = useRef(0);
   const [skeleton, setSkeleton] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -101,19 +140,42 @@ export function BlogFeed() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const filtered = useMemo(() => {
-    return articles.filter((article) => {
-      if (category !== "all" && article.category !== category) return false;
-      if (tags.length && !tags.every((tag) => article.tags.includes(tag))) return false;
-      return matchesQuery(article, query);
-    });
-  }, [category, tags.join("|"), query]);
+  const filtered = useMemo(() => feedList(category, tags, query), [category, tags.join("|"), query]);
 
   const showFeatured = category === "all" && tags.length === 0 && !query.trim();
   const gridArticles = filtered.filter((article) => (showFeatured ? !article.featured : true));
   const totalPages = Math.max(1, Math.ceil(gridArticles.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const pageItems = gridArticles.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const listKey = `${category}|${tags.join(",")}|${query}|${safePage}`;
+  // The grid is rebuilt (fresh entrance for every card) unless only the tags changed — then cards keep their nodes and FLIP.
+  const gridKey = `${category}|${query}|${safePage}`;
+  const outSlugs = out && out.list === listKey ? out.slugs : null;
+
+  // A1 / S04: cards enter when they cross 85% of the viewport, stagger 80 мс in a row, once.
+  // After a filter or a page change: 400 мс, stagger 60 мс (A2).
+  // M07 «Показать ещё» (phone): the next cards come in a cascade, step 60 мс.
+  useReveal(gridRef, `${listKey}|${skeleton}|${expanded}`, { fast: fast || expanded, cascade: expanded });
+
+  useLayoutEffect(() => {
+    const grid = gridRef.current;
+    const rects = flipRects.current;
+    flipRects.current = null;
+    if (grid && grid.style.minHeight) {
+      window.clearTimeout(holdTimer.current);
+      holdTimer.current = window.setTimeout(() => { grid.style.minHeight = ""; }, 760);
+    }
+    if (!grid || !rects) return;
+    grid.querySelectorAll<HTMLElement>(".card[data-slug]").forEach((card) => {
+      const before = rects.get(card.dataset.slug!);
+      if (!before) return;
+      card.classList.add("is-shown", "is-instant");
+      const after = card.getBoundingClientRect();
+      const dx = before.left - after.left;
+      const dy = before.top - after.top;
+      if (dx || dy) card.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: 400, easing: FLIP_EASE });
+    });
+  }, [listKey]);
   const suggestions = searchTopics(suggestQuery);
   const featured = articles.find((article) => article.featured);
   const featuredAuthor = featured ? authorBySlug(featured.author) : undefined;
@@ -130,12 +192,14 @@ export function BlogFeed() {
     if (nextPage > 1) search.set("page", String(nextPage));
     const href = search.toString() ? `/blog?${search}` : "/blog";
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // S05: the page buttons first bring the top of the grid into view (smooth, ~400 мс), the crossfade runs meanwhile,
+    // then focus goes to the first new card (without another scroll jump).
+    if (scroll) gridRef.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
     const go = () => {
       router.push(href, { scroll: false });
       if (scroll) {
-        gridRef.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
         window.setTimeout(() => {
-          gridRef.current?.querySelector<HTMLElement>("a")?.focus();
+          gridRef.current?.querySelector<HTMLElement>("a.card")?.focus({ preventScroll: true });
         }, reduce ? 0 : 420);
       }
     };
@@ -143,16 +207,34 @@ export function BlogFeed() {
       go();
       return;
     }
-    setLeaving(true);
+    const grid = gridRef.current;
+    const currentList = listKey;
+    // A2: the section keeps its height for the whole swap — the footer does not jump while cards leave and enter.
+    if (grid) {
+      window.clearTimeout(holdTimer.current);
+      grid.style.minHeight = `${grid.offsetHeight}px`;
+    }
+    // Only the tags change → the cards that stay slide to their new places (FLIP 400 мс), only the others fade out.
+    const tagOnly = cat === category && q === query && nextPage === safePage && nextTags.join("|") !== tags.join("|");
+    if (tagOnly && grid) {
+      const keep = new Set(pageSlice(cat, nextTags, q, nextPage).map((article) => article.slug));
+      const rects = new Map<string, DOMRect>();
+      grid.querySelectorAll<HTMLElement>(".card[data-slug]").forEach((card) => {
+        if (keep.has(card.dataset.slug!)) rects.set(card.dataset.slug!, card.getBoundingClientRect());
+      });
+      flipRects.current = rects;
+      setOut({ list: currentList, slugs: pageItems.filter((article) => !keep.has(article.slug)).map((article) => article.slug) });
+    } else {
+      flipRects.current = null;
+      setOut({ list: currentList, slugs: "all" });
+    }
+    setFast(true);
     const started = performance.now();
     window.setTimeout(() => {
       const slow = performance.now() - started > 300;
       if (slow) setSkeleton(true);
       go();
-      window.setTimeout(() => {
-        setSkeleton(false);
-        setLeaving(false);
-      }, slow ? 360 : 40);
+      if (slow) window.setTimeout(() => setSkeleton(false), 360);
     }, 200);
   }
 
@@ -180,6 +262,10 @@ export function BlogFeed() {
   return (
     <>
       <Header />
+      <RevealNoScript />
+      <Suspense fallback={null}>
+        <SearchParamsSync onChange={setParams} />
+      </Suspense>
       <main className="blog-page blog-feed">
         <section className="wrap hero" data-s="b01">
           <p className="crumbs rise">
@@ -189,9 +275,9 @@ export function BlogFeed() {
           </p>
           <div className="hero-row">
             <h1 className="rise rise-d1">Блог о пищевой непереносимости</h1>
-            <div className="intro rise rise-d2">
-              <p>Статьи врачей и нутрициологов: как понять свои симптомы, что показывает тест и что делать с результатом.</p>
-              <div className="intro-links">
+            <div className="intro">
+              <p className="rise rise-d2">Статьи врачей и нутрициологов: как понять свои симптомы, что показывает тест и что делать с результатом.</p>
+              <div className="intro-links rise rise-d3">
                 <Link className="text-link" href="/blog/authors">
                   Все авторы <img src="/icons/arrow-right.svg" alt="" />
                 </Link>
@@ -204,14 +290,24 @@ export function BlogFeed() {
         </section>
 
         <section className="wrap filters" data-s="b02" aria-label="Фильтры">
-          <div className="filter-row">
+          <div className="filter-row rise rise-d4">
             <div className="chips" role="tablist" aria-label="Категории">
               {CATEGORIES.map((item) => (
                 <button
                   key={item.id}
-                  className={`chip${category === item.id ? " is-active" : ""}`}
-                  aria-pressed={category === item.id}
-                  onClick={() => write({ category: item.id, page: 1 })}
+                  className={`chip${shownCat === item.id ? " is-active" : ""}`}
+                  aria-pressed={shownCat === item.id}
+                  onClick={(event) => {
+                    // M05: on the swipeable chip row the tapped chip scrolls into the middle of the row.
+                    const row = event.currentTarget.parentElement;
+                    if (row && row.scrollWidth > row.clientWidth + 1) {
+                      const chip = event.currentTarget;
+                      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                      row.scrollTo({ left: chip.offsetLeft - (row.clientWidth - chip.offsetWidth) / 2, behavior: reduce ? "auto" : "smooth" });
+                    }
+                    if (item.id !== category) setPendingCat(item.id);
+                    write({ category: item.id, page: 1 });
+                  }}
                 >
                   {item.label}
                 </button>
@@ -347,7 +443,7 @@ export function BlogFeed() {
               </div>
             </div>
           </div>
-          <p className="meta-line">
+          <p className="meta-line rise rise-d4">
             {/* Mobile frame shows only «N материалов»; the update date stays on desktop. */}
             <span>{countLabel.split(" · обновлено")[0]}{countLabel.includes(" · обновлено") && <span className="d-only"> · обновлено{countLabel.split(" · обновлено")[1]}</span>}</span>
             {filtersOn && (
@@ -371,7 +467,7 @@ export function BlogFeed() {
                 <img className="featured-bg" src="/figma/course/hero-bg.webp" alt="" />
                 <div className="featured-shade" />
                 <div className="featured-photo">
-                  <img src={featured.cover} alt="" />
+                  <img className="photo-in" src={featured.cover} alt="" />
                 </div>
                 <div className="featured-copy">
                   <div>
@@ -442,10 +538,10 @@ export function BlogFeed() {
               </div>
             </div>
           ) : (
-            <div className={`grid blog-grid${leaving ? " is-leaving" : ""}${expanded ? " is-more" : ""}`}>
-              {pageItems.map((article: Article, index) => (
-                <span key={article.slug} className={leaving ? "is-out-wrap" : undefined}>
-                  <ArticleCard article={article} index={index} />
+            <div key={gridKey} className={`grid blog-grid${outSlugs ? " is-leaving" : ""}${expanded ? " is-more" : ""}`}>
+              {pageItems.map((article: Article) => (
+                <span key={article.slug} className={outSlugs === "all" || outSlugs?.includes(article.slug) ? "is-out-wrap" : undefined}>
+                  <ArticleCard article={article} />
                 </span>
               ))}
             </div>
@@ -499,7 +595,6 @@ export function BlogFeed() {
         </section>
       </main>
       <Footer />
-      <style>{`.is-leaving .card { animation: leave 200ms var(--ease) both; }`}</style>
     </>
   );
 }

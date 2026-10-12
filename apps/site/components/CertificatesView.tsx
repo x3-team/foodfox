@@ -103,6 +103,127 @@ export function CertificatesView() {
       window.removeEventListener("resize", sync);
     };
   }, []);
+  // C03: the three figures count up from 0 over 1.2 с once the block is half visible (once, every width).
+  const factsRef = useRef<HTMLDListElement>(null);
+  useEffect(() => {
+    const list = factsRef.current;
+    if (!list || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const cells = [...list.querySelectorAll<HTMLElement>("b")].map((node) => {
+      const text = node.textContent ?? "";
+      const value = Number.parseInt(text, 10);
+      return { node, text, value, suffix: text.replace(/^\d+/, "") };
+    }).filter((cell) => Number.isFinite(cell.value));
+    cells.forEach((cell) => { cell.node.textContent = `0${cell.suffix}`; });
+    let raf = 0;
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      io.disconnect();
+      const start = performance.now();
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - start) / 1200);
+        const k = 1 - Math.pow(1 - t, 3);
+        cells.forEach((cell) => { cell.node.textContent = t < 1 ? `${Math.round(cell.value * k)}${cell.suffix}` : cell.text; });
+        if (t < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    }, { threshold: 0.5 });
+    io.observe(list);
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+      cells.forEach((cell) => { cell.node.textContent = cell.text; });
+    };
+  }, []);
+  // Desktop scroll-linked scenes (≥1101, motion allowed), one rAF-throttled pass and only while a scene is on screen:
+  // C03 — the lab photo drifts −8 % (parallax, transform only); C04 — the ELISA steps light up one by one with the
+  // scroll (active 100 %, the rest 35 %, a lime line grows under them; all 100 % at the end); C05 — the timeline is
+  // drawn left to right, year dots pop in (spring) as the line reaches them, the current year pulses.
+  const c03Ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const desk = window.matchMedia("(min-width: 1101px) and (prefers-reduced-motion: no-preference)");
+    const photo = c03Ref.current?.querySelector<HTMLElement>(".c03-visual > img") ?? null;
+    const steps = elisaRef.current?.querySelector<HTMLOListElement>("ol") ?? null;
+    const line = historyRef.current;
+    const scenes = [c03Ref.current, elisaRef.current, line].filter(Boolean) as HTMLElement[];
+    if (!scenes.length) return;
+    let frame = 0;
+    let on = false;
+    const seen = new Set<Element>();
+    const last = { step: -2, p: -1, reached: -1, y: "" };
+    const reset = () => {
+      steps?.classList.remove("is-scrub");
+      line?.classList.remove("is-draw");
+      if (photo) photo.style.transform = "";
+      last.step = -2; last.p = -1; last.reached = -1; last.y = "";
+    };
+    const update = () => {
+      frame = 0;
+      if (!desk.matches) { reset(); return; }
+      const vh = window.innerHeight;
+      const maxY = document.documentElement.scrollHeight - vh;
+      // scene progress: 0 when its top is at `from` of the viewport, 1 at `to` — or at the very end of the page if the
+      // page cannot scroll that far (C05 sits right above the footer on tall screens)
+      const prog = (top: number, from: number, to: number) => {
+        const end = Math.max(vh * to, top + window.scrollY - maxY);
+        return Math.max(0, Math.min(1, (vh * from - top) / Math.max(1, vh * from - end)));
+      };
+      if (photo) {
+        const box = photo.parentElement!.getBoundingClientRect();
+        const p = Math.max(0, Math.min(1, (vh - box.top) / (vh + box.height)));
+        const y = `translateY(${((0.5 - p) * 8).toFixed(2)}%) scale(1.09)`;
+        if (y !== last.y) { photo.style.transform = y; last.y = y; }
+      }
+      if (steps) {
+        steps.classList.add("is-scrub");
+        const r = steps.getBoundingClientRect();
+        const p = prog(r.top, 0.8, 0.35);
+        const items = steps.children;
+        const step = p >= 1 ? -1 : Math.min(items.length - 1, Math.floor(p * items.length));
+        if (step !== last.step) {
+          [...items].forEach((item, index) => item.classList.toggle("is-on", step === -1 || index === step));
+          last.step = step;
+        }
+        steps.style.setProperty("--c04-p", p.toFixed(3));
+      }
+      if (line) {
+        line.classList.add("is-draw");
+        const r = line.getBoundingClientRect();
+        const p = prog(r.top, 0.85, 0.4);
+        if (Math.abs(p - last.p) > 0.001) {
+          line.style.setProperty("--c05-p", p.toFixed(3));
+          last.p = p;
+          const items = [...line.children] as HTMLElement[];
+          const reached = items.filter((item) => item.offsetLeft / Math.max(1, line.clientWidth) <= p + 0.001).length;
+          if (reached !== last.reached) {
+            items.forEach((item, index) => item.classList.toggle("is-reached", index < reached));
+            last.reached = reached;
+          }
+        }
+      }
+    };
+    const onScroll = () => {
+      if (on && !frame) frame = requestAnimationFrame(update);
+    };
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => (entry.isIntersecting ? seen.add(entry.target) : seen.delete(entry.target)));
+      on = seen.size > 0;
+      onScroll();
+    }, { rootMargin: "200px 0px" });
+    scenes.forEach((node) => io.observe(node));
+    const onMedia = () => { reset(); frame = requestAnimationFrame(update); };
+    desk.addEventListener("change", onMedia);
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(frame);
+      desk.removeEventListener("change", onMedia);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      reset();
+    };
+  }, []);
   useEffect(() => {
     const node = docsRef.current;
     if (!node || !window.matchMedia("(max-width: 767px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -178,12 +299,12 @@ export function CertificatesView() {
         </section>
 
         <section data-s="c03">
-          <div className="wrap c03">
+          <div className="wrap c03" ref={c03Ref}>
             <div>
               <p className="fx-kicker c03-kicker"><img src="/icons/building-light.svg" alt="" />О производителе</p>
               <h2>MacroArray Diagnostics</h2>
               <p>Австрийская компания, с 2016 года создаёт лабораторные тесты, оборудование и программы для обработки результатов. В России и СНГ тест представляет МФК Инмунотех.</p>
-              <dl>
+              <dl ref={factsRef}>
                 <div><b>2016</b><span>основание в Вене</span></div>
                 <div><b>286</b><span>пищевых антигенов</span></div>
                 <div><b>1500+</b><span>лабораторий в РФ</span></div>

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArticleCard } from "@/components/ArticleCard";
+import { ArticleCard, RevealNoScript, useReveal } from "@/components/ArticleCard";
+import { BottomSheet } from "@/components/BottomSheet";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import {
@@ -43,14 +44,14 @@ function Blocks({ blocks }: { blocks: Block[] }) {
           );
         if (block.type === "figure")
           return (
-            <figure className="figure reveal" key={index}>
+            <figure className="figure rv rv-24" key={index}>
               <img src={block.src} alt="" />
               <figcaption>{block.caption}</figcaption>
             </figure>
           );
         if (block.type === "table")
           return (
-            <div className="table-wrap reveal" key={index}>
+            <div className="table-wrap rv rv-24" key={index}>
               <table>
                 <thead>
                   <tr>
@@ -73,13 +74,13 @@ function Blocks({ blocks }: { blocks: Block[] }) {
           );
         if (block.type === "quote")
           return (
-            <blockquote className="quote reveal" key={index}>
+            <blockquote className="quote rv rv-24" key={index}>
               <p>«{block.text}»</p>
               <cite>{block.by}</cite>
             </blockquote>
           );
         return (
-          <aside className="article-cta reveal" key={index}>
+          <aside className="article-cta rv rv-24" key={index}>
             <img className="bokeh" src="/figma/course/cta-bg.webp" alt="" />
             <div className="shade" />
             <h2>{block.title}</h2>
@@ -113,15 +114,30 @@ export function ArticleView({ article }: { article: Article }) {
   const headings = article.blocks?.filter((block) => block.type === "h2") ?? [];
   const useToc = headings.length >= 3;
   const [active, setActive] = useState(headings[0] && headings[0].type === "h2" ? headings[0].id : "");
-  const [progress, setProgress] = useState(0);
-  const [toast, setToast] = useState(false);
+  const [toast, setToast] = useState<"" | "in" | "out">("");
+  const toastTimers = useRef<number[]>([]);
   const [copied, setCopied] = useState(false);
   const railRef = useRef<HTMLDivElement>(null);
   const tocRef = useRef<HTMLElement>(null);
   const [marker, setMarker] = useState({ top: 0, height: 0 });
   const [slide, setSlide] = useState(0);
   const [tocOpen, setTocOpen] = useState(false);
-  const sameCategory = articles.filter((item) => item.slug !== article.slug && item.category === article.category);
+  const [phone, setPhone] = useState(false);
+  const barRef = useRef<HTMLSpanElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const relatedRef = useRef<HTMLElement>(null);
+  const asideRef = useRef<HTMLDivElement>(null);
+  // B4: images, table, callout quote and CTA enter at 80% of the viewport (opacity + y 24, 600 мс), once.
+  // Paragraphs never wait. A04: «Также рекомендуем» enters like the feed (S04).
+  useReveal(bodyRef, article.slug, { line: 0.8 });
+  useReveal(relatedRef, article.slug);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => setPhone(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);  const sameCategory = articles.filter((item) => item.slug !== article.slug && item.category === article.category);
   const related = [...sameCategory, ...articles.filter((item) => item.slug !== article.slug && item.category !== article.category)].slice(0, 4);
   const more = articles.filter((item) => item.author === author.slug && item.slug !== article.slug).slice(0, 3);
   // Aside / Read next (1070:299): three editor picks — report guide, first-signs article, labs; the current
@@ -136,24 +152,57 @@ export function ArticleView({ article }: { article: Article }) {
     { href: "/labs", title: "Где сдать тест: 1500+ лабораторий" },
   ].filter(Boolean) as Array<{ href: string; title: string }>;
 
+  // B1 progress + B3 active heading + B7 aside CTA in one rAF-throttled pass — no React render per scroll event:
+  // the bar is written straight to the DOM (scaleX, no transition — it follows the scroll), the active item
+  // re-renders only when it changes.
   useEffect(() => {
     const nodes = headings.flatMap((block) => (block.type === "h2" ? [document.getElementById(block.id)] : [])).filter(Boolean) as HTMLElement[];
-    const onScroll = () => {
-      const body = document.getElementById("article-body");
-      const end = document.getElementById("author-end");
-      if (body && end) {
-        const start = body.getBoundingClientRect().top + window.scrollY;
-        const finish = end.getBoundingClientRect().top + window.scrollY;
-        const value = (window.scrollY + 120 - start) / Math.max(1, finish - start);
-        setProgress(Math.max(0, Math.min(1, value)));
+    const body = document.getElementById("article-body");
+    const end = document.getElementById("author-end");
+    const card = asideRef.current;
+    const cover = document.querySelector<HTMLElement>(".article-cover");
+    let frame = 0;
+    let lastActive = "";
+    let lastOff: boolean | null = null;
+    const update = () => {
+      frame = 0;
+      const y = window.scrollY;
+      if (body && end && barRef.current) {
+        const start = body.getBoundingClientRect().top + y;
+        const finish = end.getBoundingClientRect().top + y;
+        const value = Math.max(0, Math.min(1, (y + 120 - start) / Math.max(1, finish - start)));
+        barRef.current.style.transform = `scaleX(${value})`;
       }
-      const marker = [...nodes].reverse().find((node) => node.getBoundingClientRect().top < 160);
-      if (marker) setActive(marker.id);
-      else if (nodes[0]) setActive(nodes[0].id);
+      const hit = [...nodes].reverse().find((node) => node.getBoundingClientRect().top < 160);
+      const id = hit ? hit.id : nodes[0]?.id ?? "";
+      if (id !== lastActive) {
+        lastActive = id;
+        setActive(id);
+      }
+      // B7: the sticky aside CTA shows up once the cover has gone by and hides when the author block is < 200 px away
+      // (it would repeat that block's CTA). Only where the aside is sticky (desktop); below 1101 it sits under the text.
+      if (card && end && cover && card.parentElement && getComputedStyle(card.parentElement).position === "sticky") {
+        const off = cover.getBoundingClientRect().bottom > window.innerHeight * 0.5 || end.getBoundingClientRect().top - card.getBoundingClientRect().bottom < 200;
+        if (off !== lastOff) {
+          lastOff = off;
+          card.classList.toggle("is-off", off);
+        }
+      } else if (card && lastOff !== false) {
+        lastOff = false;
+        card.classList.remove("is-off");
+      }
     };
-    onScroll();
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, [article.slug]);
 
   // ToC / Item (1063:159): the lime marker follows the active item. Items wrap to 1–2 lines, so measure them.
@@ -196,9 +245,14 @@ export function ArticleView({ article }: { article: Article }) {
       /* clipboard can be unavailable */
     }
     setCopied(true);
-    setToast(true);
-    window.setTimeout(() => setCopied(false), 2000);
-    window.setTimeout(() => setToast(false), 2500);
+    // B6: toast in (opacity + y 12→0, 200 мс), auto-hide after 2.5 с with a 150 мс exit; a second copy restarts it.
+    toastTimers.current.forEach((id) => window.clearTimeout(id));
+    setToast("in");
+    toastTimers.current = [
+      window.setTimeout(() => setCopied(false), 2000),
+      window.setTimeout(() => setToast("out"), 2500),
+      window.setTimeout(() => setToast(""), 2650),
+    ];
   }
 
   const shareUrl = `https://foodfox.yuri.guru/blog/${article.slug}`;
@@ -220,8 +274,9 @@ export function ArticleView({ article }: { article: Article }) {
   return (
     <>
       <Header />
+      <RevealNoScript />
       <div className="progress" aria-hidden>
-        <span style={{ transform: `scaleX(${progress})` }} />
+        <span ref={barRef} />
       </div>
       <main className="blog-page blog-article">
         {/* Mobile frame 1313:5686: collapsed sticky contents bar under the progress line. */}
@@ -234,7 +289,32 @@ export function ArticleView({ article }: { article: Article }) {
               </span>
               <img src="/icons/chevron-down.svg" alt="" />
             </button>
-            {tocOpen && (
+            {tocOpen && phone && (
+              // M01: on the phone the contents open as a bottom sheet (slide-up 320 мс, scrim 45%, swipe down / tap to close);
+              // a tap on a section closes it and scrolls smoothly to the heading.
+              <BottomSheet label="Содержание статьи" className="art-toc-sheet" onClose={() => setTocOpen(false)} portal>
+                <p className="art-toc-sheet-h">Содержание</p>
+                <nav aria-label="Содержание статьи">
+                  {tocItems.map((block) => (
+                    <a
+                      key={block.id}
+                      href={"#" + block.id}
+                      className={active === block.id ? "is-active" : ""}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setTocOpen(false);
+                        window.history.replaceState(null, "", "#" + block.id);
+                        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                        document.getElementById(block.id)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+                      }}
+                    >
+                      {block.text}
+                    </a>
+                  ))}
+                </nav>
+              </BottomSheet>
+            )}
+            {tocOpen && !phone && (
               <nav aria-label="Содержание статьи">
                 {headings.map(
                   (block) =>
@@ -277,7 +357,7 @@ export function ArticleView({ article }: { article: Article }) {
               <img src={article.cover} alt="" />
             </div>
           </div>
-          <div className="wrap article-grid">
+          <div className="wrap article-grid" ref={bodyRef}>
             <nav className="toc" aria-label="Содержание" ref={tocRef}>
               {useToc && (
                 <>
@@ -340,7 +420,7 @@ export function ArticleView({ article }: { article: Article }) {
               <div className="art-share-m"><p>Поделиться статьёй</p>{shareBar}</div>
             </div>
             <aside className="aside">
-              <div className="aside-card">
+              <div className="aside-card is-off" ref={asideRef}>
                 <img className="bokeh" src="/figma/course/cta-bg.webp" alt="" />
                 <div className="shade" />
                 <h2>Записаться на тест</h2>
@@ -363,14 +443,14 @@ export function ArticleView({ article }: { article: Article }) {
             </aside>
           </div>
         </article>
-        <section className="wrap related article-related">
+        <section className="wrap related article-related" ref={relatedRef}>
           <div className="related-head">
             <h2>Также рекомендуем</h2>
             <Link className="text-link" href="/blog">
               Все материалы <img src="/icons/arrow-right.svg" alt="" />
             </Link>
           </div>
-          <div className="grid" data-allow-x ref={railRef}>
+          <div className="grid rv-g" data-allow-x ref={railRef}>
             {related.map((item, index) => (
               <ArticleCard key={item.slug} article={item} index={index} />
             ))}
@@ -385,7 +465,7 @@ export function ArticleView({ article }: { article: Article }) {
       </main>
       <Footer />
       {toast && (
-        <div className="toast art-toast" role="status" aria-live="polite">
+        <div className={`toast art-toast${toast === "out" ? " is-out" : ""}`} role="status" aria-live="polite">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M3 8.5L6.5 12L13 4.5" stroke="#E7F551" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

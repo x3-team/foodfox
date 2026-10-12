@@ -224,3 +224,53 @@ html body [data-s="l03"] .map-fail-title { margin: 0; font-size: 20px; line-heig
 html body [data-s="l03"] .map-fail-text { margin: 0; max-width: 380px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
 html body [data-s="l03"] .map-fail .btn { height: 48px; padding: 12px 16px; border-radius: 4px; border-color: transparent; background: transparent; font-size: 16px; line-height: 20px; }
 html body [data-s="l03"] .map-fail .btn:hover { background: rgba(11, 12, 8, 0.06); }
+
+/* ===== Motion (Figma 1247:86: L00–L06) =====
+   Keyframes only have «from», so every element lands on its own resting style (the dimmed «Нет в вашем городе»
+   card stays at 0.5); fill «backwards» — no transform is kept after the entrance (hover lifts keep working). */
+@keyframes lb-up { from { opacity: 0; transform: translateY(24px); } }
+@keyframes lb-up16 { from { opacity: 0; transform: translateY(16px); } }
+@keyframes lb-zoom { from { transform: scale(1.04); } }
+@keyframes lb-fade { from { opacity: 0; } }
+@keyframes lb-spring { from { transform: scale(0.8); } }
+
+/* L01: title and lead — opacity 0→1 + y 24→0, 600 мс; the city card and the figures +120 мс; the photo scales
+   1.04→1 over 1.2 с; the «Ближайшее к вам» plate comes up 16 px after 400 мс. The hero had no entrance at all. */
+html body main .l01 > .crumbs, html body main .l01-copy > .fx-eye, html body main .l01-copy > h1, html body main .l01-copy > .fx-lead { animation: lb-up 600ms var(--ease) backwards; }
+html body main .l01-copy > .fx-lead { animation-delay: 60ms; }
+html body main .l01-copy > .l-city, html body main .l01-copy > .l-mode-m { animation: lb-up 600ms var(--ease) 120ms backwards; }
+html body main .l01-copy > .l-ask { animation: lb-up 600ms var(--ease) 160ms backwards; }
+html body main .l01-copy > .l-note { animation: lb-up 600ms var(--ease) 180ms backwards; }
+html body main .l01-photo > img { animation: lb-zoom 1200ms var(--ease) backwards; }
+html body main .l01-photo > .l-pill { animation: lb-fade 400ms var(--ease) 200ms backwards; }
+html body main .l01-photo > .l-near { animation: lb-up16 600ms var(--ease) 400ms backwards; }
+
+/* L02: network cards — stagger 60 мс, opacity + y 16→0 (they used to fade in as one block with the whole grid). */
+html body main [data-s="l02"]:not(.dark-hero) > .wrap.l02 > .l-partners,
+html body main [data-s="l04"]:not(.dark-hero) > .wrap.l04 > .l-visit { opacity: 1; transform: none; animation: none; }
+html body main [data-s="l02"]:not(.is-in) .l-partners > *,
+html body main [data-s="l04"]:not(.is-in) .l-visit > * { opacity: 0; transform: translateY(16px); }
+html body main [data-s="l02"].is-in .l-partners > * { animation: lb-up16 500ms var(--ease) backwards; }
+html body main [data-s="l02"].is-in .l-partners > :nth-child(2) { animation-delay: 60ms; }
+html body main [data-s="l02"].is-in .l-partners > :nth-child(3) { animation-delay: 120ms; }
+html body main [data-s="l02"].is-in .l-partners > :nth-child(4) { animation-delay: 180ms; }
+html body main [data-s="l02"].is-in .l-partners > :nth-child(5) { animation-delay: 240ms; }
+html body main [data-s="l02"].is-in .l-partners > :nth-child(6) { animation-delay: 300ms; }
+html body main [data-s="l02"].is-in .l-partners > :nth-child(7) { animation-delay: 360ms; }
+html body main [data-s="l02"].is-in .l-partners > :nth-child(n+8) { animation-delay: 420ms; }
+/* L04: «Перед визитом» cards — stagger 80 мс; the numbers in the lime circles spring 0.8→1 (300 мс) as each card lands. */
+html body main [data-s="l04"].is-in .l-visit > * { animation: lb-up16 500ms var(--ease) backwards; }
+html body main [data-s="l04"].is-in .l-visit > * > span:first-child { animation: lb-spring 300ms cubic-bezier(.34, 1.56, .64, 1) 200ms backwards; }
+html body main [data-s="l04"].is-in .l-visit > :nth-child(2), html body main [data-s="l04"].is-in .l-visit > :nth-child(2) > span:first-child { animation-delay: 80ms; }
+html body main [data-s="l04"].is-in .l-visit > :nth-child(3), html body main [data-s="l04"].is-in .l-visit > :nth-child(3) > span:first-child { animation-delay: 160ms; }
+html body main [data-s="l04"].is-in .l-visit > :nth-child(4), html body main [data-s="l04"].is-in .l-visit > :nth-child(4) > span:first-child { animation-delay: 240ms; }
+html body main [data-s="l04"].is-in .l-visit > :nth-child(2) > span:first-child { animation-delay: 280ms; }
+html body main [data-s="l04"].is-in .l-visit > :nth-child(3) > span:first-child { animation-delay: 360ms; }
+html body main [data-s="l04"].is-in .l-visit > :nth-child(4) > span:first-child { animation-delay: 440ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  html body main .l01 > .crumbs, html body main .l01-copy > *, html body main .l01-photo > *,
+  html body main [data-s="l02"].is-in .l-partners > *, html body main [data-s="l04"].is-in .l-visit > * { animation: lb-fade 100ms linear backwards !important; }
+  html body main [data-s="l04"].is-in .l-visit > * > span:first-child { animation: none !important; }
+  html body main [data-s="l02"]:not(.is-in) .l-partners > *, html body main [data-s="l04"]:not(.is-in) .l-visit > * { transform: none; }
+}
