@@ -5,6 +5,8 @@ import { ReportFaq, ReportViewer } from "@/components/ReportStage";
 import { ReportToc, ShareButton } from "@/components/ReportToc";
 import "./frame.css";
 import "@/app/adaptive/report.css";
+import "@/app/adaptive/b2b-motion.css";
+import "./motion.css";
 
 export const metadata = { title: "Отчёт FOX: как читать" };
 
@@ -84,10 +86,10 @@ export default function Page() {
                   </a>
                 </div>
                 <div className="rf-stats d-only">
-                  <div><strong>286</strong><span>пищевых антигенов в отчёте</span></div>
-                  <div><strong>13</strong><span>групп продуктов</span></div>
-                  <div><strong>3</strong><span>зоны реактивности</span></div>
-                  <div><strong>12</strong><span>страниц в PDF</span></div>
+                  <div data-rv="60" data-rv-base="240"><strong>286</strong><span>пищевых антигенов в отчёте</span></div>
+                  <div data-rv="60" data-rv-base="240"><strong>13</strong><span>групп продуктов</span></div>
+                  <div data-rv="60" data-rv-base="240"><strong>3</strong><span>зоны реактивности</span></div>
+                  <div data-rv="60" data-rv-base="240"><strong>12</strong><span>страниц в PDF</span></div>
                 </div>
               </div>
               <div className="rf-hero-visual">
@@ -107,10 +109,10 @@ export default function Page() {
               </div>
               <a className="btn btn-dark rf-pdf-m m-only" href="/figma/report/front.png">Скачать пример отчёта</a>
               <div className="rf-stats-m m-only">
-                <div><i className="g" /><strong>286</strong><span>антигенов</span></div>
-                <div><i className="y" /><strong>3</strong><span>зоны</span></div>
-                <div><i className="r" /><strong>U/mL</strong><span>единицы</span></div>
-                <div><i className="l" /><strong>7–10</strong><span>дней</span></div>
+                <div data-rv="60" data-rv-base="240"><i className="g" /><strong>286</strong><span>антигенов</span></div>
+                <div data-rv="60" data-rv-base="240"><i className="y" /><strong>3</strong><span>зоны</span></div>
+                <div data-rv="60" data-rv-base="240"><i className="r" /><strong>U/mL</strong><span>единицы</span></div>
+                <div data-rv="60" data-rv-base="240"><i className="l" /><strong>7–10</strong><span>дней</span></div>
               </div>
             </div>
           </div>
@@ -124,7 +126,7 @@ export default function Page() {
               <h2>Три зоны реактивности</h2>
               <div className="rf-zones">
                 {ZONES.map((zone) => (
-                  <article key={zone.title} className={`rf-zone rf-zone-${zone.tone}`}>
+                  <article key={zone.title} className={`rf-zone rf-zone-${zone.tone}`} data-rv="80">
                     <div className="rf-zone-head">
                       <i />
                       <h3>{zone.title}</h3>
@@ -153,7 +155,7 @@ export default function Page() {
               <p className="rf-uml-lead">
                 Результат по каждому пищевому антигену — полуколичественный: показывает, насколько выражен аналитический сигнал, а не степень тяжести симптомов. Сравнивать значения корректно внутри одного отчёта.
               </p>
-              <div className="rf-deck" data-uml>
+              <div className="rf-deck" data-uml data-rv="0">
                 <article className="uml-card low">
                   <div className="rf-deck-top"><span className="rf-deck-chip">Зелёная зона</span><span>01 / 03</span></div>
                   <p className="rf-deck-value"><strong>&lt; 7,5</strong><small>U/mL</small></p>
@@ -208,7 +210,7 @@ export default function Page() {
               <h2>Что делать после получения результата</h2>
               <div className="rf-actions">
                 {ACTIONS.map(([title, text]) => (
-                  <article key={title}>
+                  <article key={title} data-rv="80">
                     <i />
                     <h3>{title}</h3>
                     <p>{text}</p>

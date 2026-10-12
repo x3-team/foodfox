@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useReveal } from "@/components/useReveal";
 
 export function ReportToc({ items }: { items: Array<[string, string]> }) {
   const [active, setActive] = useState(items[0]?.[0] ?? "");
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
+  // R00 / R01 / R05: item entrances of the /report page (the page itself is a server component).
+  useReveal();
   const index = Math.max(0, items.findIndex(([id]) => id === active));
   // S6 (Figma 1138:1306): the lime marker slides to the active item (250 мс).
   const navRef = useRef<HTMLElement>(null);
@@ -56,7 +59,7 @@ export function ReportToc({ items }: { items: Array<[string, string]> }) {
       <button type="button" className="rf-toc-m m-only" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         <span>
           <small>На этой странице · {index + 1} из {items.length}</small>
-          <strong>{items[index]?.[1]}</strong>
+          <strong key={index}>{items[index]?.[1]}</strong>
         </span>
         <img src="/icons/chevron-down.svg" alt="" width={16} height={16} />
       </button>

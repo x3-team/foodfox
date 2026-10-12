@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { useReveal } from "@/components/useReveal";
 
 const AREAS = [
   {
@@ -233,89 +235,453 @@ const HERO_TILES: Array<[string, string, string, string]> = [
   ["MADx", "платформа · Австрия", "Платформа MADx · Австрия", "FOX разработала австрийская компания MacroArray Diagnostics. Единая платформа автоматизирует обработку и стандартизирует анализ."],
 ];
 
-export function SpecialistsView() {
+const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const HERO_TITLE = "Пищеспецифические IgG к 286 антигенам — в одном подробном отчёте";
+
+/** Horizontal swipe (touch): calls back with +1 (finger to the left) / −1 (to the right). */
+function useSwipe(onSwipe: (dir: 1 | -1) => void) {
+  const start = useRef<{ x: number; y: number } | null>(null);
+  return {
+    onTouchStart: (event: React.TouchEvent) => { const t = event.touches[0]; start.current = { x: t.clientX, y: t.clientY }; },
+    onTouchEnd: (event: React.TouchEvent) => {
+      const from = start.current;
+      start.current = null;
+      const t = event.changedTouches[0];
+      if (!from || !t) return;
+      const dx = t.clientX - from.x;
+      const dy = t.clientY - from.y;
+      if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) onSwipe(dx < 0 ? 1 : -1);
+    },
+  };
+}
+
+/** P02 «Области»: own state, so a tab switch re-renders this block only (not the whole page). */
+function AreasSection() {
   const [area, setArea] = useState(0);
-  const [report, setReport] = useState(0);
-  const [expert, setExpert] = useState(0);
+  // The panel shows `shown`; the tab row follows `area` at once (P2: chip fill 150 мс, panel crossfade after it).
+  const [shown, setShown] = useState(0);
+  const [swapped, setSwapped] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const current = AREAS[area];
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const current = AREAS[shown];
+  // M09: a horizontal swipe over the panel switches the tab.
+  const swipe = useSwipe((dir) => pickArea(area + dir));
 
   useEffect(() => {
     const apply = () => {
       const slug = new URLSearchParams(window.location.search).get("area");
       const index = AREAS.findIndex((item) => item.slug === slug);
-      if (index >= 0) setArea(index);
+      if (index >= 0) { setArea(index); setShown(index); }
     };
     apply();
     window.addEventListener("popstate", apply);
     return () => window.removeEventListener("popstate", apply);
   }, []);
 
+  /* P2 / M09: the outgoing panel fades 1→0 in 120 мс, the incoming one fades in with an 8px shift (200 мс) starting
+     60 мс later (overlap 60 мс); the container height animates 250 мс between the two measured heights and then goes
+     back to auto — a fixed px height used to stay forever (the panel never shrank again on a phone and clipped
+     after a resize). On a phone the shift goes toward the picked tab, the photo settles 1.04→1. */
   function pickArea(index: number) {
-    const el = panelRef.current;
-    const prev = el?.getBoundingClientRect().height ?? 0;
+    if (index < 0 || index >= AREAS.length || index === area) return;
+    const panel = panelRef.current;
+    const dir = index > area ? 1 : -1;
     setArea(index);
     const url = new URL(window.location.href);
     url.searchParams.set("area", AREAS[index].slug);
     window.history.replaceState(null, "", url);
-    requestAnimationFrame(() => {
-      if (!el) return;
-      const next = el.scrollHeight;
-      el.style.height = `${prev}px`;
-      requestAnimationFrame(() => {
-        el.style.height = `${next}px`;
-      });
-    });
+    const row = tabsRef.current;
+    const tab = row?.children[index] as HTMLElement | undefined;
+    if (row && tab && row.scrollWidth > row.clientWidth) {
+      row.scrollTo({ left: tab.offsetLeft - (row.clientWidth - tab.offsetWidth) / 2, behavior: reduceMotion() ? "auto" : "smooth" });
+    }
+    if (!panel || reduceMotion()) { setShown(index); return; }
+    const before = panel.getBoundingClientRect().height;
+    const copy = panel.querySelector<HTMLElement>(".sp-panel-copy");
+    panel.querySelectorAll(".sp-ghost").forEach((node) => node.remove());
+    if (copy) {
+      const ghost = copy.cloneNode(true) as HTMLElement;
+      ghost.classList.add("sp-ghost");
+      ghost.classList.remove("is-in");
+      ghost.setAttribute("aria-hidden", "true");
+      ghost.inert = true;
+      Object.assign(ghost.style, { left: `${copy.offsetLeft}px`, top: `${copy.offsetTop}px`, width: `${copy.offsetWidth}px` });
+      panel.appendChild(ghost);
+      window.setTimeout(() => ghost.remove(), 160);
+    }
+    panel.style.setProperty("--sp-dir", String(dir));
+    panel.style.height = "";
+    flushSync(() => { setShown(index); setSwapped(true); });
+    const after = panel.getBoundingClientRect().height;
+    if (Math.abs(after - before) < 1) return;
+    panel.style.height = `${before}px`;
+    void panel.offsetHeight;
+    panel.style.height = `${after}px`;
+    const done = (event?: TransitionEvent) => {
+      if (event && (event.target !== panel || event.propertyName !== "height")) return;
+      panel.style.height = "";
+      panel.removeEventListener("transitionend", done);
+    };
+    panel.addEventListener("transitionend", done);
+    window.setTimeout(() => done(), 400);
   }
 
+  return (
+        <section className="sp-sec" id="areas" data-s="p02">
+          <div className="wrap sp-stack-48">
+            <div className="sp-head">
+              <h2 className="sp-h2">Где FOX дополняет работу специалиста</h2>
+              <p className="sp-lead">
+                <span className="is-desk">Выберите свою специализацию — покажем клинические сценарии и то, что даёт отчёт именно в вашей практике.</span>
+                <span className="is-mob">Выберите специализацию — покажем клинические сценарии.</span>
+              </p>
+            </div>
+            <div className="sp-tabs" role="tablist" aria-label="Специализации" data-allow-x ref={tabsRef}>
+              {AREAS.map((item, index) => (
+                <button
+                  key={item.slug}
+                  className={`sp-tab${area === index ? " is-active" : ""}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={area === index}
+                  onClick={() => pickArea(index)}
+                >
+                  {item.tab}
+                </button>
+              ))}
+            </div>
+            <div className="area-panel sp-panel" ref={panelRef} role="tabpanel" {...swipe}>
+              <div className={`sp-panel-copy${swapped ? " is-in" : ""}`} key={shown}>
+                <p className="sp-kicker">{current.kicker}</p>
+                <h3>{current.title}</h3>
+                <p className="sp-lead sp-lead-ink">
+                  {"textDesk" in current && current.textDesk ? (
+                    <>
+                      <span className="is-desk">{current.textDesk}</span>
+                      <span className="is-mob">{current.text}</span>
+                    </>
+                  ) : current.text}
+                </p>
+                {current.gives ? (
+                  <div className="sp-gives">
+                    <p className="sp-kicker">Что даёт FOX</p>
+                    <p>
+                      {"givesDesk" in current && current.givesDesk ? (
+                        <>
+                          <span className="is-desk">{current.givesDesk}</span>
+                          <span className="is-mob">{current.gives}</span>
+                        </>
+                      ) : current.gives}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+              <div className="sp-related">
+                <img key={shown} className={swapped ? "is-in" : undefined} src="/figma/specialists/scenario.jpg" alt="" />
+                <p className="sp-note">Смежные материалы</p>
+                {RELATED.map(([href, label]) => (
+                  <Link key={label} href={href}>
+                    <span>{label}</span>
+                    <img src="/icons/arrow-right.svg" alt="" width={16} height={16} />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+  );
+}
+
+/** P06 «Анатомия отчёта»: own state — the 6 s autoplay and the page turns re-render this block only (before, every
+    turn re-rendered the whole page: 100–170 ms main-thread frames at 4× CPU while scrolling). */
+function ReportSection() {
+  const [report, setReport] = useState(0);
+  /* P6: the front sheet turns over its left edge (rotateY 0 → −165°, perspective 1800, 700 мс
+     cubic-bezier(.6,.05,.3,1)) with a shadow running across it; the next sheet straightens out of the stack
+     (−3.5° → 0) into its place; then the zone frame and marker fade in (scale .98 → 1, 200 мс).
+     Clicks during a turn retarget it instead of restarting. Reduced motion: no turn, a 200 мс crossfade. */
   const [turning, setTurning] = useState(false);
+  const [turned, setTurned] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const reportRef = useRef(0);
+  const pending = useRef<number | null>(null);
   const turnTimer = useRef<number | null>(null);
 
   function pickReport(index: number) {
     const next = ((index % REPORT.length) + REPORT.length) % REPORT.length;
+    if (turnTimer.current) { pending.current = next; return; }
     if (next === reportRef.current) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
+    if (reduceMotion()) {
+      setTurned(true);
       reportRef.current = next;
       setReport(next);
       return;
     }
-    if (turnTimer.current) window.clearTimeout(turnTimer.current);
+    const stage = stageRef.current;
+    const front = stage?.querySelector<HTMLElement>(".sp-sheet.is-front");
+    const under = stage?.querySelector<HTMLElement>(".sp-sheet.is-back-1");
+    if (front && under) {
+      if (getComputedStyle(under).display === "none") {
+        // No visible stack on this width: the next sheet waits right under the front one.
+        Object.assign(under.style, { display: "block", position: "absolute", margin: "0", left: `${front.offsetLeft}px`, top: `${front.offsetTop}px`, width: `${front.offsetWidth}px`, height: `${front.offsetHeight}px`, transform: "none" });
+      } else {
+        under.style.setProperty("--dx", `${front.offsetLeft - under.offsetLeft}px`);
+        under.style.setProperty("--dy", `${front.offsetTop - under.offsetTop}px`);
+      }
+    }
     setTurning(true);
     turnTimer.current = window.setTimeout(() => {
-      reportRef.current = next;
-      setReport(next);
-      setTurning(false);
+      const target = pending.current ?? next;
+      pending.current = null;
       turnTimer.current = null;
+      reportRef.current = target;
+      // the under sheet's inline box is cleared by the layout effect below, in the same frame as the front sheet
+      // comes back (clearing it here first left a frame or two with no page at all)
+      // the zone fade-in is armed only now, so the old zone does not replay while the page turns
+      setTurned(true);
+      setReport(target);
+      setTurning(false);
     }, 700);
   }
 
+  useEffect(() => () => { if (turnTimer.current) window.clearTimeout(turnTimer.current); }, []);
+  useLayoutEffect(() => {
+    if (turning) return;
+    stageRef.current?.querySelector<HTMLElement>(".sp-sheet.is-back-1")?.removeAttribute("style");
+  }, [turning]);
+
+  // Autoplay every 6 s is driven by the progress bar under the active tab (its animationend), so the bar and the
+  // turn are always in step; the bar pauses on hover over the block and while the block is off screen.
+  const anatomyRef = useRef<HTMLDivElement>(null);
+  const [onScreen, setOnScreen] = useState(false);
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let paused = false;
-    const node = stageRef.current;
-    const enter = () => { paused = true; };
-    const leave = () => { paused = false; };
-    node?.addEventListener("mouseenter", enter);
-    node?.addEventListener("mouseleave", leave);
-    const timer = window.setInterval(() => {
-      if (paused || turnTimer.current) return;
-      const next = (reportRef.current + 1) % REPORT.length;
-      setTurning(true);
-      turnTimer.current = window.setTimeout(() => {
-        reportRef.current = next;
-        setReport(next);
-        setTurning(false);
-        turnTimer.current = null;
-      }, 700);
-    }, 6000);
+    // the section, not .sp-anatomy: on a phone that box is display: contents and is never «on screen»
+    const node = anatomyRef.current?.closest("section");
+    if (!node) return;
+    const io = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), { threshold: 0.3 });
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
+  const swipe = useSwipe((dir) => pickReport(report + dir));
+
+  return (
+        <section className="sp-sec sp-report" id="report" data-s="p06">
+          <div className="wrap sp-stack-72">
+            <div className={`sp-anatomy${onScreen ? " is-live" : ""}`} ref={anatomyRef}>
+              <div className="sp-anatomy-copy">
+                <p className="sp-eyebrow"><i />Анатомия отчёта · 4 раздела</p>
+                <h2><span className="is-desk">Отчёт FOX — структурированная основа для консультации</span><span className="is-mob">Отчёт FOX — основа для консультации</span></h2>
+                <p className="sp-lead-inv">Один отчёт — четыре уровня чтения. Листайте разделы: страница переворачивается, а на отчёте подсвечивается нужная зона.</p>
+                <div className="sp-report-tabs" data-allow-x>
+                  {REPORT.map((item, index) => (
+                    <button
+                      key={item.title}
+                      type="button"
+                      className={report === index ? "is-active" : ""}
+                      onClick={() => pickReport(index)}
+                    >
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                      <span>
+                        <strong><span className="is-desk">{item.title}</span><span className="is-mob">{["Сводка", "Значения", "Семейства", "Контроль"][index]}</span></strong>
+                        {report === index && item.text ? <em>{item.text}</em> : null}
+                        {report === index ? <i key={report} onAnimationEnd={(event) => { if (event.animationName.startsWith("sp-progress") && !reduceMotion()) pickReport(report + 1); }} /> : null}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <div className="sp-cta sp-report-cta">
+                  <Link className="btn btn-light" href="/report">Скачать пример отчёта</Link>
+                  <Link className="sp-arrow sp-arrow-light" href="/report">
+                    <span className="is-desk">Как читать отчёт</span><span className="is-mob">Подробно: как читать отчёт</span>
+                    <img className="is-desk" src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
+                    <img className="is-mob" src="/figma/home/checker/plus.svg" alt="" width={16} height={16} />
+                  </Link>
+                </div>
+              </div>
+              <div className={`sp-stage${turned ? " has-turned" : ""}`} ref={stageRef} {...swipe}>
+                <div className="sp-sheet is-back-2" aria-hidden>
+                  <img src="/figma/report/p4.webp" alt="" />
+                </div>
+                <div className={`sp-sheet is-back-1${turning ? " is-rising" : ""}`} aria-hidden>
+                  <img src="/figma/report/p4.webp" alt="" />
+                </div>
+                <div className={`sp-sheet is-front is-zone-${report + 1}${turning ? " is-turning" : ""}`}>
+                  <img src="/figma/report/p4.webp" alt="" />
+                  <span className="sp-highlight" key={`h${report}`} />
+                  <b key={`b${report}`}>{String(report + 1).padStart(2, "0")}</b>
+                </div>
+                <div className="sp-controls">
+                  <button type="button" aria-label="Предыдущий раздел отчёта" onClick={() => pickReport(report - 1)} disabled={report === 0}>
+                    <img className="sp-flip" src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
+                  </button>
+                  <button type="button" aria-label="Следующий раздел отчёта" onClick={() => pickReport(report + 1)} disabled={report === REPORT.length - 1}>
+                    <img src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
+                  </button>
+                  <p>{String(report + 1).padStart(2, "0")} / 04</p>
+                  <div className="sp-dots">
+                    {REPORT.map((item, index) => (
+                      <i key={item.title} className={report === index ? "is-on" : ""} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* All four captions share one grid cell: the block keeps the height of the longest one, so the autoplay no
+                longer changes the page height (it made the page jump 60px every 6 s on a phone via scroll anchoring). */}
+            <div className="sp-active is-mob-block" aria-live="polite">
+              {REPORT.map((item, index) => (
+                <div key={item.title} className={report === index ? "is-on" : undefined} aria-hidden={report !== index}>
+                  <h3>{item.title}</h3>
+                  {item.text ? <p>{item.text}</p> : null}
+                </div>
+              ))}
+            </div>
+            <div className="sp-absent">
+              <h3><span className="is-desk">Чего в отчёте нет — и почему</span><span className="is-mob">Чего в отчёте нет</span></h3>
+              <p className="sp-lead">FOX предоставляет лабораторный профиль пищеспецифических IgG, но не заменяет клиническое решение специалиста.</p>
+              <div className="sp-negatives">
+                {["Нет диагноза", "Нет назначения препаратов", "Нет универсального меню", "Не оценка риска анафилаксии"].map((label) => (
+                  <span key={label}>
+                    <img src="/figma/specialists/close.svg" alt="" width={16} height={16} />
+                    {label}
+                  </span>
+                ))}
+              </div>
+              <p className="sp-note-wide">
+                Специалист сопоставляет данные FOX с анамнезом, рационом, результатами обследования и динамикой жалоб, а затем составляет индивидуальный план элиминации и возвращения продуктов.
+              </p>
+            </div>
+          </div>
+        </section>
+  );
+}
+
+/** P07 experts: the phone carousel counter / dots follow the scroll through rAF; state changes only when the
+    card index changes, and only this block re-renders. */
+function ExpertsSection() {
+  const [expert, setExpert] = useState(0);
+  const frame = useRef(0);
+  const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const row = event.currentTarget;
+    if (frame.current) return;
+    frame.current = window.requestAnimationFrame(() => {
+      frame.current = 0;
+      const card = row.querySelector<HTMLElement>("article");
+      const next = Math.min(EXPERTS.length - 1, Math.round(row.scrollLeft / ((card?.offsetWidth ?? 290) + 12)));
+      setExpert((prev) => (prev === next ? prev : next));
+    });
+  };
+  useEffect(() => () => window.cancelAnimationFrame(frame.current), []);
+
+  return (
+        <section className="sp-sec" id="experts" data-s="p07">
+          <div className="wrap sp-stack-48">
+            <div className="sp-experts-head">
+              <h2 className="sp-h2 sp-narrow">Наши эксперты</h2>
+              <span className="sp-count is-mob">{expert + 1} / {EXPERTS.length}</span>
+            </div>
+            <div className="sp-experts" data-allow-x onScroll={onScroll}>
+              {EXPERTS.map((person) => (
+                <article key={person.name}>
+                  <div className="sp-portrait">
+                    <img src={person.src} srcSet={`${person.src.replace(".webp", "-512.webp")} 512w, ${person.src} 1024w`} sizes="(min-width: 1101px) 480px, 290px" alt={person.name} />
+                  </div>
+                  <div>
+                    <h3>{person.name}</h3>
+                    <p>{person.role}</p>
+                  </div>
+                  <ul>
+                    {person.facts.map((fact) => (
+                      <li key={fact}><span>—</span>{fact}</li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+            <div className="sp-dots-m is-mob-block" aria-hidden>
+              {EXPERTS.map((person, index) => <i key={person.name} className={expert === index ? "is-on" : ""} />)}
+            </div>
+          </div>
+        </section>
+  );
+}
+
+export function SpecialistsView() {
+  const heroRef = useRef<HTMLElement>(null);
+  useReveal();
+
+  // M10: the first time a phone carousel is 40% on screen it nudges 24px and comes back — once per session.
+  useEffect(() => {
+    if (reduceMotion()) return;
+    const timers: number[] = [];
+    const io = new IntersectionObserver((entries) => entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const row = entry.target as HTMLElement;
+      io.unobserve(row);
+      if (row.scrollWidth <= row.clientWidth + 4 || row.scrollLeft > 0) return;
+      const key = `fox-nudge:${row.closest("[data-s]")?.getAttribute("data-s")}`;
+      try {
+        if (window.sessionStorage.getItem(key)) return;
+        window.sessionStorage.setItem(key, "1");
+      } catch { /* storage blocked: nudge anyway */ }
+      // after the entrance of the cards, so the two motions do not overlap
+      timers.push(window.setTimeout(() => {
+        row.classList.add("sp-nudge");
+        timers.push(window.setTimeout(() => row.classList.remove("sp-nudge"), 700));
+      }, 900));
+    }), { threshold: 0.4 });
+    document.querySelectorAll('[data-s="p04"] .sp-steps, [data-s="p07"] .sp-experts').forEach((row) => io.observe(row));
+    return () => { io.disconnect(); timers.forEach((t) => window.clearTimeout(t)); };
+  }, []);
+
+  // P1: if the photo is still loading when the page wakes up, its entrance waits for it (a late photo used to pop in
+  // after its animation had already run); a cached photo is not held back.
+  useEffect(() => {
+    heroRef.current?.querySelectorAll<HTMLImageElement>("img.bg:not(.sp-hero-blur), img.sp-hero-m").forEach((img) => {
+      if (img.complete) return;
+      img.classList.add("is-wait");
+      const go = () => img.classList.remove("is-wait");
+      img.addEventListener("load", go, { once: true });
+      img.addEventListener("error", go, { once: true });
+    });
+  }, []);
+
+  // P1: the hero photo follows the scroll at 0.85 (moves down 0.15 of the scroll inside the clipped hero).
+  useEffect(() => {
+    if (reduceMotion()) return;
+    const hero = heroRef.current;
+    if (!hero) return;
+    // Only the full-bleed (absolute) photo: the in-flow phone photo would open a gap under the header.
+    const photos = Array.from(hero.querySelectorAll<HTMLElement>("img.bg"));
+    let frame = 0;
+    let last = -1;
+    let live = false;
+    let height = 0;
+    const measure = () => {
+      // desktop only: on a tablet the photo ends above the glass tiles, and moving it down slid the white coat under
+      // their light text (contrast 1.4:1 while scrolling)
+      live = window.innerWidth >= 1101 && photos.some((img) => getComputedStyle(img).position === "absolute");
+      height = hero.offsetHeight;
+    };
+    const apply = () => {
+      frame = 0;
+      const y = live ? Math.round(Math.min(window.scrollY, height) * 0.15) : 0;
+      if (y === last) return;
+      last = y;
+      photos.forEach((img) => { img.style.translate = y ? `0 ${y}px` : ""; });
+    };
+    const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(apply); };
+    const onResize = () => { measure(); onScroll(); };
+    measure();
+    apply();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
     return () => {
-      window.clearInterval(timer);
-      if (turnTimer.current) window.clearTimeout(turnTimer.current);
-      node?.removeEventListener("mouseenter", enter);
-      node?.removeEventListener("mouseleave", leave);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
     };
   }, []);
 
@@ -323,9 +689,12 @@ export function SpecialistsView() {
     <>
       <Header />
       <main>
-        <section className="dark-hero" data-s="p01">
-          <img className="bg" src="/figma/specialists/hero-1440.webp" srcSet="/figma/specialists/hero-1440.webp 1440w, /figma/specialists/hero.webp 2400w" sizes="(min-width: 1440px) 100vw, 1440px" alt="" />
-          <img className="sp-hero-m" src="/figma/specialists/hero-m.webp" srcSet="/figma/specialists/hero-m.webp 780w, /figma/specialists/hero-m@3x.webp 1170w" sizes="100vw" alt="" />
+        <section className="dark-hero" data-s="p01" ref={heroRef}>
+          {/* P1: a 128px pre-blurred copy under the photo — the photo comes «from blur» by opacity + scale only
+              (animating filter: blur on a full-bleed photo cost 80–120 ms frames at 4× CPU). */}
+          <img className="bg sp-hero-blur" src="/figma/specialists/hero-blur.webp" alt="" aria-hidden data-no-sk />
+          <img className="bg" data-no-sk src="/figma/specialists/hero-1440.webp" srcSet="/figma/specialists/hero-1440.webp 1440w, /figma/specialists/hero.webp 2400w" sizes="(min-width: 1440px) 100vw, 1440px" alt="" />
+          <img className="sp-hero-m" data-no-sk src="/figma/specialists/hero-m.webp" srcSet="/figma/specialists/hero-m.webp 780w, /figma/specialists/hero-m@3x.webp 1170w" sizes="100vw" alt="" />
           <div className="shade" />
           <div className="wrap inner">
             <div className="sp-hero-copy">
@@ -333,7 +702,9 @@ export function SpecialistsView() {
                 <span>Для врачей и нутрициологов</span>
                 <span>Платформа MADx · Австрия</span>
               </div>
-              <h1>Пищеспецифические IgG к 286 антигенам — в одном подробном отчёте</h1>
+              <h1>{HERO_TITLE.split(" ").map((word, index, all) => (
+                <Fragment key={index}><span className="sp-w" style={{ "--i": index } as React.CSSProperties}>{word}</span>{index < all.length - 1 ? " " : null}</Fragment>
+              ))}</h1>
               <p className="sp-lead-inv">
                 <span className="is-desk">FOX Food Xplorer исследует иммунную реактивность к 286 продуктам и пищевым компонентам. Один образец крови позволяет одновременно оценить широкую панель и получить основу для персональной тактики питания.</span>
                 <span className="is-mob">Один образец крови — иммунная реактивность к 286 продуктам и пищевым компонентам. Опора для работы с ЖКТ, кожей и функциональными жалобами.</span>
@@ -370,75 +741,14 @@ export function SpecialistsView() {
           </div>
         </section>
 
-        <section className="sp-sec" id="areas" data-s="p02">
-          <div className="wrap sp-stack-48">
-            <div className="sp-head">
-              <h2 className="sp-h2">Где FOX дополняет работу специалиста</h2>
-              <p className="sp-lead">
-                <span className="is-desk">Выберите свою специализацию — покажем клинические сценарии и то, что даёт отчёт именно в вашей практике.</span>
-                <span className="is-mob">Выберите специализацию — покажем клинические сценарии.</span>
-              </p>
-            </div>
-            <div className="sp-tabs" role="tablist" aria-label="Специализации" data-allow-x>
-              {AREAS.map((item, index) => (
-                <button
-                  key={item.slug}
-                  className={`sp-tab${area === index ? " is-active" : ""}`}
-                  type="button"
-                  role="tab"
-                  aria-selected={area === index}
-                  onClick={() => pickArea(index)}
-                >
-                  {item.tab}
-                </button>
-              ))}
-            </div>
-            <div className="area-panel sp-panel" ref={panelRef} role="tabpanel">
-              <div className="sp-panel-copy">
-                <p className="sp-kicker">{current.kicker}</p>
-                <h3>{current.title}</h3>
-                <p className="sp-lead sp-lead-ink">
-                  {"textDesk" in current && current.textDesk ? (
-                    <>
-                      <span className="is-desk">{current.textDesk}</span>
-                      <span className="is-mob">{current.text}</span>
-                    </>
-                  ) : current.text}
-                </p>
-                {current.gives ? (
-                  <div className="sp-gives">
-                    <p className="sp-kicker">Что даёт FOX</p>
-                    <p>
-                      {"givesDesk" in current && current.givesDesk ? (
-                        <>
-                          <span className="is-desk">{current.givesDesk}</span>
-                          <span className="is-mob">{current.gives}</span>
-                        </>
-                      ) : current.gives}
-                    </p>
-                  </div>
-                ) : null}
-              </div>
-              <div className="sp-related">
-                <img src="/figma/specialists/scenario.jpg" alt="" />
-                <p className="sp-note">Смежные материалы</p>
-                {RELATED.map(([href, label]) => (
-                  <Link key={label} href={href}>
-                    <span>{label}</span>
-                    <img src="/icons/arrow-right.svg" alt="" width={16} height={16} />
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        <AreasSection />
 
         <section className="sp-sec sp-white" id="method" data-s="p03">
           <div className="wrap sp-stack-40">
             <h2 className="sp-h2 sp-narrow">Почему специалисты выбирают FOX</h2>
             <div className="sp-args" data-allow-x>
               {ARGS.map((item) => (
-                <article className="sp-arg" key={item.k}>
+                <article className="sp-arg" key={item.k} data-rv="70">
                   <div className="sp-arg-visual">
                     <img className="sp-arg-bg" src="/figma/home/hero-panel-texture.webp" alt="" />
                     <img className="sp-arg-graphic" src={item.graphic} alt="" />
@@ -470,7 +780,7 @@ export function SpecialistsView() {
               <h2 className="sp-h2"><span className="is-desk">От назначения до готового отчёта — обычно 7–10 дней</span><span className="is-mob">От назначения до отчёта — обычно 7–10 дней</span></h2>
               <p className="sp-lead-inv"><span className="is-desk">Точный срок устанавливает лаборатория, которая проводит исследование.</span><span className="is-mob">Точный срок устанавливает лаборатория.</span></p>
             </div>
-            <div className="sp-timeline">
+            <div className="sp-timeline" data-rv="0">
               <svg className="sp-route-line" viewBox="0 0 100 2" preserveAspectRatio="none" aria-hidden>
                 <line x1="0" y1="1" x2="100" y2="1" pathLength="1" />
               </svg>
@@ -529,122 +839,9 @@ export function SpecialistsView() {
           </div>
         </section>
 
-        <section className="sp-sec sp-report" id="report" data-s="p06">
-          <div className="wrap sp-stack-72">
-            <div className="sp-anatomy">
-              <div className="sp-anatomy-copy">
-                <p className="sp-eyebrow"><i />Анатомия отчёта · 4 раздела</p>
-                <h2><span className="is-desk">Отчёт FOX — структурированная основа для консультации</span><span className="is-mob">Отчёт FOX — основа для консультации</span></h2>
-                <p className="sp-lead-inv">Один отчёт — четыре уровня чтения. Листайте разделы: страница переворачивается, а на отчёте подсвечивается нужная зона.</p>
-                <div className="sp-report-tabs" data-allow-x>
-                  {REPORT.map((item, index) => (
-                    <button
-                      key={item.title}
-                      type="button"
-                      className={report === index ? "is-active" : ""}
-                      onClick={() => pickReport(index)}
-                    >
-                      <span>{String(index + 1).padStart(2, "0")}</span>
-                      <span>
-                        <strong><span className="is-desk">{item.title}</span><span className="is-mob">{["Сводка", "Значения", "Семейства", "Контроль"][index]}</span></strong>
-                        {report === index && item.text ? <em>{item.text}</em> : null}
-                        {report === index ? <i /> : null}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                <div className="sp-cta sp-report-cta">
-                  <Link className="btn btn-light" href="/report">Скачать пример отчёта</Link>
-                  <Link className="sp-arrow sp-arrow-light" href="/report">
-                    <span className="is-desk">Как читать отчёт</span><span className="is-mob">Подробно: как читать отчёт</span>
-                    <img className="is-desk" src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
-                    <img className="is-mob" src="/figma/home/checker/plus.svg" alt="" width={16} height={16} />
-                  </Link>
-                </div>
-              </div>
-              <div className="sp-stage" ref={stageRef}>
-                <div className="sp-sheet is-back-2" aria-hidden>
-                  <img src="/figma/report/p4.webp" alt="" />
-                </div>
-                <div className="sp-sheet is-back-1" aria-hidden>
-                  <img src="/figma/report/p4.webp" alt="" />
-                </div>
-                <div className={`sp-sheet is-front is-zone-${report + 1}${turning ? " is-turning" : ""}`}>
-                  <img src="/figma/report/p4.webp" alt="" />
-                  <span className="sp-highlight" />
-                  <b>{String(report + 1).padStart(2, "0")}</b>
-                </div>
-                <div className="sp-controls">
-                  <button type="button" aria-label="Предыдущий раздел отчёта" onClick={() => pickReport(report - 1)} disabled={report === 0}>
-                    <img className="sp-flip" src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
-                  </button>
-                  <button type="button" aria-label="Следующий раздел отчёта" onClick={() => pickReport(report + 1)} disabled={report === REPORT.length - 1}>
-                    <img src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
-                  </button>
-                  <p>{String(report + 1).padStart(2, "0")} / 04</p>
-                  <div className="sp-dots">
-                    {REPORT.map((item, index) => (
-                      <i key={item.title} className={report === index ? "is-on" : ""} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="sp-active is-mob-block" aria-live="polite">
-              <h3>{REPORT[report].title}</h3>
-              {REPORT[report].text ? <p>{REPORT[report].text}</p> : null}
-            </div>
-            <div className="sp-absent">
-              <h3><span className="is-desk">Чего в отчёте нет — и почему</span><span className="is-mob">Чего в отчёте нет</span></h3>
-              <p className="sp-lead">FOX предоставляет лабораторный профиль пищеспецифических IgG, но не заменяет клиническое решение специалиста.</p>
-              <div className="sp-negatives">
-                {["Нет диагноза", "Нет назначения препаратов", "Нет универсального меню", "Не оценка риска анафилаксии"].map((label) => (
-                  <span key={label}>
-                    <img src="/figma/specialists/close.svg" alt="" width={16} height={16} />
-                    {label}
-                  </span>
-                ))}
-              </div>
-              <p className="sp-note-wide">
-                Специалист сопоставляет данные FOX с анамнезом, рационом, результатами обследования и динамикой жалоб, а затем составляет индивидуальный план элиминации и возвращения продуктов.
-              </p>
-            </div>
-          </div>
-        </section>
+        <ReportSection />
 
-        <section className="sp-sec" id="experts" data-s="p07">
-          <div className="wrap sp-stack-48">
-            <div className="sp-experts-head">
-              <h2 className="sp-h2 sp-narrow">Наши эксперты</h2>
-              <span className="sp-count is-mob">{expert + 1} / {EXPERTS.length}</span>
-            </div>
-            <div className="sp-experts" data-allow-x onScroll={(event) => {
-              const row = event.currentTarget;
-              const card = row.querySelector<HTMLElement>("article");
-              setExpert(Math.min(EXPERTS.length - 1, Math.round(row.scrollLeft / ((card?.offsetWidth ?? 290) + 12))));
-            }}>
-              {EXPERTS.map((person) => (
-                <article key={person.name}>
-                  <div className="sp-portrait">
-                    <img src={person.src} srcSet={`${person.src.replace(".webp", "-512.webp")} 512w, ${person.src} 1024w`} sizes="(min-width: 1101px) 480px, 290px" alt={person.name} />
-                  </div>
-                  <div>
-                    <h3>{person.name}</h3>
-                    <p>{person.role}</p>
-                  </div>
-                  <ul>
-                    {person.facts.map((fact) => (
-                      <li key={fact}><span>—</span>{fact}</li>
-                    ))}
-                  </ul>
-                </article>
-              ))}
-            </div>
-            <div className="sp-dots-m is-mob-block" aria-hidden>
-              {EXPERTS.map((person, index) => <i key={person.name} className={expert === index ? "is-on" : ""} />)}
-            </div>
-          </div>
-        </section>
+        <ExpertsSection />
 
         <section className="sp-sec sp-grey" id="labs" data-s="p08">
           <div className="wrap sp-stack-40">
@@ -657,7 +854,7 @@ export function SpecialistsView() {
             </div>
             <div className="sp-labs" data-allow-x>
               {LABS.map(([name, src]) => (
-                <Link key={name} href="/labs">
+                <Link key={name} href="/labs" data-rv="40">
                   <img src={src} alt={name} />
                   <span>
                     Направить пациента
@@ -681,19 +878,16 @@ export function SpecialistsView() {
           <div className="wrap">
             <div className="sp-course">
               <div className="sp-course-copy">
-                <span className="sp-bar sp-bar-lg" />
-                <h2 className="sp-h2">Научитесь работать с FOX Food Xplorer бесплатно</h2>
-                <p className="sp-lead">
+                <span className="sp-bar sp-bar-lg" data-rv="0" />
+                <h2 className="sp-h2" data-rv="0" data-rv-base="160">Научитесь работать с FOX Food Xplorer бесплатно</h2>
+                <p className="sp-lead" data-rv="0" data-rv-base="220">
                   <span className="is-desk">Авторский курс для врачей, нутрициологов и других профильных специалистов: от механизмов пищевых реакций до интерпретации отчёта и построения элиминационно-ротационной тактики.</span>
                   <span className="is-mob">Авторский курс: от механизмов пищевых реакций до интерпретации отчёта.</span>
                 </p>
                 <div className="sp-facts">
-                  <span>6 модулей</span>
-                  <span>≈ 90 минут</span>
-                  <span>Сертификат</span>
-                  <span>Бессрочный доступ</span>
+                  {["6 модулей", "≈ 90 минут", "Сертификат", "Бессрочный доступ"].map((fact) => <span key={fact} data-rv="80" data-rv-base="380">{fact}</span>)}
                 </div>
-                <div className="sp-cta">
+                <div className="sp-cta" data-rv="0" data-rv-base="700">
                   <Link className="btn btn-dark" href="/course">Зарегистрироваться на курс</Link>
                   <Link className="sp-arrow" href="/course#program">
                     Программа курса
@@ -701,7 +895,7 @@ export function SpecialistsView() {
                   </Link>
                 </div>
               </div>
-              <aside className="sp-lectors">
+              <aside className="sp-lectors" data-rv="0" data-rv-base="220">
                 <div className="sp-fan" aria-hidden="true">
                   {LECTURERS.map(([name, , src]) => (
                     <img key={name} src={src.replace(".webp", "-256.webp")} srcSet={`${src.replace(".webp", "-256.webp")} 256w, ${src.replace(".webp", "-512.webp")} 512w`} sizes="64px" alt="" />
