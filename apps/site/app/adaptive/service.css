@@ -334,7 +334,7 @@ body main .e-plate .e-chip { animation: sv-pop 360ms cubic-bezier(.2, .8, .2, 1)
   body main .v01 > .crumbs, body main .v01-row > div:first-child > *, body main .c01 > .crumbs, body main .c01-row > div:first-child > *,
   body main [data-s]:not(.dark-hero) > .wrap.pr01 > *, body main .f01-visual > *, body main .k-hero-photo > *, body main .k-hero-photo .k-hero-card,
   body main [data-s="f03"].is-in .f03-photo, body main [data-s]:not(.dark-hero) > .wrap.e01 > .e-plate, body main [data-s]:not(.dark-hero) > .wrap.e01 > .e-crumbs,
-  body main [data-s]:not(.dark-hero) > .wrap.c01 > .crumbs, body main .e01-copy > * { animation: fade 100ms linear backwards; animation-delay: 0ms; }
+  body main [data-s]:not(.dark-hero) > .wrap.c01 > .crumbs, body main .e01-copy > * { animation: fade 100ms linear backwards !important; }
   body main [data-s="f03"]:not(.is-in) .f03-photo { opacity: 1; transform: none; }
   body main .e-plate .e-chip { animation: none; }
 }

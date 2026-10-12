@@ -841,7 +841,7 @@ th { font-size: 14px; line-height: 18px; color: var(--ink-65); font-weight: 400;
   }
   .card.is-out { animation-direction: reverse; }
   .rv:not(.is-shown) { transform: none; }
-  .rv.is-shown, .rv.is-shown.is-fast, .rv-g.is-shown > .rv { animation: fade 150ms linear backwards; }
+  .rv.is-shown, .rv.is-shown.is-fast, .rv-g.is-shown > .rv { animation: fade 150ms linear backwards; animation-delay: 0ms !important; }
   .rv.is-shown.is-instant { animation: none; }
   .featured-photo img, .card-cover img, .author-card .shot img, .bokeh, .text-link img, .hover-arrow {
     transition: none;

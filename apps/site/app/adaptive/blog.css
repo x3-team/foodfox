@@ -313,7 +313,8 @@ main.blog-article .quote.rv.is-shown::before { animation: quote-line 500ms var(-
 .art-toc-sheet nav a.is-active::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 2px; background: #e7f551; }
 
 @media (prefers-reduced-motion: reduce) {
-  main.blog-article .quote.rv::before { transform: none; animation: none; }
+  main.blog-article .quote.rv::before { transform: none; animation: none !important; }
+  .rv.rv-24.is-shown { animation-name: fade; }
   main.blog-article .aside-card, main.blog-article .aside-card.is-off { transition: none; }
   .toast.art-toast.is-out { animation: none; opacity: 0; }
 }

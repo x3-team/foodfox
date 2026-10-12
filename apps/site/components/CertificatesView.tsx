@@ -160,6 +160,13 @@ export function CertificatesView() {
       frame = 0;
       if (!desk.matches) { reset(); return; }
       const vh = window.innerHeight;
+      const maxY = document.documentElement.scrollHeight - vh;
+      // scene progress: 0 when its top is at `from` of the viewport, 1 at `to` — or at the very end of the page if the
+      // page cannot scroll that far (C05 sits right above the footer on tall screens)
+      const prog = (top: number, from: number, to: number) => {
+        const end = Math.max(vh * to, top + window.scrollY - maxY);
+        return Math.max(0, Math.min(1, (vh * from - top) / Math.max(1, vh * from - end)));
+      };
       if (photo) {
         const box = photo.parentElement!.getBoundingClientRect();
         const p = Math.max(0, Math.min(1, (vh - box.top) / (vh + box.height)));
@@ -169,7 +176,7 @@ export function CertificatesView() {
       if (steps) {
         steps.classList.add("is-scrub");
         const r = steps.getBoundingClientRect();
-        const p = Math.max(0, Math.min(1, (vh * 0.8 - r.top) / (vh * 0.45)));
+        const p = prog(r.top, 0.8, 0.35);
         const items = steps.children;
         const step = p >= 1 ? -1 : Math.min(items.length - 1, Math.floor(p * items.length));
         if (step !== last.step) {
@@ -181,7 +188,7 @@ export function CertificatesView() {
       if (line) {
         line.classList.add("is-draw");
         const r = line.getBoundingClientRect();
-        const p = Math.max(0, Math.min(1, (vh * 0.85 - r.top) / (vh * 0.45)));
+        const p = prog(r.top, 0.85, 0.4);
         if (Math.abs(p - last.p) > 0.001) {
           line.style.setProperty("--c05-p", p.toFixed(3));
           last.p = p;
