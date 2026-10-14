@@ -1093,7 +1093,7 @@ body:has(.mobile-menu) .ls-sticky { display: none !important; }
 .symptom-band .page-title { color: #f8f9f6; text-align: center; max-width: 1100px; margin: 0 auto 96px; font-size: 64px; line-height: 68px; letter-spacing: -2px; }
 .sym-row { align-items: stretch; }
 .sym-card { position: relative; height: 520px; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 24px; padding: 24px; background: rgba(255,255,255,.1); }
-.sym-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center bottom; transition: transform 600ms var(--ease); }
+.sym-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center bottom; transition: transform 600ms ease-out; }
 .sym-card:hover img { transform: scale(1.1); }
 .sym-shade { position: absolute; left: 0; right: 0; bottom: 0; height: 216px; background: linear-gradient(180deg, transparent, rgba(0,0,0,.6)); }
 .sym-card h3 { position: relative; margin: 0; font-weight: 300; font-size: 32px; line-height: 36px; letter-spacing: -0.5px; color: #f8f9f6; }
@@ -1679,7 +1679,7 @@ mark.hit { background: var(--lime); color: inherit; padding: 0 2px; }
 .blog-home { text-align: left; }
 .blog-home-card { display: flex; flex-direction: column; gap: 12px; color: #0b0c08; background: transparent; height: auto; padding: 0; }
 .blog-home-card { overflow: hidden; }
-.blog-home-card img { position: static; width: 100%; height: 246px; object-fit: cover; border-radius: 16px; transition: transform 400ms var(--ease); }
+.blog-home-card img { position: static; width: 100%; height: 246px; object-fit: cover; border-radius: 16px; transition: transform 400ms ease-out; }
 .blog-home-card { background: transparent; }
 .blog-home-card:hover, .blog-home-card:focus-visible { background: #f2f2f2; }
 .blog-home-card:hover img { transform: scale(1.1); }
@@ -2741,7 +2741,7 @@ article.is-open .f-answer > div { opacity: 1; transition-delay: 80ms; }
 .deck { background: #f8f9f6; padding: 0 20px 64px; }
 .deck-stage { display: flex; flex-direction: column; gap: 12px; }
 .deck-card {
-  position: sticky; top: calc(76px + var(--i) * 12px);
+  position: sticky; top: calc(80px + var(--i) * 12px); /* M41: 80 / 92 / 104 */
   height: 400px; border-radius: 24px; overflow: hidden; padding: 24px;
   display: flex; flex-direction: column; justify-content: space-between;
   background: #21251d; color: #fff; isolation: isolate;
@@ -2763,10 +2763,10 @@ article.is-open .f-answer > div { opacity: 1; transition-delay: 80ms; }
 }
 @media (min-width: 1101px) {
   .deck { padding: 128px 48px; height: calc(863px + 140vh); }
-  .deck-stage { position: sticky; top: max(112px, calc(50vh - 290px)); display: block; width: min(1118px, 100%); height: 607px; margin: 0 auto; }
+  .deck-stage { position: sticky; top: 80px; display: block; width: min(1118px, 100%); height: 607px; margin: 0 auto; }
   .deck-card {
-    position: absolute; left: 0; right: 0; top: 0; height: 558px; padding: 56px; border-radius: 8px;
-    transform-origin: 50% 100%; will-change: transform, opacity;
+    position: absolute; left: 0; right: 0; top: 0; height: 558px; padding: 56px; border-radius: 24px;
+    transform-origin: 50% 100%;
     transform: translateY(calc(min(var(--i), 1) * 24px + max(var(--i) - 1, 0) * 25px)) scale(calc(1 - min(var(--i), 1) * .1145 - max(var(--i) - 1, 0) * .0785));
     z-index: calc(10 - var(--i));
   }
@@ -4338,7 +4338,8 @@ body [data-s="v02"] button.rev-play { border: 0; background: none; padding: 0; c
 /* S05: chips lighten on hover. S14: #F2F2F2 plate on hover without moving the layout (spread ring). F01: search ring = FOX/Focus Ring 3px. */
 body [data-s="s05"] .sym-chips span { transition: background-color 200ms ease-out; }
 body [data-s="s05"] .sym-card:hover .sym-chips span { background-color: rgba(255, 255, 255, 0.22); }
-body [data-s="s14"] .blog-home-card { transition: background-color 200ms ease-out, box-shadow 200ms ease-out; }
+/* S14 · Card/Article Smart Animate hover: 400 мс ease-out (cover, background) */
+body [data-s="s14"] .blog-home-card { transition: background-color 400ms ease-out, box-shadow 400ms ease-out; }
 body [data-s="s14"] .blog-home-card:hover, body [data-s="s14"] .blog-home-card:focus-visible { background: #f2f2f2; box-shadow: 0 0 0 12px #f2f2f2; }
 body [data-s="f01"] .f-search input:focus-visible { outline: none; box-shadow: none; }
 body [data-s="f01"] .f-search:focus-within { box-shadow: 0 0 0 3px #e7f551; }
@@ -4538,14 +4539,13 @@ body [data-s="l01"] .ls-seek b { position: relative; font-weight: 500; font-size
 @keyframes s06-bar-in { from { transform: translateY(16px); opacity: 0; } }
 @media (min-width: 768px) { .s06-bar { display: none; } }
 @media (max-width: 480px) {
-  /* M43: an opened group unfolds (280 мс). */
-  body [data-s="s06"] .symptom-group.is-open .check-row { animation: s06-unfold 280ms cubic-bezier(.2, .8, .2, 1) both; }
+  /* M43: a group the visitor opens unfolds (280 мс; the height: HomePage.tsx) — not the group open on load. */
+  body [data-s="s06"] .symptom-group.is-open.is-unfold .check-row { animation: s06-unfold 280ms cubic-bezier(.2, .8, .2, 1) both; }
 }
 @keyframes s06-unfold { from { opacity: 0; transform: translateY(-6px); } }
 /* M45: matched part of the product name. */
 .s10-hit { background: #e7f551; color: inherit; border-radius: 3px; padding: 0 1px; }
 /* M46: lab tiles cascade in with a 40 мс step; press scales to 0.97. */
-body [data-s="s12"] .lab-tile { transition: scale 120ms ease-out; }
 body [data-s="s12"] .lab-tile:active { scale: 0.97; }
 body [data-s="s12"].is-in .lab-tile { animation: lab-in 360ms cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--k, 0) * 40ms); }
 @keyframes lab-in { from { opacity: 0; translate: 0 12px; } }
