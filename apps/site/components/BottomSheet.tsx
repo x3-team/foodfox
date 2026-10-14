@@ -2,7 +2,7 @@
 
 import { ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useDialog } from "@/components/useDialog";
+import { prefersReducedMotion, useDialog } from "@/components/useDialog";
 
 /**
  * Mobile bottom sheet from the adaptive notes (M08, M20, M26, M29 «закрытие — свайп вниз»):
@@ -41,12 +41,15 @@ export function BottomSheet({
 
   const restFor = useCallback((stop: number, height: number, viewport: number) => Math.max(0, height - stop * viewport), []);
 
+  // Exit matches the windows (K08 / G10): 200 мс — the sheet slides back down, the scrim fades with it.
+  // Reduced motion: nothing moves, the sheet fades out in 100 мс.
   const close = useCallback(() => {
     if (closing.current) return;
     closing.current = true;
     setAnim("close");
-    setTy(ref.current?.offsetHeight ?? 1000);
-    window.setTimeout(() => closeRef.current(), 240);
+    const reduce = prefersReducedMotion();
+    if (!reduce) setTy(ref.current?.offsetHeight ?? 1000);
+    window.setTimeout(() => closeRef.current(), reduce ? 100 : 200);
   }, []);
   useDialog(ref, close);
 
@@ -112,7 +115,7 @@ export function BottomSheet({
   const full = stops ? Math.max(...stops) * vh : h;
   const scrim = anim === "open" ? undefined : 0.45 * Math.min(1, full ? visible / full : 1);
   const transition =
-    anim === "spring" ? "transform 420ms cubic-bezier(.34, 1.26, .64, 1)" : anim === "close" ? "transform 240ms cubic-bezier(.4, 0, 1, 1)" : "none";
+    anim === "spring" ? "transform 420ms cubic-bezier(.34, 1.26, .64, 1)" : anim === "close" ? "transform 200ms cubic-bezier(.4, 0, 1, 1)" : "none";
 
   const sheet = (
     <div

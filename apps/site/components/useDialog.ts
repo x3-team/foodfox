@@ -17,6 +17,15 @@ export function useDialog(ref: RefObject<HTMLElement | null>, onClose: () => voi
     const opener = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    lock(1);
+    // K08 / G10: windows leave in reverse (opacity + scale 1→.98, scrim 50%→0, 200 мс; phone sheets slide down).
+    // The window unmounts at once, so on unmount a static copy of it plays the exit (see leave()).
+    const back = node?.closest<HTMLElement>(".modal-back") ?? null;
+    let scrolled = 0;
+    const onInnerScroll = (event: Event) => {
+      if (event.target === node) scrolled = node?.scrollTop ?? 0;
+    };
+    node?.addEventListener("scroll", onInnerScroll, { passive: true });
     const first =
       node?.querySelector<HTMLElement>("[data-autofocus]") ??
       node?.querySelector<HTMLElement>("input:not([type=checkbox]):not([type=radio]), textarea") ??
@@ -44,12 +53,53 @@ export function useDialog(ref: RefObject<HTMLElement | null>, onClose: () => voi
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
+      node?.removeEventListener("scroll", onInnerScroll);
+      if (back && !back.isConnected) leave(back, scrolled);
+      lock(-1);
       document.body.style.overflow = previousOverflow;
       if (opener && document.contains(opener)) opener.focus({ preventScroll: true });
     };
     // onClose is intentionally read once per open; callers pass stable handlers.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
+}
+
+/**
+ * Scroll lock flag for the page: html.is-locked while any window / sheet / the menu is open. The header reads it and
+ * does not react to scrolling meanwhile (G10: opening «Связаться» at the top must not shrink or hide it).
+ */
+let locks = 0;
+function lock(delta: number) {
+  locks = Math.max(0, locks + delta);
+  document.documentElement.classList.toggle("is-locked", locks > 0);
+}
+
+/** Exit of a window that has already been removed: an inert copy plays `.is-leaving` (200 мс) and removes itself. */
+function leave(back: HTMLElement, scrollTop: number) {
+  const ghost = back.cloneNode(true) as HTMLElement;
+  ghost.classList.add("is-leaving");
+  ghost.setAttribute("aria-hidden", "true");
+  ghost.inert = true;
+  for (const item of [ghost, ...ghost.querySelectorAll<HTMLElement>("[id], [role], [aria-modal], [name], [data-autofocus]")]) {
+    item.removeAttribute("id");
+    item.removeAttribute("role");
+    item.removeAttribute("aria-modal");
+    item.removeAttribute("name");
+    item.removeAttribute("data-autofocus");
+  }
+  document.body.appendChild(ghost);
+  const box = ghost.querySelector<HTMLElement>(".modal");
+  if (box && scrollTop) box.scrollTop = scrollTop;
+  let done = false;
+  const remove = () => {
+    if (done) return;
+    done = true;
+    ghost.remove();
+  };
+  ghost.addEventListener("animationend", (event) => {
+    if (event.target === ghost) remove();
+  });
+  window.setTimeout(remove, 400);
 }
 
 /** Wait at least `ms` so a spinner never flashes (G11: «минимальное время спиннера 600мс»). */
