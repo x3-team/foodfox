@@ -5,9 +5,11 @@ import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState }
 import { createPortal } from "react-dom";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { BottomSheet } from "@/components/BottomSheet";
 import { useDialog } from "@/components/useDialog";
 import { ZoomPane } from "@/components/ZoomPane";
 import { articles, authors, CATEGORIES } from "@/lib/content";
+import { PARTNERS, withUtm } from "@/lib/labs";
 
 const SYMPTOMS = [
   {
@@ -116,6 +118,14 @@ const REPORT_SLIDES = [
   ["/figma/report/front.webp", "Понятная градация", "Сразу видно, что убрать в первую очередь."],
 ];
 
+// M46: the lab networks of S12 in the same order as lib/labs.ts (counts there are for Moscow, the default city).
+const LAB_DATA = LABS.map(([name], index) => PARTNERS[index] ?? PARTNERS.find((item) => item.name.toLowerCase() === name.toLowerCase()));
+
+// S07 «286 продуктов»: the dots of /figma/home/shows/dots.svg (306 × 288) as separate points, ordered from the centre
+// out — they come in as a wave, 8 мс apart (note 1401:796). Colour = the art's radial gradient (white 1 → .2).
+const DOTS: Array<[number, number, number]> = [[153.1,116.1,5.1],[153.1,172.2,5.1],[121.2,116.1,5.1],[121.2,172.2,5.1],[184.9,116.1,5.1],[184.9,172.2,5.1],[89.9,116.1,4.46],[89.9,172.2,4.46],[216.2,116.1,4.46],[216.2,172.2,4.46],[153.1,59.9,5.1],[153.1,228.3,5.1],[121.8,59.9,4.46],[184.3,59.9,4.46],[121.8,228.3,4.46],[184.3,228.3,4.46],[59.9,116.1,3.83],[59.9,172.2,3.83],[246.2,116.1,3.83],[246.2,172.2,3.83],[91.8,59.9,3.83],[91.8,228.3,3.83],[214.3,59.9,3.83],[214.3,228.3,3.83],[30.6,116.1,3.83],[30.6,172.2,3.83],[275.5,116.1,3.83],[275.5,172.2,3.83],[62.5,59.9,3.83],[62.5,228.3,3.83],[243.6,59.9,3.83],[243.6,228.3,3.83],[153.1,283.8,4.46],[153.1,4.5,4.46],[34.4,59.9,2.55],[34.4,228.3,2.55],[271.7,59.9,2.55],[271.7,228.3,2.55],[123.1,4.5,3.83],[183,4.5,3.83],[123.1,283.8,3.83],[183,283.8,3.83],[2.6,116.1,2.55],[2.6,172.2,2.55],[303.6,116.1,2.55],[303.6,172.2,2.55],[93.7,4.5,3.83],[93.7,283.8,3.83],[212.4,4.5,3.83],[212.4,283.8,3.83]];
+const dotAlpha = (x: number, y: number) => 1 - 0.8 * Math.min(1, Math.hypot((x - 153.05) / 153.05, (y - 144.12) / 144.12));
+
 let antigenAnimated = false;
 
 const SHOWS = [
@@ -210,9 +220,29 @@ export function HomePage() {
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
   }, []);
-  // M43: groups are accordions — several can be open at once.
+  // M46: on phones a tap on a lab tile opens the bottom sheet of that network.
+  const [labSheet, setLabSheet] = useState<number | null>(null);
+  // M43: groups are accordions — several can be open at once. The height of a group the visitor opens or closes
+  // animates (280 мс) and its rows unfold; the group that is open on load does not play anything (before, every
+  // load on a phone played the rows' unfold).
   const [openGroups, setOpenGroups] = useState<string[]>(["gut"]);
-  const toggleGroup = (id: string) => setOpenGroups((list) => (list.includes(id) ? list.filter((item) => item !== id) : [...list, id]));
+  const [unfolded, setUnfolded] = useState<string[]>([]);
+  const groupFrom = useRef<{ id: string; h: number } | null>(null);
+  const toggleGroup = (id: string) => {
+    const node = document.getElementById(`s06-${id}`);
+    if (node && window.matchMedia("(max-width: 767px)").matches) groupFrom.current = { id, h: node.offsetHeight };
+    setUnfolded((list) => (list.includes(id) ? list : [...list, id]));
+    setOpenGroups((list) => (list.includes(id) ? list.filter((item) => item !== id) : [...list, id]));
+  };
+  useLayoutEffect(() => {
+    const from = groupFrom.current;
+    groupFrom.current = null;
+    const node = from && document.getElementById(`s06-${from.id}`);
+    if (!from || !node || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const to = node.offsetHeight;
+    if (to === from.h) return;
+    node.animate([{ height: `${from.h}px`, overflow: "hidden" }, { height: `${to}px`, overflow: "hidden" }], { duration: 280, easing: "cubic-bezier(.2, .8, .2, 1)" });
+  }, [openGroups]);
   const symRowRef = useRef<HTMLDivElement>(null);
   const checkerRef = useRef<HTMLElement>(null);
   const [checkerBar, setCheckerBar] = useState(false);
@@ -313,15 +343,18 @@ export function HomePage() {
     const deck = deckRef.current;
     const stage = deck?.querySelector<HTMLElement>(".deck-stage") ?? null;
     const cards = deck ? [...deck.querySelectorAll<HTMLElement>(".deck-card")] : [];
-    const ghosts = cards.map((card) => card.querySelector<HTMLElement>(".deck-ghost"));
+    const cardIns = cards.map((card) => card.querySelector<HTMLElement>(".deck-in"));
+    const shownCard = cards.map(() => false);
+    let deckLive = false;
     const edges = deck ? [...deck.querySelectorAll<HTMLElement>(".deck-edge")] : [];
     const austria = austriaRef.current;
     const photo = austria?.querySelector<HTMLElement>("img.parallax") ?? null;
     // M40: on phones the hero photo scrolls away slower than the page (parallax 0.8)
     const heroPhoto = document.querySelector<HTMLElement>('[data-s="s01"] .hero-media picture');
-    // S07: one card at a time (frame 1385:652); on the desktop the section is pinned while the three swap
+    // S07 (note 1401:796, storyboard 1410:1416): the left column is sticky, the three cards ride past it; the card
+    // nearest to the middle of the viewport is the active one (1), the others .55.
     const shows = showsRef.current;
-    const showsWrap = shows?.querySelector<HTMLElement>(".shows") ?? null;
+    const showCards = shows ? [...shows.querySelectorAll<HTMLElement>(".show-card")] : [];
     let showLast = -1;
     const phone = window.matchMedia("(max-width: 767px)");
     // inline styles are written only when the value changes
@@ -334,18 +367,10 @@ export function HomePage() {
       last.set(node, seen);
       node.style.setProperty(prop, value);
     };
-    const geo = { vh: 0, mode: "", pad: 0, top: 0, travel: 1, cardH: 558, start: 800, scaleH: 0, heights: [] as number[], showsPinned: false, showsPad: 0, showsTop: 0, showsTravel: 1, showsH: 1 };
+    const geo = { vh: 0, mode: "", pad: 0, top: 0, travel: 1, cardH: 558, start: 800, scaleH: 0, heights: [] as number[] };
     const measure = () => {
       geo.vh = window.innerHeight;
       geo.scaleH = scale?.offsetHeight ?? 0;
-      if (shows && showsWrap) {
-        const cs = getComputedStyle(showsWrap);
-        geo.showsPinned = cs.position === "sticky";
-        geo.showsTop = parseFloat(cs.top) || 0;
-        geo.showsPad = parseFloat(getComputedStyle(shows).paddingTop) || 0;
-        geo.showsH = shows.offsetHeight;
-        geo.showsTravel = Math.max(1, shows.offsetHeight - showsWrap.offsetHeight - geo.showsPad * 2);
-      }
       let mode = "list";
       if (reduce) mode = "static";
       else if (stage && getComputedStyle(stage).position === "sticky") mode = "pinned";
@@ -363,8 +388,14 @@ export function HomePage() {
         last.delete(heroPhoto);
       }
       if (mode !== geo.mode) {
-        cards.forEach((card) => ["transform", "opacity", "--cover"].forEach((prop) => card.style.removeProperty(prop)));
-        ghosts.forEach((ghost) => ghost?.style.removeProperty("opacity"));
+        cards.forEach((card, index) => {
+          ["transform", "opacity", "border-radius", "--cover"].forEach((prop) => card.style.removeProperty(prop));
+          cardIns[index]?.style.removeProperty("filter");
+          card.classList.remove("is-shown");
+          shownCard[index] = false;
+        });
+        deck?.classList.remove("is-live");
+        deckLive = false;
         edges.forEach((edge) => ["transform", "opacity"].forEach((prop) => edge.style.removeProperty(prop)));
         last.clear();
         geo.mode = mode;
@@ -381,11 +412,18 @@ export function HomePage() {
       const ausRect = austria && photo && !reduce ? austria.getBoundingClientRect() : null;
       const showsRect = shows ? shows.getBoundingClientRect() : null;
       // S07: which card is on
-      if (showsRect) {
-        const progress = geo.showsPinned
-          ? clamp((geo.showsTop - geo.showsPad - showsRect.top) / geo.showsTravel)
-          : clamp(-showsRect.top / Math.max(1, geo.showsH - geo.vh * 0.5));
-        const on = Math.min(SHOWS.length - 1, Math.floor(Math.min(0.999, progress) * SHOWS.length));
+      if (showsRect && near(showsRect)) {
+        const middle = geo.vh / 2;
+        let on = 0;
+        let best = Infinity;
+        showCards.forEach((card, index) => {
+          const rect = card.getBoundingClientRect();
+          const distance = Math.abs(rect.top + rect.height / 2 - middle);
+          if (distance < best) {
+            best = distance;
+            on = index;
+          }
+        });
         if (on !== showLast) {
           showLast = on;
           setShowOn(on);
@@ -403,31 +441,49 @@ export function HomePage() {
           word.style.opacity = local >= 1 ? "1" : (0.18 + 0.82 * local).toFixed(3);
         });
       }
-      // S04 · desktop: storyboard 1407:1817 on the pinned stage
+      // S04 · desktop (note 1401:784, storyboard 1407:1817). The cards hold at top 80 + i × 12 px; the next one slides
+      // up over the deck from under the viewport (scale .96 → 1, radius 32 → 24); the one it covers goes into the
+      // stack in place (scale 1 → .94 from its top edge, opacity 1 → .55, a real blur 0 → 3 px), so the edges of the
+      // earlier cards stay visible above, 12 px apart. Everything is scrubbed by the scroll; the content of a card
+      // comes in with a 60 мс stagger once the card is mostly in. `will-change` only while the deck is near.
+      const live = Boolean(deckRect && geo.mode === "pinned" && near(deckRect, 400));
+      if (deck && live !== deckLive) {
+        deckLive = live;
+        deck.classList.toggle("is-live", live);
+      }
       if (deckRect && geo.mode === "pinned" && near(deckRect, 0)) {
-        const progress = clamp((geo.pad - geo.top - deckRect.top) / geo.travel) * (cards.length - 1);
+        // 0 at the moment the stage pins (deck top + padding = stage top); the last card is in place at 90% of the
+        // pinned travel, so the finished stack («3 наверху», storyboard) holds for a moment before the section leaves
+        const progress = clamp((geo.top - geo.pad - deckRect.top) / (geo.travel * 0.9)) * (cards.length - 1);
         cards.forEach((card, index) => {
           const rel = index - progress;
-          let transform: string;
+          let y = 12 * index;
+          let size = 1;
           let opacity = 1;
           let blur = 0;
+          let radius = 24;
           if (rel <= 0) {
-            // goes into the stack: scale .94, opacity .55, blur 3; its top edge stays 12px above the next one
-            const depth = -rel;
-            const step = Math.min(1, depth);
-            const size = 1 - 0.06 * step - 0.03 * Math.max(0, depth - 1);
-            const lift = 12 * depth + (1 - size) * geo.cardH;
-            transform = `translate3d(0, ${(-lift).toFixed(1)}px, 0) scale(${size.toFixed(4)})`;
+            const step = Math.min(1, -rel);
+            size = 1 - 0.06 * step;
             opacity = 1 - 0.45 * step;
-            blur = step;
+            blur = 3 * step;
           } else {
-            // comes in over the deck from below the viewport: y → 0, scale .96 → 1
             const t = Math.min(1, rel);
-            transform = `translate3d(0, ${(geo.start * t).toFixed(1)}px, 0) scale(${(1 - 0.04 * t).toFixed(4)})`;
+            y += geo.start * t;
+            size = 1 - 0.04 * t;
+            radius = 24 + 8 * t;
           }
-          put(card, "transform", transform);
+          put(card, "transform", `translate3d(0, ${y.toFixed(1)}px, 0) scale(${size.toFixed(4)})`);
           put(card, "opacity", opacity.toFixed(3));
-          put(ghosts[index], "opacity", blur.toFixed(3));
+          // blur and radius change the card's raster, so they move in small steps (½ px blur, 1 px radius) rather than every frame
+          const blurStep = Math.round(blur * 2) / 2;
+          put(cardIns[index], "filter", blurStep > 0 ? `blur(${blurStep.toFixed(2)}px)` : "none");
+          put(card, "border-radius", `${Math.round(radius)}px`);
+          const shown = rel < 0.35;
+          if (shown !== shownCard[index]) {
+            shownCard[index] = shown;
+            card.classList.toggle("is-shown", shown);
+          }
         });
         // the strips under the first card: card 2's strip fades as card 2 leaves the deck,
         // card 3's strip moves up into its place (hidden under card 2 by then) and fades when card 3 leaves
@@ -480,7 +536,7 @@ export function HomePage() {
   // S09 (note 1401:808, storyboard 1410:1799): the column under the pointer becomes active — the lime mask opens
   // from the side the pointer came in (clip-path, 550ms); between neighbours it moves over without closing:
   // the old one shuts towards the new column while the new one opens from the shared edge. Step 1 is active
-  // by default (frame; touch). Before: step 1 stayed green for good, the hover mask was dark #101400 and
+  // by default on touch only (storyboard: «Без hover · все колонки белые», «Тач / дефолт · активен шаг 1»). Before: step 1 stayed green for good, the hover mask was dark #101400 and
   // opened only from the left, two columns could look active at once.
   useEffect(() => {
     const grid = stepsRef.current;
@@ -490,15 +546,22 @@ export function HomePage() {
     const masks = steps.map((step) => step.querySelector<HTMLElement>(".step-mask"));
     const SHUT_L = "inset(0 100% 0 0)";
     const SHUT_R = "inset(0 0 0 100%)";
-    let active = 0;
+    // Storyboard 1410:1799 «Без hover · все колонки белые»: with a mouse no column is active until the pointer is over
+    // one (step 1 stays active by default only on touch). The server marks step 1; it is cleared here without a wipe.
+    let active = -1;
+    grid.classList.add("is-instant");
+    steps.forEach((step) => step.removeAttribute("data-on"));
+    masks.forEach((mask) => mask?.style.removeProperty("clip-path"));
+    void grid.offsetWidth;
+    grid.classList.remove("is-instant");
     const enter = (index: number, event: PointerEvent) => {
       if (event.pointerType !== "mouse" || index === active) return;
       const prev = active;
       active = index;
-      steps[prev].removeAttribute("data-on");
+      if (prev >= 0) steps[prev].removeAttribute("data-on");
       steps[index].setAttribute("data-on", "");
       if (reduce) return;
-      const old = masks[prev];
+      const old = prev >= 0 ? masks[prev] : null;
       const mask = masks[index];
       if (old) old.style.clipPath = index > prev ? SHUT_R : SHUT_L;
       if (!mask) return;
@@ -509,12 +572,56 @@ export function HomePage() {
       mask.style.transition = "";
       mask.style.clipPath = "inset(0 0 0 0)";
     };
+    // the pointer leaves the row: the active mask closes towards the side it left by
+    const leave = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse" || active < 0) return;
+      const prev = active;
+      active = -1;
+      steps[prev].removeAttribute("data-on");
+      if (reduce) return;
+      const rect = steps[prev].getBoundingClientRect();
+      const mask = masks[prev];
+      if (mask) mask.style.clipPath = event.clientX < rect.left + rect.width / 2 ? SHUT_L : SHUT_R;
+    };
     const handlers = steps.map((step, index) => {
       const handler = (event: PointerEvent) => enter(index, event);
       step.addEventListener("pointerenter", handler);
       return handler;
     });
-    return () => steps.forEach((step, index) => step.removeEventListener("pointerenter", handlers[index]));
+    grid.addEventListener("pointerleave", leave);
+    return () => {
+      steps.forEach((step, index) => step.removeEventListener("pointerenter", handlers[index]));
+      grid.removeEventListener("pointerleave", leave);
+    };
+  }, []);
+
+  // M46 / M47: the press state of the lab tiles (.97) and blog cards (.98) on touch. `:active` alone is not reliable
+  // on touch screens (iOS Safari does not set it without a touch listener; it is not set at all in the touch
+  // emulation the checks run in), so a touch adds .is-pressed until the finger is lifted or the gesture becomes a scroll.
+  useEffect(() => {
+    const main = document.querySelector("main");
+    if (!main) return;
+    let pressed: Element | null = null;
+    let since = 0;
+    // a quick tap still shows the whole press (the 120 мс scale) before it springs back
+    const release = () => {
+      const node = pressed;
+      pressed = null;
+      if (node) window.setTimeout(() => node.classList.remove("is-pressed"), Math.max(0, 120 - (performance.now() - since)));
+    };
+    const down = (event: PointerEvent) => {
+      if (event.pointerType !== "touch") return;
+      release();
+      pressed = (event.target as Element).closest('[data-s="s12"] .lab-tile, [data-s="s14"] .blog-home-card');
+      since = performance.now();
+      pressed?.classList.add("is-pressed");
+    };
+    main.addEventListener("pointerdown", down, { passive: true });
+    ["pointerup", "pointercancel", "pointerleave"].forEach((type) => main.addEventListener(type, release, { passive: true }));
+    return () => {
+      main.removeEventListener("pointerdown", down);
+      ["pointerup", "pointercancel", "pointerleave"].forEach((type) => main.removeEventListener(type, release));
+    };
   }, []);
 
   // M48: «Не нашли ответ?» — the chat bubble first «types» (three dots), then shows the text; once, when the
@@ -555,7 +662,7 @@ export function HomePage() {
     if (rect.top < window.innerHeight && rect.bottom > 0) card.dataset.played = "1";
   }, [showOn]);
 
-  // S10: the counter runs 0 → 286 (900ms) when it comes into view. The digits are written straight into the
+  // S10: the counter runs 0 → 286 (900ms, ease-out) when it comes into view. The digits are written straight into the
   // node — before, setCount re-rendered the whole HomePage on every frame of the count.
   useEffect(() => {
     const node = countRef.current?.querySelector<HTMLElement>("[data-antigen-count]");
@@ -573,7 +680,8 @@ export function HomePage() {
         if (t < 1) raf = requestAnimationFrame(tick);
       };
       raf = requestAnimationFrame(tick);
-    }, { rootMargin: "0px 0px -10% 0px" });
+    }, { threshold: 0 });
+    // S10: starts as soon as the number enters the viewport (the −10% bottom margin held it at «0» for ~1 s of a slow scroll)
     io.observe(node);
     return () => {
       io.disconnect();
@@ -583,12 +691,42 @@ export function HomePage() {
   }, []);
 
   // S13 (note 1401:826, storyboard 1411:1551): the reviews strip drifts left ~60px/s, stops under the pointer and
-  // can be dragged. Before, the loop ran forever (also off screen) and read `scrollWidth` on every frame —
-  // a forced layout per frame for the whole page.
+  // can be dragged; the arrows next to the title (the note's «drag и стрелки») move it by one card with an ease-out
+  // glide (500 мс), and the strip also stops while the pointer is on them. Under reduced motion and on touch screens
+  // the strip does not drift: it scrolls by hand and the arrows scroll it by one card, disabled at the ends.
+  const reviewStep = useRef<((dir: 1 | -1) => void) | null>(null);
+  const [reviewEdge, setReviewEdge] = useState<{ prev: boolean; next: boolean }>({ prev: false, next: false });
   useEffect(() => {
     const row = reviewsRef.current;
     const track = row?.querySelector<HTMLElement>(".review-track");
-    if (!row || !track || window.matchMedia("(prefers-reduced-motion: reduce)").matches || window.matchMedia("(max-width: 767px), (hover: none)").matches) return;
+    const arrows = row?.parentElement?.querySelector<HTMLElement>(".s13-arrows") ?? null;
+    if (!row || !track) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const cardStarts = () => {
+      const base = track.getBoundingClientRect().left;
+      return [...track.querySelectorAll<HTMLElement>(".review-card")].filter((card) => card.offsetWidth > 0).map((card) => card.getBoundingClientRect().left - base);
+    };
+    if (reduce || window.matchMedia("(max-width: 767px), (hover: none)").matches) {
+      const edges = () => {
+        const max = row.scrollWidth - row.clientWidth;
+        setReviewEdge((old) => {
+          const next = { prev: row.scrollLeft <= 1, next: row.scrollLeft >= max - 1 };
+          return old.prev === next.prev && old.next === next.next ? old : next;
+        });
+      };
+      reviewStep.current = (dir) => {
+        const starts = cardStarts();
+        const at = row.scrollLeft;
+        const target = dir > 0 ? starts.find((x) => x > at + 2) : [...starts].reverse().find((x) => x < at - 2);
+        row.scrollTo({ left: target ?? (dir > 0 ? row.scrollWidth : 0), behavior: reduce ? "auto" : "smooth" });
+      };
+      edges();
+      row.addEventListener("scroll", edges, { passive: true });
+      return () => {
+        reviewStep.current = null;
+        row.removeEventListener("scroll", edges);
+      };
+    }
     let half = track.scrollWidth / 2;
     const ro = new ResizeObserver(() => {
       half = track.scrollWidth / 2;
@@ -598,17 +736,24 @@ export function HomePage() {
     let visible = false;
     let hover = false;
     let drag: { x: number; from: number; id: number } | null = null;
+    let glide: { from: number; to: number; t0: number } | null = null;
+    // `offset` is not wrapped (only what is painted is), so a glide never jumps across the seam of the two copies
     let offset = 0;
     let last = 0;
     const paint = () => {
-      if (half > 0) offset = ((offset % half) + half) % half;
-      track.style.transform = `translate3d(${(-offset).toFixed(2)}px, 0, 0)`;
+      const shown = half > 0 ? ((offset % half) + half) % half : offset;
+      track.style.transform = `translate3d(${(-shown).toFixed(2)}px, 0, 0)`;
     };
     const tick = (now: number) => {
       raf = 0;
       const dt = last ? Math.min(64, now - last) : 0;
       last = now;
-      if (!hover && !drag) {
+      if (glide) {
+        const t = Math.min(1, (now - glide.t0) / 500);
+        offset = glide.from + (glide.to - glide.from) * (1 - Math.pow(1 - t, 3));
+        paint();
+        if (t >= 1) glide = null;
+      } else if (!hover && !drag) {
         offset += (dt / 1000) * 60;
         paint();
       }
@@ -619,6 +764,16 @@ export function HomePage() {
         last = 0;
         raf = requestAnimationFrame(tick);
       }
+    };
+    reviewStep.current = (dir) => {
+      if (half <= 0) return;
+      const from = glide ? glide.to : offset;
+      const at = ((from % half) + half) % half;
+      const starts = cardStarts().flatMap((x) => [x - half, x]);
+      const target = dir > 0 ? starts.find((x) => x > at + 2) : [...starts].reverse().find((x) => x < at - 2);
+      if (target === undefined) return;
+      glide = { from: offset, to: from + (target - at), t0: performance.now() };
+      run();
     };
     const io = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
@@ -637,6 +792,7 @@ export function HomePage() {
     };
     const down = (event: PointerEvent) => {
       if (event.pointerType !== "mouse" || event.button !== 0) return;
+      glide = null;
       drag = { x: event.clientX, from: offset, id: event.pointerId };
       row.setPointerCapture(event.pointerId);
       row.classList.add("is-dragging");
@@ -651,18 +807,24 @@ export function HomePage() {
       drag = null;
       row.classList.remove("is-dragging");
     };
-    row.addEventListener("mouseenter", enter);
-    row.addEventListener("mouseleave", leave);
+    const zones = [row, arrows].filter((node): node is HTMLElement => Boolean(node));
+    zones.forEach((node) => {
+      node.addEventListener("mouseenter", enter);
+      node.addEventListener("mouseleave", leave);
+    });
     row.addEventListener("pointerdown", down);
     row.addEventListener("pointermove", move);
     row.addEventListener("pointerup", up);
     row.addEventListener("pointercancel", up);
     return () => {
+      reviewStep.current = null;
       cancelAnimationFrame(raf);
       io.disconnect();
       ro.disconnect();
-      row.removeEventListener("mouseenter", enter);
-      row.removeEventListener("mouseleave", leave);
+      zones.forEach((node) => {
+        node.removeEventListener("mouseenter", enter);
+        node.removeEventListener("mouseleave", leave);
+      });
       row.removeEventListener("pointerdown", down);
       row.removeEventListener("pointermove", move);
       row.removeEventListener("pointerup", up);
@@ -736,6 +898,14 @@ export function HomePage() {
   useEffect(() => {
     if (shown.length && !shown.some((item) => item.name === picked.name)) setPicked(shown[0]);
   }, [shown, picked.name]);
+
+  // S10 (note 1399:605): the card crossfades (200 мс) when another product is picked — not on page load
+  // (before, the fade of the phone note M40 also played on the desktop card as soon as the page loaded).
+  const [cardSwapped, setCardSwapped] = useState(false);
+  const firstPicked = useRef(picked.name);
+  useEffect(() => {
+    if (picked.name !== firstPicked.current) setCardSwapped(true);
+  }, [picked.name]);
 
   const compound = useMemo(() => PRODUCTS.find((item) => item.compound && (item.name.toLowerCase().includes(query.trim().toLowerCase()) || query.trim().toLowerCase().includes("халв"))), [query]);
 
@@ -871,10 +1041,9 @@ export function HomePage() {
               const words = <>{title.split("|")[0]}<br className="deck-br" /> {title.split("|")[1]}</>;
               return (
                 <article className="deck-card" key={title} data-i={index} style={{ ["--i" as string]: index }}>
-                  {body(<h2>{words}</h2>)}
-                  {/* S04 note: a card that goes into the stack blurs 0 → 3px. A pre-blurred copy fades in over it
-                      instead of changing the `filter` radius of the whole 1118×558 card on every scroll frame. */}
-                  <div className="deck-ghost" aria-hidden><div className="deck-ghost-in">{body(<p className="deck-h">{words}</p>)}</div></div>
+                  {/* S04: the leaving card's blur (0 → 3 px) is a real `filter` on this box — inside the card's layer, so
+                      it is rasterised with the card instead of being re-applied by the compositor on every frame */}
+                  <div className="deck-in">{body(<h2>{words}</h2>)}</div>
                 </article>
               );
             })}
@@ -899,6 +1068,7 @@ export function HomePage() {
                     // M42: on phones a tap scrolls to the checker and opens the matching group.
                     if (!window.matchMedia("(max-width: 767px)").matches) return;
                     const id = ["skin", "gut", "well", "weight"][index];
+                    setUnfolded((list) => (list.includes(id) ? list : [...list, id]));
                     setOpenGroups((list) => (list.includes(id) ? list : [...list, id]));
                     window.requestAnimationFrame(() => document.getElementById(`s06-${id}`)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }));
                   }}
@@ -937,7 +1107,7 @@ export function HomePage() {
               {SYMPTOMS.map((groupItem) => {
                 const n = groupItem.items.filter((item) => checked.includes(item)).length;
                 return (
-                  <div className={`symptom-group${openGroups.includes(groupItem.id) ? " is-open" : ""}`} key={groupItem.id} id={`s06-${groupItem.id}`}>
+                  <div className={`symptom-group${openGroups.includes(groupItem.id) ? " is-open" : ""}${unfolded.includes(groupItem.id) ? " is-unfold" : ""}`} key={groupItem.id} id={`s06-${groupItem.id}`}>
                     <h3>
                       <button type="button" aria-expanded={openGroups.includes(groupItem.id)} onClick={() => toggleGroup(groupItem.id)}>
                         <i className="s06-gicon" aria-hidden><img src={`/figma/home/checker/g-${groupItem.id}.svg`} alt="" /></i>
@@ -1039,7 +1209,22 @@ export function HomePage() {
                     <h3>{title}</h3>
                     <p>{text}</p>
                   </div>
-                  {index === 0 && <img className="show-dots" src="/figma/home/shows/dots.svg" alt="" />}
+                  {index === 0 && (
+                    <div className="show-dots" aria-hidden>
+                      {DOTS.map(([x, y, r], order) => (
+                        <i
+                          key={`${x}-${y}`}
+                          style={{
+                            left: `${((x - r) / 306.1) * 100}%`,
+                            top: `${((y - r) / 288.24) * 100}%`,
+                            width: `${((2 * r) / 306.1) * 100}%`,
+                            ["--a" as string]: dotAlpha(x, y).toFixed(2),
+                            ["--d" as string]: `${order * 8}ms`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
                   {index === 1 && (
                     <div className="show-rings" aria-hidden data-allow-x>
                       {[0, 1, 2].map((ring) => <i key={ring}><svg viewBox="0 0 216 216"><circle cx="108" cy="108" r="107.5" pathLength={1} /></svg></i>)}
@@ -1178,7 +1363,7 @@ export function HomePage() {
                 <p className="meta-line"><span className="d-only">Показано {Math.min(36, shown.length)} из 286 · полный список — в PDF «Состав панели»</span><span className="m-only">Показано {Math.min(14, shown.length)} из 286 · тап по продукту открывает карточку</span></p>
               </div>
             </div>
-            <article className={`panel s10-card${cardOpen ? " is-open" : ""}`}>
+            <article className={`panel s10-card${cardOpen ? " is-open" : ""}${cardSwapped ? " is-swapped" : ""}`}>
               <div className="s10-card-top">
                 <span className="s10-tag">{picked.group}{picked.tag && picked.tag !== picked.group.toLowerCase() && /[A-Za-z]/.test(picked.tag) ? ` · ${picked.tag}` : ""}</span>
                 <button type="button" className="s10-close" aria-label="Сбросить выбор" onClick={() => { setCardOpen(false); setQuery(""); setGroup("Все 286"); setPicked(PRODUCTS[0]); }}>✕</button>
@@ -1239,12 +1424,29 @@ export function HomePage() {
           <p className="lead">Цена устанавливается лабораторией. Уточняйте на официальном сайте.</p>
           <p className="s12-count"><strong>1500+</strong><span>пунктов в 9 сетях</span></p>
           <div className="lab-grid">
-            {LABS.map(([name, slug], index) => (
-              <Link className="lab-tile" key={slug} href="/labs" aria-label={`Сдать тест в ${name}`} style={{ ["--k" as string]: index }}>
-                <span className="lab-logo-box"><img className="lab-logo" src={slug} alt="" /></span>
-                <span className="lab-go">Сдать тест<img src="/icons/arrow-up-right.svg" alt="" /></span>
-              </Link>
-            ))}
+            {LABS.map(([name, slug], index) => {
+              const away = LAB_DATA[index]?.here === false;
+              return (
+                <Link
+                  className={`lab-tile${away ? " is-away" : ""}${labSheet === index ? " is-picked" : ""}`}
+                  key={slug}
+                  href="/labs"
+                  aria-label={`Сдать тест в ${name}`}
+                  aria-haspopup={phone ? "dialog" : undefined}
+                  style={{ ["--k" as string]: index }}
+                  onClick={(event) => {
+                    // M46: on phones the tile opens the network's sheet instead of leaving the page
+                    if (!window.matchMedia("(max-width: 767px)").matches || !LAB_DATA[index]) return;
+                    event.preventDefault();
+                    setLabSheet(index);
+                  }}
+                >
+                  <span className="lab-logo-box"><img className="lab-logo" src={slug} alt="" /></span>
+                  <span className="lab-go">Сдать тест<img src="/icons/arrow-up-right.svg" alt="" /></span>
+                  {away && <small className="lab-away">нет в вашем городе</small>}
+                </Link>
+              );
+            })}
             <Link className="lab-tile lab-tile-all" href="/labs" style={{ ["--k" as string]: LABS.length }}>
               <strong>1500+</strong>
               <small>пунктов в 9 сетях</small>
@@ -1254,10 +1456,19 @@ export function HomePage() {
             </Link>
           </div>
           <Link className="btn btn-dark s12-cta" href="/labs">Найти лабораторию рядом</Link>
+          {labSheet !== null && LAB_DATA[labSheet] && (
+            <LabSheet name={LABS[labSheet][0]} logo={LABS[labSheet][1]} lab={LAB_DATA[labSheet]!} onClose={() => setLabSheet(null)} />
+          )}
         </section>
 
         <section className="band s13" data-s="s13">
-          <h2 className="page-title">Отзывы наших клиентов</h2>
+          <div className="s13-head">
+            <h2 className="page-title">Отзывы наших клиентов</h2>
+            <div className="s13-arrows">
+              <button type="button" className="s13-arrow prev" aria-label="Предыдущий отзыв" disabled={reviewEdge.prev} onClick={() => reviewStep.current?.(-1)} />
+              <button type="button" className="s13-arrow next" aria-label="Следующий отзыв" disabled={reviewEdge.next} onClick={() => reviewStep.current?.(1)} />
+            </div>
+          </div>
           <div className="review-row" data-allow-x ref={reviewsRef} onScroll={onReviewScroll}>
             <div className="review-track">
             {[0, 1].flatMap((copy) => [
@@ -1377,6 +1588,28 @@ export function HomePage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+/**
+ * M46 (note 1446:52107, storyboard 1446:52113): the bottom sheet of a lab network on phones — its points in the city,
+ * that the price is set by the network, «Открыть на карте» and «Сайт сети». Only what lib/labs.ts knows is shown:
+ * there is no price «от» and no distance to the nearest point in the site data, so neither is invented.
+ */
+function LabSheet({ name, logo, lab, onClose }: { name: string; logo: string; lab: (typeof PARTNERS)[number]; onClose: () => void }) {
+  const away = !lab.here;
+  return (
+    <BottomSheet label={`Лаборатория ${name}`} className="lab-bs" onClose={onClose} portal>
+      <div className="lab-bs-head">
+        <span className="lab-bs-logo"><img src={logo} alt="" /></span>
+        <h3>{name}</h3>
+      </div>
+      <p className="lab-bs-count">{away ? "Нет пунктов в Москве" : <>{lab.count} в Москве<span> · цена на сайте сети</span></>}</p>
+      <div className="lab-bs-actions">
+        {!away && <a className="btn btn-dark" href={withUtm(lab.href, "home_lab_sheet")} target="_blank" rel="noreferrer">Сайт сети</a>}
+        <Link className={`btn ${away ? "btn-dark" : "btn-ghost"}`} href="/labs">{away ? "Где сдать рядом" : "Открыть на карте"}</Link>
+      </div>
+    </BottomSheet>
   );
 }
 
