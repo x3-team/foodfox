@@ -70,16 +70,20 @@ test("dark hero sits under the header", async ({ page }) => {
       const e = hero.getBoundingClientRect();
       const mobile = window.matchMedia("(max-width: 1100px)").matches;
       const phone = window.matchMedia("(max-width: 767px)").matches;
+      // Phone home (G01 «на тёмном hero шапка прозрачная»): the header is transparent over the dark hero, which starts
+      // at the top of the page; the photo itself keeps the framing of 1424:48354 — its top edge under the header.
       if (route === "/" && phone) {
         const photo = document.querySelector("[data-s='s01'] .hero-media img");
         const h1 = document.querySelector("[data-s='s01'] h1");
         if (!photo || !h1) return false;
         const photoRect = photo.getBoundingClientRect();
         const h1Rect = h1.getBoundingClientRect();
-        const headerH = header.getBoundingClientRect().height;
         return (
-          header.classList.contains("is-home-top") &&
-          photoRect.top >= headerH - 2 &&
+          header.classList.contains("on-dark") &&
+          !header.classList.contains("is-home-top") &&
+          e.top <= 2 &&
+          e.bottom > h.bottom &&
+          photoRect.top >= h.height - 2 &&
           h1Rect.top >= photoRect.bottom - 2
         );
       }

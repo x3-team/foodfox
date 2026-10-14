@@ -102,10 +102,10 @@ export function Header() {
   }, []);
   const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
   const darkHero = path === "/" || path.startsWith("/specialists");
-  // G01 / G05 at 390 (Figma «Мобайл · Главная · 390» 1424:48354, «Мобайл · Специалистам · 390» 1317:6392): the header of
-  // the dark-hero pages is the light Default bar (#F8F9F6, dark logo), not the transparent one — home on phones and
-  // tablets (as before), /specialists on phones only (there is no tablet frame; the tablet keeps the dark hero bar).
-  const homeMobileStack = (path === "/" && mobileNav) || (path.startsWith("/specialists") && phoneNav);
+  // G01 («на тёмном hero шапка прозрачная»): the home header on phones (≤767) is transparent over the dark hero, white
+  // logo — the customer's decision over the light bar the 390 frame (1424:48354) draws. The light Default bar
+  // (#F8F9F6, dark logo) stays on the tablet home (768–1100, as before) and on /specialists at 390 (frame 1317:6392).
+  const homeMobileStack = (path === "/" && mobileNav && !phoneNav) || (path.startsWith("/specialists") && phoneNav);
   const onDark = !scrolled && darkHero && !lessons && !homeMobileStack;
   const items = variant === "b2b" ? B2B : variant === "course" ? COURSE : NAV;
 

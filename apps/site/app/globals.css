@@ -2738,7 +2738,12 @@ article.is-open .f-answer > div { opacity: 1; transition-delay: 80ms; }
 @media (max-width: 767px) {
   /* 390: the photo frame 1424:48453 exported as is (440/390, fades into olive), the texture starts under it. */
   body [data-s="s01"].dark-hero.home-hero { --home-photo-h: calc(440 / 390 * 100vw); background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), #000 url("/figma/home/hero-panel-texture.webp") center / cover no-repeat; } /* texture fill at 45% over black */
-  body [data-s="s01"].home-hero .hero-media { background: #000; height: var(--home-photo-h); max-height: none; }
+  /* G01: the header is transparent on the phone home, so the hero starts at the top of the page. The photo keeps the
+     framing of 1424:48354 (its top edge 64 px down, the face clear of the header buttons): the black photo box
+     carries the header-high top padding — the photo's own top rows are #000, so the strip under the white logo
+     and the «Меню» capsule is the same black, no seam, no extra gradient needed. */
+  body [data-s="s01"].dark-hero.home-hero { padding-top: 0; }
+  body [data-s="s01"].home-hero .hero-media { background: #000; height: var(--home-photo-h); max-height: none; padding-top: var(--header); box-sizing: content-box; }
   body [data-s="s01"].home-hero .hero-media::after { display: none; }
   body [data-s="s01"].home-hero .hero-media img.bg { object-position: 50% 0; }
   body [data-s="s01"].home-hero .inner {
