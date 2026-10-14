@@ -62,7 +62,7 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
 .f-groups header span, .f-actions { color: rgba(11, 12, 8, 0.65); font-size: 14px; }
 .f-groups article { border-bottom: 1px solid rgba(11, 12, 8, 0.1); }
 .f-groups article > button { width: 100%; display: flex; justify-content: space-between; gap: 16px; align-items: center; background: none; border: 0; padding: 6px 0; text-align: left; font: inherit; font-size: 16px; line-height: 20px; }
-.f-groups article > button img { width: 16px; height: 16px; transition: transform 150ms ease; }
+.f-groups article > button img { width: 16px; height: 16px; transition: transform 150ms ease-out; }
 .f-groups article.is-open > button img { transform: rotate(180deg); }
 .f-answer { padding: 0; display: grid; grid-template-rows: 0fr; }
 .f-answer > div { display: flex; flex-direction: column; gap: 12px; padding: 0; }
@@ -132,4 +132,22 @@ article.is-open .f-answer > div { padding-bottom: 12px; }
   .f-actions { display: none; }
   .f-groups { gap: 0; grid-template-columns: 1fr; }
   .f-answer { padding: 0; }
+}
+
+/* M21 / F01 search: «Найдено N» + reset above the list; the empty result is a card with «Задать вопрос». */
+.f-found { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+.f-found button { width: 28px; height: 28px; border: 0; border-radius: 999px; background: rgba(11, 12, 8, 0.06); color: #0b0c08; font-size: 18px; line-height: 1; cursor: pointer; transition: background-color 150ms ease-out; }
+.f-found button:hover { background: rgba(11, 12, 8, 0.12); }
+.f-empty { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px; border-radius: 20px; background: #fff; border: 1px solid rgba(11, 12, 8, 0.08); animation: fade 200ms ease-out; }
+.f-empty h3 { margin: 0; font-weight: 400; font-size: 20px; line-height: 24px; }
+.f-empty p { margin: 0; color: rgba(11, 12, 8, 0.65); }
+.f-groups mark.hit { font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+
+/* M22 (≤1100): the whole chip row sticks under the header — the aside is the sticky box (the row alone was stuck
+   inside its own short parent and scrolled away), to the very top once the header slides away; Shadow S when stuck. */
+@media (max-width: 1100px) {
+  body main [data-s="f02"] .f-nav { position: sticky; top: var(--header-now, 64px); z-index: 5; transition: top 200ms ease-out; }
+  body:has(.site-header.is-hidden) main [data-s="f02"] .f-nav { top: 0; }
+  body main [data-s="f02"] .f-nav .f-nav-links { position: relative; top: auto; transition: box-shadow 200ms ease-out; }
+  body main [data-s="f02"] .f-nav.is-stuck .f-nav-links { box-shadow: 0 2px 8px rgba(11, 12, 8, 0.06); }
 }

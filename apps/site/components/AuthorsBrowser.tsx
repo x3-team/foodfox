@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { RevealNoScript, useReveal } from "@/components/ArticleCard";
+import { RevealNoScript, usePress, useReveal } from "@/components/ArticleCard";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ROLE_FILTERS, articles, authors, materialsWord } from "@/lib/content";
@@ -39,6 +39,20 @@ export function AuthorsBrowser() {
   // C1 / U03: cards enter row by row at 85% of the viewport (opacity, y 32→0, 600 мс, stagger 80 мс), once;
   // after a role switch the new cards come in the faster 400 мс variant (C3).
   useReveal(gridRef, shown.map((author) => author.slug).join("|"), { fast: filtered });
+  usePress(gridRef, ".author-card");
+  // M49 (phone): the role chips stick under the header while the grid scrolls. The whole head is the sticky box (the
+  // chip row alone would be stuck only inside the head); it is lifted by the height above the chips, so only the
+  // chip row stays on screen.
+  const headRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const head = headRef.current;
+    const row = head?.querySelector<HTMLElement>(".filter-row");
+    if (!head || !row) return;
+    const sync = () => head.style.setProperty("--fr-off", `${row.offsetTop - 8}px`);
+    sync();
+    window.addEventListener("resize", sync);
+    return () => window.removeEventListener("resize", sync);
+  }, []);
 
   useEffect(() => {
     const value = new URLSearchParams(window.location.search).get("role");
@@ -106,13 +120,18 @@ export function AuthorsBrowser() {
     role === "doctor"
       ? `${list.length} ${plural(list.length, "врач", "врача", "врачей")}`
       : `${list.length} ${plural(list.length, "автор", "автора", "авторов")}`;
+  const prevLabel = useRef<string | null>(null);
+  const countSwap = prevLabel.current !== null && prevLabel.current !== countLabel;
+  useEffect(() => {
+    prevLabel.current = countLabel;
+  }, [countLabel]);
 
   return (
     <>
       <Header />
       <RevealNoScript />
       <main className="blog-page blog-authors">
-        <section className="wrap authors-head" data-s="au01">
+        <section className="wrap authors-head" data-s="au01" ref={headRef}>
           <p className="crumbs rise">
             <Link href="/blog">Главная</Link>
             <span className="sep">/</span>
@@ -139,7 +158,8 @@ export function AuthorsBrowser() {
                 </button>
               ))}
             </div>
-            <p className="meta-line" aria-live="polite">{countLabel}</p>
+            {/* M49 (phone): the counter's new value slides up; C3 (desktop): it just changes (CSS). */}
+            <p className="meta-line" aria-live="polite"><span key={countLabel} className={`meta-count${countSwap ? " is-swap" : ""}`}>{countLabel}</span></p>
           </div>
         </section>
         {/* No data-s here: the cards enter one by one (useReveal), not as one block with the global section entrance. */}

@@ -337,4 +337,72 @@ body main .e-plate .e-chip { animation: sv-pop 360ms cubic-bezier(.2, .8, .2, 1)
   body main [data-s]:not(.dark-hero) > .wrap.c01 > .crumbs, body main .e01-copy > * { animation: fade 100ms linear backwards !important; }
   body main [data-s="f03"]:not(.is-in) .f03-photo { opacity: 1; transform: none; }
   body main .e-plate .e-chip { animation: none; }
+  /* K02 / M24 channel cards cascade: with reduced motion — the 100 мс fade only (was the 500 мс rise). */
+  body main [data-s].is-in:not(.dark-hero) > .wrap.k-cards > article { animation: fade 100ms linear backwards !important; }
+}
+
+/* C01 · M28 (/certificates): every sheet is its shadow layer under the shadowless sheet (CertificatesView). The sheets
+   fan out from a flat stack — desktop/tablet 700 мс ease-out, stagger 120 (C01); phone 520 мс (.2,.8,.2,1), stagger 80
+   (M28, globals). The shadows grow with the spread: the shadow layer fades .25 → 1 together with its sheet (opacity
+   only) and ends on the Figma S/M/L shadows. Hover (fan ±10°, top sheet −8 px) runs ease-out too. */
+body main .c-stack .c-fan-p > img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; max-width: none; object-fit: fill; }
+body main .c-stack .c-fan-p > .c-fan-sh { animation: c-fan-shadow 700ms ease-out both; animation-delay: inherit; }
+@keyframes c-fan-shadow { from { opacity: 0.25; } }
+@media (min-width: 768px) {
+  body main .c-stack .c-fan-p { animation-timing-function: ease-out; transition-timing-function: ease-out; }
+}
+@media (max-width: 767px) {
+  body main .c-stack .c-fan-p > .c-fan-sh { animation-duration: 520ms; animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
+  /* M22: on a phone the answer opens in 280 мс (.2,.8,.2,1); desktop keeps F02's 320 мс. */
+  body main [data-s="f02"] .f-answer { transition-duration: 280ms; transition-timing-function: cubic-bezier(.2, .8, .2, 1); }
+}
+
+/* M33 (/reviews, phone): the filter row sticks under the header while the feed scrolls (and to the very top once the
+   header slides away), with Shadow S. */
+@media (max-width: 767px) {
+  body main [data-s="v02"] .v-tools { position: sticky; top: var(--header-now, 64px); z-index: 6; margin: 0 -16px; padding: 8px 16px; background: var(--v02-bg, #f8f9f6); transition: top 200ms ease-out, box-shadow 200ms ease-out; }
+  body:has(.site-header.is-hidden) main [data-s="v02"] .v-tools { top: 0; }
+  body main [data-s="v02"] .v-tools.is-stuck { box-shadow: 0 2px 8px rgba(11, 12, 8, 0.06); }
+}
+
+/* M33 (/reviews, phone): «Показано N из 312» — the new number slides up 200 мс. */
+body main [data-s="v02"] .v-shown > span { display: inline-block; }
+@media (max-width: 767px) {
+  body main [data-s="v02"] .v-shown > span.is-swap { animation: sv-up8 200ms ease-out backwards; }
+}
+@keyframes sv-up8 { from { opacity: 0; transform: translateY(8px); } }
+
+/* V02 / M34 video player: the window's motion is run by VideoModal (WAAPI) — desktop K08 (opacity + scale .98, 200 мс,
+   reverse on close), phone: full screen, grows out of the tapped poster (320 мс) and closes with a swipe down. */
+body .rev-modal { animation: none; }
+@keyframes rev-scrim-bg { from { background-color: rgba(11, 12, 8, 0); } }
+@media (max-width: 767px) {
+  /* the scrim darkens by its colour, not its opacity — an opacity fade would also fade the growing player */
+  body .rev-modal-scrim { padding: 0; place-items: stretch; animation: rev-scrim-bg 200ms ease-out; }
+  body .rev-modal { width: 100%; height: 100%; max-height: none; border-radius: 0; display: flex; flex-direction: column; touch-action: none; }
+  body .rev-modal-head { padding-top: calc(14px + env(safe-area-inset-top)); }
+  body .rev-modal-video { flex: 1 1 auto; min-height: 0; aspect-ratio: auto; }
+  body .rev-modal-bar { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+}
+
+/* V01 · M32 (/reviews): the stars fill left to right one after another (stagger 80 мс) while the rating counts up;
+   the last star is full when the counter lands (1000 мс desktop, 900 мс phone — --v-ms set by ServicePages). */
+body main .v-rate .v-stars > i { font-style: normal; }
+body main .v-rate .v-stars.is-star-fill > i {
+  background: linear-gradient(90deg, #0b0c08 50%, rgba(11, 12, 8, 0.18) 50%) 100% 0 / 200% 100% no-repeat;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: v-star-fill calc(var(--v-ms, 1000ms) - 320ms) ease-out calc(var(--i, 0) * 80ms) both;
+}
+@keyframes v-star-fill { to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) {
+  body main .c-stack .c-fan-p > .c-fan-sh { animation: none; }
+  body main .v-rate .v-stars.is-star-fill > i { animation: none; background: none; color: inherit; }
+  body main [data-s="v02"] .v-shown > span.is-swap { animation: fade 100ms linear backwards; }
+}
+
+/* M30 (phone): the steps play when the list reaches 70% of the screen (CertificatesView, .is-play); the photo above
+   zooms 1.06 → 1 in 800 мс when it comes on screen (.is-photo) — no longer re-started by the steps. */
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+  body main [data-s="c04"] .c04.is-play .c04-visual > img { animation: none; }
+  body main [data-s="c04"] .c04.is-photo .c04-visual > img { animation: c04-zoom 800ms cubic-bezier(.2, .8, .2, 1); }
 }

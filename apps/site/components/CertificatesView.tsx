@@ -25,13 +25,26 @@ export function CertificatesView() {
     const node = elisaRef.current;
     if (!node || !window.matchMedia("(max-width: 767px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     node.classList.add("is-armed");
+    // The trigger is the steps list itself crossing 70% of the screen height — the wrap starts with the heading and
+    // the photo, so watching it played the steps while they were still below the screen.
+    const steps = node.querySelector("ol") ?? node;
+    const photo = node.querySelector(".c04-visual");
     const io = new IntersectionObserver((entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return;
-      io.disconnect();
-      node.classList.add("is-play");
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        io.unobserve(entry.target);
+        node.classList.add(entry.target === photo ? "is-photo" : "is-play");
+      });
     }, { rootMargin: "0px 0px -30% 0px" });
-    io.observe(node);
-    return () => io.disconnect();
+    io.observe(steps);
+    // M30: the photo above eases in (1.06 → 1, 800 мс) as soon as it is on screen.
+    const photoIo = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      photoIo.disconnect();
+      node.classList.add("is-photo");
+    }, { rootMargin: "0px 0px -10% 0px" });
+    if (photo) photoIo.observe(photo);
+    return () => { io.disconnect(); photoIo.disconnect(); };
   }, []);
   // M31: the history line is drawn as the track scrolls; passed dots are black, the current one is lime and pulses.
   const historyRef = useRef<HTMLOListElement>(null);
@@ -224,6 +237,23 @@ export function CertificatesView() {
       reset();
     };
   }, []);
+  // M29: «2 / 4» under the phone carousel follows the card snapped at the left edge.
+  const [docAt, setDocAt] = useState(0);
+  useEffect(() => {
+    const node = docsRef.current;
+    if (!node) return;
+    let frame = 0;
+    const sync = () => {
+      frame = 0;
+      const cards = [...node.children] as HTMLElement[];
+      if (cards.length < 2) return;
+      const step = cards[1].offsetLeft - cards[0].offsetLeft || 1;
+      setDocAt(Math.max(0, Math.min(cards.length - 1, Math.round(node.scrollLeft / step))));
+    };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(sync); };
+    node.addEventListener("scroll", onScroll, { passive: true });
+    return () => { cancelAnimationFrame(frame); node.removeEventListener("scroll", onScroll); };
+  }, []);
   useEffect(() => {
     const node = docsRef.current;
     if (!node || !window.matchMedia("(max-width: 767px)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -255,11 +285,16 @@ export function CertificatesView() {
                 </ul>
               </div>
               <div className="c-stack" aria-hidden="true">
-                {/* C01 (Figma 1275:590): the stack is rebuilt from its layers so the sheets can fan out on load and on hover. */}
+                {/* C01 (Figma 1275:590): the stack is rebuilt from its layers so the sheets can fan out on load and on hover.
+                    Each sheet = its soft shadow (own layer, low-res) under the shadowless sheet, so the shadow can grow as the
+                    sheets spread (C01 «тени S/M/L», M28 «тени листов растут вместе с расхождением») by opacity alone. */}
                 <div className="c-fan">
-                  <img className="c-fan-p c-fan-p1" src="/figma/certificates/fan/p1.png" alt="" />
-                  <img className="c-fan-p c-fan-p2" src="/figma/certificates/fan/p2.png" alt="" />
-                  <img className="c-fan-p c-fan-p3" src="/figma/certificates/fan/p3.png" alt="" />
+                  {[1, 2, 3].map((n) => (
+                    <div key={n} className={`c-fan-p c-fan-p${n}`}>
+                      <img className="c-fan-sh" src={`/figma/certificates/fan/p${n}-shadow.png`} alt="" />
+                      <img className="c-fan-sheet" src={`/figma/certificates/fan/p${n}-flat.png`} alt="" />
+                    </div>
+                  ))}
                   <img className="c-fan-chip" src="/figma/certificates/fan/chip.png" alt="" />
                   <img className="c-fan-ce" src="/figma/certificates/fan/ce.png" alt="" />
                 </div>
@@ -295,6 +330,7 @@ export function CertificatesView() {
                 </article>
               ))}
             </div>
+            <p className="c-docs-count" aria-hidden="true"><span key={docAt}>{docAt + 1}</span> / {DOCS.length}</p>
           </div>
         </section>
 

@@ -18,7 +18,8 @@
   --overlay-cta: rgba(33, 37, 29, 0.7);
   --shadow: 0 2px 8px rgba(11, 12, 8, 0.06);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --cover: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* Figma Smart Animate on Card / Article, Card / Featured, Card / Author = EASE_OUT (CSS ease-out). */
+  --cover: cubic-bezier(0, 0, 0.58, 1);
   /* --header: the header's resting height — page flow (main padding, hero paddings, scroll margins) is laid out under it,
      so it never changes while scrolling. --header-now: what the header measures right now (96 → 72 once scrolled, G01)
      for things that hug its bottom edge. Shrinking --header itself moved every page up by 24 px at scrollY 80. */
@@ -323,9 +324,12 @@ html.is-scrolled { --header-now: 72px; }
   height: 100%;
   object-fit: cover;
   transform: scale(1);
-  transition: transform 600ms var(--cover);
+  transition: transform 500ms var(--cover);
 }
+/* Card / Featured hover (Smart Animate 500 мс EASE_OUT): photo ×1.10, «Читать →» arrow +4 px; background unchanged. */
 .featured:hover .featured-photo img { transform: scale(1.1); }
+.featured .read-link img { transition: transform 500ms var(--cover); }
+.featured:hover .read-link img { transform: translateX(4px); }
 .featured-copy {
   position: relative;
   z-index: 1;
@@ -407,17 +411,24 @@ html.is-scrolled { --header-now: 72px; }
   border-radius: 16px;
   overflow: hidden;
   background: var(--grey);
-  box-shadow: 0 2px 4px rgba(11, 12, 8, 0.06);
+  /* Card / Article Default: Shadow S (0 2 8 / 6%) → Hover: Shadow M (0 8 24 −4 / 10% + 0 2 6 / 5%). */
+  box-shadow: 0 2px 8px rgba(11, 12, 8, 0.06);
+  transition: box-shadow 400ms var(--cover);
 }
+/* Card / Article hover = Figma Smart Animate 400 мс EASE_OUT: cover ×1.10 from the centre, shadow S → M,
+   the round arrow fades in (it does not move in the Hover variant), title underline. */
 .card-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 500ms var(--cover);
+  transition: transform 400ms var(--cover);
   transform: scale(1);
 }
 .card:hover .card-cover img { transform: scale(1.1); }
-.card:hover .card-cover { box-shadow: 0 12px 28px rgba(11, 12, 8, 0.1); }
+.card:hover .card-cover { box-shadow: 0 8px 24px -4px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
+/* Enter 400 мс (Smart Animate); the way back is 350 мс (A3 «Уход 350мс») — the base state carries the leave timing. */
+.card-cover, .card-cover img, .hover-arrow, .card h3 { transition-duration: 350ms; }
+.card:hover .card-cover, .card:hover .card-cover img, .card:hover .hover-arrow, .card:hover h3 { transition-duration: 400ms; }
 .hover-arrow {
   position: absolute;
   right: 16px;
@@ -429,10 +440,9 @@ html.is-scrolled { --header-now: 72px; }
   display: grid;
   place-items: center;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 250ms var(--ease), transform 250ms var(--ease);
+  transition: opacity 400ms var(--cover);
 }
-.card:hover .hover-arrow, .card:focus-visible .hover-arrow { opacity: 1; transform: none; }
+.card:hover .hover-arrow, .card:focus-visible .hover-arrow { opacity: 1; }
 .hover-arrow img { width: 16px; height: 16px; }
 .card-body { display: flex; flex-direction: column; justify-content: space-between; gap: 24px; flex: 1; }
 .card h3 {
@@ -449,7 +459,7 @@ html.is-scrolled { --header-now: 72px; }
   background-repeat: no-repeat;
   background-size: 0 1px;
   background-position: 0 100%;
-  transition: background-size 250ms var(--ease);
+  transition: background-size 400ms var(--cover);
   width: fit-content;
   max-width: 100%;
 }
@@ -646,7 +656,8 @@ html.is-scrolled { --header-now: 72px; }
   font-size: 32px;
   line-height: 36px;
   letter-spacing: -0.5px;
-  scroll-margin-top: 140px;
+  /* B2/B3: the heading stops 120 px from the top — level with the sticky ToC / aside (top 120). */
+  scroll-margin-top: 120px;
 }
 .prose p { margin: 0 0 16px; }
 .prose ul { margin: 0 0 16px; padding: 0; list-style: none; }
@@ -822,18 +833,26 @@ th { font-size: 14px; line-height: 18px; color: var(--ink-65); font-weight: 400;
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 /* Scroll entrance of cards and article media (useReveal in ArticleCard.tsx): hidden until the element crosses
-   85% (cards) / 80% (media) of the viewport, then opacity 0→1 + y 32→0, 600 мс, once. Fill «backwards» — after the
-   entrance nothing keeps a transform, so hover scale, FLIP and popovers work on a plain element. */
-.rv:not(.is-shown) { opacity: 0; transform: translateY(32px); }
+   85% (cards) / 80% (media) of the viewport, then opacity 0→1 + y 12→0 (customer decision: 12 px, not the notes' 32),
+   600 мс (400 мс after a filter / «Показать ещё»), stagger 40 мс on desktop (G17) / 60 мс on a phone (M05, M07) —
+   the step is set per card in --rv-d by useReveal. Article media keep their own y 24 (B4, .rv-24). Fill «backwards» —
+   after the entrance nothing keeps a transform, so hover scale, FLIP and popovers work on a plain element. */
+.rv:not(.is-shown) { opacity: 0; transform: translateY(12px); }
 .rv.is-shown { animation: rv-up 600ms var(--ease) var(--rv-d, 0ms) backwards; }
 .rv.is-shown.is-fast { animation-duration: 400ms; }
 .rv.is-shown.is-instant { animation: none; }
+.rv.rv-24:not(.is-shown) { transform: translateY(24px); }
 .rv.rv-24.is-shown { animation-name: rv-up-24; }
 .rv-g.is-shown > .rv { opacity: 1; transform: none; animation: rv-up 600ms var(--ease) backwards; }
-.rv-g.is-shown > .rv:nth-child(2) { animation-delay: 80ms; }
-.rv-g.is-shown > .rv:nth-child(3) { animation-delay: 160ms; }
-.rv-g.is-shown > .rv:nth-child(n+4) { animation-delay: 240ms; }
-@keyframes rv-up { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: none; } }
+.rv-g.is-shown > .rv:nth-child(2) { animation-delay: 40ms; }
+.rv-g.is-shown > .rv:nth-child(3) { animation-delay: 80ms; }
+.rv-g.is-shown > .rv:nth-child(n+4) { animation-delay: 120ms; }
+@media (max-width: 767px) {
+  .rv-g.is-shown > .rv:nth-child(2) { animation-delay: 60ms; }
+  .rv-g.is-shown > .rv:nth-child(3) { animation-delay: 120ms; }
+  .rv-g.is-shown > .rv:nth-child(n+4) { animation-delay: 180ms; }
+}
+@keyframes rv-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @keyframes rv-up-24 { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 @keyframes riseY {
   from { opacity: 0; transform: translateY(24px); }
@@ -842,12 +861,13 @@ th { font-size: 14px; line-height: 18px; color: var(--ink-65); font-weight: 400;
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  /* Adaptive rule 08: with reduced motion every animation is a ~100 мс fade, nothing moves. */
   .rise, .rise-d1, .rise-d2, .rise-d3, .featured-in, .photo-in, .article-cover img, .card.is-out {
-    animation: fade 150ms linear both;
+    animation: fade 100ms linear both;
   }
   .card.is-out { animation-direction: reverse; }
-  .rv:not(.is-shown) { transform: none; }
-  .rv.is-shown, .rv.is-shown.is-fast, .rv-g.is-shown > .rv { animation: fade 150ms linear backwards; animation-delay: 0ms !important; }
+  .rv:not(.is-shown), .rv.rv-24:not(.is-shown) { transform: none; }
+  .rv.is-shown, .rv.is-shown.is-fast, .rv-g.is-shown > .rv { animation: fade 100ms linear backwards; animation-delay: 0ms !important; }
   .rv.is-shown.is-instant { animation: none; }
   .featured-photo img, .card-cover img, .author-card .shot img, .bokeh, .text-link img, .hover-arrow {
     transition: none;

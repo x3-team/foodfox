@@ -117,3 +117,18 @@ html.is-scrolled section.dark-hero.fx-hero::before { display: none; }
   .k-cards article, .k-routes article { padding: 14px; gap: 8px; }
   .k-cards article > div { gap: 2px; }
 }
+
+/* M24 (phone): every channel card is one tap zone — press = scale .98 + Shadow S → M (120 мс), then the system action;
+   the number and the e-mail can be long-pressed to copy (no native callout over them). */
+@media (max-width: 767px) {
+  body main [data-s="k02"] .k-cards article.k-tap { cursor: pointer; -webkit-tap-highlight-color: transparent; box-shadow: 0 2px 8px rgba(11, 12, 8, 0.06); transition: transform 120ms ease-out, box-shadow 120ms ease-out; }
+  body main [data-s="k02"] .k-cards article.k-tap.is-press { transform: scale(0.98); box-shadow: 0 8px 24px -4px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
+  body main [data-s="k02"] .k-cards article.k-tap .k-strong, .k-cards article.k-tap .k-value { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body main [data-s="k02"] .k-cards article.k-tap.is-press { transform: none; }
+}
+/* K03: on desktop / tablet the office pin pulses once every 3 s (M26 phone: 2.4 s, globals). */
+@media (min-width: 768px) {
+  .k-map .fox-pin span.is-on::after { animation-duration: 3s; }
+}

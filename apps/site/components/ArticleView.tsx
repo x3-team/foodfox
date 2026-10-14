@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { ArticleCard, RevealNoScript, useReveal } from "@/components/ArticleCard";
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import { ArticleCard, RevealNoScript, scrollPageTo, usePress, useReveal } from "@/components/ArticleCard";
 import { BottomSheet } from "@/components/BottomSheet";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -51,7 +51,7 @@ function Blocks({ blocks }: { blocks: Block[] }) {
           );
         if (block.type === "table")
           return (
-            <div className="table-wrap rv rv-24" key={index}>
+            <TableBlock key={index}>
               <table>
                 <thead>
                   <tr>
@@ -70,7 +70,7 @@ function Blocks({ blocks }: { blocks: Block[] }) {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableBlock>
           );
         if (block.type === "quote")
           return (
@@ -119,6 +119,16 @@ export function ArticleView({ article }: { article: Article }) {
   const [copied, setCopied] = useState(false);
   const railRef = useRef<HTMLDivElement>(null);
   const tocRef = useRef<HTMLElement>(null);
+  // B3: a click on a ToC item makes it active at once and freezes the marker until the scroll ends (it used to run
+  // through every item in between during the smooth scroll). `end` — native smooth scroll, held until it settles;
+  // otherwise the lock covers the 400 мс scripted scroll of M01.
+  // After the jump the clicked item stays active until the reader scrolls on their own (a short section would
+  // otherwise hand the marker to the next heading, which also sits above the 40% line).
+  const tocLock = useRef<{ id: string; until: number; end: boolean; idle?: boolean } | null>(null);
+  const pinToc = (id: string, ms: number, end: boolean) => {
+    tocLock.current = { id, until: performance.now() + ms, end };
+    setActive(id);
+  };
   const [marker, setMarker] = useState({ top: 0, height: 0 });
   const [slide, setSlide] = useState(0);
   const [tocOpen, setTocOpen] = useState(false);
@@ -131,6 +141,7 @@ export function ArticleView({ article }: { article: Article }) {
   // Paragraphs never wait. A04: «Также рекомендуем» enters like the feed (S04).
   useReveal(bodyRef, article.slug, { line: 0.8 });
   useReveal(relatedRef, article.slug);
+  usePress(relatedRef, ".card");
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
     const sync = () => setPhone(mq.matches);
@@ -173,8 +184,16 @@ export function ArticleView({ article }: { article: Article }) {
         const value = Math.max(0, Math.min(1, (y + 120 - start) / Math.max(1, finish - start)));
         barRef.current.style.transform = `scaleX(${value})`;
       }
-      const hit = [...nodes].reverse().find((node) => node.getBoundingClientRect().top < 160);
-      const id = hit ? hit.id : nodes[0]?.id ?? "";
+      // B3: the active item switches when its heading crosses 40% of the viewport (IO rootMargin −120px 0 −60% 0).
+      const hit = [...nodes].reverse().find((node) => node.getBoundingClientRect().top < window.innerHeight * 0.4);
+      let id = hit ? hit.id : nodes[0]?.id ?? "";
+      const lock = tocLock.current;
+      if (lock && (lock.idle || performance.now() < lock.until)) id = lock.id;
+      else if (lock && !lock.end) {
+        // scripted 400 мс scroll is over — hold the item until the reader's own scroll
+        lock.idle = true;
+        id = lock.id;
+      } else tocLock.current = null;
       if (id !== lastActive) {
         lastActive = id;
         setActive(id);
@@ -192,7 +211,23 @@ export function ArticleView({ article }: { article: Article }) {
         card.classList.remove("is-off");
       }
     };
+    // The end of the native smooth scroll = no scroll event for 160 мс (`scrollend` also fires mid-way here).
+    let quiet = 0;
+    const settle = () => {
+      const lock = tocLock.current;
+      if (lock?.end) {
+        lock.end = false;
+        lock.idle = true;
+        lock.until = performance.now();
+      }
+    };
     const onScroll = () => {
+      const lock = tocLock.current;
+      if (lock?.idle && performance.now() > lock.until + 100) tocLock.current = null;
+      if (lock?.end) {
+        window.clearTimeout(quiet);
+        quiet = window.setTimeout(settle, 160);
+      }
       if (!frame) frame = requestAnimationFrame(update);
     };
     update();
@@ -201,6 +236,7 @@ export function ArticleView({ article }: { article: Article }) {
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", onScroll);
+      window.clearTimeout(quiet);
       window.removeEventListener("resize", onScroll);
     };
   }, [article.slug]);
@@ -303,9 +339,11 @@ export function ArticleView({ article }: { article: Article }) {
                       onClick={(event) => {
                         event.preventDefault();
                         setTocOpen(false);
+                        pinToc(block.id, 450, false);
                         window.history.replaceState(null, "", "#" + block.id);
-                        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                        document.getElementById(block.id)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+                        // M01: 400 мс to the heading, which stops under the sticky contents bar (its scroll-margin).
+                        const heading = document.getElementById(block.id);
+                        if (heading) scrollPageTo(heading.getBoundingClientRect().top + window.scrollY - (parseFloat(getComputedStyle(heading).scrollMarginTop) || 0));
                       }}
                     >
                       {block.text}
@@ -319,7 +357,7 @@ export function ArticleView({ article }: { article: Article }) {
                 {headings.map(
                   (block) =>
                     block.type === "h2" && (
-                      <a key={block.id} href={`#${block.id}`} className={active === block.id ? "is-active" : ""} onClick={() => setTocOpen(false)}>
+                      <a key={block.id} href={`#${block.id}`} className={active === block.id ? "is-active" : ""} onClick={() => { setTocOpen(false); pinToc(block.id, 2000, true); }}>
                         {block.text}
                       </a>
                     ),
@@ -369,7 +407,7 @@ export function ArticleView({ article }: { article: Article }) {
                   {headings.map(
                     (block) =>
                       block.type === "h2" && (
-                        <a key={block.id} href={`#${block.id}`} className={active === block.id ? "is-active" : ""}>
+                        <a key={block.id} href={`#${block.id}`} className={active === block.id ? "is-active" : ""} onClick={() => pinToc(block.id, 2000, true)}>
                           {block.text}
                         </a>
                       ),
@@ -473,5 +511,36 @@ export function ArticleView({ article }: { article: Article }) {
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * M02: a table wider than the phone lives in its own scroller (the next column peeks out). Under it — «← свайпните →»;
+ * the hint fades out (200 мс) after the first horizontal swipe and is not shown again in this session.
+ */
+function TableBlock({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [hint, setHint] = useState<"off" | "on" | "gone">("off");
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    let seen = false;
+    try { seen = sessionStorage.getItem("fox-table-swipe") === "1"; } catch { /* storage blocked */ }
+    const wide = () => node.scrollWidth > node.clientWidth + 4;
+    if (!seen && wide()) setHint("on");
+    const onScroll = () => {
+      if (node.scrollLeft < 8) return;
+      node.removeEventListener("scroll", onScroll);
+      try { sessionStorage.setItem("fox-table-swipe", "1"); } catch { /* storage blocked */ }
+      setHint((value) => (value === "on" ? "gone" : value));
+    };
+    node.addEventListener("scroll", onScroll, { passive: true });
+    return () => node.removeEventListener("scroll", onScroll);
+  }, []);
+  return (
+    <div className="table-block rv rv-24">
+      <div className="table-wrap" ref={ref}>{children}</div>
+      {hint !== "off" && <p className={`table-swipe${hint === "gone" ? " is-gone" : ""}`} aria-hidden="true">← свайпните →</p>}
+    </div>
   );
 }

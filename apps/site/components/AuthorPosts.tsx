@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArticleCard, RevealNoScript, useReveal } from "@/components/ArticleCard";
+import { ArticleCard, RevealNoScript, usePress, useReveal } from "@/components/ArticleCard";
 import { CATEGORIES, type Article } from "@/lib/content";
 
 const STEP = 6;
@@ -21,6 +21,7 @@ export function AuthorPosts({ posts }: { posts: Article[] }) {
   // R02 / A1: cards enter at 85% of the viewport, stagger 80 мс in a row; after a filter — 400 мс / 60 мс;
   // M50 «Показать ещё» — the new cards come in a cascade (step 60 мс) and focus moves to the first one.
   useReveal(gridRef, `${filter}|${limit}`, { fast: touched !== "", cascade: touched === "more" });
+  usePress(gridRef, ".card");
   useEffect(() => {
     // A2: the grid keeps its height while the cards swap, then lets go
     const grid = sectionRef.current;

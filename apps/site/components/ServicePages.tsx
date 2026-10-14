@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, FormEvent, ReactNode, type TouchEvent as ReactTouchEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { BottomSheet } from "@/components/BottomSheet";
 import { useDialog } from "@/components/useDialog";
@@ -153,12 +153,102 @@ export function FaqPage() {
     window.addEventListener("hashchange", openHash);
     return () => window.removeEventListener("hashchange", openHash);
   }, []);
-  const query = debounced.trim().toLowerCase();
+  // M21: the list filters from the 2nd character (debounce 200 мс). Questions that drop out collapse by height
+  // (200 мс) and only then leave the DOM; the ones that come back unfold the same way.
+  const query = debounced.trim().length >= 2 ? debounced.trim().toLowerCase() : "";
+  const [shownQuery, setShownQuery] = useState("");
+  useEffect(() => {
+    if (query === shownQuery) return;
+    const id = window.setTimeout(() => setShownQuery(query), window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 200);
+    return () => window.clearTimeout(id);
+  }, [query, shownQuery]);
+  // Word forms: «кровь» must find «крови» — every word of the query matches by its stem (the last letter of a word
+  // longer than four letters is dropped).
+  const stems = (value: string) => value.split(/\s+/).filter(Boolean).map((word) => (word.length > 4 ? word.slice(0, -1) : word));
+  const hitQ = (item: readonly string[], value: string) => !value || stems(value).every((stem) => item.join(" ").toLowerCase().includes(stem));
   const CHIP_QUERY: Record<string, string> = { "Критика IgG": "критикуют", Подготовка: "готовиться", Детям: "детям", Сроки: "дней", Цена: "стоит" };
   const groups = FAQ_GROUPS.map((group) => ({
     ...group,
-    items: group.items.filter((item) => item.join(" ").toLowerCase().includes(query)),
+    items: group.items.filter((item) => hitQ(item, query) || hitQ(item, shownQuery)),
   })).filter((group) => group.items.length > 0);
+  const found = query ? FAQ_GROUPS.reduce((sum, group) => sum + group.items.filter((item) => hitQ(item, query)).length, 0) : 0;
+  const groupsRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  // M22 (≤1100): the section chips stick under the header (to the top once it slides away) with Shadow S; the active
+  // chip scrolls into the visible part of the row; a tap scrolls to the section in 400 мс.
+  useEffect(() => {
+    const aside = navRef.current;
+    if (!aside) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const cs = getComputedStyle(aside);
+      aside.classList.toggle("is-stuck", cs.position === "sticky" && aside.getBoundingClientRect().top <= (parseFloat(cs.top) || 0) + 0.5 && window.scrollY > 0);
+    };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", onScroll); };
+  }, []);
+  useEffect(() => {
+    const row = navRef.current?.querySelector<HTMLElement>(".f-nav-links");
+    const chip = row?.querySelector<HTMLElement>("a.is-on");
+    if (!row || !chip || row.scrollWidth <= row.clientWidth + 1) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    row.scrollTo({ left: chip.offsetLeft - (row.clientWidth - chip.offsetWidth) / 2, behavior: reduce ? "auto" : "smooth" });
+  }, [nav]);
+  // F02 (desktop): scroll-spy — the section in view becomes the active item.
+  useEffect(() => {
+    if (!window.matchMedia("(min-width: 1101px)").matches) return;
+    const sections = [...(groupsRef.current?.querySelectorAll<HTMLElement>(":scope > section") ?? [])];
+    const io = new IntersectionObserver((entries) => {
+      const hit = entries.filter((entry) => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+      if (hit) setNav(hit.target.id);
+    }, { rootMargin: "-120px 0px -60% 0px" });
+    sections.forEach((section) => io.observe(section));
+    return () => io.disconnect();
+  }, [showAll, query]);
+  const goSection = (id: string) => {
+    window.setTimeout(() => {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const header = document.querySelector(".site-header")?.getBoundingClientRect().bottom ?? 0;
+      const aside = navRef.current;
+      const stuck = aside && getComputedStyle(aside).position === "sticky" ? aside.offsetHeight : 0;
+      const to = Math.max(0, target.getBoundingClientRect().top + window.scrollY - Math.max(0, header) - stuck - 12);
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !stuck) {
+        target.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+      const from = window.scrollY;
+      const t0 = performance.now();
+      const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+      const step = (now: number) => {
+        const t = Math.min(1, (now - t0) / 400);
+        window.scrollTo({ top: from + (to - from) * ease(t), behavior: "instant" as ScrollBehavior });
+        if (t < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }, 0);
+  };
+  useLayoutEffect(() => {
+    const root = groupsRef.current;
+    if (!root || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    root.querySelectorAll<HTMLElement>(".is-q-out:not([data-q='out'])").forEach((node) => {
+      node.dataset.q = "out";
+      node.getAnimations().forEach((anim) => anim.cancel());
+      const h = node.offsetHeight;
+      node.style.overflow = "hidden";
+      node.animate([{ height: `${h}px`, opacity: 1 }, { height: "0px", opacity: 0, paddingTop: "0px", paddingBottom: "0px", marginTop: "0px", marginBottom: "0px", borderTopWidth: "0px", borderBottomWidth: "0px" }], { duration: 200, easing: "ease-out", fill: "forwards" });
+    });
+    root.querySelectorAll<HTMLElement>(".is-q-in:not([data-q='in'])").forEach((node) => {
+      node.dataset.q = "in";
+      node.style.overflow = "hidden";
+      const h = node.offsetHeight;
+      const anim = node.animate([{ height: "0px", opacity: 0 }, { height: `${h}px`, opacity: 1 }], { duration: 200, easing: "ease-out" });
+      anim.onfinish = () => { node.style.overflow = ""; };
+    });
+  }, [query, shownQuery]);
 
   return (
     <>
@@ -199,11 +289,11 @@ export function FaqPage() {
 
         <section data-s="f02">
           <div className="wrap f02">
-            <aside className="f-nav">
+            <aside className="f-nav" ref={navRef}>
               <div className="f-nav-links" data-allow-x>
               <p>Разделы</p>
               {FAQ_NAV.map(([id, title, count]) => (
-                <a key={id} href={`#${id}`} className={nav === id ? "is-on" : ""} onClick={(event) => { event.preventDefault(); setNav(id); setShowAll(true); window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 0); }}>
+                <a key={id} href={`#${id}`} className={nav === id ? "is-on" : ""} onClick={(event) => { event.preventDefault(); setNav(id); setShowAll(true); goSection(id); }}>
                   <span>{title}</span><b>{count}</b>
                 </a>
               ))}
@@ -214,23 +304,37 @@ export function FaqPage() {
                 <Link href="/specialists">Специалистам <img src="/icons/arrow-right.svg" alt="" /></Link>
               </article>
             </aside>
-            <div className="f-groups">
-              {groups.length === 0 && <p role="status">Ничего не нашлось. Сбросьте запрос или напишите нам.</p>}
+            <div className="f-groups" ref={groupsRef}>
+              {/* M21: «Найдено N» with a reset cross above the list; nothing found → «Такого вопроса пока нет». */}
+              {query && found > 0 && (
+                <p className="f-found" role="status">Найдено {found}<button type="button" aria-label="Сбросить поиск" onClick={() => setQ("")}>×</button></p>
+              )}
+              {query && found === 0 && (
+                <article className="f-empty" role="status">
+                  <h3>Такого вопроса пока нет</h3>
+                  <p>Напишите — ответим за 1 рабочий день и добавим в FAQ.</p>
+                  <button type="button" className="btn btn-dark" onClick={() => window.dispatchEvent(new Event("fox:contact"))}>Задать вопрос</button>
+                </article>
+              )}
               {groups.map((group, index) => (
-                <section key={group.id} id={group.id} className={`${!query && group.id !== nav ? "is-parked" : ""} ${!showAll && !query && index > 1 ? "is-rest" : ""}`}>
+                <section key={group.id} id={group.id} className={`${!query && !shownQuery && group.id !== nav ? "is-parked" : ""} ${!showAll && !query && !shownQuery && index > 1 ? "is-rest" : ""}${group.items.every((item) => !hitQ(item, query)) ? " is-q-out" : ""}`}>
                   <header><h2><span className="f-num">{String(index + 1).padStart(2, "0")}</span>{group.title}</h2><span>{group.count}</span></header>
                   {group.items.map(([question, answer]) => {
                     const expanded = open.includes(question);
                     const anchor = `${group.id}-${FAQ_GROUPS.find((item) => item.id === group.id)!.items.findIndex((item) => item[0] === question) + 1}`;
                     const mark = (text: string) => {
                       if (query.length < 2) return text;
-                      const i = text.toLowerCase().indexOf(query);
+                      const stem = stems(query)[0] ?? query;
+                      const i = text.toLowerCase().indexOf(stem);
                       if (i < 0) return text;
-                      return <>{text.slice(0, i)}<mark className="hit">{text.slice(i, i + query.length)}</mark>{text.slice(i + query.length)}</>;
+                      // highlight the whole word the stem sits in
+                      const end = i + stem.length + (text.slice(i + stem.length).match(/^[\p{L}\p{N}-]*/u)?.[0].length ?? 0);
+                      return <>{text.slice(0, i)}<mark className="hit">{text.slice(i, end)}</mark>{text.slice(end)}</>;
                     };
                     return (
-                      <article key={question} id={anchor} className={`${expanded ? "is-open" : ""}${flash === anchor ? " is-flash" : ""}`}>
-                        <button type="button" aria-expanded={expanded} onClick={() => setOpen((current) => expanded ? current.filter((item) => item !== question) : [...current, question])}>
+                      <article key={question} id={anchor} className={`${expanded ? "is-open" : ""}${flash === anchor ? " is-flash" : ""}${!hitQ([question, answer], query) ? " is-q-out" : !hitQ([question, answer], shownQuery) ? " is-q-in" : ""}`}>
+                        {/* F02 (desktop): several answers can be open; M22 (phone): one at a time, like M14. */}
+                        <button type="button" aria-expanded={expanded} onClick={() => setOpen((current) => expanded ? current.filter((item) => item !== question) : window.matchMedia("(max-width: 767px)").matches ? [question] : [...current, question])}>
                           <strong>{mark(question)}</strong>
                           <img src="/icons/chevron-down.svg" alt="" />
                         </button>
@@ -855,6 +959,42 @@ export function ContactsPage() {
     const moscowHour = (new Date().getUTCHours() + 3) % 24;
     setOfficeOpen(moscowHour >= 10 && moscowHour < 19);
   }, []);
+  // K02 / M24 channels. Desktop: a click on the number / address copies it + toast (2.5 с). Phone: the whole card is one
+  // tap zone (scale .98 + Shadow S → M, 120 мс, CSS) that runs the system action (tel:, mailto:, route sheet,
+  // Telegram); a long press (500 мс) on the phone or e-mail copies it instead — vibration 10 мс + toast.
+  const isPhone = () => window.matchMedia("(max-width: 767px)").matches;
+  const copyValue = (value: string, text: string) => {
+    void navigator.clipboard?.writeText(value).catch(() => undefined);
+    try { navigator.vibrate?.(10); } catch { /* not supported */ }
+    window.dispatchEvent(new CustomEvent("fox:toast", { detail: { text, type: "info", duration: 2500 } }));
+  };
+  const press = useRef<{ timer: number; fired: boolean; x: number; y: number } | null>(null);
+  // The pressed look is a class (not :active) — iOS Safari and touch emulation do not keep :active on a plain card.
+  const holdToCopy = (value?: string, text?: string) => ({
+    onPointerDown: (event: { pointerType: string; clientX: number; clientY: number; currentTarget: HTMLElement }) => {
+      if (event.pointerType !== "touch" && !isPhone()) return;
+      event.currentTarget.classList.add("is-press");
+      const state = { timer: 0, fired: false, x: event.clientX, y: event.clientY };
+      if (value && text) state.timer = window.setTimeout(() => { state.fired = true; copyValue(value, text); }, 500);
+      press.current = state;
+    },
+    onPointerMove: (event: { clientX: number; clientY: number; currentTarget: HTMLElement }) => {
+      const state = press.current;
+      if (state && !state.fired && Math.hypot(event.clientX - state.x, event.clientY - state.y) > 10) { window.clearTimeout(state.timer); press.current = null; event.currentTarget.classList.remove("is-press"); }
+    },
+    onPointerUp: (event: { currentTarget: HTMLElement }) => { event.currentTarget.classList.remove("is-press"); if (press.current && !press.current.fired) { window.clearTimeout(press.current.timer); press.current = null; } },
+    onPointerCancel: (event: { currentTarget: HTMLElement }) => { event.currentTarget.classList.remove("is-press"); if (press.current) window.clearTimeout(press.current.timer); press.current = null; },
+    onPointerLeave: (event: { currentTarget: HTMLElement }) => { event.currentTarget.classList.remove("is-press"); },
+    onContextMenu: (event: { preventDefault: () => void }) => { if (isPhone()) event.preventDefault(); },
+    onClickCapture: (event: { preventDefault: () => void; stopPropagation: () => void }) => {
+      if (press.current?.fired) { event.preventDefault(); event.stopPropagation(); }
+      press.current = null;
+    },
+  });
+  const cardTap = (event: { target: EventTarget; currentTarget: HTMLElement }) => {
+    if (!isPhone() || (event.target as HTMLElement).closest("a, button")) return;
+    event.currentTarget.querySelector<HTMLElement>(".k-go")?.click();
+  };
   return (
     <>
       <Header />
@@ -881,26 +1021,26 @@ export function ContactsPage() {
         </section>
         <section data-s="k02">
           <div className="wrap k-cards">
-            <article>
+            <article className="k-tap" onClick={cardTap} {...holdToCopy("+7 (495) 374-83-05", "Номер скопирован")}>
               <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-phone.svg)" }} aria-hidden />
               <div>
                 <h2>Телефон</h2>
-                <button type="button" className="k-strong" onClick={() => { void navigator.clipboard?.writeText("+7 (495) 374-83-05"); window.dispatchEvent(new CustomEvent("fox:toast", { detail: { text: "Номер скопирован", type: "info" } })); }}>+7 (495) 374-83-05</button>
+                <button type="button" className="k-strong" onClick={() => { if (isPhone()) window.location.href = "tel:+74953748305"; else copyValue("+7 (495) 374-83-05", "Номер скопирован"); }}>+7 (495) 374-83-05</button>
                 <p>Пн–Пт 10:00–19:00 (МСК)</p>
                 <p role="status">{officeOpen ? "Сейчас офис на связи" : "Сейчас офис закрыт — напишите, ответим утром"}</p>
                 <a className="k-go" href="tel:+74953748305">Позвонить <img src="/icons/arrow-right.svg" alt="" /></a>
               </div>
             </article>
-            <article>
+            <article className="k-tap" onClick={cardTap} {...holdToCopy("info@inmunotech.ru", "E-mail скопирован")}>
               <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-mail.svg)" }} aria-hidden />
               <div>
                 <h2>E-mail</h2>
-                <a className="k-value" href="mailto:info@inmunotech.ru">info@inmunotech.ru</a>
+                <a className="k-value" href="mailto:info@inmunotech.ru" onClick={(event) => { if (!isPhone()) { event.preventDefault(); copyValue("info@inmunotech.ru", "E-mail скопирован"); } }}>info@inmunotech.ru</a>
                 <p>Для общих вопросов и партнёрства</p>
                 <a className="k-go" href="mailto:info@inmunotech.ru">Написать <img src="/icons/arrow-right.svg" alt="" /></a>
               </div>
             </article>
-            <article>
+            <article className="k-tap" onClick={cardTap} {...holdToCopy()}>
               <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-pin.svg)" }} aria-hidden />
               <div>
                 <h2>Адрес</h2>
@@ -909,7 +1049,7 @@ export function ContactsPage() {
                 <a className="k-go" href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer" onClick={(event) => phoneRoute(event)}>Маршрут <img src="/icons/arrow-right.svg" alt="" /></a>
               </div>
             </article>
-            <article>
+            <article className="k-tap" onClick={cardTap} {...holdToCopy()}>
               <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-tg.svg)" }} aria-hidden />
               <div>
                 <h2>Telegram</h2>
@@ -998,8 +1138,12 @@ export function ReviewsPage() {
     if (type === "text" || type === "текст") setFilter("Текст");
   }, []);
   const [topic, setTopic] = useState("");
+  const [chipNow, setChipNow] = useState<string | null>(null);
+  const [topicNow, setTopicNow] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [video, setVideo] = useState<(typeof REVIEWS)[number] | null>(null);
+  const [videoFrom, setVideoFrom] = useState<DOMRect | null>(null);
+  const closeVideo = useCallback(() => setVideo(null), []);
   const gridRef = useRef<HTMLDivElement>(null);
   const pick = (f: string, t: string) => REVIEWS.filter((item) => (f === "Все" || item.who === f || item.kind === f) && (!t || item.tag === t));
   const cards = pick(filter, topic);
@@ -1016,7 +1160,34 @@ export function ReviewsPage() {
   }, []);
   useEffect(() => setLimit(5), [filter, topic]);
   const visible = phone ? cards.slice(0, limit) : slice;
+  const shownCount = phone ? visible.length : Math.min(7, cards.length);
+  // The counter slides only after the visitor changed something (not when the phone layout settles after hydration).
+  const touched = useRef(false);
+  const prevShown = useRef<number | null>(null);
+  const shownSwap = touched.current && prevShown.current !== null && prevShown.current !== shownCount;
+  useEffect(() => {
+    prevShown.current = shownCount;
+  }, [shownCount]);
+  // M33: Shadow S on the filter row while it is stuck under the header (phone).
+  useEffect(() => {
+    const tools = gridRef.current?.parentElement?.querySelector<HTMLElement>(".v-tools");
+    if (!tools) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const sticky = getComputedStyle(tools).position === "sticky";
+      const top = parseFloat(getComputedStyle(tools).top) || 0;
+      const grid = gridRef.current?.getBoundingClientRect();
+      tools.classList.toggle("is-stuck", sticky && tools.getBoundingClientRect().top <= top + 0.5 && !!grid && grid.bottom > top + tools.offsetHeight);
+    };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
+  }, []);
   const showMore = () => {
+    touched.current = true;
     const from = limit;
     flushSync(() => setLimit(limit + 5));
     const fresh = [...(gridRef.current?.querySelectorAll<HTMLElement>("[data-k]:not([data-k=promo])") ?? [])].slice(from);
@@ -1031,7 +1202,9 @@ export function ReviewsPage() {
     }
   };
   // V01 / M32: the rating counts up 0,0 → 4,9 and 0 → +48 (1 с on desktop, 900 мс on a phone, ease-out) and the stars
-  // fill left to right with it. Written straight into the DOM from rAF — no React render per frame.
+  // fill left to right with it (each star in turn, stagger 80 мс, the last one done when the counter lands).
+  // Written straight into the DOM from rAF — no React render per frame. The shown value is floored, so «4,9» appears
+  // only on the last frame: the visible count lasts the full 1000 / 900 мс (rounding showed 4,9 already at ~78%).
   // Until hydration the numbers are hidden, so they do not flash 4,9 → 0,0 before the count-up.
   const [ratePending, setRatePending] = useState(true);
   const rateRef = useRef<HTMLElement>(null);
@@ -1043,25 +1216,26 @@ export function ReviewsPage() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !stars) return;
     const ms = window.matchMedia("(max-width: 767px)").matches ? 900 : 1000;
     const paint = (share: number) => {
-      if (rateRef.current) rateRef.current.textContent = (4.9 * share).toFixed(1).replace(".", ",");
-      if (moreRef.current) moreRef.current.textContent = `+${Math.round(48 * share)}`;
-      stars.style.setProperty("--fill", `${share * 98}%`);
+      if (rateRef.current) rateRef.current.textContent = (share >= 1 ? 4.9 : Math.floor(49 * share) / 10).toFixed(1).replace(".", ",");
+      if (moreRef.current) moreRef.current.textContent = `+${share >= 1 ? 48 : Math.floor(48 * share)}`;
     };
-    stars.classList.add("is-filling");
     paint(0);
-    const start = performance.now();
     let raf = 0;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / ms);
-      paint(1 - Math.pow(1 - t, 3));
-      if (t < 1) raf = requestAnimationFrame(tick);
-      else stars.classList.remove("is-filling");
-    };
-    raf = requestAnimationFrame(tick);
+    raf = requestAnimationFrame((first) => {
+      // the stars start in the same frame as the counter
+      stars.style.setProperty("--v-ms", `${ms}ms`);
+      stars.classList.add("is-star-fill");
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - first) / ms);
+        paint(1 - Math.pow(1 - t, 2));
+        if (t < 1) raf = requestAnimationFrame(tick);
+      };
+      tick(first);
+    });
     return () => {
       cancelAnimationFrame(raf);
       paint(1);
-      stars.classList.remove("is-filling");
+      stars.classList.remove("is-star-fill");
     };
   }, []);
   // V01: the collage follows the cursor a little (±8 px, a different depth for every layer); rAF-throttled, `translate`
@@ -1107,6 +1281,7 @@ export function ReviewsPage() {
   }, []);
   // V02 (Figma note): the grid rebuilds with FLIP 300 мс — leaving cards fade + scale .96, staying cards glide, new ones rise from +12px.
   const flip = (f: string, t: string, apply: () => void) => {
+    touched.current = true;
     const grid = gridRef.current;
     if (!grid || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { apply(); return; }
     const nextIds = new Set(pick(f, t).slice(0, 7).map((item) => item.id));
@@ -1114,9 +1289,19 @@ export function ReviewsPage() {
     const first = new Map(items.map((el) => [el.dataset.k, el.getBoundingClientRect()]));
     const leaving = items.filter((el) => !nextIds.has(el.dataset.k ?? ""));
     leaving.forEach((el) => el.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "scale(.96)" }], { duration: 150, easing: "ease-out", fill: "forwards" }));
+    // M33 (phone): the page turns to the start of the feed, and the new cards come in a cascade (y 12, step 60 мс).
+    const phone = window.matchMedia("(max-width: 767px)").matches;
+    if (phone) {
+      const header = document.querySelector(".site-header:not(.is-hidden)")?.getBoundingClientRect().bottom ?? 0;
+      const tools = grid.parentElement?.querySelector<HTMLElement>(".v-tools");
+      const stuck = tools && getComputedStyle(tools).position === "sticky" ? tools.getBoundingClientRect().height : 0;
+      const top = grid.getBoundingClientRect().top - Math.max(0, header) - stuck - 12;
+      if (top < -4) window.scrollTo({ top: window.scrollY + top, behavior: "smooth" });
+    }
     window.setTimeout(() => {
       leaving.forEach((el) => el.getAnimations().forEach((anim) => anim.cancel()));
       flushSync(apply);
+      let fresh = 0;
       grid.querySelectorAll<HTMLElement>("[data-k]").forEach((el) => {
         const was = first.get(el.dataset.k);
         const now = el.getBoundingClientRect();
@@ -1124,7 +1309,8 @@ export function ReviewsPage() {
           const dx = was.left - now.left, dy = was.top - now.top;
           if (dx || dy) el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: 300, easing: "cubic-bezier(.2,.8,.2,1)" });
         } else if (!was) {
-          el.animate([{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }], { duration: 300, easing: "cubic-bezier(.2,.8,.2,1)" });
+          el.animate([{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }], { duration: 300, delay: phone ? Math.min(fresh, 5) * 60 : 0, easing: "cubic-bezier(.2,.8,.2,1)", fill: "backwards" });
+          fresh += 1;
         }
       });
     }, leaving.length ? 150 : 0);
@@ -1141,7 +1327,7 @@ export function ReviewsPage() {
                 <h1>Отзывы</h1>
                 <p className="fx-lead">Истории людей, которые сдали тест, и отзывы специалистов, которые работают с отчётом. Все отзывы проходят модерацию.</p>
                 <div className={`v-rate-card${ratePending ? " is-pending" : ""}`}>
-                  <p className="v-rate" aria-label="Средняя оценка 4,9"><b aria-hidden ref={rateRef}>4,9</b><span className="v-stars" aria-hidden="true" ref={starsRef}>★★★★★</span></p>
+                  <p className="v-rate" aria-label="Средняя оценка 4,9"><b aria-hidden ref={rateRef}>4,9</b><span className="v-stars" aria-hidden="true" ref={starsRef}>{[0, 1, 2, 3, 4].map((i) => <i key={i} style={{ "--i": i } as CSSProperties}>★</i>)}</span></p>
                   <div className="v-rate-side">
                     <p className="v-rate-note">312 отзывов после модерации</p>
                     <p className="v-avatars">
@@ -1170,8 +1356,10 @@ export function ReviewsPage() {
               <div className="v-chiprow" data-allow-x>
               <div className="chips">
                 {["Все", "Пациенты", "Специалисты", "Видео"].map((item) => (
-                  <button key={item} className={`chip${filter === item ? " is-active" : ""}`} type="button" onClick={() => {
-                    flip(item, topic, () => { setFilter(item); setPage(1); });
+                  <button key={item} className={`chip${(chipNow ?? filter) === item ? " is-active" : ""}`} type="button" onClick={() => {
+                    // M33: the tapped chip fills at once (160 мс), not after the old cards have left.
+                    setChipNow(item);
+                    flip(item, topic, () => { setFilter(item); setChipNow(null); setPage(1); });
                     const url = new URL(window.location.href);
                     if (item === "Видео") url.searchParams.set("type", "video");
                     else if (item === "Текст") url.searchParams.set("type", "text");
@@ -1182,21 +1370,22 @@ export function ReviewsPage() {
               </div>
               <div className="chips">
                 {["ЖКТ", "Кожа", "Вес и отёчность", "Общее самочувствие"].map((item) => (
-                  <button key={item} className={`chip${topic === item ? " is-active" : ""}`} type="button" onClick={() => { const next = topic === item ? "" : item; flip(filter, next, () => { setTopic(next); setPage(1); }); }}>{item}</button>
+                  <button key={item} className={`chip${(topicNow ?? topic) === item ? " is-active" : ""}`} type="button" onClick={() => { const next = topic === item ? "" : item; setTopicNow(next); flip(filter, next, () => { setTopic(next); setTopicNow(null); setPage(1); }); }}>{item}</button>
                 ))}
               </div>
               </div>
               <label className="v-sort">Сначала новые
                 <select aria-label="Сначала новые" defaultValue="new"><option value="new">Сначала новые</option></select>
               </label>
-              <p className="v-shown">Показано {phone ? visible.length : Math.min(7, cards.length)} из 312</p>
+              {/* M33: the new count slides up (200 мс, phone CSS). */}
+              <p className="v-shown"><span key={phone ? visible.length : Math.min(7, cards.length)} className={shownSwap ? "is-swap" : undefined}>Показано {phone ? visible.length : Math.min(7, cards.length)} из 312</span></p>
             </div>
             <div className="v-grid" ref={gridRef}>
               {visible.map((item) => item.video ? (
                 <article key={item.id} data-k={item.id} className="rev rev-video" style={{ backgroundImage: `url(${item.photo})` }}>
                   <p><span>{item.tag}</span><span>Видео</span></p>
                   <div>
-                    <button type="button" className="rev-play" onClick={() => setVideo(item)}><img src="/figma/icons/play.svg" alt="" />Смотреть историю · 1:24</button>
+                    <button type="button" className="rev-play" onClick={(event) => { setVideoFrom(event.currentTarget.closest("article")?.getBoundingClientRect() ?? null); setVideo(item); }}><img src="/figma/icons/play.svg" alt="" />Смотреть историю · 1:24</button>
                     <h3>«{item.title}»</h3>
                     <b>{item.name}</b>
                     <small><img src="/figma/icons/check.svg" alt="" />Отзыв проверен модератором</small>
@@ -1249,7 +1438,7 @@ export function ReviewsPage() {
           </div>
         </section>
       </main>
-      {video && <VideoModal item={video} onClose={() => setVideo(null)} />}
+      {video && <VideoModal item={video} from={videoFrom} onClose={closeVideo} />}
       <Footer />
     </>
   );
@@ -1283,17 +1472,75 @@ function RevText({ text }: { text: string }) {
 }
 
 /* V02 / M34: video review player in a modal. There is no video file for the reviews yet, so the player is a stub:
-   the poster with the play button and a «Видео пока не загружено» line instead of playback. */
-function VideoModal({ item, onClose }: { item: (typeof REVIEWS)[number]; onClose: () => void }) {
+   the poster with the play button and a «Видео пока не загружено» line instead of playback.
+   Desktop: K08 window — opacity + scale .98 → 1, 200 мс; the exit is the reverse.
+   Phone (M34): a full-screen player that grows out of the tapped poster (shared element, 320 мс (.2,.8,.2,1)) — the
+   player is revealed through a window that starts on the poster's rectangle; swipe down closes it (it follows the
+   finger, >80 px or a flick closes, otherwise it springs back). */
+function VideoModal({ item, from, onClose }: { item: (typeof REVIEWS)[number]; from: DOMRect | null; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
+  const scrimRef = useRef<HTMLDivElement>(null);
   const [subs, setSubs] = useState(true);
-  useDialog(ref, onClose);
+  const closing = useRef(false);
+  const phoneRef = useRef(false);
+  const close = useCallback(() => {
+    const node = ref.current;
+    const scrim = scrimRef.current;
+    if (closing.current) return;
+    closing.current = true;
+    if (!node || !scrim || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { onClose(); return; }
+    const phone = phoneRef.current;
+    const anim = phone
+      ? node.animate([{ transform: getComputedStyle(node).transform === "none" ? "none" : getComputedStyle(node).transform, opacity: 1 }, { transform: "translateY(40%)", opacity: 0 }], { duration: 200, easing: "ease-in", fill: "forwards" })
+      : node.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "scale(0.98)" }], { duration: 200, easing: "ease-in", fill: "forwards" });
+    scrim.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: "linear", fill: "forwards" });
+    anim.onfinish = () => onClose();
+  }, [onClose]);
+  useDialog(ref, close);
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    phoneRef.current = window.matchMedia("(max-width: 767px)").matches;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (phoneRef.current && from) {
+      const box = node.getBoundingClientRect();
+      const inset = `inset(${Math.max(0, from.top - box.top)}px ${Math.max(0, box.right - from.right)}px ${Math.max(0, box.bottom - from.bottom)}px ${Math.max(0, from.left - box.left)}px round 20px)`;
+      node.animate([{ clipPath: inset }, { clipPath: "inset(0px 0px 0px 0px round 0px)" }], { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)" });
+    } else if (!phoneRef.current) {
+      node.animate([{ opacity: 0, transform: "scale(0.98)" }, { opacity: 1, transform: "none" }], { duration: 200, easing: "ease-out" });
+    }
+  }, [from]);
+  // M34: swipe down to close (phone).
+  const drag = useRef<{ y: number; t: number; dy: number } | null>(null);
+  const onTouchStart = (event: ReactTouchEvent) => {
+    if (!phoneRef.current || event.touches.length !== 1) return;
+    drag.current = { y: event.touches[0].clientY, t: performance.now(), dy: 0 };
+  };
+  const onTouchMove = (event: ReactTouchEvent) => {
+    const d = drag.current;
+    const node = ref.current;
+    if (!d || !node) return;
+    d.dy = Math.max(0, event.touches[0].clientY - d.y);
+    node.style.transform = d.dy ? `translateY(${d.dy}px)` : "";
+  };
+  const onTouchEnd = () => {
+    const d = drag.current;
+    const node = ref.current;
+    drag.current = null;
+    if (!d || !node) return;
+    const speed = d.dy / Math.max(1, performance.now() - d.t);
+    if (d.dy > 80 || (d.dy > 24 && speed > 0.6)) close();
+    else if (d.dy) {
+      node.animate([{ transform: `translateY(${d.dy}px)` }, { transform: "none" }], { duration: 200, easing: "cubic-bezier(.2,.8,.2,1)" });
+      node.style.transform = "";
+    }
+  };
   return (
-    <div className="rev-modal-scrim" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <div className="rev-modal" ref={ref} role="dialog" aria-modal="true" aria-label={`Видеоотзыв: ${item.name}`}>
+    <div className="rev-modal-scrim" ref={scrimRef} onClick={(event) => { if (event.target === event.currentTarget) close(); }}>
+      <div className="rev-modal" ref={ref} role="dialog" aria-modal="true" aria-label={`Видеоотзыв: ${item.name}`} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onTouchCancel={onTouchEnd}>
         <div className="rev-modal-head">
           <span><b>{item.name}</b></span>
-          <button type="button" className="rev-modal-x" aria-label="Закрыть" onClick={onClose} data-autofocus>×</button>
+          <button type="button" className="rev-modal-x" aria-label="Закрыть" onClick={close} data-autofocus>×</button>
         </div>
         <div className="rev-modal-video" style={{ backgroundImage: `url(${item.photo})` }}>
           <span className="rev-modal-play"><img src="/figma/icons/play.svg" alt="" /></span>
@@ -1312,7 +1559,9 @@ function VideoModal({ item, onClose }: { item: (typeof REVIEWS)[number]; onClose
 /* V03 (Figma note): validation on blur, red border + text under the field, shake 2px × 2 on submit,
    button active only after consent, sending → spinner + «Отправляем…» with disabled fields,
    success → the form collapses into the «Спасибо!» card with a drawn check (500 мс).
-   There is no review API yet, so the sending state lasts a short fixed time. */
+   M36 / M25: a network error keeps everything typed and shows the Error toast with «Повторить» (no auto-close, as the
+   contact form). The review goes to the same /api/lead endpoint as the other forms (kind «review»); the spinner stays
+   at least 600 мс so it does not blink. */
 function ReviewForm() {
   const [agree, setAgree] = useState(false);
   const [text, setText] = useState("");
@@ -1320,7 +1569,36 @@ function ReviewForm() {
   const [shake, setShake] = useState(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const toastTag = useRef(`review-${Math.random().toString(36).slice(2)}`);
+  const sendRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    const tag = toastTag.current;
+    return () => { window.dispatchEvent(new CustomEvent("fox:toast-clear", { detail: tag })); };
+  }, []);
   const check = (value: string) => (value.trim().length < 10 ? "Напишите чуть подробнее" : "");
+  const send = async () => {
+    const form = formRef.current;
+    if (!form) return;
+    const data = Object.fromEntries(new FormData(form).entries());
+    window.dispatchEvent(new CustomEvent("fox:toast-clear", { detail: toastTag.current }));
+    setBusy(true);
+    const started = performance.now();
+    const rest = () => new Promise((resolve) => window.setTimeout(resolve, Math.max(0, 600 - (performance.now() - started))));
+    try {
+      if (!navigator.onLine) throw new Error("offline");
+      const response = await fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "review", ...data, text }) });
+      if (!response.ok) throw new Error(String(response.status));
+      await rest();
+      setBusy(false);
+      setDone(true);
+    } catch {
+      await rest();
+      setBusy(false);
+      window.dispatchEvent(new CustomEvent("fox:toast", { detail: { text: "Нет соединения — текст сохранён", type: "error", tag: toastTag.current, action: { label: "Повторить", run: () => sendRef.current() } } }));
+    }
+  };
+  sendRef.current = () => void send();
   if (done) {
     return (
       <div className="v03-done" role="status">
@@ -1331,14 +1609,13 @@ function ReviewForm() {
     );
   }
   return (
-    <form className={shake ? "is-shake" : undefined} noValidate onSubmit={(event) => {
+    <form ref={formRef} className={shake ? "is-shake" : undefined} noValidate onSubmit={(event) => {
       event.preventDefault();
       if (!agree || busy) return;
       const err = check(text);
       setTextErr(err);
       if (err) { setShake(false); window.requestAnimationFrame(() => setShake(true)); return; }
-      setBusy(true);
-      window.setTimeout(() => { setBusy(false); setDone(true); }, 900);
+      void send();
     }}>
       <fieldset disabled={busy}>
         <label className="field">Имя<input name="name" /></label>

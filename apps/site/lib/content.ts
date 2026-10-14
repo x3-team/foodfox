@@ -462,43 +462,48 @@ export const toc = [
 export const DISCLAIMER =
   "Материал носит информационный характер и не является медицинской рекомендацией. FOX — лабораторный тест для поддержки персонализированных диетических вмешательств; не тест на аллергию (IgE), не устанавливает диагноз и не заменяет консультацию специалиста.";
 
-export function searchTopics(query: string) {
+export function searchTopics(query: string, min = 3) {
   const q = query.trim().toLowerCase();
-  if (q.length < 3) return [];
-  const topics = [
-    {
-      label: "лактозная недостаточность",
-      hint: "",
-      match: (value: string) => value.startsWith("лак") || value.includes("лактоз"),
-      test: (a: Article) => /лактоз/i.test(a.title),
-    },
-    {
-      label: "лактаза",
-      hint: "фермент",
-      match: (value: string) => value.startsWith("лак") || value.includes("лактаз"),
-      test: (a: Article) => /лактаз/i.test(`${a.title} ${a.excerpt}`),
-    },
-    {
-      label: "молочные продукты",
-      hint: "синоним",
-      match: (value: string) => value.startsWith("лак") || value.includes("молоч") || value.includes("лактоз"),
-      test: (a: Article) => a.tags.includes("лактоза") || (a.synonyms ?? []).includes("молочные продукты"),
-    },
-    {
-      label: "глютен",
-      hint: "",
-      match: (value: string) => value.startsWith("глю") || value.includes("глют"),
-      test: (a: Article) => a.tags.includes("глютен"),
-    },
-  ];
-  return topics
+  if (q.length < min) return [];
+  return TOPICS
     .filter((t) => t.match(q))
     .map((t) => ({ label: t.label, hint: t.hint, count: articles.filter(t.test).length }));
 }
 
+/* Autocomplete topics (F2 / M06). A picked topic filters by the same test that counted it in the list — the label
+   itself («лактозная недостаточность») is not a phrase the articles contain, so a plain word match found 0. */
+const TOPICS: Array<{ label: string; hint: string; match: (value: string) => boolean; test: (a: Article) => boolean }> = [
+  {
+    label: "лактозная недостаточность",
+    hint: "",
+    match: (value: string) => value.startsWith("лак") || value.includes("лактоз"),
+    test: (a: Article) => /лактоз/i.test(a.title),
+  },
+  {
+    label: "лактаза",
+    hint: "фермент",
+    match: (value: string) => value.startsWith("лак") || value.includes("лактаз"),
+    test: (a: Article) => /лактаз/i.test(`${a.title} ${a.excerpt}`),
+  },
+  {
+    label: "молочные продукты",
+    hint: "синоним",
+    match: (value: string) => value.startsWith("лак") || value.includes("молоч") || value.includes("лактоз"),
+    test: (a: Article) => a.tags.includes("лактоза") || (a.synonyms ?? []).includes("молочные продукты"),
+  },
+  {
+    label: "глютен",
+    hint: "",
+    match: (value: string) => value.startsWith("глю") || value.includes("глют"),
+    test: (a: Article) => a.tags.includes("глютен"),
+  },
+];
+
 export function matchesQuery(article: Article, query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return true;
+  const topic = TOPICS.find((t) => t.label === q);
+  if (topic) return topic.test(article);
   const words = q.split(/\s+/).filter((w) => w.length > 2);
   const hay = `${article.title} ${article.excerpt} ${article.tags.join(" ")} ${(article.synonyms ?? []).join(" ")}`.toLowerCase();
   if (!words.length) return hay.includes(q);
