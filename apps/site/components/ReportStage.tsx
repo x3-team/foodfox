@@ -68,9 +68,20 @@ export function ReportViewer() {
     card?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
   }
 
+  // M13: «↑ К отчёту» — back to the sheet (400 мс smooth scroll, like the way down) with the same marker active;
+  // the focus moves to that marker so keyboard / screen-reader users land there too.
+  const viewer = useRef<HTMLDivElement>(null);
+  function backToSheet() {
+    const sheet = viewer.current;
+    if (!sheet) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    sheet.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+    sheet.querySelector<HTMLButtonElement>(".rf-pin.is-on")?.focus({ preventScroll: true });
+  }
+
   return (
     <div className="rf-anatomy">
-      <div className="rf-viewer" onKeyDown={(event) => {
+      <div className="rf-viewer" ref={viewer} onKeyDown={(event) => {
         if (event.key === "ArrowRight") { event.preventDefault(); go(page + 1); }
         if (event.key === "ArrowLeft") { event.preventDefault(); go(page - 1); }
       }}>
@@ -100,15 +111,25 @@ export function ReportViewer() {
           </button>
         </div>
       </div>
+      {/* M13: each card is a group of two sibling buttons — the card itself (selects the marker; stretched over the
+          whole card) and, on the active card on a phone, «↑ К отчёту» (back to the sheet with the same marker). It was
+          one <button>; a second control inside it would be a button inside a button. */}
       <div className="rf-markers" ref={cards}>
         {MARKERS.map((item) => (
-          <button key={item.n} type="button" className={`rf-marker${marker === item.n ? " is-on" : ""}`} aria-pressed={marker === item.n} onClick={() => setMarker(item.n)}>
-            <span className={`rf-pin${marker === item.n ? " is-on" : ""}`}>{item.n}</span>
-            <span>
-              <strong>{item.title}</strong>
-              <small>{item.text}</small>
-            </span>
-          </button>
+          <div key={item.n} className={`rf-marker${marker === item.n ? " is-on" : ""}`}>
+            <button type="button" className="rf-marker-main" aria-pressed={marker === item.n} onClick={() => setMarker(item.n)}>
+              <span className={`rf-pin${marker === item.n ? " is-on" : ""}`}>{item.n}</span>
+              <span>
+                <strong>{item.title}</strong>
+                <small>{item.text}</small>
+              </span>
+            </button>
+            {marker === item.n ? (
+              <button type="button" className="rf-back" onClick={backToSheet}>
+                <span aria-hidden>↑</span> К отчёту
+              </button>
+            ) : null}
+          </div>
         ))}
       </div>
     </div>

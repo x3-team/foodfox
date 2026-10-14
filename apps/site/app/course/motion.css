@@ -7,14 +7,14 @@
    chips rose as two blocks at once. ── */
 [data-s="k01"].dark-hero img.bg { animation: none; }
 [data-s="k01"].dark-hero .inner > * { animation: none; }
-.kf-hero-copy > * { animation: kf-rise 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards; }
+.kf-hero-copy > * { animation: kf-rise 600ms cubic-bezier(0.33, 1, 0.68, 1) backwards; }
 .kf-hero-copy > h1 { animation-delay: 80ms; }
 .kf-hero-copy > p:not(.kf-caption) { animation-delay: 160ms; }
-.kf-hero-copy > .kf-hero-visual-m { animation: kf-photo 1200ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 120ms backwards; }
+.kf-hero-copy > .kf-hero-visual-m { animation: kf-photo 1200ms cubic-bezier(0.33, 1, 0.68, 1) 120ms backwards; }
 .kf-hero-copy > .kf-hero-cta { animation-delay: 240ms; }
 .kf-hero-copy > .kf-caption { animation-delay: 300ms; }
-.kf-hero-row > .kf-hero-visual { animation: kf-photo 1200ms cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards; }
-[data-s="k01"] .kf-facts > span { animation: kf-rise 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 360ms backwards; }
+.kf-hero-row > .kf-hero-visual { animation: kf-photo 1200ms cubic-bezier(0.33, 1, 0.68, 1) backwards; }
+[data-s="k01"] .kf-facts > span { animation: kf-rise 600ms cubic-bezier(0.33, 1, 0.68, 1) 360ms backwards; }
 [data-s="k01"] .kf-facts > span:nth-child(2) { animation-delay: 440ms; }
 [data-s="k01"] .kf-facts > span:nth-child(3) { animation-delay: 520ms; }
 [data-s="k01"] .kf-facts > span:nth-child(4) { animation-delay: 600ms; }
@@ -31,7 +31,8 @@
 /* ── K3 programme accordion (note 1184:1310) / M16: one open, height 300 мс ease-out; chevron 180° in 250 мс; the
    content fades in 80 мс after the box starts opening; the number turns dark in 150 мс (phone: lime), the open card
    gets shadow M. ── */
-.kf-acc article { transition: background-color 200ms var(--ease), box-shadow 200ms var(--ease); }
+/* Accordion/Lesson (Figma reactions: hover 150 мс, click 300 мс, Smart Animate EASE_OUT). */
+.kf-acc article { transition: background-color 150ms ease-out, box-shadow 300ms ease-out; }
 .kf-acc article.is-open { box-shadow: 0 8px 24px -4px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
 .kf-acc article img { transition: transform 250ms ease-out; }
 .kf-num { transition: background-color 150ms ease-out, color 150ms ease-out; }
@@ -42,13 +43,45 @@
   .kf-acc .kf-fold { transition-duration: 280ms; }
 }
 
-/* ── K4 lecturers (note 1184:1316): photo scale 1.10 over 500 мс inside its frame (it used to grow out of the
-   rounded box over the name); a hover on a lesson in the programme lights up that lecturer's lesson chip. ── */
+/* ── K4 lecturers (note 1184:1316): photo scale 1.10 inside its frame (it used to grow out of the rounded box over
+   the name); a hover on a lesson in the programme lights up that lecturer's lesson chip. Duration: the Figma
+   reaction of Card/Lecturer — Smart Animate ON_HOVER 400 мс EASE_OUT (customer decision; the note said 500). ── */
 .kf-lector-photo { display: block; overflow: hidden; border-radius: 16px; background: #d7d8cd; }
-.kf-lector-photo img { display: block; border-radius: 0; transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+.kf-lector-photo img { display: block; border-radius: 0; transition: transform 400ms ease-out; }
+.kf-lector strong { text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: transparent; transition: text-decoration-color 400ms ease-out; }
+@media (hover: hover) { .kf-lector:hover strong { text-decoration-color: currentColor; } }
+/* Card/Audience — 200 мс; FAQ/Item hover — 150 мс (underline), click 300 мс; Link/Arrow — 200 мс. All ease-out. */
+.kf-aud { transition: background-color 200ms ease-out, box-shadow 200ms ease-out; }
+.kf-aud-title img { transition: opacity 200ms ease-out, transform 200ms ease-out; }
+.kf-aud-title strong { text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: transparent; transition: text-decoration-color 200ms ease-out; }
+.kf-aud:hover .kf-aud-title strong { text-decoration-color: currentColor; }
+.kf-acc article button strong, .kf-faq button > span { text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: transparent; transition: text-decoration-color 150ms ease-out; }
+.kf-acc article:not(.is-open) button:hover strong, .kf-faq button:hover > span { text-decoration-color: currentColor; }
+.kf-faq img { transition: transform 250ms ease-out; } /* chevron 180° in 250 мс (R07 / K3 / M14 pattern) */
+.kf-light-link { text-decoration-line: underline; text-underline-offset: 4px; text-decoration-color: transparent; transition: text-decoration-color 200ms ease-out; }
+.kf-light-link:hover { text-decoration-color: currentColor; }
 .kf-lector:hover .kf-lector-photo img { transform: scale(1.1); }
 .kf-chip-lime { transition: background-color 200ms ease-out, box-shadow 200ms ease-out; }
 .kf-chip-lime.is-lit { box-shadow: 0 0 0 2px #0b0c08; }
+
+/* M10 dots under the phone lecturer carousel (frame K04 390). */
+.kf-dots { display: none; }
+@media (max-width: 767px) {
+  [data-s="k04"] .kf-dots { display: flex; gap: 6px; }
+  [data-s="k04"] .kf-dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(11, 12, 8, 0.3); transition: width 200ms ease-out, background-color 200ms ease-out; }
+  [data-s="k04"] .kf-dots i.is-on { width: 20px; background: #0b0c08; }
+}
+
+/* M17 biography sheet (phone): the tapped card gets the lime frame of the storyboard while its sheet is open;
+   .kf-bio-fly is the photo flying from the card into the sheet (CourseFlow LecturerSheet). */
+.kf-lector.is-tapped .kf-lector-photo { box-shadow: 0 0 0 2px #e7f551; }
+.kf-bio-fly { position: fixed; z-index: 95; margin: 0; object-fit: cover; object-position: center top; pointer-events: none; }
+.kf-bio .kf-bio-body { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding-top: 8px; }
+.kf-bio .kf-bio-photo { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; object-position: center top; background: #e7f551; margin-bottom: 12px; }
+.kf-bio h2 { margin: 0; font-weight: 400; font-size: 20px; line-height: 24px; }
+.kf-bio .kf-bio-role { margin: 0; color: #5c5e57; font-size: 15px; line-height: 20px; }
+.kf-bio .kf-bio-lessons { margin: 8px 0 0; font-size: 15px; line-height: 20px; }
+.kf-bio ul { margin: 4px 0 8px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; color: #5c5e57; font-size: 14px; line-height: 18px; }
 
 /* M17 / M10: the lecturer carousel nudges 24px and comes back (600 мс) the first time it shows up on a phone. */
 [data-s] .kf-nudge.kf-nudge,
@@ -60,22 +93,45 @@
 [data-s="k05"].is-in:not(.dark-hero) > .wrap > .kf-include-row { animation: none; }
 
 /* ── K7 final CTA (note 1184:1334): lime bar → title → lead → chips (stagger 80 мс) → button. ── */
-[data-s="k07"]:not(.is-in) > .kf-final-in > .kf-facts { opacity: 1; transform: none; }
-/* the items are direct children of the section wrap: their own entrance has to outrank the global section rise */
-[data-s="k07"].is-in:not(.dark-hero) > .kf-final-in > [data-rv].rv-in:not(.rv-now) {
-  animation: rv-rise var(--rv-dur, 600ms) var(--rv-ease, cubic-bezier(0.22, 0.61, 0.36, 1)) var(--rv-d, 0ms) backwards;
+/* One entrance only (ANIM-DIFF K07, customer item). The children of .kf-final-in are also «.wrap > *» of a [data-s]
+   section, so the global section rise (riseY 0/80/160 мс, globals.css) ran on the title, lead and button first and
+   their own item entrance (rv-rise 160/220/680 мс) restarted them a moment later — every node moved twice. Here the
+   section rise is switched off for all of them (hidden state and animation) and only the item entrance (useReveal)
+   runs: bar → title → lead → chips (stagger 80) → button → disclaimer. */
+[data-s="k07"][data-s].kf-final:not(.is-in) > .wrap.kf-final-in > * { opacity: 1; transform: none; }
+[data-s="k07"][data-s].kf-final > .wrap.kf-final-in > * { animation: none; }
+[data-s="k07"][data-s].kf-final > .wrap.kf-final-in > [data-rv]:not(.rv-in) { opacity: 0; transform: translateY(var(--rv-y, 24px)); }
+[data-s="k07"][data-s].kf-final > .wrap.kf-final-in > [data-rv].rv-in:not(.rv-now) {
+  animation: rv-rise var(--rv-dur, 600ms) var(--rv-ease, cubic-bezier(0.33, 1, 0.68, 1)) var(--rv-d, 0ms) backwards;
 }
-[data-s="k07"].is-in:not(.dark-hero) > .kf-final-in > *:not([data-rv]) { animation: none; }
 [data-s="k07"] .kf-bar[data-rv] { transform-origin: left center; }
-[data-s="k07"] .kf-bar[data-rv]:not(.rv-in) { opacity: 1; transform: scaleX(0); }
-[data-s="k07"].is-in:not(.dark-hero) > .kf-final-in > .kf-bar.rv-in:not(.rv-now) { animation: kf-bar 400ms ease-out backwards; }
+[data-s="k07"][data-s].kf-final > .wrap.kf-final-in > .kf-bar[data-rv]:not(.rv-in) { opacity: 1; transform: scaleX(0); }
+[data-s="k07"][data-s].kf-final > .wrap.kf-final-in > .kf-bar.rv-in:not(.rv-now) { animation: kf-bar 400ms ease-out var(--rv-d, 0ms) backwards; }
 @keyframes kf-bar { from { transform: scaleX(0); } }
-[data-s="k07"].is-in:not(.dark-hero) > .kf-final-in > .kf-disclaimer { animation: kf-fade 400ms ease-out 760ms backwards; }
-@keyframes kf-fade { from { opacity: 0; } }
+[data-s="k07"] .kf-disclaimer { --rv-y: 0px; --rv-dur: 400ms; --rv-ease: ease-out; }
+/* K07: «свечение лайма при hover усиливается до 0.18 за 200мс» — the static glow of the frame (decor/glow, lime 0.14,
+   520 px, blur 200) sits behind the button and brightens with its hover. */
+[data-s="k07"] .kf-final-in > .btn { position: relative; transition: background-color 150ms ease-out, transform 150ms ease-out; }
+[data-s="k07"] .kf-final-in > .btn::before {
+  content: ""; position: absolute; left: 50%; top: 50%; z-index: -1; width: 520px; height: 520px; margin: -260px 0 0 -260px;
+  border-radius: 50%; background: radial-gradient(closest-side, #e7f551, rgba(231, 245, 81, 0)); opacity: 0.14; pointer-events: none;
+  transition: opacity 200ms ease-out;
+}
+@media (hover: hover) { [data-s="k07"] .kf-final-in > .btn:hover::before { opacity: 0.18; } }
+@media (max-width: 767px) { [data-s="k07"] .kf-final-in > .btn::before { width: 360px; height: 360px; margin: -180px 0 0 -180px; } }
 
 /* ── K08 / M15 registration: the modal height animates 250 мс between steps; on a phone the next step comes in
    from the right (24px + fade, 200 мс) and the sheet follows a downward drag. ── */
 .reg-modal.is-resizing { transition: height 250ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+/* The leaving step (a copy left by RegistrationDialog): desktop K08 — fades out while the next step comes in
+   (crossfade 200 мс + y 8); phone M15 — slides 24px to the left + fade (200 мс) while the next one comes from the right. */
+.reg-modal.reg-modal > .reg-body.reg-ghost { position: absolute; z-index: 0; margin: 0; pointer-events: none; animation: reg-leave 200ms ease-out forwards; }
+@keyframes reg-leave { to { opacity: 0; } }
+@media (max-width: 767px) {
+  .reg-modal.reg-modal > .reg-body.reg-ghost { animation-name: reg-leave-x; }
+  @keyframes reg-leave-x { to { opacity: 0; transform: translateX(-24px); } }
+}
+@media (prefers-reduced-motion: reduce) { .reg-modal.reg-modal > .reg-body.reg-ghost { display: none; } }
 @media (max-width: 767px) {
   .reg-modal .reg-body:not(.reg-head) { animation-name: reg-step-x; }
   @keyframes reg-step-x { from { opacity: 0; transform: translateX(24px); } }
@@ -88,6 +144,16 @@
   font: inherit; font-size: 14px; line-height: 18px; cursor: pointer; animation: ls-plate-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 @keyframes ls-plate-in { from { opacity: 0; transform: translateY(16px); } }
+
+/* ── M18 landscape: the playing lesson covers the screen (real full screen when the browser grants it). ── */
+html body [data-s="l01"] .ls-player.is-landscape,
+html body [data-s="l01"] .ls-player:fullscreen {
+  position: fixed; inset: 0; z-index: 120; width: 100vw; height: 100vh; height: 100dvh; max-height: none; margin: 0;
+  border-radius: 0; background: #000; aspect-ratio: auto; animation: ls-full-in 200ms ease-out;
+}
+html body [data-s="l01"] .ls-player.is-landscape .player-poster,
+html body [data-s="l01"] .ls-player:fullscreen .player-poster { object-fit: contain; }
+@keyframes ls-full-in { from { opacity: 0.6; } }
 
 /* ── M19 lesson tabs: the white pill slides to the picked segment (240 мс). ── */
 @media (max-width: 1100px) {

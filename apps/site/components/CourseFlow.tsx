@@ -297,12 +297,31 @@ function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration>
   const stepKey = flow.sent ? "sent" : String(flow.step);
   const lastHeight = useRef(0);
   const lastKey = useRef(stepKey);
+  // A copy of the step as it was drawn after the previous commit: when the step changes, this copy stays on top for
+  // 200 мс and leaves (K08: fades out while the next one crossfades in; M15 phone: slides 24px to the left + fade)
+  // instead of the old step vanishing in one frame.
+  const lastSnap = useRef<Array<{ node: HTMLElement; top: number; left: number; width: number }>>([]);
   useLayoutEffect(() => {
     const node = ref.current;
-    if (!node) { lastHeight.current = 0; return; }
+    if (!node) { lastHeight.current = 0; lastSnap.current = []; return; }
     const before = lastHeight.current;
     const changed = lastKey.current !== stepKey;
     lastKey.current = stepKey;
+    const leaving = changed && !reduceMotion() ? lastSnap.current : [];
+    lastSnap.current = Array.from(node.querySelectorAll<HTMLElement>(":scope > .reg-body:not(.reg-ghost)")).map((body) => ({
+      node: body.cloneNode(true) as HTMLElement, top: body.offsetTop, left: body.offsetLeft, width: body.offsetWidth,
+    }));
+    node.querySelectorAll(":scope > .reg-ghost").forEach((ghost) => ghost.remove());
+    leaving.forEach(({ node: ghost, top, left, width }) => {
+      ghost.classList.add("reg-ghost");
+      ghost.setAttribute("aria-hidden", "true");
+      ghost.inert = true;
+      ghost.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
+      Object.assign(ghost.style, { top: `${top}px`, left: `${left}px`, width: `${width}px` });
+      node.appendChild(ghost);
+      ghost.addEventListener("animationend", () => ghost.remove(), { once: true });
+      window.setTimeout(() => ghost.remove(), 400);
+    });
     node.style.height = "";
     const after = node.offsetHeight;
     lastHeight.current = after;
@@ -322,7 +341,7 @@ function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration>
   });
   // M15 (phone): the registration sheet follows a downward drag; past 96px it closes (asking first if something
   // was typed — «Прервать регистрацию?»), otherwise it springs back.
-  const drag = useRef<{ y: number; dy: number } | null>(null);
+  const drag = useRef<{ y: number; dy: number; moved?: boolean } | null>(null);
   if (!flow.open) return null;
   const heads = [
     ["Начнём с e-mail", "На него придёт ссылка для входа — без пароля. Шаг 1 из 3."],
@@ -349,6 +368,8 @@ function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration>
           const node = ref.current;
           if (!d || !node) return;
           d.dy = Math.max(0, event.touches[0].clientY - d.y);
+          if (d.dy > 4) d.moved = true;
+          if (!d.moved) return;
           node.style.transition = "none";
           node.style.transform = d.dy ? `translateY(${d.dy}px)` : "";
         }}
@@ -356,7 +377,9 @@ function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration>
           const d = drag.current;
           const node = ref.current;
           drag.current = null;
-          if (!d || !node) return;
+          // a tap (no drag) leaves the inline transition alone: setting it here replaced the 250 мс height transition
+          // of the step change that the same tap on «Продолжить» starts (M15: the sheet jumped to the new height)
+          if (!d || !node || !d.moved) return;
           node.style.transition = "transform 240ms cubic-bezier(.2,.8,.2,1)";
           node.style.transform = "";
           window.setTimeout(() => { node.style.transition = ""; }, 260);
@@ -459,6 +482,59 @@ function AccessDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
+/* M17 (phone, note 1347:26053): a tap on a lecturer card opens a sheet with the biography — photo, regalia, the
+   lecturer's lessons; the photo grows out of the card into the sheet (shared element, 320 мс, the sheet's own
+   slide-up time and curve). The profile link of the card stays in the sheet. */
+type BioOpen = { index: number; from: HTMLElement };
+function LecturerSheet({ open, onClose }: { open: BioOpen; onClose: () => void }) {
+  const person = LECTURERS[open.index];
+  const photoRef = useRef<HTMLImageElement>(null);
+  const lessons = LESSONS.map((lesson, index) => ({ ...lesson, n: index + 1 })).filter((lesson) => lesson.lecturer === person.name);
+  useLayoutEffect(() => {
+    const img = photoRef.current;
+    const source = open.from.querySelector<HTMLImageElement>("img");
+    const sheet = img?.closest<HTMLElement>(".bs");
+    if (!img || !source || !sheet || reduceMotion() || !img.animate) return;
+    const from = source.getBoundingClientRect();
+    const to = img.getBoundingClientRect();
+    const box = sheet.getBoundingClientRect();
+    // where the photo will be once the sheet has slid up (the sheet sits on the bottom edge)
+    const top = window.innerHeight - sheet.offsetHeight + (to.top - box.top);
+    const fly = document.createElement("img");
+    fly.src = source.currentSrc || source.src;
+    fly.alt = "";
+    fly.className = "kf-bio-fly";
+    document.body.appendChild(fly);
+    img.style.visibility = "hidden";
+    source.style.visibility = "hidden";
+    const motion = fly.animate(
+      [
+        { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, borderRadius: "16px" },
+        { left: `${to.left}px`, top: `${top}px`, width: `${to.width}px`, height: `${to.height}px`, borderRadius: `${to.width / 2}px` },
+      ],
+      { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" },
+    );
+    const done = () => { img.style.visibility = ""; source.style.visibility = ""; fly.remove(); };
+    motion.onfinish = done;
+    return () => { motion.cancel(); done(); };
+  }, [open]);
+  return (
+    <BottomSheet label={`Лектор: ${person.name}`} className="kf-bio" onClose={onClose}>
+      <div className="bs-scroll kf-bio-body">
+        <img ref={photoRef} className="kf-bio-photo" src={person.photo.replace(".webp", "-512.webp")} alt="" width={76} height={76} />
+        <h2>{person.name}</h2>
+        <p className="kf-bio-role">{person.role}</p>
+        <p className="kf-bio-lessons">Уроки: {lessons.map((lesson) => `${lesson.n} · ${lesson.short}`).join("; ")}</p>
+        <ul>{person.facts.map((fact) => <li key={fact}>— {fact}</li>)}</ul>
+        <Link className="text-link" href={person.href}>
+          Профиль автора
+          <img src="/icons/arrow-right.svg" alt="" width={16} height={16} />
+        </Link>
+      </div>
+    </BottomSheet>
+  );
+}
+
 export function CoursePage() {
   const flow = useRegistration();
   const [access, setAccess] = useState(false);
@@ -478,6 +554,32 @@ export function CoursePage() {
   const [lit, setLit] = useState("");
   const acc = useRef<HTMLDivElement>(null);
   const flashTimer = useRef<number | undefined>(undefined);
+  // M10 / M17: the dots under the phone lecturer carousel follow the snapped card (frame K04 390: 20×6 + 6×6).
+  const [lector, setLector] = useState(0);
+  const lectorFrame = useRef(0);
+  const onLectors = (event: React.UIEvent<HTMLDivElement>) => {
+    const row = event.currentTarget;
+    if (lectorFrame.current) return;
+    lectorFrame.current = window.requestAnimationFrame(() => {
+      lectorFrame.current = 0;
+      const card = row.firstElementChild as HTMLElement | null;
+      const step = (card?.offsetWidth ?? 300) + (parseFloat(getComputedStyle(row).columnGap) || 12);
+      const end = row.scrollLeft >= row.scrollWidth - row.clientWidth - 2;
+      const next = end ? LECTURERS.length - 1 : Math.min(LECTURERS.length - 1, Math.round(row.scrollLeft / step));
+      setLector((prev) => (prev === next ? prev : next));
+    });
+  };
+  const [bio, setBio] = useState<BioOpen | null>(null);
+  const closeBio = useCallback(() => setBio(null), []);
+  // M17: on a phone the lecturer card opens the biography sheet (announced as a dialog), elsewhere it is a link.
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 767px)");
+    const sync = () => setPhone(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
   useReveal();
 
   // M17 / M10: the first time the lecturer carousel is 40% on screen (phone) it nudges 24px and back, once per session.
@@ -645,9 +747,19 @@ export function CoursePage() {
               <p className="kf-lead-d">Каждый лектор ведёт свои уроки — номера указаны на карточке. Клик открывает профиль автора в блоге.</p>
               <p className="kf-lead-m">Номера уроков — на карточке. Тап открывает профиль автора.</p>
             </div>
-            <div className="kf-lectors" data-allow-x>
-              {LECTURERS.map((person) => (
-                <Link key={person.name} href={person.href} className="kf-lector">
+            <div className="kf-lectors" data-allow-x onScroll={onLectors}>
+              {LECTURERS.map((person, index) => (
+                <Link
+                  key={person.name}
+                  href={person.href}
+                  className={`kf-lector${bio?.index === index ? " is-tapped" : ""}`}
+                  aria-haspopup={phone ? "dialog" : undefined}
+                  onClick={(event) => {
+                    if (!window.matchMedia("(max-width: 767px)").matches) return;
+                    event.preventDefault();
+                    setBio({ index, from: event.currentTarget });
+                  }}
+                >
                   <span className="kf-lector-photo"><img src={person.photo} srcSet={`${person.photo.replace(".webp", "-512.webp")} 512w, ${person.photo} 1024w`} sizes="(min-width: 1101px) 380px, max(380px, 100vw)" alt="" /></span>
                   <span className="kf-lector-body">
                     <span>
@@ -661,6 +773,9 @@ export function CoursePage() {
                   </span>
                 </Link>
               ))}
+            </div>
+            <div className="kf-dots" aria-hidden>
+              {LECTURERS.map((person, index) => <i key={person.name} className={lector === index ? "is-on" : ""} />)}
             </div>
           </div>
         </section>
@@ -723,12 +838,13 @@ export function CoursePage() {
               {["6 уроков", "Конспекты PDF", "Гайд по отчёту", "Сертификат"].map((fact) => <span key={fact} data-rv="80" data-rv-base="360">{fact}</span>)}
             </div>
             <button className="btn btn-light" type="button" onClick={flow.start} data-rv="0" data-rv-base="680">Получить доступ</button>
-            <p className="kf-disclaimer kf-lead-d">Сертификат подтверждает прохождение курса и не является документом о повышении квалификации и не даёт баллов НМО.</p>
-            <p className="kf-disclaimer kf-lead-m">Сертификат подтверждает прохождение курса и не является документом о повышении квалификации.</p>
+            <p className="kf-disclaimer kf-lead-d" data-rv="0" data-rv-base="760">Сертификат подтверждает прохождение курса и не является документом о повышении квалификации и не даёт баллов НМО.</p>
+            <p className="kf-disclaimer kf-lead-m" data-rv="0" data-rv-base="760">Сертификат подтверждает прохождение курса и не является документом о повышении квалификации.</p>
           </div>
         </section>
         <RegistrationDialog flow={flow} />
         {access && <AccessDialog onClose={closeAccess} />}
+        {bio && <LecturerSheet open={bio} onClose={closeBio} />}
       </main>
       <Footer />
     </>
@@ -821,6 +937,36 @@ export function LessonsPage() {
   const elapsed = Math.round(progress * (mm * 60 + ss));
   const elapsedLabel = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
 
+  /* M18: turning the phone to landscape while a lesson plays puts the player in full screen; back to portrait leaves
+     it. The Fullscreen API may refuse a request that does not come from a tap (an orientation change is not a user
+     gesture on most mobile browsers), so the player also covers the screen by itself (.is-landscape, fixed, black). */
+  const playerRef = useRef<HTMLDivElement>(null);
+  const [landscape, setLandscape] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(orientation: landscape) and (hover: none) and (pointer: coarse)");
+    const sync = () => {
+      const node = playerRef.current;
+      const video = videoRef.current;
+      if (!node || !video) return;
+      if (query.matches && !video.paused) {
+        setLandscape(true);
+        if (!document.fullscreenElement && node.requestFullscreen) void node.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
+      } else if (!query.matches) {
+        setLandscape(false);
+        if (document.fullscreenElement === node) void document.exitFullscreen().catch(() => {});
+      }
+    };
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
+  // L01: «счётчик меняется после анимации» — the «N из 6» label follows the progress bar (width 300 мс ease-out).
+  const [shownStep, setShownStep] = useState(current + 1);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShownStep(current + 1), reduceMotion() ? 0 : 300);
+    return () => window.clearTimeout(timer);
+  }, [current]);
+
   const passed = Math.max(done.length, current + 1);
   const lastTap = useRef<{ t: number; side: "back" | "fwd" | null } | null>(null);
   const [seek, setSeek] = useState<{ side: "back" | "fwd"; n: number } | null>(null);
@@ -852,7 +998,7 @@ export function LessonsPage() {
         <section data-s="l01" className="ls-layout">
           <div className="ls-progress" aria-label={`Прогресс курса, урок ${current + 1} из 6`}>
             <span>Прогресс курса</span>
-            <strong>{current + 1} из 6</strong>
+            <strong>{shownStep} из 6</strong>
             <i><b style={{ width: `${((current + 1) / 6) * 100}%` }} /></i>
           </div>
           <button type="button" className="btn btn-ghost ls-open" onClick={() => setSheet(true)}>Программа курса</button>
@@ -867,8 +1013,8 @@ export function LessonsPage() {
                 {LESSONS.map((item, index) => {
                   const state = index === current ? "current" : done.includes(index) ? "done" : "next";
                   return (
-                    <button key={item.title} type="button" className={`ls-item is-${state}`} aria-current={index === current ? "true" : undefined} onClick={() => { setCurrent(index); setSheet(false); }}>
-                      <span className="ls-badge">{state === "done" ? <img src="/figma/icons/check.svg" alt="" width={14} height={14} /> : index + 1}</span>
+                    <button key={item.title} type="button" className={`ls-item is-${state}${state === "current" && done.includes(index) ? " is-done" : ""}`} aria-current={index === current ? "true" : undefined} onClick={() => { setCurrent(index); setSheet(false); }}>
+                      <span className="ls-badge">{done.includes(index) ? <img src="/figma/icons/check.svg" alt="" width={14} height={14} /> : index + 1}</span>
                       <span>
                         <strong>{item.short}</strong>
                         <small>{item.minutes} мин{state === "current" ? " · смотрите сейчас" : state === "done" ? " · просмотрено" : ""}</small>
@@ -889,9 +1035,9 @@ export function LessonsPage() {
               {LESSONS.map((item, index) => {
                 const state = index === current ? "current" : done.includes(index) ? "done" : "next";
                 return (
-                  <button key={item.title} type="button" className={`ls-item is-${state}`} aria-current={index === current ? "true" : undefined} onClick={() => setCurrent(index)}>
+                  <button key={item.title} type="button" className={`ls-item is-${state}${state === "current" && done.includes(index) ? " is-done" : ""}`} aria-current={index === current ? "true" : undefined} onClick={() => setCurrent(index)}>
                     <span className="ls-badge">
-                      {state === "done" ? <img src="/figma/icons/check.svg" alt="" width={14} height={14} /> : index + 1}
+                      {done.includes(index) ? <img src="/figma/icons/check.svg" alt="" width={14} height={14} /> : index + 1}
                     </span>
                     <span>
                       <strong>{item.short}</strong>
@@ -918,7 +1064,7 @@ export function LessonsPage() {
               <h1>{lesson.title}</h1>
             </div>
             {/* L01: Space — play/pause, ←/→ — ±5 с (when the player has focus). */}
-            <div className={`ls-player${playing ? " is-playing" : ""}${playing && idle ? " is-idle" : ""}`} aria-label="Плеер урока" tabIndex={0} onMouseMove={wake} onFocus={wake} onKeyDown={(event) => {
+            <div ref={playerRef} className={`ls-player${playing ? " is-playing" : ""}${playing && idle ? " is-idle" : ""}${landscape ? " is-landscape" : ""}`} aria-label="Плеер урока" tabIndex={0} onMouseMove={wake} onFocus={wake} onKeyDown={(event) => {
               const node = videoRef.current;
               if (!node || (event.target as HTMLElement).tagName === "INPUT") return;
               if (event.key === " ") { event.preventDefault(); toggle(); }

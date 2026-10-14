@@ -57,6 +57,9 @@ export function ReportToc({ items }: { items: Array<[string, string]> }) {
     <nav ref={navRef} className={`toc${open ? " is-open" : ""}`} data-allow-x aria-label="Содержание">
       {marker ? <span className="rf-toc-marker" aria-hidden style={{ transform: `translateY(${marker.top}px)`, height: marker.height }} /> : null}
       <button type="button" className="rf-toc-m m-only" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        {/* M12: the dot on the left takes the colour of the current section (green / yellow / red in turn, like the
+            three zones the page opens with); it recolours together with the text swap (180 мс). */}
+        <i className={`rf-toc-dot is-${(["g", "y", "r"] as const)[index % 3]}`} aria-hidden />
         <span>
           <small>На этой странице · {index + 1} из {items.length}</small>
           <strong key={index}>{items[index]?.[1]}</strong>
