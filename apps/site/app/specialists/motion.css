@@ -25,15 +25,30 @@
    from its bottom edge and the blur is clipped at that edge (filter is applied before clip-path): a centre-origin
    scale pushed a bright 5–14px strip of the white coat below the shade, and the blur bled it further down. */
 @media (max-width: 1100px) {
-  [data-s="p01"].dark-hero > img.bg:not(.sp-hero-blur),
-  [data-s="p01"].dark-hero > img.sp-hero-m { transform-origin: 50% 100%; clip-path: inset(-64px -64px 0 -64px); }
+  [data-s="p01"].dark-hero > img.bg:not(.sp-hero-blur) { transform-origin: 50% 100%; clip-path: inset(-64px -64px 0 -64px); }
+}
+/* Phone: the photo starts below the 64px header bar and must not grow or blur into it either — the top clip shrinks
+   with the scale (480·(1 − 1/s): 27px at 1.06, 0 at 1), so the visible top edge stays on the bar's lower edge. */
+@media (max-width: 767px) {
+  [data-s="p01"].dark-hero > img.sp-hero-m { transform-origin: 50% 100%; }
+  [data-s="p01"].dark-hero > img.sp-hero-m:not(.is-wait) { animation-name: sp-photo-in-m; }
+}
+@keyframes sp-photo-in-m {
+  from { opacity: 0; transform: scale(1.06); filter: blur(16px); clip-path: inset(27.2px -64px 0 -64px); }
+  to { opacity: 1; transform: scale(1); filter: blur(0); clip-path: inset(0 -64px 0 -64px); }
 }
 @media (max-width: 767px) {
   /* phone: the blurred copy is its own 480px layer under the in-flow photo (it was a section background-image,
      which anything reading the section box took for a backdrop of the whole hero, title included) */
   body [data-s="p01"].dark-hero { background: #1f241a; isolation: isolate; }
   body [data-s="p01"].dark-hero > img.sp-hero-blur { display: none; }
-  body [data-s="p01"].dark-hero > img.sp-hero-m-blur { display: block; position: absolute; inset: 0 0 auto; width: 100%; height: 480px; object-fit: cover; z-index: -1; }
+  /* it lies exactly under the photo, which starts below the 64px header bar (section padding-top 64px): at inset 0
+     it sat 64px higher, under the bar */
+  body [data-s="p01"].dark-hero > img.sp-hero-m-blur { display: block; position: absolute; inset: 64px 0 auto; width: 100%; height: 480px; object-fit: cover; z-index: -1; }
+  /* Frame «Мобайл · Специалистам · 390» (1317:6392): a light 64px header bar, the hero photo starts below it. When the
+     header is the light bar (not the transparent .on-dark state) the strip behind it is the page colour, so the
+     dark hero does not tint the bar. */
+  body:has(.site-header:not(.on-dark)) [data-s="p01"].dark-hero { background: linear-gradient(#f8f9f6 0 64px, #1f241a 64px); }
 }
 /* P-anim: entrances 600 мс power2.out = cubic-bezier(.33,1,.68,1) (were power1.out (.25,.46,.45,.94) / --ease). */
 [data-s="p01"] .sp-pills { animation: sp-rise 600ms cubic-bezier(0.33, 1, 0.68, 1) 40ms backwards; }
