@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
-import { atLeast } from "@/components/useDialog";
+import { FormEvent, ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { atLeast, prefersReducedMotion } from "@/components/useDialog";
 
 /*
  * «Связаться» — one form for the modal (Figma 07 · G10–G12, «Модалка «Связаться» · 5 состояний»)
@@ -127,8 +127,12 @@ export function LeadForm({
     if (errors[field]) setErrors((current) => ({ ...current, [field]: validate(field, next, who) }));
   }
 
-  function blur(field: Field) {
-    if (!values[field].trim() && !errors[field]) return;
+  // G14: «Проверка по blur» — leaving a field marks it touched and shows its error, an empty required field included.
+  // Not when the focus goes to the «Кто вы» segment (the visitor picks a role first) or to the close button.
+  function blur(field: Field, next?: EventTarget | null) {
+    const to = next instanceof Element ? next : null;
+    if (to && (to.closest(".seg") || to.closest(".lead-x"))) return;
+    if (!formRef.current?.isConnected) return;
     setErrors((current) => ({ ...current, [field]: validate(field, values, who) }));
   }
 
@@ -162,6 +166,8 @@ export function LeadForm({
         600,
       );
       if (!response.ok) throw new Error(String(response.status));
+      const box = formRef.current?.closest<HTMLElement>(".modal") ?? formRef.current?.parentElement ?? null;
+      if (box) collapse.current = { box, from: box.offsetHeight };
       setStatus("success");
       onDirtyChange?.(false);
     } catch {
@@ -174,6 +180,24 @@ export function LeadForm({
   }
 
   retryRef.current = () => void submit();
+
+  // G12: on success the form collapses into the success block — the window (or the page block) animates its height
+  // from the form to the success state in 240 мс ease-out instead of jumping (on phones the sheet top glides down).
+  const collapse = useRef<{ box: HTMLElement; from: number } | null>(null);
+  useLayoutEffect(() => {
+    const state = collapse.current;
+    collapse.current = null;
+    if (status !== "success" || !state || !state.box.isConnected || prefersReducedMotion()) return;
+    const to = state.box.offsetHeight;
+    if (Math.abs(to - state.from) < 8) return;
+    state.box.animate(
+      [
+        { height: `${state.from}px`, overflow: "hidden" },
+        { height: `${to}px`, overflow: "hidden" },
+      ],
+      { duration: 240, easing: "ease-out" },
+    );
+  }, [status]);
 
   function reset() {
     setValues({ name: "", contact: "", company: "", text: "" });
@@ -265,7 +289,7 @@ export function LeadForm({
           aria-invalid={!!errors.text}
           aria-describedby="lf-text-meta"
           onChange={(event) => update("text", event.target.value)}
-          onBlur={() => blur("text")}
+          onBlur={(event) => blur("text", event.relatedTarget)}
         />
         <Err text={errors.text} />
         <span className="lf-meta" id="lf-text-meta">
@@ -316,7 +340,7 @@ function Input({
   errors: Partial<Record<Field, string>>;
   sending: boolean;
   onChange: (field: Field, value: string) => void;
-  onBlur: (field: Field) => void;
+  onBlur: (field: Field, next?: EventTarget | null) => void;
 }) {
   const error = errors[field];
   const ok = !error && errors[field] === "" && values[field].trim().length > 0;
@@ -332,7 +356,7 @@ function Input({
           readOnly={sending}
           aria-invalid={!!error}
           onChange={(event) => onChange(field, event.target.value)}
-          onBlur={() => onBlur(field)}
+          onBlur={(event) => onBlur(field, event.relatedTarget)}
         />
         {ok && (
           <svg className="lf-ok" viewBox="0 0 24 24" width="18" height="18" aria-hidden>

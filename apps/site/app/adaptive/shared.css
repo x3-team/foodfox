@@ -233,7 +233,7 @@ body .ck-modal .cookie-modal-actions .btn-dark { flex: 1 1 auto; }
 /* G01: «Всё — 200мс ease-out» — the hide/return slide was 280 мс. */
 body .site-header { transition-duration: 200ms; }
 /* G04: the course progress in the header grows when a lesson is finished (600 мс). */
-body .header-course .lesson-progress b { transition: width 600ms var(--ease); }
+body .header-course .lesson-progress b { transition: width 600ms ease-out; }
 @media (prefers-reduced-motion: reduce) {
   body .cookie.fox-cookie, body .fox-toasts { transition: none; }
 }
@@ -243,3 +243,56 @@ body .header-course .lesson-progress b { transition: width 600ms var(--ease); }
 body :is(.search, .l-city) input:focus-visible { outline: none; box-shadow: none; }
 body .search:has(input:focus-visible) { box-shadow: 0 0 0 3px #e7f551; }
 body .l-city:has(input:focus-visible) { outline: 3px solid #e7f551; outline-offset: 2px; }
+
+/* ==== Global motion pass 2 (ANIM-DIFF §2.1, G01–G17, K08; Figma Smart Animate = ease-out) ==== */
+/* K08 / G10 / G08 exit — the reverse of the entrance in 200 мс: scrim 50% → 0, window opacity 1 → 0 + scale 1 → .98
+   (ease-in); on phones and tablets the bottom-sheet windows slide back down. The copy left by useDialog plays it. */
+body .modal-back.is-leaving { pointer-events: none; z-index: 84; animation: scrim-out 200ms linear forwards !important; }
+body .modal-back.is-leaving .modal { animation: modal-out 200ms ease-in forwards !important; }
+/* The copy must not replay what is inside the window (success circle, step fades, spinners): end states at once. */
+body .modal-back.is-leaving .modal * { animation-duration: 0s !important; animation-delay: 0s !important; }
+@keyframes scrim-out { to { background-color: rgba(11, 12, 8, 0); } }
+@keyframes modal-out { to { opacity: 0; transform: scale(0.98); } }
+@keyframes sheet-out { to { transform: translateY(100%); } }
+@media (max-width: 1100px) {
+  body .modal-back.is-leaving :is(.lead-modal, .cookie-modal, .book-sheet) { animation: sheet-out 200ms cubic-bezier(.4, 0, 1, 1) forwards !important; }
+}
+@media (max-width: 767px) {
+  body .modal-back.is-leaving .reg-modal { animation: sheet-out 200ms cubic-bezier(.4, 0, 1, 1) forwards !important; }
+}
+
+/* Smart Animate hovers (Figma reactions: ON_HOVER SMART_ANIMATE, EASE_OUT). */
+/* Button / Icon — 150: the window close buttons; hover fill as Figma «Button / Icon · Hover» (#F2F2F2 on white). */
+body .lead-x, body .fox-toasts .fox-toast .ft-x { transition: background-color 150ms ease-out, color 150ms ease-out; }
+body .lead-x:hover { background-color: rgba(11, 12, 8, 0.1); }
+body .ck-modal .lead-x:hover { background-color: #f2f2f2; }
+/* Input / Search — 150: the pill turns #F2F2F2 under the pointer (not while typing in it). */
+body .search { transition: background-color 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out; }
+@media (hover: hover) {
+  body .search:not(:focus-within):not([data-s="s10"] .search):hover { background-color: #f2f2f2; }
+}
+/* Link / Arrow — 200: the underline fades in with the arrow's +4px (globals .text-link img, 200 ease-out). */
+body .text-link { text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 4px; transition: text-decoration-color 200ms ease-out; }
+body .text-link:hover { text-decoration-color: currentColor; }
+/* FAQ / Item — hover 150 (the question underlines), click 300 (.acc-plus in globals.css). */
+@media (hover: hover) {
+  body .acc > button, body article:has(> .f-answer) > button strong {
+    text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 4px;
+    text-decoration-color: transparent; transition: text-decoration-color 150ms ease-out;
+  }
+  body .acc > button:hover, body article:has(> .f-answer) > button:hover strong { text-decoration-color: currentColor; }
+}
+
+/* G16 / S15: the open S15 question shows the «×» on the lime circle, not the old chevron image (adaptive/home.css:463
+   still sets it on `.acc.is-open .acc-plus`; this wins on specificity). */
+html body [data-s="s15"] .acc.is-open .acc-plus { background-image: none; }
+
+/* G06 / G10 / G16 with reduced motion: ~100 мс fades, nothing moves or turns. */
+@media (prefers-reduced-motion: reduce) {
+  body .mobile-menu.is-closing { clip-path: none; animation: rm-out 100ms ease-in forwards !important; }
+  body .mobile-menu.is-closing > a, body .mobile-menu.is-closing .mobile-menu-foot { animation: none !important; }
+  body .modal-back.is-leaving { animation: rm-out 100ms ease-in forwards !important; }
+  body .modal-back.is-leaving .modal { animation: none !important; }
+  body .bs-back.is-closing .bs { animation: rm-out 100ms ease-in forwards !important; }
+  body .acc-plus { transition-property: background-color, border-color, color; }
+}

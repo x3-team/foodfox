@@ -51,6 +51,12 @@ const COURSE = [
   { href: "/course#faq", label: "Вопросы" },
 ];
 
+// G06 close: MENU items + the bottom block leave in reverse order (delay (N−i)×30 мс, 120 мс each),
+// the panel rolls up over the last 200 мс.
+const MENU_STEP = 30;
+const MENU_ITEM_OUT = 120;
+const MENU_CLOSE_MS = MENU.length * MENU_STEP + MENU_ITEM_OUT;
+
 export const PARTNER_LOGIN = "https://foodfox.yuri.guru/partner";
 export const PARTNER_APPLY = "https://foodfox.yuri.guru/partner/apply";
 
@@ -66,9 +72,12 @@ export function Header() {
   const lastY = useRef(0);
   const menuRef = useRef<HTMLDivElement>(null);
   const swipe = useRef<number | null>(null);
-  // G06: closing plays the opening in reverse for 200мс before the panel unmounts.
+  const closeTimer = useRef(0);
+  // G06: closing plays the opening in reverse — the items leave bottom-up (30 мс step), then the shutter rolls up
+  // in 200 мс — before the panel unmounts. Reduced motion: a 100 мс fade.
   const setMenu = (next: boolean | ((value: boolean) => boolean)) => {
     const value = typeof next === "function" ? next(menu) : next;
+    window.clearTimeout(closeTimer.current);
     if (value) {
       setClosing(false);
       setMenuOpen(true);
@@ -76,15 +85,11 @@ export function Header() {
       return;
     }
     if (!menu) return;
-    if (prefersReducedMotion()) {
-      setMenuOpen(false);
-      return;
-    }
     setClosing(true);
-    window.setTimeout(() => {
+    closeTimer.current = window.setTimeout(() => {
       setClosing(false);
       setMenuOpen(false);
-    }, 200);
+    }, prefersReducedMotion() ? 100 : MENU_CLOSE_MS);
   };
   useDialog(menuRef, () => setMenu(false), menu && !closing);
   const lessons = path.startsWith("/course/lessons");
@@ -96,7 +101,9 @@ export function Header() {
   }, []);
   const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
   const darkHero = path === "/" || path.startsWith("/specialists");
-  const homeMobileStack = path === "/" && mobileNav;
+  // G01 / G05 at 390 (Figma «Мобайл · Главная · 390» 1424:48354, «Мобайл · Специалистам · 390» 1317:6392): on phones and
+  // tablets the header of the dark-hero pages is the light Default bar (#F8F9F6, dark logo), not the transparent one.
+  const homeMobileStack = darkHero && mobileNav;
   const onDark = !scrolled && darkHero && !lessons && !homeMobileStack;
   const items = variant === "b2b" ? B2B : variant === "course" ? COURSE : NAV;
 
@@ -112,7 +119,10 @@ export function Header() {
     // G01: Scrolled after 80 px; hidden after 400 px (80 on phones) while scrolling down, back on any scroll up.
     // Direction is measured from the point where it last turned, not per event: slow trackpad / finger scrolling
     // fires 1–5 px steps, which never passed the old «> 6 px per event» test (the header never hid or came back),
-    // while ±6 px jitter could flip it. A turn has to travel 10 px before the header reacts.
+    // while ±6 px jitter could flip it. Hiding needs 10 px of travel down; coming back needs only 3 px up («любой скролл
+    // вверх»), which a ±1–2 px bounce never reaches. While a window / sheet / the menu locks the page (useDialog sets
+    // html.is-locked) the header ignores scrolling altogether, so opening «Связаться» at the top neither shrinks nor
+    // hides it and it is the same after closing (G10).
     const mq = window.matchMedia("(max-width: 1100px)");
     let turn = window.scrollY;
     let dir = 0;
@@ -122,6 +132,11 @@ export function Header() {
       const y = Math.max(0, window.scrollY);
       const last = lastY.current;
       lastY.current = y;
+      if (document.documentElement.classList.contains("is-locked")) {
+        turn = y;
+        dir = 0;
+        return;
+      }
       // 8 px of hysteresis around 80 px: resting right on the threshold (touch bounce, a wheel tick of a few px)
       // must not flip the background and the logo colour back and forth.
       setScrolled((was) => (was ? y > 72 : y > 80));
@@ -135,7 +150,7 @@ export function Header() {
       if ((down && dir < 0) || (!down && dir > 0)) turn = last;
       dir = down ? 1 : -1;
       if (down && y > (mq.matches ? 80 : 400) && y - turn >= 10) setHidden(true);
-      else if (!down && turn - y >= 10) setHidden(false);
+      else if (!down && turn - y >= 3) setHidden(false);
     };
     const onScroll = () => {
       if (!frame) frame = window.requestAnimationFrame(update);
@@ -234,7 +249,7 @@ export function Header() {
           )
         )}
         <button
-          className={`menu-capsule burger${menu ? " is-x" : ""}`}
+          className={`menu-capsule burger${menu && !closing ? " is-x" : ""}`}
           aria-label="Меню"
           aria-expanded={menu}
           aria-controls="mobile-menu"
@@ -279,14 +294,14 @@ export function Header() {
               key={item.href}
               href={item.href}
               onClick={() => item.href.includes("#") && setMenu(false)}
-              style={{ animationDelay: `${120 + index * 30}ms` }}
+              style={{ animationDelay: `${120 + index * 30}ms`, "--out-d": `${(MENU.length - index) * MENU_STEP}ms` } as React.CSSProperties}
               aria-current={(item.href === "/" ? path === "/" : !item.href.includes("#") && path.startsWith(item.href)) ? "page" : undefined}
             >
               {item.label} <img src="/icons/arrow-right-light.svg" alt="" />
             </Link>
           ))}
           {/* Figma 1298:1430 bottom block: white CTA on the full width, «Для специалистов» + «Кабинет партнёра», phone + Telegram. */}
-          <div className="mobile-menu-foot mm-bottom" style={{ animationDelay: `${120 + (MENU.length - 1) * 30 + 80}ms` }}>
+          <div className="mobile-menu-foot mm-bottom" style={{ animationDelay: `${120 + (MENU.length - 1) * 30 + 80}ms`, "--out-d": "0ms" } as React.CSSProperties}>
             <button className="btn btn-light mm-cta" type="button" onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:book")); }}>Записаться на тест</button>
             <div className="mm-pills">
               <Link className="mm-pill" href="/specialists" aria-current={path.startsWith("/specialists") ? "page" : undefined}>

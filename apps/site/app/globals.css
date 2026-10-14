@@ -66,7 +66,7 @@ main:has(> .dark-hero) { padding-top: 0; }
   padding: 0 48px;
   background: transparent;
   border-bottom: 1px solid transparent;
-  transition: background 200ms var(--ease), box-shadow 200ms var(--ease), border-color 200ms var(--ease), height 200ms var(--ease), color 200ms var(--ease), transform 280ms var(--ease);
+  transition: background 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out, height 200ms ease-out, color 200ms ease-out, transform 200ms ease-out;
 }
 .site-header { box-sizing: border-box; }
 .site-header.is-scrolled {
@@ -85,13 +85,14 @@ html.is-scrolled { --header-now: 72px; }
   background-repeat: no-repeat;
   background-size: 0 1px;
   background-position: 0 100%;
-  transition: background-size 200ms var(--ease);
+  transition: background-size 200ms ease-out;
 }
 .nav a:hover, .nav a[aria-current="page"] { background-size: 100% 1px; }
 .partner-dot {
   width: 44px; height: 44px; border-radius: 999px; border: 1px solid currentColor;
   display: grid; place-items: center;
 }
+.partner-dot { transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out; }
 .partner-dot:hover, .partner-dot:focus-visible { background: #e7f551; color: #0b0c08; }
 .partner-dot img { width: 16px; height: 16px; }
 .skip-link {
@@ -135,7 +136,7 @@ html.is-scrolled { --header-now: 72px; }
   padding: 0 16px;
   border-radius: 4px;
   line-height: 20px;
-  transition: background 150ms var(--ease), transform 150ms var(--ease);
+  transition: background 150ms ease-out, color 150ms ease-out, transform 150ms ease-out;
 }
 .btn:active { transform: scale(0.98); }
 .btn-dark { background: var(--ink); color: var(--paper); }
@@ -204,7 +205,7 @@ html.is-scrolled { --header-now: 72px; }
   white-space: nowrap;
 }
 .chip.is-active { background: var(--dark); color: var(--paper); border-color: var(--dark); }
-.chip { transition: background 150ms var(--ease), color 150ms var(--ease), border-color 150ms var(--ease); }
+.chip { transition: background 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out; }
 .chip:hover:not(.is-active) { background: var(--ink-06); }
 .tag-trigger img, .search img { width: 16px; height: 16px; }
 .tag-trigger img { transition: transform 200ms var(--ease); }
@@ -501,7 +502,7 @@ html.is-scrolled { --header-now: 72px; }
   border-radius: 999px;
   display: grid;
   place-items: center;
-  transition: background 150ms var(--ease), transform 150ms var(--ease);
+  transition: background 150ms ease-out, color 150ms ease-out, transform 150ms ease-out;
 }
 .page-btn img { width: 16px; height: 16px; }
 .page-btn.arrow { border: 1px solid var(--ink-10); }
@@ -911,8 +912,8 @@ body:has(.mobile-menu) .ls-sticky { display: none !important; }
   position: fixed; inset: 0; background: #101400; color: white; z-index: 70;
   display: flex; flex-direction: column; gap: 4px; padding: 88px 20px 40px; overflow: auto;
   scroll-padding-top: 88px;
-  clip-path: circle(0% at calc(100% - 36px) 36px);
-  animation: menu-open 320ms cubic-bezier(.65, 0, .35, 1) forwards;
+  clip-path: inset(0 0 100% 0);
+  animation: menu-open 320ms cubic-bezier(.2, .8, .2, 1) forwards;
 }
 .mobile-menu > * { flex-shrink: 0; }
 .mobile-menu a, .menu-close {
@@ -939,7 +940,7 @@ body:has(.mobile-menu) .ls-sticky { display: none !important; }
   height: 48px;
   box-sizing: border-box;
 }
-@keyframes menu-open { to { clip-path: circle(150% at calc(100% - 36px) 36px); } }
+@keyframes menu-open { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
 .band { padding: 72px 0; }
 @media (min-width: 1101px) {
   [data-s="s06"].band, [data-s="s10"].band, [data-s="s12"].band, [data-s="s14"].band { padding: 120px 0 140px; }
@@ -2361,21 +2362,24 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 /* G05: burger → cross morph 200мс; menu open — lime capsule «Закрыть». */
-.menu-capsule-burger span { transition: transform 200ms var(--ease), opacity 200ms var(--ease), top 200ms var(--ease); }
+.menu-capsule-burger span { transition: transform 200ms ease-out, opacity 200ms ease-out, top 200ms ease-out; }
 .menu-capsule.is-x { width: auto; padding: 0 16px 0 18px; justify-content: flex-start; background: var(--lime); }
 .menu-capsule.is-x .menu-capsule-label { display: inline; }
 .site-header:has(.mobile-menu) .menu-capsule.is-x { color: #0b0c08; }
 
-/* G06: panel opens 320мс cubic-bezier(.2,.8,.2,1), items opacity + translateY 12→0, closes in reverse in 200мс. */
-.mobile-menu { animation: menu-open 320ms cubic-bezier(.2, .8, .2, 1) forwards; }
-.mobile-menu.is-closing { clip-path: circle(150% at calc(100% - 36px) 36px); animation: menu-close 200ms cubic-bezier(.2, .8, .2, 1) forwards; }
-@keyframes menu-close { to { clip-path: circle(0% at calc(100% - 36px) 36px); } }
+/* G06: the panel is a shutter from the top — clip-path inset(0 0 100% 0) → inset(0), 320мс cubic-bezier(.2,.8,.2,1);
+   items opacity + translateY 12→0 from 120мс, step 30мс, the bottom block +80мс. Closing is the reverse: the items leave
+   bottom-up (delay (N−i)×30мс, down 12px, 120мс — --out-d is set per item in Header.tsx), then the shutter rolls up
+   in 200мс (the opening curve reversed). No circle from the burger in any state. */
+.mobile-menu { clip-path: inset(0 0 100% 0); animation: menu-open 320ms cubic-bezier(.2, .8, .2, 1) forwards; }
+.mobile-menu.is-closing { clip-path: inset(0); animation: menu-close 200ms cubic-bezier(.8, 0, .8, .2) 220ms forwards; }
+@keyframes menu-close { from { clip-path: inset(0); } to { clip-path: inset(0 0 100% 0); } }
 .mobile-menu > a, .mobile-menu-foot { animation: menu-item 280ms var(--ease) both; }
 .mobile-menu-foot { display: block; }
 .mobile-menu-foot a { animation: none; }
-.mobile-menu.is-closing > a, .mobile-menu.is-closing .mobile-menu-foot { animation: menu-item-out 160ms ease-in both; animation-delay: 0ms !important; }
+.mobile-menu.is-closing > a, .mobile-menu.is-closing .mobile-menu-foot { opacity: 1; animation: menu-item-out 120ms ease-in both; animation-delay: var(--out-d, 0ms) !important; }
 @keyframes menu-item { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-@keyframes menu-item-out { to { opacity: 0; transform: translateY(-8px); } }
+@keyframes menu-item-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(12px); } }
 .mobile-menu > a { position: relative; }
 .mobile-menu > a[aria-current="page"]::before { content: ""; position: absolute; left: -14px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 99px; background: var(--lime); }
 
@@ -2397,7 +2401,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 .field.is-error input, .field.is-error textarea { animation: none; border-color: #c4462a; background: #fff; }
 .field.is-error input:focus, .field.is-error textarea:focus { box-shadow: inset 0 0 0 1px #c4462a; }
 .is-shake .field.is-error input, .is-shake .field.is-error textarea { animation: field-shake 240ms linear; }
-@keyframes field-shake { 17% { transform: translateX(-4px); } 33% { transform: translateX(4px); } 50% { transform: translateX(-3px); } 67% { transform: translateX(3px); } 83% { transform: translateX(-2px); } }
+/* G14: «shake 2px ×3 за 240мс» — three left-right swings of 2px. */
+@keyframes field-shake { 0%, 100% { transform: none; } 8%, 41%, 75% { transform: translateX(-2px); } 25%, 58%, 92% { transform: translateX(2px); } }
 .lf-err { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 160ms ease-out; }
 .lf-err.is-on { grid-template-rows: 1fr; }
 .lf-err > .err { overflow: hidden; min-height: 0; color: #c4462a; font-size: 13px; line-height: 18px; font-weight: 400; }
@@ -2438,20 +2443,20 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 
 /* G15: segment — the active pill slides (one indicator, 240мс). */
 .seg { position: relative; display: grid; grid-template-columns: repeat(var(--seg-n), minmax(0, 1fr)); width: fit-content; min-width: min(340px, 100%); max-width: 100%; padding: 4px; border-radius: 999px; background: rgba(11, 12, 8, 0.08); }
-.seg-ind { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / var(--seg-n)); border-radius: 999px; background: #fff; box-shadow: 0 1px 4px rgba(11, 12, 8, 0.12); transform: translateX(calc(var(--seg-i) * 100%)); transition: transform 240ms var(--ease); }
-.seg button { position: relative; z-index: 1; height: 36px; padding: 0 14px; border-radius: 999px; color: var(--ink-65); white-space: nowrap; transition: color 150ms var(--ease); }
+.seg-ind { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / var(--seg-n)); border-radius: 999px; background: #fff; box-shadow: 0 1px 4px rgba(11, 12, 8, 0.12); transform: translateX(calc(var(--seg-i) * 100%)); transition: transform 240ms ease-out; }
+.seg button { position: relative; z-index: 1; height: 36px; padding: 0 14px; border-radius: 999px; color: var(--ink-65); white-space: nowrap; transition: color 150ms ease-out; }
 .seg button:hover, .seg button.is-active { color: var(--ink); }
 
 /* G15: checkbox — fill scales 0.6→1, the tick draws in 160мс. */
 .lf-consent { position: relative; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 18px; cursor: pointer; }
 .lf-consent input { position: absolute; z-index: 1; left: 0; top: 0; opacity: 0; width: 18px; height: 18px; margin: 0; cursor: pointer; }
 .lf-box { position: relative; flex: 0 0 18px; width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--ink-30); }
-.lf-box::before { content: ""; position: absolute; inset: -1.5px; border-radius: 4px; background: var(--ink); transform: scale(0.6); opacity: 0; transition: transform 160ms var(--ease), opacity 120ms var(--ease); }
-.lf-box::after { content: ""; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px; border: solid var(--lime); border-width: 0 2px 2px 0; transform: rotate(45deg) scale(0); transform-origin: 50% 70%; transition: transform 160ms var(--ease) 60ms; }
+.lf-box::before { content: ""; position: absolute; inset: -1.5px; border-radius: 4px; background: var(--ink); transform: scale(0.6); opacity: 0; transition: transform 160ms ease-out, opacity 120ms ease-out; }
+.lf-box::after { content: ""; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px; border: solid var(--lime); border-width: 0 2px 2px 0; transform: rotate(45deg) scale(0); transform-origin: 50% 70%; transition: transform 160ms ease-out 60ms; }
 .lf-consent input:checked + .lf-box::before { transform: scale(1); opacity: 1; }
 .lf-consent input:checked + .lf-box::after { transform: rotate(45deg) scale(1); }
 .lf-consent input:focus-visible + .lf-box { outline: 3px solid var(--lime); outline-offset: 2px; }
-.check.on { animation: check-in 160ms var(--ease); }
+.check.on { animation: check-in 160ms ease-out; }
 @keyframes check-in { from { transform: scale(0.6); } to { transform: none; } }
 
 /* G12: success — lime circle grows with a slight overshoot, the tick draws (300мс), the text rises 8px. */
@@ -2464,11 +2469,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 @keyframes pop-in { from { transform: scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes rise-8 { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-/* G10 / G08: scrim 0→50% in 200мс, the window opacity + scale 0.98→1 + translateY 8→0 in 240мс ease-out. */
+/* K08 (customer decision for all windows): scrim 0→50% in 200мс; the window opacity + scale .98→1 in 200мс ease-out,
+   no translateY. Exit is the reverse in 200мс: useDialog leaves an inert copy with .is-leaving (end of adaptive/shared.css). */
 .modal-back { animation: scrim-in 200ms linear both; z-index: 85; }
 @keyframes scrim-in { from { background-color: rgba(11, 12, 8, 0); } to { background-color: rgba(11, 12, 8, 0.5); } }
-.modal { position: relative; animation: modal-in 240ms ease-out both; max-height: calc(100vh - 40px); overflow: auto; box-sizing: border-box; }
-@keyframes modal-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+.modal { position: relative; animation: modal-in 200ms ease-out both; max-height: calc(100vh - 40px); overflow: auto; box-sizing: border-box; }
+@keyframes modal-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: none; } }
 .modal .lead-x { z-index: 2; }
 .sheet-grab { display: none; }
 @media (min-width: 1101px) {
@@ -2490,7 +2496,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 
 /* G17: toasts — bottom centre, translateY 16→0 + opacity 240мс, 3 s (pause on hover), leave in 200мс, max two. */
 .fox-toasts { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 95; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; width: max-content; max-width: calc(100% - 32px); }
-.fox-toasts .fox-toast { position: static; left: auto; top: auto; bottom: auto; transform: none; pointer-events: auto; display: flex; align-items: center; gap: 10px; max-width: 100%; white-space: normal; animation: toast-up 240ms var(--ease) both; }
+.fox-toasts .fox-toast { position: static; left: auto; top: auto; bottom: auto; transform: none; pointer-events: auto; display: flex; align-items: center; gap: 10px; max-width: 100%; white-space: normal; animation: toast-up 240ms ease-out both; }
 .fox-toasts .fox-toast.is-out { animation: toast-down 200ms ease-in forwards; }
 /* Figma Toast / Status (1303:2880): 48px pill #0b0c08, icon circle 28 at 10px, message 16/20, action 14/18 lime underlined. */
 .fox-toasts .fox-toast { box-sizing: border-box; min-height: 48px; padding: 10px 20px 10px 10px; gap: 12px; background: #0b0c08; color: #f8f9f6; border-radius: 999px; font-size: 16px; line-height: 20px; box-shadow: 0 12px 32px rgba(11, 12, 8, 0.18); }
@@ -2523,15 +2529,15 @@ body:has(.mobile-menu) .m04 { display: none; }
 .switch-row > span { display: flex; flex-direction: column; gap: 2px; }
 .switch-row strong { font-weight: 500; }
 .switch-row small { color: var(--ink-65); font-size: 14px; line-height: 18px; }
-.switch::after { transition: transform 180ms var(--ease), background 180ms var(--ease); }
-.switch { transition: background 180ms var(--ease); }
+.switch::after { transition: transform 200ms ease-out, background 200ms ease-out; }
+.switch { transition: background 200ms ease-out; }
 .switch.is-on { background: #101400; }
 /* Figma «Toggle · Off / On / Disabled» (1302:2819, cookie 1299:2260): off #9a9c92, on ink + lime knob, locked-on #cbccc1. */
 .switch:not(.is-on) { background: #9a9c92; }
 .switch.is-on:disabled { background: #cbccc1; }
 .switch.is-on:disabled::after { background: #fff; }
 /* Figma «Segment · Active / Hover / Default» (1302:2828): hover is a pale pill under the label. */
-.seg button { transition: color 150ms var(--ease), background-color 150ms var(--ease); }
+.seg button { transition: color 150ms ease-out, background-color 150ms ease-out; }
 .seg button:hover:not(.is-active):not(:disabled) { background: rgba(255, 255, 255, 0.55); }
 /* Figma «Text · Hover» (1301:2703): the label greys out, no underline. */
 .btn-text:hover { text-decoration-color: transparent; color: rgba(11, 12, 8, 0.7); }
@@ -2542,12 +2548,12 @@ body:has(.mobile-menu) .m04 { display: none; }
   .cookie-sheet .cookie-necessary { display: inline-flex; }
 }
 
-/* G16 / S15: home FAQ — «+» turns into «−», the circle turns lime; height 300мс ease-out, answer fades in after 80мс. */
-.acc-plus { position: relative; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 99px; border: 1px solid currentColor; transition: background 200ms var(--ease), border-color 200ms var(--ease); }
-.acc-plus::before, .acc-plus::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 1.5px; margin: -0.75px 0 0 -6px; background: currentColor; border-radius: 2px; transition: transform 300ms ease-out; }
+/* G16 / M48 / S15: FAQ — the «+» turns 45° into a cross «×» and its circle turns lime, 300мс ease-out (FAQ / Item click
+   300 EASE_OUT); height 300мс ease-out, the answer fades in after 80мс. */
+.acc-plus { position: relative; box-sizing: border-box; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 99px; border: 1px solid currentColor; transition: transform 300ms ease-out, background-color 300ms ease-out, border-color 300ms ease-out, color 300ms ease-out; }
+.acc-plus::before, .acc-plus::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 1.5px; margin: -0.75px 0 0 -6px; background: currentColor; border-radius: 2px; }
 .acc-plus::after { transform: rotate(90deg); }
-.acc.is-open .acc-plus { background: var(--lime); border-color: var(--lime); color: #0b0c08; }
-.acc.is-open .acc-plus::after { transform: rotate(0deg); }
+.acc.is-open .acc-plus { transform: rotate(45deg); background-color: var(--lime); border-color: var(--lime); color: #0b0c08; }
 [data-s="s15"] .acc-body { transition: grid-template-rows 300ms ease-out; }
 .acc-body > div { opacity: 0; transition: opacity 200ms ease-out; }
 .acc.is-open .acc-body > div { opacity: 1; transition-delay: 80ms; }
@@ -2641,7 +2647,7 @@ article.is-open .f-answer > div { opacity: 1; transition-delay: 80ms; }
   .lf-done-mark, .lf-done h3, .lf-done p, .lf-done-actions, .lf-toast, .fox-toasts .fox-toast, .cookie.is-leaving, .l05-swap, .check.on,
   .is-shake .field.is-error input, .is-shake .field.is-error textarea, .book-dots i, .book-go .book-progress i { animation: none !important; }
   .lf-done-mark svg, .lf-ok { animation: none; stroke-dashoffset: 0; }
-  .seg-ind, .lf-err, .lf-slide, .m04, .acc-plus::before, .acc-plus::after, .acc-body > div, .f-answer > div { transition: none; }
+  .seg-ind, .lf-err, .lf-slide, .m04, .acc-body > div, .f-answer > div { transition: none; }
 }
 
 /* ===========================================================================
@@ -3258,9 +3264,11 @@ body [data-s="s14"] .bh-meta, body [data-s="s14"] .bh-author { display: none; }
 }
 
 /* ==== S15 · FAQ + CTA (1385:1038 | 1439:48909 + F03 1439:48948) ==== */
-body [data-s="s15"] .acc-plus { flex: 0 0 24px; width: 24px; height: 24px; border: 0; border-radius: 0; background: url("/figma/icons/chevron-down-light.svg") center / 24px no-repeat; transition: transform 240ms var(--ease); }
-body [data-s="s15"] .acc-plus::before, body [data-s="s15"] .acc-plus::after { display: none; }
-body [data-s="s15"] .acc.is-open .acc-plus { background-color: transparent; transform: rotate(180deg); }
+/* G16 / M48 (customer item): the S15 chevron is replaced by the FAQ «+» in a circle at the frame's icon size (24 px on the
+   dark desktop band, 20 px on the white phone block); open — turned 45° into «×» on a lime circle, 300мс ease-out. */
+body [data-s="s15"] .acc-plus { flex: 0 0 24px; width: 24px; height: 24px; border: 1px solid rgba(248, 249, 246, 0.4); border-radius: 99px; background: transparent; color: #f8f9f6; }
+body [data-s="s15"] .acc-plus::before, body [data-s="s15"] .acc-plus::after { display: block; width: 10px; margin-left: -5px; }
+body [data-s="s15"] .acc.is-open .acc-plus { transform: rotate(45deg); background-color: #e7f551; border-color: #e7f551; color: #0b0c08; }
 body [data-s="s15"] .s15-help { display: none; }
 @media (min-width: 768px) {
   body [data-s="s15"].faq-band { background: #101400 image-set(url("/figma/home/s15-bg.webp") 1x, url("/figma/home/s15-bg@2x.webp") 2x) center / cover no-repeat; color: #f8f9f6; padding: 0; }
@@ -3291,7 +3299,8 @@ body [data-s="s15"] .s15-help { display: none; }
   body [data-s="s15"] .acc { background: transparent; border: 0; border-bottom: 1px solid rgba(11, 12, 8, 0.1); border-radius: 0; padding: 0 0 24px; color: #0b0c08; }
   body [data-s="s15"] .acc button { padding: 8px 0 0; gap: 24px; align-items: center; }
   body [data-s="s15"] .acc strong { color: #0b0c08; font-weight: 400; font-size: 20px; line-height: 24px; }
-  body [data-s="s15"] .acc-plus { flex-basis: 20px; width: 20px; height: 20px; background-image: url("/figma/icons/chevron-down-dark.svg"); background-size: 20px; filter: none; }
+  body [data-s="s15"] .acc-plus { flex-basis: 20px; width: 20px; height: 20px; border-color: rgba(11, 12, 8, 0.3); color: #0b0c08; filter: none; }
+  body [data-s="s15"] .acc-plus::before, body [data-s="s15"] .acc-plus::after { width: 8px; margin-left: -4px; }
   body [data-s="s15"] .acc p { margin: 16px 0 0; color: #5c5e57; font-size: 16px; line-height: 20px; }
   body [data-s="s15"] .s15-all { display: flex; justify-content: center; align-items: center; height: 48px; margin-top: 16px; border-radius: 4px; background: #ffffff; color: #0b0c08; font-size: 16px; line-height: 20px; }
   body [data-s="s15"] .s15-all .m-only { display: inline-flex; align-items: center; gap: 8px; }
@@ -4437,7 +4446,7 @@ body .profile > div:nth-child(2) > :nth-child(n+5) { animation-delay: 240ms; }
 /* Bottom sheets (M08, M20, M26, M29): slide-up, scrim up to 45% in proportion to the height, swipe down to close. */
 .bs-back { position: fixed; inset: 0; z-index: 92; display: flex; align-items: flex-end; justify-content: center; }
 .bs-back::before { content: ""; position: absolute; inset: 0; background: #0b0c08; opacity: var(--bs-scrim, 0.45); transition: opacity 200ms linear; animation: bs-fade var(--bs-ms, 320ms) ease-out backwards; }
-.bs-back.is-closing::before { opacity: 0; transition-duration: 240ms; }
+.bs-back.is-closing::before { opacity: 0; transition-duration: 200ms; }
 .bs { position: relative; width: 100%; max-width: 560px; max-height: 92vh; display: flex; flex-direction: column; background: #f8f9f6; color: #0b0c08; border-radius: 24px 24px 0 0; padding: 28px 20px calc(20px + env(safe-area-inset-bottom)); box-shadow: 0 24px 64px -8px rgba(11, 12, 8, 0.16), 0 4px 12px rgba(11, 12, 8, 0.08); will-change: transform; }
 .bs.is-opening { animation: bs-in var(--bs-ms, 320ms) cubic-bezier(.2, .8, .2, 1) both; }
 .bs-grab { position: absolute; left: 0; right: 0; top: 0; height: 28px; touch-action: none; cursor: grab; z-index: 1; }
