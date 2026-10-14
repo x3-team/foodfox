@@ -83,6 +83,12 @@ test("dark hero sits under the header", async ({ page }) => {
           h1Rect.top >= photoRect.bottom - 2
         );
       }
+      // Phone /specialists (Figma «Мобайл · Специалистам · 390» 1317:6392): light bar, the hero photo starts under it.
+      if (route === "/specialists" && phone) {
+        const photo = document.querySelector("[data-s='p01'] .sp-hero-m");
+        if (!photo) return false;
+        return header.classList.contains("is-home-top") && photo.getBoundingClientRect().top >= h.height - 2;
+      }
       // Tablet home keeps the light bar header above the full-bleed photo.
       if (route === "/" && mobile) return header.classList.contains("is-home-top") && e.top <= 2 && e.bottom > h.bottom;
       return e.top <= 2 && e.bottom > h.bottom && header.classList.contains("on-dark");
