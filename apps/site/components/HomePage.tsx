@@ -733,9 +733,16 @@ export function HomePage() {
         row.removeEventListener("scroll", edges);
       };
     }
-    let half = track.scrollWidth / 2;
+    // the wrap period is the distance between a card and its twin in the second copy: scrollWidth / 2 misses the
+    // trailing gap, so the strip jumped 8–9 px at every seam and the prev arrow landed between cards
+    const period = () => {
+      const starts = cardStarts();
+      const n = starts.length / 2;
+      return n >= 1 && Number.isInteger(n) ? starts[n] - starts[0] : track.scrollWidth / 2;
+    };
+    let half = period();
     const ro = new ResizeObserver(() => {
-      half = track.scrollWidth / 2;
+      half = period();
     });
     ro.observe(track);
     let raf = 0;
