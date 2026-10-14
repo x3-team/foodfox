@@ -201,12 +201,16 @@ main.blog-feed .skeleton .sk-author i { width: 32px; height: 32px; border-radius
 main.blog-feed .skeleton .sk-author i + i { width: 140px; height: 12px; }
 
 /* F5: keyboard focus is the 3px lime ring only — arrow and title underline are hover cues (right card in the frame). */
-main.blog-page .card:focus-visible:not(:hover) .hover-arrow { opacity: 0; transform: translateY(8px); }
+main.blog-page .card:focus-visible:not(:hover) .hover-arrow { opacity: 0; }
 main.blog-page .card:focus-visible:not(:hover) h3 { background-size: 0 1px; }
 
 /* A1 · ToC / Item: hover = grey 2px marker + primary text; the lime marker is measured per item (1–2 lines). */
 main.blog-article .toc a { padding: 6px 0 6px 14px; }
-main.blog-article .toc a::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: rgba(11, 12, 8, 0.1); opacity: 0; transition: opacity 150ms var(--ease); }
+main.blog-article .toc a::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: rgba(11, 12, 8, 0.1); opacity: 0; transition: opacity 150ms ease-out; }
+/* ToC / Item hover = Smart Animate 150 мс EASE_OUT (marker 0 → 10% ink, label 65% → 100%). The active lime marker
+   travels 250 мс ease-out (B3). */
+main.blog-article .toc a { transition: color 150ms ease-out; }
+main.blog-article .toc-marker { transition: transform 250ms ease-out, height 250ms ease-out; }
 main.blog-article .toc a:hover { color: var(--ink); }
 main.blog-article .toc a:hover:not(.is-active)::before { opacity: 1; }
 main.blog-article .toc-marker { z-index: 1; }
@@ -218,7 +222,7 @@ main.blog-article .article-cta { padding: 40px; border-radius: 24px; }
 main.blog-article .article-cta p { margin-top: 8px; }
 main.blog-article .article-cta .actions { gap: 24px; margin-top: 24px; align-items: center; }
 main.blog-article .article-cta .cta-arrow { color: var(--paper); display: inline-flex; align-items: center; gap: 8px; }
-main.blog-article .article-cta .cta-arrow img { width: 16px; height: 16px; transition: transform 200ms var(--ease); }
+main.blog-article .article-cta .cta-arrow img { width: 16px; height: 16px; transition: transform 200ms ease-out; }
 main.blog-article .article-cta .cta-arrow:hover { text-decoration: underline; text-underline-offset: 3px; }
 main.blog-article .article-cta .cta-arrow:hover img { transform: translateX(4px); }
 /* Aside / Read next (1070:299): 40 below the CTA card, rows 16/0 with a divider and an arrow. */
@@ -226,7 +230,7 @@ main.blog-article .next-reads { margin-top: 40px; gap: 0; }
 main.blog-article .next-reads h2 { margin: 0; }
 main.blog-article .next-reads a { display: flex; align-items: flex-start; gap: 12px; padding: 16px 0; border-bottom: 1px solid rgba(11, 12, 8, 0.1); font-size: 16px; line-height: 20px; color: var(--ink); }
 main.blog-article .next-reads a span { flex: 1 1 auto; min-width: 0; }
-main.blog-article .next-reads a img { width: 16px; height: 16px; flex: none; margin-top: 2px; transition: transform 200ms var(--ease); }
+main.blog-article .next-reads a img { width: 16px; height: 16px; flex: none; margin-top: 2px; transition: transform 200ms ease-out; }
 main.blog-article .next-reads a:hover { text-decoration: none; }
 main.blog-article .next-reads a:hover span { text-decoration: underline; text-underline-offset: 3px; }
 main.blog-article .next-reads a:hover img { transform: translateX(4px); }
@@ -237,9 +241,15 @@ main.blog-article .next-reads a:hover img { transform: translateX(4px); }
 /* U1 · authors filter: hidden cards leave with opacity + scale .96 before the grid re-flows (FLIP in AuthorsBrowser). */
 main.blog-authors .author-card { transition: opacity 200ms var(--ease), transform 200ms var(--ease); }
 main.blog-authors .author-card.is-leaving { opacity: 0; transform: scale(0.96); pointer-events: none; }
-/* U1 hover (middle card): photo lifts with a shadow and shows the round arrow, as on article cards. */
-main.blog-authors .author-card .shot { position: relative; transition: box-shadow 250ms var(--ease); }
-main.blog-authors .author-card:hover .shot { box-shadow: 0 12px 28px rgba(11, 12, 8, 0.1); }
+/* Card / Author hover = Figma Smart Animate 400 мс EASE_OUT: photo ×1.10, Shadow S → M, the round arrow fades in,
+   the name is underlined. */
+main.blog-authors .author-card .shot { position: relative; box-shadow: 0 2px 8px rgba(11, 12, 8, 0.06); transition: box-shadow 400ms ease-out; }
+main.blog-authors .author-card:hover .shot { box-shadow: 0 8px 24px -4px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
+main.blog-authors .author-card .shot img { transition: transform 400ms ease-out; }
+main.blog-authors .author-card h2 { transition: background-size 400ms ease-out; }
+/* C2 = A3: enter 400 мс, leave 350 мс. */
+main.blog-authors .author-card .shot, main.blog-authors .author-card .shot img, main.blog-authors .author-card h2, main.blog-authors .author-card .hover-arrow { transition-duration: 350ms; }
+main.blog-authors .author-card:hover .shot, main.blog-authors .author-card:hover .shot img, main.blog-authors .author-card:hover h2, main.blog-authors .author-card:hover .hover-arrow { transition-duration: 400ms; }
 main.blog-authors .author-card .shot .hover-arrow img,
 main.blog-authors .author-card:hover .shot .hover-arrow img { width: 16px; height: 16px; border-radius: 0; transform: none; }
 main.blog-authors .author-card:hover .hover-arrow { opacity: 1; transform: none; }
@@ -283,8 +293,13 @@ main.blog-page [data-s]:not(.dark-hero).wrap > .rise-d3 { animation-delay: 240ms
 main.blog-page [data-s]:not(.dark-hero).wrap > .rise-d4 { animation-delay: 320ms; }
 @media (prefers-reduced-motion: reduce) {
   main.blog-feed [data-s]:not(.dark-hero).wrap > .rise,
-  main.blog-authors [data-s]:not(.dark-hero).wrap > .rise { animation: fade 150ms linear backwards; }
+  main.blog-authors [data-s]:not(.dark-hero).wrap > .rise { animation: fade 100ms linear backwards; }
+  /* R01 profile entrance: 100 мс fade (adaptive rule 08), not 150. */
+  main.blog-author .profile-photo img, main.blog-author .profile > div:nth-child(2) > * { animation-duration: 100ms; }
 }
+
+/* Chip / Filter and Pagination / Item hover = Smart Animate 150 мс EASE_OUT. */
+main.blog-page .chip, main.blog-page .page-btn { transition-timing-function: ease-out; }
 
 /* A2: leaving cards — opacity→0 + scale .98, 200 мс (only the ones that leave when just the tags change). */
 /* B5 quote: the lime line grows from the top (scaleY 0→1, 500 мс) when the quote enters. */
@@ -313,7 +328,7 @@ main.blog-article .quote.rv.is-shown::before { animation: quote-line 500ms var(-
 .art-toc-sheet nav a.is-active::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 2px; background: #e7f551; }
 
 @media (prefers-reduced-motion: reduce) {
-  main.blog-article .quote.rv::before { transform: none; animation: none !important; }
+  main.blog-article .quote.rv::before, main.blog-article .quote.rv:not(.is-shown)::before { transform: none; animation: none !important; }
   .rv.rv-24.is-shown { animation-name: fade; }
   main.blog-article .aside-card, main.blog-article .aside-card.is-off { transition: none; }
   .toast.art-toast.is-out { animation: none; opacity: 0; }
@@ -321,3 +336,48 @@ main.blog-article .quote.rv.is-shown::before { animation: quote-line 500ms var(-
 
 main.blog-page .blog-grid > .is-out-wrap > .card.rv,
 main.blog-page .grid.is-leaving > .card.rv { animation: leave 200ms var(--ease) both; pointer-events: none; }
+
+/* A6: the tag menu and the suggestions open in 180 мс ease-out (y −8 → 0). */
+main.blog-feed .popover { animation-timing-function: ease-out; }
+main.blog-feed .blog-end { display: none; }
+
+@media (max-width: 767px) {
+  /* M05: on a phone the old cards just fade out in 120 мс (BlogFeed waits the same 120 мс before the swap). */
+  main.blog-page .blog-grid > .is-out-wrap > .card.rv,
+  main.blog-page .grid.is-leaving > .card.rv { animation: blog-out 120ms ease-out both; }
+  /* M05: «N материалов» — the new number slides up 200 мс. */
+  main.blog-feed .meta-count, main.blog-authors .meta-count { display: inline-block; }
+  main.blog-feed .meta-count.is-swap, main.blog-authors .meta-count.is-swap { animation: blog-count 200ms ease-out backwards; }
+  /* M06: suggestions — fade + translateY 4 px, 160 мс. */
+  main.blog-feed .search-wrap .suggest-pop { animation: blog-suggest 160ms ease-out; }
+  /* M07: everything is shown — the closing line replaces the button. */
+  main.blog-feed .blog-end { display: block; margin: 16px 0 0; text-align: center; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+  main.blog-feed .blog-end a { color: #0b0c08; text-decoration: underline; text-underline-offset: 3px; }
+}
+@keyframes blog-out { to { opacity: 0; } }
+@keyframes blog-count { from { opacity: 0; transform: translateY(8px); } }
+@keyframes blog-suggest { from { opacity: 0; transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) {
+  main.blog-feed .meta-count.is-swap, main.blog-authors .meta-count.is-swap { animation: fade 100ms linear backwards; }
+  main.blog-feed .search-wrap .suggest-pop { animation: fade 100ms linear; }
+}
+
+/* M02: the article table scrolls inside its own box (the next column peeks out, the page does not get pulled sideways);
+   «← свайпните →» under it fades out in 200 мс after the first swipe (ArticleView). */
+main.blog-article .table-block { margin: 8px 0 24px; min-width: 0; max-width: 100%; }
+main.blog-article .table-block .table-wrap { margin: 0; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+main.blog-article .table-swipe { margin: 8px 0 0; font-size: 12px; line-height: 16px; color: rgba(11, 12, 8, 0.5); transition: opacity 200ms ease-out; }
+main.blog-article .table-swipe.is-gone { opacity: 0; }
+
+/* M03 / M49: a pressed card shrinks to .98 in 120 мс (usePress adds .is-press on touch). */
+@media (max-width: 767px) {
+  main.blog-page .card, main.blog-page .author-card { transition: transform 120ms ease-out; -webkit-tap-highlight-color: transparent; }
+  main.blog-page .card.is-press, main.blog-page .author-card.is-press { transform: scale(0.98); }
+  /* M49: the role chips stay under the header while the authors grid scrolls (the head is lifted by --fr-off, so only
+     the chip row shows), with Shadow S. */
+  main.blog-authors .authors-head { position: sticky; top: calc(var(--header-now, 64px) - var(--fr-off, 0px)); z-index: 6; background: #f8f9f6; transition: top 200ms ease-out; }
+  body:has(.site-header.is-hidden) main.blog-authors .authors-head { top: calc(0px - var(--fr-off, 0px)); }
+}
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  main.blog-page .card.is-press, main.blog-page .author-card.is-press { transform: none; }
+}

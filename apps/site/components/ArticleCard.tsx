@@ -9,12 +9,14 @@ import { authorBySlug, categoryLabel, type Article } from "@/lib/content";
  * staggered by `stagger` ms, left to right / top to bottom. The top root margin is huge on purpose: anything
  * already scrolled past (fast scroll, anchor jump, reload in the middle of the page) counts as entered and is shown
  * at once, so nothing is ever left invisible above the viewport. `key` re-scans the container (new cards after a
- * filter), `fast` = the 400 мс / stagger 60 мс variant of A2/C3.
+ * filter), `fast` = the 400 мс variant of A2/C3.
+ * Stagger (customer decision): 40 мс on desktop and tablet (G17), 60 мс on a phone ≤767 (M05 / M07); `stagger`
+ * overrides it.
  */
 export function useReveal(
   ref: RefObject<HTMLElement | null>,
   key: unknown,
-  { line = 0.85, stagger = 80, fast = false, cascade = false }: { line?: number; stagger?: number; fast?: boolean; cascade?: boolean } = {},
+  { line = 0.85, stagger, fast = false, cascade = false }: { line?: number; stagger?: number; fast?: boolean; cascade?: boolean } = {},
 ) {
   useEffect(() => {
     const root = ref.current;
@@ -28,7 +30,7 @@ export function useReveal(
       nodes.forEach((node) => node.classList.add("is-shown"));
       return;
     }
-    const step = fast ? 60 : stagger;
+    const step = stagger ?? (window.matchMedia("(max-width: 767px)").matches ? 60 : 40);
     const io = new IntersectionObserver(
       (entries) => {
         const hits = entries
@@ -61,6 +63,66 @@ export function useReveal(
     return () => io.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
+}
+
+/**
+ * M03 / M49: on touch screens a pressed card shrinks to .98 (120 мс, CSS `.is-press`) — the tactile answer instead of
+ * hover. A class, not :active: iOS Safari does not keep :active on links without extra handlers. The press is
+ * dropped as soon as the finger moves more than 10 px or the browser takes the gesture over (pointercancel).
+ */
+export function usePress(ref: RefObject<HTMLElement | null>, selector: string) {
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    let on: HTMLElement | null = null;
+    let x = 0;
+    let y = 0;
+    const release = () => {
+      on?.classList.remove("is-press");
+      on = null;
+    };
+    const down = (event: PointerEvent) => {
+      if (event.pointerType !== "touch") return;
+      const el = (event.target as HTMLElement).closest<HTMLElement>(selector);
+      if (!el || !root.contains(el)) return;
+      on = el;
+      x = event.clientX;
+      y = event.clientY;
+      el.classList.add("is-press");
+    };
+    const move = (event: PointerEvent) => {
+      if (on && Math.hypot(event.clientX - x, event.clientY - y) > 10) release();
+    };
+    root.addEventListener("pointerdown", down, { passive: true });
+    window.addEventListener("pointermove", move, { passive: true });
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    return () => {
+      root.removeEventListener("pointerdown", down);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
+    };
+  }, [ref, selector]);
+}
+
+/** A page scroll of a fixed length (M01 / M22: 400 мс, ease-in-out), independent of the browser's own smooth-scroll
+ * speed; reduced motion jumps. */
+export function scrollPageTo(top: number, ms = 400) {
+  const to = Math.max(0, Math.min(top, document.documentElement.scrollHeight - window.innerHeight));
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    window.scrollTo({ top: to, behavior: "instant" as ScrollBehavior });
+    return;
+  }
+  const from = window.scrollY;
+  const t0 = performance.now();
+  const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+  const step = (now: number) => {
+    const t = Math.min(1, (now - t0) / ms);
+    window.scrollTo({ top: from + (to - from) * ease(t), behavior: "instant" as ScrollBehavior });
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 }
 
 /** Without JavaScript nothing would ever add `is-shown` — keep the `.rv` content visible then. */

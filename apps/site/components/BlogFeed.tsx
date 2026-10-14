@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ArticleCard, RevealNoScript, SkeletonGrid, useReveal } from "@/components/ArticleCard";
+import { ArticleCard, RevealNoScript, SkeletonGrid, scrollPageTo, usePress, useReveal } from "@/components/ArticleCard";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import {
@@ -92,6 +92,17 @@ export function BlogFeed() {
   const searchRef = useRef<HTMLDivElement>(null);
   const tagRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLElement>(null);
+  // Phone (≤767): M05 / M06 / M07 differ from the desktop notes (A2 / A6) — suggestions from 2 characters, cards
+  // leave in 120 мс.
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => setPhone(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  const minSuggest = phone ? 2 : 3;
 
   useEffect(() => setDraftQuery(query), [query]);
   useEffect(() => setDraftTags(tags), [tags.join("|")]);
@@ -156,6 +167,7 @@ export function BlogFeed() {
   // After a filter or a page change: 400 мс, stagger 60 мс (A2).
   // M07 «Показать ещё» (phone): the next cards come in a cascade, step 60 мс.
   useReveal(gridRef, `${listKey}|${skeleton}|${expanded}`, { fast: fast || expanded, cascade: expanded });
+  usePress(gridRef, ".card");
 
   useLayoutEffect(() => {
     const grid = gridRef.current;
@@ -176,7 +188,7 @@ export function BlogFeed() {
       if (dx || dy) card.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: 400, easing: FLIP_EASE });
     });
   }, [listKey]);
-  const suggestions = searchTopics(suggestQuery);
+  const suggestions = searchTopics(suggestQuery, minSuggest);
   const featured = articles.find((article) => article.featured);
   const featuredAuthor = featured ? authorBySlug(featured.author) : undefined;
 
@@ -194,7 +206,11 @@ export function BlogFeed() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // S05: the page buttons first bring the top of the grid into view (smooth, ~400 мс), the crossfade runs meanwhile,
     // then focus goes to the first new card (without another scroll jump).
-    if (scroll) gridRef.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    // The header comes back while the page scrolls up, so the grid stops under it (not behind it).
+    if (scroll && gridRef.current) {
+      const header = document.querySelector(".site-header")?.getBoundingClientRect().height ?? 72;
+      scrollPageTo(gridRef.current.getBoundingClientRect().top + window.scrollY - header - 16, 400);
+    }
     const go = () => {
       router.push(href, { scroll: false });
       if (scroll) {
@@ -230,12 +246,14 @@ export function BlogFeed() {
     }
     setFast(true);
     const started = performance.now();
+    // A2: the old cards leave in 200 мс (opacity + scale .98); M05 (phone): fade-out 120 мс.
+    const leaveMs = window.matchMedia("(max-width: 767px)").matches ? 120 : 200;
     window.setTimeout(() => {
       const slow = performance.now() - started > 300;
       if (slow) setSkeleton(true);
       go();
       if (slow) window.setTimeout(() => setSkeleton(false), 360);
-    }, 200);
+    }, leaveMs);
   }
 
   const pendingCount = useMemo(() => {
@@ -258,6 +276,12 @@ export function BlogFeed() {
   })();
 
   const filtersOn = category !== "all" || tags.length > 0 || Boolean(query.trim());
+  // M05: the counter's new number slides in — only on a change, never on the first paint.
+  const prevCount = useRef<number | null>(null);
+  const countSwap = prevCount.current !== null && prevCount.current !== filtered.length;
+  useEffect(() => {
+    prevCount.current = filtered.length;
+  }, [filtered.length]);
 
   return (
     <>
@@ -384,7 +408,21 @@ export function BlogFeed() {
                       setTagOpen(false);
                       setActiveSuggest(0);
                     }}
-                    onFocus={() => { setSuggestOpen(true); setTagOpen(false); }}
+                    onFocus={(event) => {
+                      setSuggestOpen(true);
+                      setTagOpen(false);
+                      // M06: on a phone the page turns so the field sits right under the header (room for the
+                      // suggestions above the keyboard).
+                      if (window.matchMedia("(max-width: 767px)").matches) {
+                        const field = event.currentTarget.closest(".search") ?? event.currentTarget;
+                        const header = document.querySelector(".site-header")?.getBoundingClientRect().bottom ?? 64;
+                        const top = field.getBoundingClientRect().top - Math.max(0, header) - 12;
+                        if (Math.abs(top) > 4) {
+                          const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                          window.scrollTo({ top: window.scrollY + top, behavior: reduce ? "auto" : "smooth" });
+                        }
+                      }
+                    }}
                     onKeyDown={(event) => {
                       const options = suggestions.length + 1;
                       if (event.key === "ArrowDown") {
@@ -408,7 +446,7 @@ export function BlogFeed() {
                     }}
                   />
                 </label>
-                {suggestOpen && suggestQuery.trim().length >= 3 && (
+                {suggestOpen && suggestQuery.trim().length >= minSuggest && (
                   <div className="popover suggest-pop" role="listbox">
                     {suggestions.map((item, index) => (
                       <button
@@ -444,8 +482,12 @@ export function BlogFeed() {
             </div>
           </div>
           <p className="meta-line rise rise-d4">
-            {/* Mobile frame shows only «N материалов»; the update date stays on desktop. */}
-            <span>{countLabel.split(" · обновлено")[0]}{countLabel.includes(" · обновлено") && <span className="d-only"> · обновлено{countLabel.split(" · обновлено")[1]}</span>}</span>
+            {/* Mobile frame shows only «N материалов»; the update date stays on desktop. Keyed by the count, so a new
+                number slides up (M05, phone) instead of just swapping. */}
+            <span>
+              <span key={filtered.length} className={`meta-count${countSwap ? " is-swap" : ""}`}>{countLabel.split(" · обновлено")[0]}</span>
+              {countLabel.includes(" · обновлено") && <span className="d-only"> · обновлено{countLabel.split(" · обновлено")[1]}</span>}
+            </span>
             {filtersOn && (
               <button
                 onClick={() => {
@@ -551,6 +593,12 @@ export function BlogFeed() {
           )}
           {pageItems.length > 0 && (
             <p className="blog-shown">Показано {expanded || pageItems.length <= 4 ? pageItems.length : Math.min(4, pageItems.length)} из {gridArticles.length}</p>
+          )}
+          {/* M07: when everything is on screen the button gives way to the closing line (phone only). */}
+          {pageItems.length > 0 && (expanded || pageItems.length <= 4) && safePage === totalPages && (
+            <p className="blog-end">
+              Вы дочитали всё — <a href="https://t.me/foxfoodxplorer" target="_blank" rel="noreferrer">подпишитесь на Telegram</a>
+            </p>
           )}
           {pageItems.length > 0 && (
             <nav className="pager" aria-label="Страницы">
