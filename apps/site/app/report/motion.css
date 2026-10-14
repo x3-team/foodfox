@@ -74,7 +74,12 @@
 @media (max-width: 1100px) {
   body .report-page .rf-toc-m strong { animation: rf-toc-swap 180ms ease-out; }
   @keyframes rf-toc-swap { from { opacity: 0; transform: translateY(8px); } }
+  /* M12: «Цветная точка слева перекрашивается под зону раздела» — 8px dot, recoloured in the same 180 мс. */
+  body .report-page .rf-toc-m .rf-toc-dot { display: block; flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: #4a6b1f; transition: background-color 180ms ease-out; }
+  body .report-page .rf-toc-m .rf-toc-dot.is-y { background: #8a6416; }
+  body .report-page .rf-toc-m .rf-toc-dot.is-r { background: #a03a22; }
 }
+.rf-toc-dot { display: none; }
 
 /* M13 (phone): the tapped marker turns lime with a pulse (1 → 1.15 → 1, 300 мс), the other markers dim to 60%;
    its description card lights up lime. */
@@ -85,7 +90,42 @@
   @keyframes rf-pulse { 50% { transform: scale(1.15); } }
   body .report-page .rf-marker.is-on { animation: rf-card-lit 900ms ease-out; }
   @keyframes rf-card-lit { from { background-color: #f6fbc8; border-color: #e7f551; } }
+  /* M13: «↑ К отчёту» on the active card — a dark pill at the card's top-right edge (storyboard frame 3); it scrolls
+     back to the sheet with the same marker active. The card is now a group with two sibling buttons (select / back). */
+  body .report-page .rf-marker { position: relative; }
+  body .report-page .rf-marker .rf-back {
+    position: absolute; right: 12px; top: -14px; z-index: 1; display: inline-flex; align-items: center; gap: 4px;
+    height: 28px; padding: 0 12px; border: 0; border-radius: 999px; background: #0b0c08; color: #e7f551;
+    font: inherit; font-size: 13px; line-height: 16px; white-space: nowrap; cursor: pointer;
+    animation: rf-back-in 200ms ease-out 200ms backwards;
+  }
+  @keyframes rf-back-in { from { opacity: 0; transform: translateY(4px); } }
 }
+.rf-back { display: none; }
+/* the card button fills the card (layout of the old <button class="rf-marker">), its hit area is the whole card */
+.report-page .rf-marker > .rf-marker-main {
+  display: flex; flex: 1 1 auto; gap: inherit; align-items: inherit; min-width: 0; padding: 0; margin: 0; border: 0;
+  background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.report-page .rf-marker { position: relative; }
+.report-page .rf-marker > .rf-marker-main::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.report-page .rf-marker > .rf-marker-main:focus-visible { outline: none; }
+.report-page .rf-marker:has(> .rf-marker-main:focus-visible) { outline: 3px solid #e7f551; outline-offset: 2px; }
+@media (min-width: 768px) { .report-page .rf-marker .rf-back { display: none; } }
+
+/* Smart Animate hovers (Figma prototype reactions, EASE_OUT = ease-out): ToC/Item 150 мс (label 65% → 100% ink,
+   marker shows), FAQ/Item hover 150 мс (underline fades in) / click 300 мс, Button/Icon 150 мс (fill #F2F2F2),
+   Link/Arrow 200 мс. R01 zone card hover «тень S → M, 200мс» (note). */
+.report-page .toc > a { transition: color 150ms ease-out; }
+.report-page .toc > a::before { transition: opacity 150ms ease-out; }
+.rf-faq-item button > span { text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: transparent; transition: text-decoration-color 150ms ease-out; }
+.rf-faq-item button:hover > span { text-decoration-color: currentColor; }
+.rf-icon-btn, .report-page .toc a.rf-icon-btn { transition: background-color 150ms ease-out, border-color 150ms ease-out, opacity 150ms ease-out; }
+@media (hover: hover) { .rf-icon-btn:not(:disabled):hover { background: #f2f2f2; } }
+.rf-light-link { text-decoration-line: underline; text-underline-offset: 4px; text-decoration-color: transparent; transition: text-decoration-color 200ms ease-out; }
+.rf-light-link:hover { text-decoration-color: currentColor; }
+.rf-zone { transition: border-color 200ms ease-out, box-shadow 200ms ease-out; }
+.rf-zone-head i { transition: transform 200ms ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
   .report-page .rf-sheet img.rf-out { display: none; }
@@ -93,4 +133,5 @@
   .report-page .rf-deck.rv-in .uml-card { animation: rv-fade 100ms ease-out backwards !important; }
   .rf-faq-item.is-open .rf-faq-a p, body .report-page .rf-toc-m strong { animation: none !important; }
   body .report-page .rf-sheet .rf-pin.is-on, body .report-page .rf-marker.is-on { animation: none !important; }
+  body .report-page .rf-marker .rf-back { animation: rv-fade 100ms ease-out backwards; }
 }
