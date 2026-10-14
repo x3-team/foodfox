@@ -6,6 +6,7 @@ import { flushSync } from "react-dom";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { useReveal } from "@/components/useReveal";
+import { ARG_GRAPHICS } from "@/app/specialists/arg-graphics";
 
 const AREAS = [
   {
@@ -237,6 +238,16 @@ const HERO_TILES: Array<[string, string, string, string]> = [
 
 const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/* P03: «Hover строки — графика проигрывает свою анимацию ещё раз». The graphic's animations are named in pairs
+   (ag-x / ag-x-b, motion.css); flipping data-play swaps the names, which restarts every part of the graphic once,
+   without the ~rv delay of the entrance. */
+function replayGraphic(event: React.MouseEvent<HTMLElement>) {
+  const row = event.currentTarget;
+  if (!row.classList.contains("rv-in") || reduceMotion() || !window.matchMedia("(hover: hover)").matches) return;
+  row.style.setProperty("--ag-base", "0ms");
+  row.dataset.play = row.dataset.play === "b" ? "a" : "b";
+}
+
 const HERO_TITLE = "Пищеспецифические IgG к 286 антигенам — в одном подробном отчёте";
 
 /** Horizontal swipe (touch): calls back with +1 (finger to the left) / −1 (to the right). */
@@ -268,6 +279,26 @@ function AreasSection() {
   // M09: a horizontal swipe over the panel switches the tab.
   const swipe = useSwipe((dir) => pickArea(area + dir));
 
+  /* M09 (phone): the black pill is one element that slides and resizes to the picked tab (240 мс ease-in-out) instead
+     of the fill jumping from chip to chip. It sits inside the scrolling row, so it scrolls with the tabs. */
+  const pillRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const place = () => {
+      const tab = tabsRef.current?.children[area + 1] as HTMLElement | undefined;
+      const pill = pillRef.current;
+      if (!tab || !pill) return;
+      pill.style.setProperty("--pill-x", `${tab.offsetLeft}px`);
+      pill.style.setProperty("--pill-w", `${tab.offsetWidth}px`);
+      pill.style.setProperty("--pill-h", `${tab.offsetHeight}px`);
+      pill.style.setProperty("--pill-y", `${tab.offsetTop}px`);
+    };
+    place();
+    // first placement without motion
+    const frame = window.requestAnimationFrame(() => pillRef.current?.classList.add("is-ready"));
+    window.addEventListener("resize", place);
+    return () => { window.cancelAnimationFrame(frame); window.removeEventListener("resize", place); };
+  }, [area]);
+
   useEffect(() => {
     const apply = () => {
       const slug = new URLSearchParams(window.location.search).get("area");
@@ -292,7 +323,7 @@ function AreasSection() {
     url.searchParams.set("area", AREAS[index].slug);
     window.history.replaceState(null, "", url);
     const row = tabsRef.current;
-    const tab = row?.children[index] as HTMLElement | undefined;
+    const tab = row?.children[index + 1] as HTMLElement | undefined; // [0] is the M09 pill
     if (row && tab && row.scrollWidth > row.clientWidth) {
       row.scrollTo({ left: tab.offsetLeft - (row.clientWidth - tab.offsetWidth) / 2, behavior: reduceMotion() ? "auto" : "smooth" });
     }
@@ -338,6 +369,7 @@ function AreasSection() {
               </p>
             </div>
             <div className="sp-tabs" role="tablist" aria-label="Специализации" data-allow-x ref={tabsRef}>
+              <i className="sp-tab-pill" aria-hidden ref={pillRef} />
               {AREAS.map((item, index) => (
                 <button
                   key={item.slug}
@@ -558,22 +590,70 @@ function ReportSection() {
   );
 }
 
-/** P07 experts: the phone carousel counter / dots follow the scroll through rAF; state changes only when the
-    card index changes, and only this block re-renders. */
-function ExpertsSection() {
-  const [expert, setExpert] = useState(0);
+/** M10: the index of the card a phone carousel is snapped to, read from its scroll through rAF; state changes only
+    when the index changes, so only the owning block re-renders. */
+function useCarouselIndex(count: number) {
+  const [index, setIndex] = useState(0);
   const frame = useRef(0);
-  const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
+  const onScroll = (event: React.UIEvent<HTMLElement>) => {
     const row = event.currentTarget;
     if (frame.current) return;
     frame.current = window.requestAnimationFrame(() => {
       frame.current = 0;
-      const card = row.querySelector<HTMLElement>("article");
-      const next = Math.min(EXPERTS.length - 1, Math.round(row.scrollLeft / ((card?.offsetWidth ?? 290) + 12)));
-      setExpert((prev) => (prev === next ? prev : next));
+      const card = row.firstElementChild as HTMLElement | null;
+      const step = (card?.offsetWidth ?? 290) + (parseFloat(getComputedStyle(row).columnGap) || 12);
+      // the last card cannot reach the left edge: the end of the scroll range counts as the last card
+      const end = row.scrollLeft >= row.scrollWidth - row.clientWidth - 2;
+      const next = end ? count - 1 : Math.min(count - 1, Math.round(row.scrollLeft / step));
+      setIndex((prev) => (prev === next ? prev : next));
     });
   };
   useEffect(() => () => window.cancelAnimationFrame(frame.current), []);
+  return [index, onScroll] as const;
+}
+
+/** P04 route. M10 (phone carousel): the current step's number stays lime, the steps already passed turn dark; the
+    dots under the row follow the snapped card (Figma «Мобайл · Специалистам · 390» → P04: lime 20×6 + 6×6). */
+function RouteSection() {
+  const [step, onScroll] = useCarouselIndex(ROUTE.length);
+  return (
+        <section className="sp-sec sp-dark" id="route" data-s="p04">
+          <div className="wrap sp-stack-48">
+            <div className="sp-head sp-head-tight">
+              <h2 className="sp-h2"><span className="is-desk">От назначения до готового отчёта — обычно 7–10 дней</span><span className="is-mob">От назначения до отчёта — обычно 7–10 дней</span></h2>
+              <p className="sp-lead-inv"><span className="is-desk">Точный срок устанавливает лаборатория, которая проводит исследование.</span><span className="is-mob">Точный срок устанавливает лаборатория.</span></p>
+            </div>
+            <div className="sp-timeline" data-rv="0">
+              <svg className="sp-route-line" viewBox="0 0 100 2" preserveAspectRatio="none" aria-hidden>
+                <line x1="0" y1="1" x2="100" y2="1" pathLength="1" />
+              </svg>
+              <div className="sp-steps" data-allow-x onScroll={onScroll}>
+                {ROUTE.map((item, index) => (
+                  <article className={`sp-step${index < step ? " is-passed" : index === step ? " is-current" : ""}`} key={item.title}>
+                    <div className="sp-step-top">
+                      <span>{index + 1}</span>
+                      <h3>{item.title}</h3>
+                      <p>{item.text}</p>
+                    </div>
+                    <div className="sp-step-you">
+                      <p>{item.role}</p>
+                      <p>{item.you}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+              <div className="sp-dots-m sp-route-dots is-mob-block" aria-hidden>
+                {ROUTE.map((item, index) => <i key={item.title} className={step === index ? "is-on" : ""} />)}
+              </div>
+            </div>
+          </div>
+        </section>
+  );
+}
+
+/** P07 experts: the phone carousel counter / dots follow the scroll (M10). */
+function ExpertsSection() {
+  const [expert, onScroll] = useCarouselIndex(EXPERTS.length);
 
   return (
         <section className="sp-sec" id="experts" data-s="p07">
@@ -636,10 +716,21 @@ export function SpecialistsView() {
     return () => { io.disconnect(); timers.forEach((t) => window.clearTimeout(t)); };
   }, []);
 
+  // P3: the chip's scan line loops (3 s) only while its row is on screen.
+  useEffect(() => {
+    const io = new IntersectionObserver((entries) => entries.forEach((entry) => entry.target.classList.toggle("is-live", entry.isIntersecting)));
+    document.querySelectorAll('[data-s="p03"] .sp-arg').forEach((row) => io.observe(row));
+    return () => io.disconnect();
+  }, []);
+
   // P1: if the photo is still loading when the page wakes up, its entrance waits for it (a late photo used to pop in
   // after its animation had already run); a cached photo is not held back.
+  // The photo drops will-change once its blur entrance is over (P01: the layer is promoted only while it runs).
   useEffect(() => {
     heroRef.current?.querySelectorAll<HTMLImageElement>("img.bg:not(.sp-hero-blur), img.sp-hero-m").forEach((img) => {
+      const settle = (event: AnimationEvent) => { if (event.target === img) img.classList.add("is-settled"); };
+      img.addEventListener("animationend", settle, { once: true });
+      if (getComputedStyle(img).display === "none") img.classList.add("is-settled");
       if (img.complete) return;
       img.classList.add("is-wait");
       const go = () => img.classList.remove("is-wait");
@@ -748,11 +839,11 @@ export function SpecialistsView() {
           <div className="wrap sp-stack-40">
             <h2 className="sp-h2 sp-narrow">Почему специалисты выбирают FOX</h2>
             <div className="sp-args" data-allow-x>
-              {ARGS.map((item) => (
-                <article className="sp-arg" key={item.k} data-rv="70">
+              {ARGS.map((item, index) => (
+                <article className="sp-arg" key={item.k} data-rv="70" onMouseEnter={replayGraphic}>
                   <div className="sp-arg-visual">
                     <img className="sp-arg-bg" src="/figma/home/hero-panel-texture.webp" alt="" />
-                    <img className="sp-arg-graphic" src={item.graphic} alt="" />
+                    <svg className={`sp-arg-graphic ag-${index + 1}`} viewBox="0 0 160 160" fill="none" aria-hidden dangerouslySetInnerHTML={{ __html: ARG_GRAPHICS[index] }} />
                   </div>
                   <div>
                     <p className="sp-note">{item.k}</p>
@@ -775,34 +866,7 @@ export function SpecialistsView() {
           </div>
         </section>
 
-        <section className="sp-sec sp-dark" id="route" data-s="p04">
-          <div className="wrap sp-stack-48">
-            <div className="sp-head sp-head-tight">
-              <h2 className="sp-h2"><span className="is-desk">От назначения до готового отчёта — обычно 7–10 дней</span><span className="is-mob">От назначения до отчёта — обычно 7–10 дней</span></h2>
-              <p className="sp-lead-inv"><span className="is-desk">Точный срок устанавливает лаборатория, которая проводит исследование.</span><span className="is-mob">Точный срок устанавливает лаборатория.</span></p>
-            </div>
-            <div className="sp-timeline" data-rv="0">
-              <svg className="sp-route-line" viewBox="0 0 100 2" preserveAspectRatio="none" aria-hidden>
-                <line x1="0" y1="1" x2="100" y2="1" pathLength="1" />
-              </svg>
-              <div className="sp-steps" data-allow-x>
-                {ROUTE.map((step, index) => (
-                  <article className="sp-step" key={step.title}>
-                    <div className="sp-step-top">
-                      <span>{index + 1}</span>
-                      <h3>{step.title}</h3>
-                      <p>{step.text}</p>
-                    </div>
-                    <div className="sp-step-you">
-                      <p>{step.role}</p>
-                      <p>{step.you}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        <RouteSection />
 
         <section className="sp-sec" id="protocol" data-s="p05">
           <div className="wrap sp-stack-40">

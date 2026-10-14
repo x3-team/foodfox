@@ -6,14 +6,28 @@
    the title word by word (blur 12 → 0, stagger 60 мс); lead and buttons after it; glass tiles y 24 → 0, stagger 80 мс.
    Before: the copy column and the tile block rose together in one 600 мс step, the photo only zoomed 1.04 → 1. ── */
 [data-s="p01"].dark-hero .inner > * { animation: none; }
-/* «From blur» without animating filter: a 128px pre-blurred copy lies under the photo (phone: its own 480px phone crop
-   behind the in-flow photo), the photo itself goes opacity 0 → 1 + scale 1.06 → 1 once it is decoded. */
+/* Customer decision (ANIM-DIFF P01): the photo itself comes out of a real blur — filter blur(16px) → 0 together with
+   scale 1.06 → 1 and opacity 0 → 1, 1200 мс power2.out. One element per width (img.bg from 768, img.sp-hero-m on a
+   phone). will-change only while it runs: the component adds .is-settled on animationend, after that the full-bleed
+   photo is an ordinary image again. The 128px pre-blurred copy stays underneath as the loading backdrop. */
 [data-s="p01"].dark-hero img.bg,
-[data-s="p01"].dark-hero img.sp-hero-m { animation: sp-photo-in 1200ms cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards; }
+[data-s="p01"].dark-hero img.sp-hero-m { animation: sp-photo-in 1200ms cubic-bezier(0.33, 1, 0.68, 1) backwards; }
+[data-s="p01"].dark-hero img.bg:not(.sp-hero-blur):not(.is-settled),
+[data-s="p01"].dark-hero img.sp-hero-m:not(.is-settled) { will-change: transform, filter, opacity; }
 [data-s="p01"].dark-hero img.sp-hero-blur { opacity: 1; animation: none; }
 .sp-hero-m-blur { display: none; }
 [data-s="p01"].dark-hero img.is-wait { opacity: 0; animation: none; }
-@keyframes sp-photo-in { from { opacity: 0; transform: scale(1.06); } }
+@keyframes sp-photo-in {
+  from { opacity: 0; transform: scale(1.06); filter: blur(16px); }
+  to { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+/* Where the photo ends above the rest of the hero (tablet: above the glass tiles, phone: above the title) it grows
+   from its bottom edge and the blur is clipped at that edge (filter is applied before clip-path): a centre-origin
+   scale pushed a bright 5–14px strip of the white coat below the shade, and the blur bled it further down. */
+@media (max-width: 1100px) {
+  [data-s="p01"].dark-hero > img.bg:not(.sp-hero-blur),
+  [data-s="p01"].dark-hero > img.sp-hero-m { transform-origin: 50% 100%; clip-path: inset(-64px -64px 0 -64px); }
+}
 @media (max-width: 767px) {
   /* phone: the blurred copy is its own 480px layer under the in-flow photo (it was a section background-image,
      which anything reading the section box took for a backdrop of the whole hero, title included) */
@@ -21,13 +35,14 @@
   body [data-s="p01"].dark-hero > img.sp-hero-blur { display: none; }
   body [data-s="p01"].dark-hero > img.sp-hero-m-blur { display: block; position: absolute; inset: 0 0 auto; width: 100%; height: 480px; object-fit: cover; z-index: -1; }
 }
-[data-s="p01"] .sp-pills { animation: sp-rise 600ms var(--ease) 40ms backwards; }
-[data-s="p01"] .sp-w { display: inline-block; animation: sp-word 420ms cubic-bezier(0.25, 0.46, 0.45, 0.94) calc(80ms + var(--i, 0) * 60ms) backwards; }
+/* P-anim: entrances 600 мс power2.out = cubic-bezier(.33,1,.68,1) (were power1.out (.25,.46,.45,.94) / --ease). */
+[data-s="p01"] .sp-pills { animation: sp-rise 600ms cubic-bezier(0.33, 1, 0.68, 1) 40ms backwards; }
+[data-s="p01"] .sp-w { display: inline-block; animation: sp-word 420ms cubic-bezier(0.33, 1, 0.68, 1) calc(80ms + var(--i, 0) * 60ms) backwards; }
 @keyframes sp-word { from { opacity: 0; filter: blur(12px); } }
-[data-s="p01"] .sp-lead-inv { animation: sp-rise 600ms var(--ease) 600ms backwards; }
-[data-s="p01"] .sp-body-inv { animation: sp-rise 600ms var(--ease) 660ms backwards; }
-[data-s="p01"] .sp-hero-copy > .sp-cta { animation: sp-rise 600ms var(--ease) 720ms backwards; }
-[data-s="p01"] .sp-tile { animation: sp-rise 500ms var(--ease) 760ms backwards; }
+[data-s="p01"] .sp-lead-inv { animation: sp-rise 600ms cubic-bezier(0.33, 1, 0.68, 1) 600ms backwards; }
+[data-s="p01"] .sp-body-inv { animation: sp-rise 600ms cubic-bezier(0.33, 1, 0.68, 1) 660ms backwards; }
+[data-s="p01"] .sp-hero-copy > .sp-cta { animation: sp-rise 600ms cubic-bezier(0.33, 1, 0.68, 1) 720ms backwards; }
+[data-s="p01"] .sp-tile { animation: sp-rise 600ms cubic-bezier(0.33, 1, 0.68, 1) 760ms backwards; }
 [data-s="p01"] .sp-spec-row:first-child .sp-tile:nth-child(2) { animation-delay: 840ms; }
 [data-s="p01"] .sp-spec-row:first-child .sp-tile:nth-child(3) { animation-delay: 920ms; }
 [data-s="p01"] .sp-spec-row:last-child .sp-tile:nth-child(1) { animation-delay: 1000ms; }
@@ -36,7 +51,22 @@
 @keyframes sp-rise { from { opacity: 0; transform: translateY(24px); } }
 
 /* ── P2 tabs (note 1179:1335) / M09: chip fill 150 мс; panel crossfade (out 120 мс, in 200 мс + 8px, overlap 60 мс). ── */
-.sp-tab { transition-duration: 150ms; }
+/* Tab/Area (Figma reaction: Smart Animate ON_HOVER 150 мс EASE_OUT) — fill, text and border. */
+[data-s="p02"] .sp-tab { transition: background-color 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out; }
+/* M09 (phone, note 1344:18102): the active tab is one black pill that slides and resizes to the picked tab
+   (240 мс ease-in-out); the chips themselves keep only the outline. Desktop and tablet keep the 150 мс chip fill. */
+.sp-tab-pill { display: none; }
+@media (max-width: 767px) {
+  [data-s="p02"] .sp-tabs { position: relative; }
+  [data-s="p02"] .sp-tab-pill {
+    display: block; position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none;
+    width: var(--pill-w, 0px); height: var(--pill-h, 44px); border-radius: 999px; background: #101400;
+    transform: translate(var(--pill-x, 0px), var(--pill-y, 0px));
+  }
+  [data-s="p02"] .sp-tab-pill.is-ready { transition: transform 240ms ease-in-out, width 240ms ease-in-out; }
+  [data-s="p02"] .sp-tab { position: relative; z-index: 1; transition: color 240ms ease-in-out, border-color 240ms ease-in-out; }
+  [data-s="p02"] .sp-tab.is-active { background: transparent; border-color: transparent; }
+}
 [data-s="p02"] .sp-panel { position: relative; }
 [data-s="p02"] .sp-ghost { position: absolute; z-index: 1; margin: 0; pointer-events: none; animation: sp-out 120ms ease-out forwards; }
 @keyframes sp-out { to { opacity: 0; } }
@@ -52,6 +82,63 @@
 /* ── P3 arguments (P-anim 1140:1279): rows enter at 85% of the viewport, opacity + y 24, stagger 70 мс. ── */
 [data-s="p03"]:not(.is-in) > .wrap > .sp-args { opacity: 1; transform: none; }
 [data-s="p03"].is-in:not(.dark-hero) > .wrap > .sp-args { animation: none; }
+/* P3 graphics (note 1179:1341): when a row enters, its graphic plays — the 286 points rise in a wave from the centre;
+   the gauge arcs draw and the arrow swings from 0 to the yellow zone; the two anti-CCD circles slide together and the
+   lens of their crossing fills; the MADx chip grid shows and its scan line runs top → bottom (loop 3 s, only while
+   the row is on screen); the report rows grow scaleX 0 → 1, stagger 60 мс. Transform / opacity / stroke-dashoffset
+   only, on the inline SVG (app/specialists/arg-graphics.ts). Hover on the row plays it once more (data-play flips
+   the animation names, SpecialistsView replayGraphic). Rows shown in place (rv-now) and reduced motion: static. */
+[data-s="p03"] .sp-arg { --ag-base: calc(var(--rv-d, 0ms) + 150ms); --ag-out: cubic-bezier(0.33, 1, 0.68, 1); }
+[data-s="p03"] .sp-arg-graphic * { transform-box: fill-box; transform-origin: center; }
+[data-s="p03"] .ag-arc { stroke-dasharray: 1 1; }
+[data-s="p03"] .ag-needle { transform-box: view-box; transform-origin: 80px 100px; }
+[data-s="p03"] .ag-fill, [data-s="p03"] .ag-bar { transform-origin: left center; }
+[data-s="p03"] .ag-bracket { transform-origin: center top; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-dot { animation: ag-dot 420ms var(--ag-out) calc(var(--ag-base) + var(--ag, 0ms)) backwards; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-arc { animation: ag-draw 500ms ease-out var(--ag-base) backwards; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-arc-2 { animation-delay: calc(var(--ag-base) + 120ms); }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-arc-3 { animation-delay: calc(var(--ag-base) + 240ms); }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-needle { animation: ag-needle 900ms var(--ag-out) calc(var(--ag-base) + 300ms) backwards; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-fill { animation: ag-grow 700ms var(--ag-out) calc(var(--ag-base) + 300ms) backwards; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) :is(.ag-ring, .ag-frame) { animation: ag-fade 500ms ease-out var(--ag-base) backwards; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-cl { animation: ag-cl 600ms var(--ag-out) var(--ag-base) backwards; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-cr { animation: ag-cr 600ms var(--ag-out) var(--ag-base) backwards; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) :is(.ag-lens, .ag-ping) { animation: ag-dot 400ms var(--ag-out) calc(var(--ag-base) + 450ms) backwards; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-ping { animation-delay: calc(var(--ag-base) + 650ms); }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-cell { animation: ag-dot 300ms var(--ag-out) calc(var(--ag-base) + 100ms) backwards; }
+:is(.sp-arg.rv-in, .sp-arg[data-play]) .ag-scan { animation: ag-scan 3000ms ease-in-out calc(var(--ag-base) + 400ms) infinite; animation-play-state: paused; }
+:is(.sp-arg.rv-in, .sp-arg[data-play]).is-live .ag-scan { animation-play-state: running; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-rdot { animation: ag-dot 300ms var(--ag-out) calc(var(--ag-base) + var(--ag, 0ms)) backwards; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-bar { animation: ag-grow 400ms var(--ag-out) calc(var(--ag-base) + 120ms + var(--ag, 0ms)) backwards; }
+:is(.sp-arg.rv-in:not(.rv-now), .sp-arg[data-play]) .ag-bracket { animation: ag-grow-y 400ms var(--ag-out) calc(var(--ag-base) + var(--ag, 0ms)) backwards; }
+/* replay: the same motion under the twin names */
+.sp-arg.sp-arg[data-play="b"] .ag-dot, .sp-arg.sp-arg[data-play="b"] :is(.ag-lens, .ag-ping, .ag-cell, .ag-rdot) { animation-name: ag-dot-b; }
+.sp-arg.sp-arg[data-play="b"] .ag-arc { animation-name: ag-draw-b; }
+.sp-arg.sp-arg[data-play="b"] .ag-needle { animation-name: ag-needle-b; }
+.sp-arg.sp-arg[data-play="b"] :is(.ag-fill, .ag-bar) { animation-name: ag-grow-b; }
+.sp-arg.sp-arg[data-play="b"] .ag-bracket { animation-name: ag-grow-y-b; }
+.sp-arg.sp-arg[data-play="b"] :is(.ag-ring, .ag-frame) { animation-name: ag-fade-b; }
+.sp-arg.sp-arg[data-play="b"] .ag-cl { animation-name: ag-cl-b; }
+.sp-arg.sp-arg[data-play="b"] .ag-cr { animation-name: ag-cr-b; }
+.sp-arg.sp-arg[data-play="b"] .ag-scan { animation-name: ag-scan-b; }
+@keyframes ag-dot { from { opacity: 0; transform: scale(0.2); } }
+@keyframes ag-dot-b { from { opacity: 0; transform: scale(0.2); } }
+@keyframes ag-draw { from { stroke-dashoffset: 1; } }
+@keyframes ag-draw-b { from { stroke-dashoffset: 1; } }
+@keyframes ag-needle { from { transform: rotate(-90deg); } }
+@keyframes ag-needle-b { from { transform: rotate(-90deg); } }
+@keyframes ag-grow { from { transform: scaleX(0); } }
+@keyframes ag-grow-b { from { transform: scaleX(0); } }
+@keyframes ag-grow-y { from { transform: scaleY(0); } }
+@keyframes ag-grow-y-b { from { transform: scaleY(0); } }
+@keyframes ag-fade { from { opacity: 0; } }
+@keyframes ag-fade-b { from { opacity: 0; } }
+@keyframes ag-cl { from { opacity: 0; transform: translateX(-14px); } }
+@keyframes ag-cl-b { from { opacity: 0; transform: translateX(-14px); } }
+@keyframes ag-cr { from { opacity: 0; transform: translateX(14px); } }
+@keyframes ag-cr-b { from { opacity: 0; transform: translateX(14px); } }
+@keyframes ag-scan { 0% { opacity: 0; transform: translateY(-46px); } 12%, 88% { opacity: 1; } 100% { opacity: 0; transform: translateY(32px); } }
+@keyframes ag-scan-b { 0% { opacity: 0; transform: translateY(-46px); } 12%, 88% { opacity: 1; } 100% { opacity: 0; transform: translateY(32px); } }
 
 /* ── P4 route (note 1179:1347): the connector draws on entry (scaleX 0 → 1 from the left, 800 мс ease-out), then the
    step cards (opacity + y 16, stagger 100 мс). Before: the line drew on page load, long before anyone saw it. ── */
@@ -64,7 +151,7 @@
 [data-s="p04"] .sp-timeline:not(.rv-in) .sp-step { opacity: 0; transform: translateY(16px); }
 [data-s="p04"] .sp-timeline.rv-in:not(.rv-now) .sp-route-line { animation: sp-line 800ms ease-out backwards; }
 @keyframes sp-line { from { transform: scaleX(0); } }
-[data-s="p04"] .sp-timeline.rv-in:not(.rv-now) .sp-step { animation: sp-step 500ms var(--ease) 300ms backwards; }
+[data-s="p04"] .sp-timeline.rv-in:not(.rv-now) .sp-step { animation: sp-step 500ms cubic-bezier(0.33, 1, 0.68, 1) 300ms backwards; }
 [data-s="p04"] .sp-timeline.rv-in:not(.rv-now) .sp-step:nth-child(2) { animation-delay: 400ms; }
 [data-s="p04"] .sp-timeline.rv-in:not(.rv-now) .sp-step:nth-child(3) { animation-delay: 500ms; }
 [data-s="p04"] .sp-timeline.rv-in:not(.rv-now) .sp-step:nth-child(4) { animation-delay: 600ms; }
@@ -118,9 +205,14 @@
 
 /* ── P8 labs (note 1179:1371): hover shadow eases with the fill and the scale. M11 (phone): tiles cascade in
    (fade + scale .96 → 1, step 40 мс); a tap presses the tile to .97. ── */
-[data-s="p08"] .sp-labs a { transition: background-color 200ms var(--ease), transform 200ms var(--ease), box-shadow 200ms var(--ease); }
+/* Card/Lab (Figma reaction: Smart Animate ON_HOVER 150 мс EASE_OUT): fill #F2F2F2, shadow M, scale 1.02. */
+[data-s="p08"] .sp-labs a { transition: background-color 150ms ease-out, transform 150ms ease-out, box-shadow 150ms ease-out; }
 @media (min-width: 768px) {
   [data-s="p08"] .sp-labs a[data-rv] { opacity: 1; transform: none; animation: none; }
+}
+/* the rule above (transform: none) used to cancel the hover scale 1.02 of the note on every width ≥ 768 */
+@media (hover: hover) and (min-width: 768px) {
+  [data-s="p08"] .sp-labs a[data-rv]:hover { transform: scale(1.02); }
 }
 @media (max-width: 767px) {
   [data-s="p08"]:not(.is-in) > .wrap > .sp-labs { opacity: 1; transform: none; }
@@ -136,11 +228,47 @@
 [data-s="p09"] .sp-bar[data-rv]:not(.rv-in) { opacity: 1; transform: scaleX(0); }
 [data-s="p09"] .sp-bar.rv-in:not(.rv-now) { animation: sp-bar 400ms ease-out backwards; }
 @keyframes sp-bar { from { transform: scaleX(0); } }
+/* P09: «Свечение лайма за кнопкой — статичное; при hover усиливается до 0.18 за 200мс». */
+[data-s="p09"] .sp-course .sp-cta .btn-dark {
+  box-shadow: 0 0 48px 12px rgba(231, 245, 81, 0.12);
+  transition: background-color 150ms ease-out, transform 150ms ease-out, box-shadow 200ms ease-out;
+}
+@media (hover: hover) {
+  [data-s="p09"] .sp-course .sp-cta .btn-dark:hover { box-shadow: 0 0 48px 12px rgba(231, 245, 81, 0.18); }
+}
+
+/* ── M10 route (phone): the current step's number stays lime, the passed ones turn dark; dots under the row
+   (frame P04 390: lime 20×6 for the current card, 6×6 for the rest). ── */
+[data-s="p04"] .sp-route-dots { display: none; }
+@media (max-width: 767px) {
+  [data-s="p04"] .sp-step-top span { transition: background-color 200ms ease-out, color 200ms ease-out, box-shadow 200ms ease-out; }
+  [data-s="p04"] .sp-step.is-passed .sp-step-top span { background: #0b0c08; color: #f8f9f6; box-shadow: inset 0 0 0 1px rgba(248, 249, 246, 0.3); }
+  [data-s="p04"] .sp-route-dots { display: flex; gap: 6px; margin-top: 16px; }
+  [data-s="p04"] .sp-route-dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(248, 249, 246, 0.3); transition: width 200ms ease-out, background-color 200ms ease-out; }
+  [data-s="p04"] .sp-route-dots i.is-on { width: 20px; background: #e7f551; }
+}
 
 /* ── M10 (phone carousels): the first time a carousel is 40% on screen it nudges 24px and comes back (600 мс), once per session. ── */
 [data-s] .sp-nudge.sp-nudge,
 [data-s].is-in:not(.dark-hero) > .wrap > .sp-nudge.sp-nudge { animation: sp-nudge 600ms ease-in-out; }
 @keyframes sp-nudge { 40% { transform: translateX(-24px); } }
+
+/* ── Smart Animate hovers (Figma prototype reactions on page 1107:340, all EASE_OUT = ease-out):
+   Row/Argument 200 мс, Card/Expert 400 мс, Link/Arrow 200 мс, Button/Icon 150 мс (Tab/Area 150 and Card/Lab 150 above).
+   Underlines fade in with the same duration (text-decoration-color) instead of snapping on. ── */
+[data-s="p03"] .sp-arg { transition: box-shadow 200ms ease-out, border-color 200ms ease-out, background-color 200ms ease-out; }
+[data-s="p03"] .sp-arg .sp-note { transition: color 200ms ease-out; }
+html body [data-s="p07"] .sp-experts article { transition: translate 400ms ease-out; }
+html body [data-s="p07"] .sp-portrait img { transition: transform 400ms ease-out; }
+html body [data-s="p07"] .sp-experts h3 { text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: transparent; transition: text-decoration-color 400ms ease-out; }
+html body [data-s="p07"] .sp-experts article:hover h3 { text-decoration-color: currentColor; }
+.sp-arrow, [data-s="p02"] .sp-related a { text-decoration-line: underline; text-underline-offset: 4px; text-decoration-color: transparent; transition: text-decoration-color 200ms ease-out; }
+.sp-arrow:hover, [data-s="p02"] .sp-related a:hover { text-decoration-color: currentColor; }
+.sp-arrow img, [data-s="p02"] .sp-related a img { transition: transform 200ms ease-out; }
+[data-s="p06"] .sp-controls button { transition: background-color 150ms ease-out, border-color 150ms ease-out, opacity 150ms ease-out; }
+@media (hover: hover) {
+  [data-s="p06"] .sp-controls button:not(:disabled):hover { background: rgba(255, 255, 255, 0.2); border-color: rgba(248, 249, 246, 0.4); }
+}
 
 /* ── Reduced motion: no blur, no movement, no turn — the agreed 100 мс fades (P6: 200 мс crossfade of the zone). ── */
 @media (prefers-reduced-motion: reduce) {
@@ -160,4 +288,8 @@
   [data-s="p06"] .sp-stage.has-turned .sp-sheet.is-front > b { animation: rv-fade 200ms ease-out backwards !important; }
   [data-s="p09"] .sp-bar[data-rv] { transform: none !important; }
   [data-s] .sp-nudge.sp-nudge { animation: none !important; }
+  [data-s="p03"] .sp-arg-graphic * { animation: none !important; }
+  [data-s="p02"] .sp-tab-pill.is-ready { transition: none; }
+  html body [data-s="p07"] .sp-experts article:hover, html body [data-s="p07"] .sp-experts article:hover img,
+  [data-s="p08"] .sp-labs a[data-rv]:hover { translate: none; transform: none; }
 }
