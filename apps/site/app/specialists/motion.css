@@ -48,7 +48,8 @@
   /* Frame «Мобайл · Специалистам · 390» (1317:6392): a light 64px header bar, the hero photo starts below it. When the
      header is the light bar (not the transparent .on-dark state) the strip behind it is the page colour, so the
      dark hero does not tint the bar. */
-  body:has(.site-header:not(.on-dark)) [data-s="p01"].dark-hero { background: linear-gradient(#f8f9f6 0 64px, #1f241a 64px); }
+  /* a separate 64px layer, not a gradient on the section: the hero itself stays one solid colour under the copy */
+  body:has(.site-header:not(.on-dark)) [data-s="p01"].dark-hero::before { content: ""; position: absolute; inset: 0 0 auto; height: 64px; background: #f8f9f6; z-index: -1; pointer-events: none; }
 }
 /* P-anim: entrances 600 мс power2.out = cubic-bezier(.33,1,.68,1) (were power1.out (.25,.46,.45,.94) / --ease). */
 [data-s="p01"] .sp-pills { animation: sp-rise 600ms cubic-bezier(0.33, 1, 0.68, 1) 40ms backwards; }
