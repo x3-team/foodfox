@@ -669,10 +669,11 @@ export function HomePage() {
     if (!node || antigenAnimated || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     node.textContent = "0";
     let raf = 0;
-    const io = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting || antigenAnimated) return;
+    const run = () => {
+      if (antigenAnimated) return;
       antigenAnimated = true;
       io.disconnect();
+      window.removeEventListener("hashchange", onHash);
       const start = performance.now();
       const tick = (now: number) => {
         const t = Math.min(1, (now - start) / 900);
@@ -680,11 +681,16 @@ export function HomePage() {
         if (t < 1) raf = requestAnimationFrame(tick);
       };
       raf = requestAnimationFrame(tick);
-    }, { threshold: 0 });
-    // S10: starts as soon as the number enters the viewport (the −10% bottom margin held it at «0» for ~1 s of a slow scroll)
+    };
+    const io = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) run(); }, { threshold: 0 });
+    // S10: starts as soon as the number enters the viewport (the −10% bottom margin held it at «0» for ~1 s of a slow scroll).
+    // An anchor jump to #products scrolls smoothly for ~600 мс; the count starts at the jump itself, not on arrival.
+    const onHash = () => { if (location.hash === "#products") run(); };
+    window.addEventListener("hashchange", onHash);
     io.observe(node);
     return () => {
       io.disconnect();
+      window.removeEventListener("hashchange", onHash);
       cancelAnimationFrame(raf);
       node.textContent = "286";
     };

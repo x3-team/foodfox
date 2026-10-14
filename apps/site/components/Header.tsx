@@ -51,9 +51,9 @@ const COURSE = [
   { href: "/course#faq", label: "Вопросы" },
 ];
 
-// G06 close: MENU items + the bottom block leave in reverse order (delay (N−i)×30 мс, 120 мс each),
-// the panel rolls up over the last 200 мс.
-const MENU_STEP = 30;
+// G06 close: the whole close takes 200 мс. The items leave in reverse order inside it (delay (N−i)×8 мс, 120 мс
+// each: the last one is gone at 200 мс) while the panel rolls up over the same 200 мс.
+const MENU_STEP = 8;
 const MENU_ITEM_OUT = 120;
 const MENU_CLOSE_MS = MENU.length * MENU_STEP + MENU_ITEM_OUT;
 
@@ -123,10 +123,9 @@ export function Header() {
     // G01: Scrolled after 80 px; hidden after 400 px (80 on phones) while scrolling down, back on any scroll up.
     // Direction is measured from the point where it last turned, not per event: slow trackpad / finger scrolling
     // fires 1–5 px steps, which never passed the old «> 6 px per event» test (the header never hid or came back),
-    // while ±6 px jitter could flip it. Hiding needs 10 px of travel down; coming back needs only 3 px up («любой скролл
-    // вверх»), which a ±1–2 px bounce never reaches. While a window / sheet / the menu locks the page (useDialog sets
+    // while ±6 px jitter could flip it. Hiding needs 10 px of travel down; any scroll up brings it back. While a window / sheet / the menu locks the page (useDialog sets
     // html.is-locked) the header ignores scrolling altogether, so opening «Связаться» at the top neither shrinks nor
-    // hides it and it is the same after closing (G10).
+    // hides it and it is the same after closing (G10). Coming back needs no travel at all («любой скролл вверх»).
     const mq = window.matchMedia("(max-width: 1100px)");
     let turn = window.scrollY;
     let dir = 0;
@@ -154,7 +153,7 @@ export function Header() {
       if ((down && dir < 0) || (!down && dir > 0)) turn = last;
       dir = down ? 1 : -1;
       if (down && y > (mq.matches ? 80 : 400) && y - turn >= 10) setHidden(true);
-      else if (!down && turn - y >= 3) setHidden(false);
+      else if (!down) setHidden(false);
     };
     const onScroll = () => {
       if (!frame) frame = window.requestAnimationFrame(update);
