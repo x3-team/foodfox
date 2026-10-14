@@ -143,16 +143,19 @@ html body [data-s="l03"] .fox-pin span[data-pin] {
   transition: width 150ms ease-out, height 150ms ease-out, transform 150ms ease-out, background 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out;
   animation: l-pin-drop 260ms ease-out both; animation-delay: calc(var(--i, 0) * 30ms);
 }
-/* L03: hovering a branch card → its pin goes to Map / Pin Hover — scale 1.15 (32 → 36.8 px), 150 мс ease-out.
-   The active pin keeps its own 46 px Active size, so the hover scale does not stack on it. */
+/* L03 (note 1264:2138): hovering a branch card → its pin goes to Map / Pin Hover — scale 1.15 (32 → 36.8 px), 150 мс
+   ease-out. The active pin keeps its own Active size, so the hover scale does not stack on it. */
 html body [data-s="l03"] .fox-pin span[data-pin].is-hover:not(.is-on) {
   transform: translate(-50%, -50%) scale(1.15); border-color: #0b0c08;
   background: radial-gradient(circle, #0b0c08 0 5px, #e7f551 5.5px);
   box-shadow: 0 2px 6px rgba(11, 12, 8, 0.05), 0 8px 24px -4px rgba(11, 12, 8, 0.1);
 }
+/* L03 click → Map / Pin · State=Active (1249:261). The note gives no size, so the component's drawn one: the pin layer
+   is 44 × 44 with a 2 px outside stroke #0B0C08 → 48 px rendered (Default is drawn 28 + 2 px stroke = the 32 px used
+   here), lime fill, dark 12.6 px dot (r 6.29), Glow Lime 0 0 32 rgba(231,245,81,.35); 150 мс. Was 46 px, 12 px dot. */
 html body [data-s="l03"] .fox-pin span[data-pin].is-on {
-  width: 46px; height: 46px; border-color: #0b0c08;
-  background: radial-gradient(circle, #0b0c08 0 6px, #e7f551 6.5px);
+  width: 48px; height: 48px; border-color: #0b0c08;
+  background: radial-gradient(circle, #0b0c08 0 6.3px, #e7f551 6.8px);
   box-shadow: 0 0 32px rgba(231, 245, 81, 0.35);
 }
 html body [data-s="l03"] .fox-pin .fox-tip {

@@ -124,7 +124,8 @@ export default function Page() {
             <section id="zones" data-s="zones" className="rf-sec">
               <span className="rf-num">01</span>
               <h2>Три зоны реактивности</h2>
-              <div className="rf-zones">
+              {/* R01 ≤1100: the block is the reveal unit, the cards cascade from it (motion.css); ≥1101 each card reveals itself. */}
+              <div className="rf-zones" data-rv="0">
                 {ZONES.map((zone) => (
                   <article key={zone.title} className={`rf-zone rf-zone-${zone.tone}`} data-rv="80">
                     <div className="rf-zone-head">

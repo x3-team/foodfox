@@ -642,8 +642,14 @@ function RouteSection() {
                   </article>
                 ))}
               </div>
-              <div className="sp-dots-m sp-route-dots is-mob-block" aria-hidden>
-                {ROUTE.map((item, index) => <i key={item.title} className={step === index ? "is-on" : ""} />)}
+              {/* M10 (note 1344:19028): «счётчик „2 / 5“ и точки» — the dots (frame P04 390: lime 20×6 + 6×6) and, on the same
+                  line at the right edge of the wrap, the counter «N / 4» (Label/Medium 14/18 of the carousel element
+                  1303:2802, inverted secondary colour on the dark section). Both follow the snapped card. */}
+              <div className="sp-route-foot is-mob-block">
+                <div className="sp-dots-m sp-route-dots" aria-hidden>
+                  {ROUTE.map((item, index) => <i key={item.title} className={step === index ? "is-on" : ""} />)}
+                </div>
+                <span className="sp-count sp-route-count" aria-live="polite">{step + 1} / {ROUTE.length}</span>
               </div>
             </div>
           </div>

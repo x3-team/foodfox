@@ -13,6 +13,20 @@
 [data-s="after"].rf-sec.is-in > .rf-actions,
 [data-s="units"].rf-sec.is-in > .rf-deck { animation: none; }
 
+/* R01 on a phone / narrow tablet (≤1100): the three cards stack, so each one used to be its own reveal item and
+   entered alone (delays 0 / 0 / 0 — storyboard 1235:2975 shows the three cards arriving as one cascade). Now the
+   block `.rf-zones[data-rv]` is the reveal unit: when it crosses the viewport line, the cards cascade 0 / 80 / 160 мс
+   (opacity + y 24, 600 мс power2.out) like the desktop row; the cards' own data-rv state is ignored here. */
+.report-page .rf-zones[data-rv] { opacity: 1; transform: none; animation: none; }
+@media (max-width: 1100px) {
+  body .report-page .rf-zones > .rf-zone[data-rv] { animation: none; }
+  body .report-page .rf-zones[data-rv]:not(.rv-in) > .rf-zone { opacity: 0; transform: translateY(24px); }
+  body .report-page .rf-zones[data-rv].rv-in > .rf-zone { opacity: 1; transform: none; }
+  body .report-page .rf-zones[data-rv].rv-in:not(.rv-now) > .rf-zone { animation: rv-rise 600ms cubic-bezier(0.33, 1, 0.68, 1) backwards; }
+  body .report-page .rf-zones[data-rv].rv-in:not(.rv-now) > .rf-zone:nth-child(2) { animation-delay: 80ms; }
+  body .report-page .rf-zones[data-rv].rv-in:not(.rv-now) > .rf-zone:nth-child(3) { animation-delay: 160ms; }
+}
+
 /* R04 anti-CCD and R06 limits: «без анимации» — no entrance at all (the global rise used to run on them). */
 [data-s="ccd"].rf-sec:not(.is-in) > *,
 [data-s="limits"].rf-sec:not(.is-in) > * { opacity: 1; transform: none; }
@@ -131,6 +145,8 @@
   .report-page .rf-sheet img.rf-out { display: none; }
   .report-page .rf-deck .uml-card { translate: none !important; }
   .report-page .rf-deck.rv-in .uml-card { animation: rv-fade 100ms ease-out backwards !important; }
+  body .report-page .rf-zones[data-rv]:not(.rv-in) > .rf-zone { transform: none; }
+  body .report-page .rf-zones[data-rv].rv-in:not(.rv-now) > .rf-zone { animation: rv-fade 100ms ease-out backwards !important; }
   .rf-faq-item.is-open .rf-faq-a p, body .report-page .rf-toc-m strong { animation: none !important; }
   body .report-page .rf-sheet .rf-pin.is-on, body .report-page .rf-marker.is-on { animation: none !important; }
   body .report-page .rf-marker .rf-back { animation: rv-fade 100ms ease-out backwards; }
