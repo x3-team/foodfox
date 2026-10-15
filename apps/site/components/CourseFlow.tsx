@@ -1367,7 +1367,7 @@ export function LessonsPage() {
             </div>
           </div>
           {demo && (
-            <DemoBar hint={`Кабинет демо-слушателя: ${DEMO_USER.name}. Уроки можно щёлкать в программе слева или запустить автопросмотр.`}>
+            <DemoBar hint={`Кабинет демо-слушателя: ${DEMO_USER.name}. Уроки можно щёлкать в программе курса или запустить автопросмотр.`}>
               {touring ? (
                 <button type="button" className="demo-act" onClick={stopTour}>■ Остановить автопросмотр</button>
               ) : (
