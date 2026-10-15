@@ -233,11 +233,12 @@ export function HomePage() {
     // a page that is slow to arrive must not freeze the arrows: give up waiting after 1.5 s
     await Promise.race([loadSlide(REPORT_SLIDES[next][0]), new Promise((done) => window.setTimeout(done, 1500))]);
     setTurnDir(dir);
-    if (!reduce) setCurl({ src: REPORT_SLIDES[reportPage][0], n: Date.now(), dir });
+    setCurl({ src: REPORT_SLIDES[reportPage][0], n: Date.now(), dir });
     setReportPage(next);
-    // the M44 curl takes 520 мс, the desktop turn 450 мс; animationend releases the lock, this is only the safety net
+    // the M44 curl takes 520 мс, the desktop turn 640 мс, the reduced-motion fade 160 мс; animationend releases the
+    // lock, this is only the safety net
     window.clearTimeout(turnTimer.current);
-    turnTimer.current = window.setTimeout(() => { turning.current = false; }, reduce ? 0 : 900);
+    turnTimer.current = window.setTimeout(() => { turning.current = false; }, reduce ? 300 : 1000);
   };
   const turnDone = () => { window.clearTimeout(turnTimer.current); turning.current = false; };
   // The incoming page stays the same <img> (no remount by key): its src changes to an already decoded file and the

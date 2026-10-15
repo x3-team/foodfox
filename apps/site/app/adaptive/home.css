@@ -440,18 +440,40 @@ body [data-s="s03"].scale .scale-pin { flex-direction: column; gap: inherit; }
   body [data-s="s02"] .marquee::-webkit-scrollbar { display: none; }
 }
 
-/* S08 · report pages on desktop (note 1401:802): the leaving page fades out and moves 24px to the left,
-   the new one comes in mirrored, 450ms power2.out (before: the old page vanished, the new one turned in by rotateY). */
+/* S08 · report pages on desktop. Before: the leaving page faded out with a 24px shift while the next one faded in
+   (note 1401:802) — two near-identical white tables cross-faded and the turn read as no animation at all.
+   Now it is the same page turn as M44 on phones: the next page already lies in the stack, the leaving one turns over
+   its left edge (forward) or its right edge (back) with a shadow on the fold, 640ms. */
 @media (min-width: 1101px) and (prefers-reduced-motion: no-preference) {
-  body [data-s="s08"] .s08-stack .s08-shot { animation: s08-in 450ms cubic-bezier(.33, 1, .68, 1) both; }
-  body [data-s="s08"] .s08-stack .s08-shot.is-back { animation-name: s08-in-back; }
-  body [data-s="s08"] .s08-stack .s08-shot.s08-curl { display: block; z-index: 3; pointer-events: none; animation: s08-out 450ms cubic-bezier(.33, 1, .68, 1) forwards; }
-  body [data-s="s08"] .s08-stack .s08-shot.s08-curl.is-back { animation-name: s08-out-back; }
+  body [data-s="s08"] .s08-stack { perspective: 1800px; }
+  body [data-s="s08"] .s08-stack .s08-shot:not(.s08-curl) { animation: s08-under 640ms cubic-bezier(.33, 1, .68, 1) both; }
+  body [data-s="s08"] .s08-stack .s08-shot.s08-curl { display: block; z-index: 3; pointer-events: none; transform-origin: 0 50%; backface-visibility: hidden; animation: s08-turn 640ms cubic-bezier(.45, 0, .25, 1) forwards; }
+  body [data-s="s08"] .s08-stack .s08-shot.s08-curl.is-back { transform-origin: 100% 50%; animation-name: s08-turn-back; }
 }
-@keyframes s08-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
-@keyframes s08-in-back { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
-@keyframes s08-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(-24px); } }
-@keyframes s08-out-back { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(24px); } }
+/* The stack is its own stacking context (perspective here, the fit-to-width transform at 1101–1300) and so fell under
+   .s08-copy (z-index 1): its box covered the «‹» arrow, which did not respond to clicks. It goes above the copy, and
+   only its pages and arrows catch the pointer so the empty part of its box does not cover the copy. */
+@media (min-width: 1101px) {
+  body [data-s="s08"] .s08-stack { z-index: 2; pointer-events: none; }
+  body [data-s="s08"] .s08-stack > :not(.s08-curl) { pointer-events: auto; }
+}
+/* the page underneath is in the shade of the turning one and lightens as it lands */
+@keyframes s08-under { from { filter: brightness(.82); } to { filter: none; } }
+@keyframes s08-turn {
+  from { transform: rotateY(0deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
+  45% { box-shadow: 32px 0 48px rgba(11, 12, 8, .32); }
+  to { transform: rotateY(-150deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
+}
+@keyframes s08-turn-back {
+  from { transform: rotateY(0deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
+  45% { box-shadow: -32px 0 48px rgba(11, 12, 8, .32); }
+  to { transform: rotateY(150deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
+}
+/* Adaptive rule 08: with reduced motion the old page only fades out over the new one, nothing moves. */
+@media (prefers-reduced-motion: reduce) {
+  body [data-s="s08"] .s08-stack .s08-shot.s08-curl { display: block; z-index: 4; pointer-events: none; animation: s08-fade 160ms linear forwards; }
+}
+@keyframes s08-fade { to { opacity: 0; } }
 
 /* S12 · lab tile hover (note 1401:820): #F2F2F2, logo 1.04, the ↗ arrow nudges. S13 · photo reviews: hover zoom 1.10 (note 1401:826). */
 @media (hover: hover) and (min-width: 768px) {
@@ -670,6 +692,13 @@ body [data-s="s10"] .count-line strong { display: inline-block; min-width: 3ch; 
    16° turn (shotIn) underneath the curl. */
 @media (max-width: 1100px) and (prefers-reduced-motion: no-preference) {
   body [data-s="s08"] .s08-stack .s08-shot:not(.s08-curl) { animation: none; }
+  /* back: the leaving page turns over its right edge, mirrored to the forward curl */
+  body [data-s="s08"] .s08-stack .s08-shot.s08-curl.is-back { transform-origin: 100% 50%; animation-name: s08-curl-back; }
+}
+@keyframes s08-curl-back {
+  from { transform: rotateY(0deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
+  50% { box-shadow: -24px 0 40px rgba(11, 12, 8, 0.28); }
+  to { transform: rotateY(160deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
 }
 
 /* S09 · «Как сдать тест»: one active column at a time (data-on, set by HomePage.tsx), its lime mask opens from the
