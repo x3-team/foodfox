@@ -381,3 +381,9 @@ main.blog-article .table-swipe.is-gone { opacity: 0; }
 @media (max-width: 767px) and (prefers-reduced-motion: reduce) {
   main.blog-page .card.is-press, main.blog-page .author-card.is-press { transform: none; }
 }
+
+/* WIDE-DIFF: 208 + 760 + 312 + 2 × 32 = 1344 exactly — with a classic scrollbar on 1440 the container is 1329 and the
+   right column stuck out by 15 px. The text column gives way instead. */
+@media (min-width: 1280px) {
+  main.blog-article .article-grid { grid-template-columns: 208px minmax(0, 760px) 312px; justify-content: space-between; }
+}

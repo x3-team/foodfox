@@ -300,3 +300,7 @@ html body [data-s="s15"] .acc.is-open .acc-plus { background-image: none; }
 /* Touch: no blue Chromium tap flash on the lecturer cards and the tab rows — they have their own press / active states
    (M17 .is-tapped, M09 / M19 pills, P06 tabs). */
 .kf-lector, .sp-lectors > div, .sp-tabs button, .sp-report-tabs button, .ls-tabs button { -webkit-tap-highlight-color: transparent; }
+
+/* WIDE-DIFF / IMG-DIFF §3: SVG icons in boxes of another proportion (share-2 14×9 in 16×16, check 10×8 in 14×14,
+   play 14×16 in 24×24, chevron 24×20 on 2560) were stretched; an icon keeps its own proportion and is centred. */
+img[src$=".svg"] { object-fit: contain; }

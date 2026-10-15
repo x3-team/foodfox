@@ -848,3 +848,32 @@ body [data-s="s13"] .s13-arrow:disabled { opacity: .3; cursor: default; }
 .lab-bs-count span { color: rgba(11, 12, 8, .65); }
 .lab-bs-actions { display: flex; flex-direction: column; gap: 8px; }
 .lab-bs-actions .btn { width: 100%; height: 48px; justify-content: center; }
+
+/* ===== WIDE-DIFF (15.10): wide screens 1440–2560. Rule: the background runs the full width of the window, the
+   content stays in the header's container (1344 centred: max(48px, 50% − 672px) on each side). ===== */
+
+/* S10 (1395:574) · 10.1: the grey #d7d8cd filled only the 1344 box (white stripes at the sides, the content stuck to
+   the grey edge). Full-bleed on every width, the same trick as on the tablet: the band paints past its box. */
+body [data-s="s10"].band { background: #d7d8cd; box-shadow: 0 0 0 100vmax #d7d8cd; clip-path: inset(0 -100vmax); }
+/* 10.4: the anchor /#products stops with the heading under the header's bottom edge, not under the header */
+#products { scroll-margin-top: var(--header-now); }
+@media (min-width: 1101px) {
+  /* 10.2: 128 from the top as in the frame (was 120/140) */
+  body [data-s="s10"].band { padding: 128px 0; }
+  /* 10.5: products 880 + card 440; with a classic scrollbar on 1440 the container is 1329 — the products give way */
+  body [data-s="s10"] .checker-grid { grid-template-columns: minmax(0, 880px) 440px; justify-content: space-between; }
+}
+
+/* S11 «Тест разработан в Австрии» (1385:792) · H.1: the copy sits in the container, the photo half runs to the right
+   edge of the window and the photo always covers it; the CE-IVDR / ISO plates belong to the photo (48 from its left
+   and bottom edges, 2 × 307 + 10 as in the frame) instead of floating past its sides. */
+@media (min-width: 1101px) {
+  body [data-s="s11"] .aus-copy { padding: 128px 48px 128px max(48px, calc(100% - 672px)); } /* % of the half = 50% of the window − 672 */
+  body [data-s="s11"] .aus-photo .parallax { inset: calc(50% - 600px) auto auto 50%; width: max(1024px, 100%); height: auto; aspect-ratio: 1; translate: -50% 0; min-height: calc(100% + 176px); object-fit: cover; }
+  body [data-s="s11"] .aus-cards { left: 48px; right: auto; width: min(624px, calc(100% - 96px)); grid-template-columns: repeat(2, minmax(0, 307px)); }
+}
+
+/* S08 · 8.8: the page and the two sheets under it have rounded top corners in the frame (1385:759–761: 8/8/0/0). */
+@media (min-width: 1101px) {
+  body [data-s="s08"] .s08-stack .s08-shot, body [data-s="s08"] .s08-sheet { border-radius: 8px 8px 0 0; }
+}

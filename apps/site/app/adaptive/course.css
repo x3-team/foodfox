@@ -101,3 +101,9 @@
   html body .ls-layout .ls-about-mob { display: none; }
   html body .ls-layout .ls-after { background: transparent; border-radius: 0; border-top: 1px solid rgba(11, 12, 8, 0.3); padding: 20px 0 0; }
 }
+
+/* WIDE-DIFF: the lesson layout used `100% − 40px`, so with a classic scrollbar on 1440 it stood 7 px wider than the
+   header's container on each side; on the desktop it takes the same container as the header. */
+@media (min-width: 1101px) {
+  [data-s="l01"].ls-layout { width: min(var(--content), calc(100% - 96px)); }
+}

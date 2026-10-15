@@ -194,19 +194,64 @@ export function HomePage() {
   const [reportPage, setReportPage] = useState(0);
   // M44: the page that leaves curls away over the left edge while the next one already lies underneath.
   const [curl, setCurl] = useState<{ src: string; n: number; dir: 1 | -1 } | null>(null);
-  // S08 note: clicks during a page turn (450 мс) are ignored.
-  const turnAt = useRef(0);
+  // S08 note: clicks during a page turn are ignored. The lock is held until the new page has actually landed
+  // (animationend of the incoming page), not by a 450 мс timer from the click (WIDE-DIFF 8.5/8.6).
+  const turning = useRef(false);
+  const turnTimer = useRef<number | undefined>(undefined);
+  const s08Ref = useRef<HTMLElement>(null);
+  const shotRef = useRef<HTMLImageElement>(null);
+  // WIDE-DIFF 8.5: every page is fetched and decoded before it is shown — the turn used to cross-fade an empty white
+  // box while the next page was still loading and then the picture snapped in.
+  const slideReady = useRef<Map<string, Promise<void>>>(new Map());
+  const loadSlide = (src: string) => {
+    let ready = slideReady.current.get(src);
+    if (!ready) {
+      const img = new Image();
+      img.src = src;
+      ready = img.decode().catch(() => undefined);
+      slideReady.current.set(src, ready);
+    }
+    return ready;
+  };
+  useEffect(() => {
+    const section = s08Ref.current;
+    if (!section) return;
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      REPORT_SLIDES.forEach(([src]) => loadSlide(src));
+      io.disconnect();
+    }, { rootMargin: "1200px 0px" });
+    io.observe(section);
+    return () => io.disconnect();
+  }, []);
   const [turnDir, setTurnDir] = useState<1 | -1>(1);
-  const turnReport = (dir: 1 | -1) => {
+  const turnReport = async (dir: 1 | -1) => {
+    if (turning.current) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // the lock lasts as long as the turn: 450 мс on the desktop, the M44 curl takes 520 мс
-    const lock = window.matchMedia("(max-width: 1100px)").matches ? 520 : 450;
-    if (!reduce && performance.now() - turnAt.current < lock) return;
-    turnAt.current = performance.now();
+    turning.current = true;
+    const next = (reportPage + REPORT_SLIDES.length + dir) % REPORT_SLIDES.length;
+    // a page that is slow to arrive must not freeze the arrows: give up waiting after 1.5 s
+    await Promise.race([loadSlide(REPORT_SLIDES[next][0]), new Promise((done) => window.setTimeout(done, 1500))]);
     setTurnDir(dir);
     if (!reduce) setCurl({ src: REPORT_SLIDES[reportPage][0], n: Date.now(), dir });
-    setReportPage((n) => (n + REPORT_SLIDES.length + dir) % REPORT_SLIDES.length);
+    setReportPage(next);
+    // the M44 curl takes 520 мс, the desktop turn 450 мс; animationend releases the lock, this is only the safety net
+    window.clearTimeout(turnTimer.current);
+    turnTimer.current = window.setTimeout(() => { turning.current = false; }, reduce ? 0 : 900);
   };
+  const turnDone = () => { window.clearTimeout(turnTimer.current); turning.current = false; };
+  // The incoming page stays the same <img> (no remount by key): its src changes to an already decoded file and the
+  // entry animation is restarted in place, so there is never a frame with an empty layer.
+  const firstShot = useRef(true);
+  useLayoutEffect(() => {
+    if (firstShot.current) { firstShot.current = false; return; }
+    const img = shotRef.current;
+    if (!img) return;
+    img.style.animation = "none";
+    void img.offsetWidth;
+    img.style.animation = "";
+  }, [reportPage]);
+  const reportDrag = useRef<number | null>(null);
   const reportTouch = useRef<number | null>(null);
   const [reportFull, setReportFull] = useState(false);
   const [chipsOpen, setChipsOpen] = useState(false);
@@ -1038,7 +1083,7 @@ export function HomePage() {
             {/* Desktop rest state of 1385:579: the bottom edges of cards 2 and 3 peek under the first one.
                 They are separate strips, so the real next card can slide in over the deck from below. */}
             {DECK.slice(1).map(([title], index) => (
-              <i className="deck-edge" key={title} aria-hidden style={{ ["--i" as string]: index + 1, backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0) 56%, rgba(0,0,0,.4)), url(/figma/home/deck/card-${index + 2}.webp)` }} />
+              <i className="deck-edge" key={title} aria-hidden style={{ ["--i" as string]: index + 1, backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0) 56%, rgba(0,0,0,.4)), image-set(url(/figma/home/deck/card-${index + 2}.webp) 1x, url(/figma/home/deck/card-${index + 2}@2x.webp) 2x)` }} />
             ))}
             {DECK.map(([title, text, tail], index) => {
               const body = (heading: ReactNode) => (
@@ -1257,7 +1302,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section data-s="s08">
+        <section data-s="s08" ref={s08Ref}>
           <div className="wrap">
             <article className="s08-card">
               <div className="s08-copy">
@@ -1279,21 +1324,32 @@ export function HomePage() {
                   if (start === null || end === undefined || Math.abs(end - start) < 40) return;
                   turnReport(end < start ? 1 : -1);
                 }}
+                // 8.6 (note 1303:2778): the page can also be dragged with a mouse on the desktop
+                onPointerDown={(event) => { if (event.pointerType === "mouse" && event.button === 0 && !(event.target as HTMLElement).closest("button")) reportDrag.current = event.clientX; }}
+                onPointerUp={(event) => {
+                  const start = reportDrag.current;
+                  reportDrag.current = null;
+                  if (start === null || event.pointerType !== "mouse" || Math.abs(event.clientX - start) < 40) return;
+                  turnReport(event.clientX < start ? 1 : -1);
+                }}
+                onPointerLeave={() => { reportDrag.current = null; }}
               >
                 <button type="button" className="s08-nav prev" aria-label="Предыдущая страница отчёта" onClick={() => turnReport(-1)} />
                 <i className="s08-sheet s08-sheet-3" aria-hidden />
                 <i className="s08-sheet s08-sheet-2" aria-hidden />
                 <img
+                  ref={shotRef}
                   className={`s08-shot${turnDir < 0 ? " is-back" : ""}`}
-                  key={reportPage}
                   src={REPORT_SLIDES[reportPage][0]}
                   alt=""
+                  draggable={false}
+                  onAnimationEnd={(event) => { if (event.target === event.currentTarget) turnDone(); }}
                   onClick={() => {
                     // M44: on phones a tap on the page opens the full-screen view with pinch-zoom.
                     if (window.matchMedia("(max-width: 1100px)").matches) setReportFull(true);
                   }}
                 />
-                {curl && <img className={`s08-shot s08-curl${curl.dir < 0 ? " is-back" : ""}`} key={curl.n} src={curl.src} alt="" aria-hidden onAnimationEnd={() => setCurl(null)} />}
+                {curl && <img className={`s08-shot s08-curl${curl.dir < 0 ? " is-back" : ""}`} key={curl.n} src={curl.src} alt="" aria-hidden onAnimationEnd={() => { setCurl(null); turnDone(); }} />}
                 <button type="button" className="s08-nav next" aria-label="Следующая страница отчёта" onClick={() => turnReport(1)} />
               </div>
               {reportFull && createPortal(<ReportViewer page={reportPage} onPage={setReportPage} onClose={() => setReportFull(false)} />, document.body)}

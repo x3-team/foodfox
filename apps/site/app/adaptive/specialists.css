@@ -160,3 +160,9 @@
   [data-s="p06"] .sp-controls { left: var(--off); top: 879px; bottom: auto; z-index: 2; }
 }
 
+
+/* WIDE-DIFF SP.1: the back sheet of the P06 fan (rotate 7°) stuck 8 px past the container's right edge; in the frame
+   (1126:966) the rotated pages end exactly at x 1392. */
+@media (min-width: 1101px) {
+  [data-s="p06"] .sp-sheet.is-back-2 { left: 32px; }
+}
