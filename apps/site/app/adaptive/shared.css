@@ -20,20 +20,20 @@
 }
 /* B2B «Зарегистрироваться на курс» (252px, Figma 1120:3114) needs the room: in the frame the nav already touches «Пациентам». */
 @media (min-width: 1440px) {
-  body .site-header.header-b2b .header-left { gap: 28px; }
+  body .site-header.header-b2b .header-left { gap: 24px; }
   body .site-header.header-b2b .nav { gap: 16px; }
 }
 @media (min-width: 1101px) and (max-width: 1439px) {
   body .site-header .example-link { display: none; }
   body .site-header.header-site .nav { gap: 20px; }
   body .site-header.header-b2b .nav { gap: 16px; }
-  body .site-header.header-b2b .nav a { font-size: 15px; }
+  body .site-header.header-b2b .nav a { font-size: 14px; }
 }
 @media (min-width: 1101px) and (max-width: 1279px) {
   body .site-header .header-left { gap: 24px; }
   body .site-header.header-site .nav { gap: 16px; }
-  body .site-header.header-b2b .nav { gap: 14px; }
-  body .site-header .nav a { font-size: 15px; }
+  body .site-header.header-b2b .nav { gap: 16px; }
+  body .site-header .nav a { font-size: 14px; }
 }
 @media (min-width: 768px) and (max-width: 1100px) {
   body .site-header { padding: 0 32px; }
@@ -49,8 +49,8 @@ body .site-header:has(.mobile-menu) .partner-dot { position: relative; z-index: 
 /* Figma Header / Course 1133:717 «partner-login» (101×44): user icon + «Войти» in an outline pill (desktop). */
 @media (min-width: 1101px) {
   body .site-header .partner-dot.has-label {
-    width: auto; height: 44px; padding: 0 16px 0 14px; display: inline-flex; align-items: center; gap: 8px;
-    border-color: rgba(11, 12, 8, 0.24); font-size: 15px; line-height: 18px; white-space: nowrap;
+    width: auto; height: 44px; padding: 0 16px 0 16px; display: inline-flex; align-items: center; gap: 8px;
+    border-color: rgba(11, 12, 8, 0.24); font-size: 16px; line-height: 20px; white-space: nowrap;
   }
   body .site-header .partner-dot.has-label img { width: 20px; height: 20px; }
   body .site-header .partner-dot.has-label::after { display: none; }
@@ -66,7 +66,7 @@ body .site-header:has(.mobile-menu) .partner-dot { position: relative; z-index: 
    Items 24px with hairlines, tap height ≥48; the bottom block sits at the bottom: white CTA, two outline pills, phone + Telegram. */
 body .mobile-menu { padding: 72px 16px calc(24px + env(safe-area-inset-bottom)); gap: 0; }
 body .mobile-menu > a {
-  font-size: 24px; line-height: 28px; font-weight: 300; min-height: 48px; padding: 10px 0; box-sizing: border-box;
+  font-size: 24px; line-height: 28px; font-weight: 300; min-height: 48px; padding: 12px 0; box-sizing: border-box;
   border-bottom: 1px solid rgba(248, 249, 246, 0.14); gap: 12px;
 }
 body .mobile-menu > a[aria-current="page"] { padding-left: 20px; }
@@ -100,7 +100,7 @@ body .mobile-menu .mm-contacts img { width: 16px; height: 16px; filter: invert(1
   body .mobile-menu .mm-bottom { padding-top: 20px; }
 }
 @media (max-width: 374px) {
-  body .mobile-menu .mm-pill { font-size: 13px; padding: 0 8px; }
+  body .mobile-menu .mm-pill { font-size: 12px; padding: 0 8px; }
 }
 
 /* ==== Footer (Figma 1404:780 desktop · 1311:15729 phone) ==== */
@@ -122,12 +122,12 @@ body .footer .disclaimer { padding: 0; margin: 0; border: 0; border-radius: 0; b
   body .footer .cols { gap: 24px; }
 }
 @media (min-width: 768px) and (max-width: 1100px) {
-  body .footer { padding: 56px 32px 32px; gap: 40px; }
-  body .footer .footer-top { display: flex; flex-direction: column; gap: 40px; }
+  body .footer { padding: 56px 32px 32px; gap: 48px; }
+  body .footer .footer-top { display: flex; flex-direction: column; gap: 48px; }
   body .footer .brand { width: auto; max-width: 440px; gap: 24px; }
   body .footer .brand p { font-size: 16px; line-height: 20px; }
-  body .footer .cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 24px; row-gap: 28px; }
-  body .footer .cols > div { width: auto; gap: 14px; }
+  body .footer .cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 24px; row-gap: 24px; }
+  body .footer .cols > div { width: auto; gap: 16px; }
   body .footer .cols .foot-links, body .footer .cols .foot-links.is-open { gap: 12px; }
   body .footer .disclaimer { font-size: 14px; line-height: 18px; max-width: 760px; }
   body .footer .footer-bottom { gap: 24px; }
@@ -137,7 +137,7 @@ body .footer .disclaimer { padding: 0; margin: 0; border: 0; border-radius: 0; b
 }
 @media (max-width: 767px) {
   body .footer { padding: 48px 20px 32px; gap: 32px; }
-  body .footer .footer-top { gap: 36px; }
+  body .footer .footer-top { gap: 32px; }
   body .footer .brand p { font-size: 16px; line-height: 20px; }
   body .footer .disclaimer { font-size: 14px; line-height: 18px; }
   body .footer .legal { gap: 0; }
@@ -149,7 +149,7 @@ body .cookie.fox-cookie {
   left: 50%; right: auto; bottom: 24px; width: min(1120px, calc(100% - 48px)); box-sizing: border-box;
   translate: -50% 0;
   display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 24px;
-  padding: 20px 28px; border-radius: 20px; background: #fff; color: #0b0c08;
+  padding: 20px 24px; border-radius: 16px; background: #fff; color: #0b0c08;
   box-shadow: 0 24px 64px -8px rgba(11, 12, 8, 0.16), 0 4px 12px rgba(11, 12, 8, 0.08);
   max-height: none; overflow: visible; z-index: 45;
 }
@@ -173,7 +173,7 @@ body .fox-cookie .ck-text:hover { background: rgba(11, 12, 8, 0.06); }
   /* G09: a card over the bottom CTA bar (gap 12); buttons in one row, «Настроить» as a text button. */
   body .cookie.fox-cookie {
     left: 16px; right: 16px; width: auto; translate: none; bottom: calc(12px + env(safe-area-inset-bottom));
-    flex-wrap: wrap; align-items: center; column-gap: 16px; row-gap: 16px; padding: 20px; border-radius: 20px; z-index: 44;
+    flex-wrap: wrap; align-items: center; column-gap: 16px; row-gap: 16px; padding: 20px; border-radius: 16px; z-index: 44;
     transition: bottom 200ms var(--ease);
   }
   body:has(.m04.is-on) .cookie.fox-cookie { bottom: calc(92px + env(safe-area-inset-bottom)); }
@@ -184,14 +184,14 @@ body .fox-cookie .ck-text:hover { background: rgba(11, 12, 8, 0.06); }
   body .fox-cookie .ck-text { justify-self: start; grid-column: 1; }
 }
 @media (max-width: 374px) {
-  body .fox-cookie .ck-actions .btn { font-size: 15px; padding: 0 10px; }
+  body .fox-cookie .ck-actions .btn { font-size: 14px; padding: 0 12px; }
 }
 
 /* Cookie settings (Figma 1299:2239, note G08): 568, padding 32; rows on #D7D8CD plates r16; the required toggle is
    the Disabled state (on, greyed); buttons «Сохранить выбор» (fills the row) + «Принять все» (outline). */
 body .ck-modal { padding: 32px; }
 body .ck-modal .lead-x { top: 40px; right: 32px; width: 40px; height: 40px; background: #fff; box-shadow: inset 0 0 0 1px rgba(11, 12, 8, 0.12); font-size: 22px; }
-body .ck-modal .ck-head { display: flex; align-items: center; gap: 12px; padding-right: 52px; }
+body .ck-modal .ck-head { display: flex; align-items: center; gap: 12px; padding-right: 48px; }
 body .ck-modal .ck-head img { width: 56px; height: 56px; flex: 0 0 56px; }
 body .ck-modal .ck-head h2 { margin: 0; padding: 0; font-weight: 300; font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
 body .ck-modal .lead-note { margin: 20px 0 20px; font-size: 16px; line-height: 20px; color: rgba(11, 12, 8, 0.65); }
@@ -209,15 +209,15 @@ body .ck-modal .cookie-modal-actions .btn-dark { flex: 1 1 auto; }
   body .ck-modal { padding: 28px 20px calc(20px + env(safe-area-inset-bottom)); }
   body .ck-modal .lead-x { top: 28px; right: 20px; }
   body .ck-modal .ck-head img { width: 40px; height: 40px; flex-basis: 40px; }
-  body .ck-modal .ck-head h2 { font-size: 26px; line-height: 30px; }
-  body .ck-modal .switch-row { padding: 14px 16px; margin-top: 12px; }
+  body .ck-modal .ck-head h2 { font-size: 24px; line-height: 28px; }
+  body .ck-modal .switch-row { padding: 16px 16px; margin-top: 12px; }
 }
 
 /* ==== Windows: phone ≤767 — bottom sheet; tablet and desktop — a centred dialog (G10 / G12 / G08) ==== */
 @media (min-width: 768px) and (max-width: 1100px) {
   body .modal-back:has(.lead-modal), body .modal-back:has(.cookie-modal), body .modal-back:has(.book-sheet) { align-items: center; padding: 32px; }
   body .lead-modal, body .cookie-modal, body .book-sheet {
-    width: min(568px, 100%); max-height: calc(100vh - 64px); border-radius: 20px; padding-top: 28px;
+    width: min(568px, 100%); max-height: calc(100vh - 64px); border-radius: 24px; padding-top: 24px;
     animation: modal-in 240ms ease-out both; align-self: center;
   }
   body .lead-modal .sheet-grab, body .cookie-modal .sheet-grab, body .book-sheet .sheet-grab { display: none; }

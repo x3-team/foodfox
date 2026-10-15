@@ -133,7 +133,7 @@ export function AuthorsBrowser() {
       <main className="blog-page blog-authors">
         <section className="wrap authors-head" data-s="au01" ref={headRef}>
           <p className="crumbs rise">
-            <Link href="/blog">Главная</Link>
+            <Link href="/">Главная</Link>
             <span className="sep">/</span>
             <Link href="/blog">Блог</Link>
             <span className="sep">/</span>

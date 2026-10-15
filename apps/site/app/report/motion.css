@@ -110,7 +110,7 @@
   body .report-page .rf-marker .rf-back {
     position: absolute; right: 12px; top: -14px; z-index: 1; display: inline-flex; align-items: center; gap: 4px;
     height: 28px; padding: 0 12px; border: 0; border-radius: 999px; background: #0b0c08; color: #e7f551;
-    font: inherit; font-size: 13px; line-height: 16px; white-space: nowrap; cursor: pointer;
+    font: inherit; font-size: 12px; line-height: 16px; white-space: nowrap; cursor: pointer;
     animation: rf-back-in 200ms ease-out 200ms backwards;
   }
   @keyframes rf-back-in { from { opacity: 0; transform: translateY(4px); } }

@@ -419,7 +419,7 @@ function DocViewer({ code, index, from, onClose }: { code: string; index: number
     if (!to.width || !to.height) return;
     node.animate(
       [
-        { transformOrigin: "0 0", transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`, borderRadius: "20px", opacity: 0.6 },
+        { transformOrigin: "0 0", transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`, borderRadius: "16px", opacity: 0.6 },
         { transformOrigin: "0 0", transform: "none", opacity: 1 },
       ],
       { duration: 320, easing: "cubic-bezier(.2, .8, .2, 1)" },

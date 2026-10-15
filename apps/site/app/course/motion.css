@@ -67,8 +67,8 @@
 /* M10 dots under the phone lecturer carousel (frame K04 390). */
 .kf-dots { display: none; }
 @media (max-width: 767px) {
-  [data-s="k04"] .kf-dots { display: flex; gap: 6px; }
-  [data-s="k04"] .kf-dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(11, 12, 8, 0.3); transition: width 200ms ease-out, background-color 200ms ease-out; }
+  [data-s="k04"] .kf-dots { display: flex; gap: 8px; }
+  [data-s="k04"] .kf-dots i { width: 6px; height: 6px; border-radius: 999px; background: rgba(11, 12, 8, 0.3); transition: width 200ms ease-out, background-color 200ms ease-out; }
   [data-s="k04"] .kf-dots i.is-on { width: 20px; background: #0b0c08; }
 }
 
@@ -79,8 +79,8 @@
 .kf-bio .kf-bio-body { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding-top: 8px; }
 .kf-bio .kf-bio-photo { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; object-position: center top; background: #e7f551; margin-bottom: 12px; }
 .kf-bio h2 { margin: 0; font-weight: 400; font-size: 20px; line-height: 24px; }
-.kf-bio .kf-bio-role { margin: 0; color: #5c5e57; font-size: 15px; line-height: 20px; }
-.kf-bio .kf-bio-lessons { margin: 8px 0 0; font-size: 15px; line-height: 20px; }
+.kf-bio .kf-bio-role { margin: 0; color: #5c5e57; font-size: 16px; line-height: 20px; }
+.kf-bio .kf-bio-lessons { margin: 8px 0 0; font-size: 16px; line-height: 20px; }
 .kf-bio ul { margin: 4px 0 8px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; color: #5c5e57; font-size: 14px; line-height: 18px; }
 
 /* M17 / M10: the lecturer carousel nudges 24px and comes back (600 мс) the first time it shows up on a phone. */

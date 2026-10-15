@@ -6,8 +6,8 @@
 /* ---------- /labs · десктоп 1101–1279: колонка текста ~460 px — H1 в одну строку, «7–10 дней» без переноса ---------- */
 @media (min-width: 1101px) and (max-width: 1279px) {
   html body .l01-row { gap: 48px; }
-  html body .l01 h1 { font-size: 52px; line-height: 56px; letter-spacing: -1.5px; }
-  html body .l01 .l-stats b { font-size: 28px; line-height: 32px; white-space: nowrap; }
+  html body .l01 h1 { font-size: 56px; line-height: 60px; letter-spacing: -1.5px; }
+  html body .l01 .l-stats b { font-size: 24px; line-height: 28px; white-space: nowrap; }
   html body .l01 .l-city-name span { white-space: nowrap; }
 }
 
@@ -25,18 +25,18 @@
   html body .l01 .l-city, html body .l01 .l-note { grid-column: 1 / -1; }
   html body .l01 .l01-photo { grid-column: 2; grid-row: 1 / 4; align-self: stretch; }
   html body .l01 h1 { font-size: 40px; line-height: 44px; letter-spacing: -1px; }
-  html body .l01 .fx-lead { font-size: 16px; line-height: 22px; }
+  html body .l01 .fx-lead { font-size: 16px; line-height: 20px; }
   html body .l01 .l-city { padding: 20px; gap: 16px; }
   html body .l01 .l-city-top { flex-direction: row; align-items: center; gap: 12px; }
   html body .l01 .l-city-name { width: auto; flex: 1 1 auto; }
   html body .l01 .l-city-name input { font-size: 20px; line-height: 24px; }
   html body .l01 .l-change { align-self: center; flex: 0 0 auto; }
   html body .l01 .l-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 16px; }
-  html body .l01 .l-stats b { font-size: 28px; line-height: 32px; white-space: nowrap; }
+  html body .l01 .l-stats b { font-size: 24px; line-height: 28px; white-space: nowrap; }
   html body .l01 .l-stats span { font-size: 14px; line-height: 18px; }
   html body .l01 .l01-photo { height: auto; min-height: 300px; }
   html body .l01 .l-pill { top: 16px; right: 16px; }
-  html body .l01 .l-near { left: 16px; right: 16px; bottom: 16px; width: auto; padding: 14px 16px; }
+  html body .l01 .l-near { left: 16px; right: 16px; bottom: 16px; width: auto; padding: 16px 16px; }
   html body .l01 .l-near p { flex-wrap: nowrap; white-space: nowrap; }
 
   /* L02 сети: 3 колонки */
@@ -57,7 +57,7 @@
   html body [data-s="l03"] .l-split.is-map .l-pane { display: flex; }
   html body [data-s="l03"] .l-split.is-list [data-lab-list] { max-height: none; }
   html body [data-s="l03"] .l-pane { padding: 0; gap: 0; border-right: 1px solid rgba(11, 12, 8, 0.1); min-height: 0; }
-  html body [data-s="l03"] .l-pane .search { margin: 16px 16px 10px; width: auto; }
+  html body [data-s="l03"] .l-pane .search { margin: 16px 16px 12px; width: auto; }
   html body [data-s="l03"] .l-found { padding: 0 16px 12px; border-bottom: 1px solid rgba(11, 12, 8, 0.1); }
   html body [data-s="l03"] [data-lab-list] { flex: 1 1 auto; overflow: auto; }
   html body [data-s="l03"] [data-lab-list] article { padding: 16px 20px; }
@@ -77,7 +77,7 @@
 @media (max-width: 767px) {
   html body .l01 .l-change { min-height: 44px; margin: -12px 0; }
   html body .l01 .l-city-name input { min-height: 44px; margin: -12px 0; }
-  html body [data-s="l03"] .l03-map .leaflet-bar a { width: 44px; height: 44px; line-height: 44px; font-size: 20px; }
+  html body [data-s="l03"] .l03-map .leaflet-bar a { width: 44px; height: 44px; line-height: 24px; font-size: 20px; }
 
   /* Чипы сетей уходят под правый край экрана (peek, 1261:1212), а не обрезаются на 20 px раньше */
   html body [data-s="l03"] .l-nets { max-width: none; width: calc(100% + 40px); box-sizing: border-box; }
@@ -87,20 +87,20 @@
   html body [data-s="l03"] .l-split.is-map .leaflet-map { border-radius: 0; }
   html body .l03-map .l-map-card {
     left: 0; right: 0; bottom: 0; z-index: 800;
-    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px 8px;
-    padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px)); border-radius: 20px 20px 0 0;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px 8px;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px)); border-radius: 16px 16px 0 0;
     box-shadow: 0 -8px 24px rgba(11, 12, 8, 0.12);
     transition: bottom 200ms var(--ease);
   }
-  body:has(.m04.is-on) .l03-map .l-map-card { bottom: calc(81px + env(safe-area-inset-bottom, 0px)); padding-bottom: 20px; border-radius: 20px; }
+  body:has(.m04.is-on) .l03-map .l-map-card { bottom: calc(81px + env(safe-area-inset-bottom, 0px)); padding-bottom: 20px; border-radius: 16px; }
   html body .l03-map .l-map-card > * { grid-column: 1 / -1; margin: 0; }
-  html body .l03-map .l-map-card .l-map-grab { justify-self: center; width: 36px; height: 4px; border-radius: 2px; background: rgba(11, 12, 8, 0.15); margin: -8px 0 2px; }
+  html body .l03-map .l-map-card .l-map-grab { justify-self: center; width: 36px; height: 4px; border-radius: 999px; background: rgba(11, 12, 8, 0.15); margin: -8px 0 2px; }
   html body .l03-map .l-map-card h3 { grid-column: 1; font-size: 12px; line-height: 16px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(11, 12, 8, 0.65); }
-  html body .l03-map .l-map-card .l-open { grid-column: 2; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: #edf3d9; color: #4a6b1f; font-size: 12px; line-height: 16px; }
-  html body .l03-map .l-map-card .l-open i { width: 6px; height: 6px; border-radius: 99px; background: #4a6b1f; }
+  html body .l03-map .l-map-card .l-open { grid-column: 2; display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 999px; background: #edf3d9; color: #4a6b1f; font-size: 12px; line-height: 16px; }
+  html body .l03-map .l-map-card .l-open i { width: 6px; height: 6px; border-radius: 999px; background: #4a6b1f; }
   html body .l03-map .l-map-card .l-addr { font-size: 20px; line-height: 24px; color: #0b0c08; }
-  html body .l03-map .l-map-card .l-metro { display: flex; align-items: center; gap: 6px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
-  html body .l03-map .l-map-card .l-metro::before { content: ""; width: 8px; height: 8px; border-radius: 99px; background: #8c5c33; flex: 0 0 8px; }
+  html body .l03-map .l-map-card .l-metro { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+  html body .l03-map .l-map-card .l-metro::before { content: ""; width: 8px; height: 8px; border-radius: 999px; background: #8c5c33; flex: 0 0 8px; }
   html body .l03-map .l-map-card .l-actions { display: flex; gap: 8px; margin-top: 4px; }
   html body .l03-map .l-map-card .l-actions .btn { height: 48px; padding: 12px 16px; border-radius: 4px; font-size: 16px; line-height: 20px; }
   html body .l03-map .l-map-card .l-actions .btn-ghost { border-color: transparent; background: transparent; }
@@ -115,7 +115,7 @@ html body [data-s="l02"] .l-partners > * { justify-content: flex-start; gap: 0; 
 html body [data-s="l02"] .l-partners .l-logo { display: grid; place-items: center start; width: 120px; height: 36px; flex: 0 0 36px; }
 html body [data-s="l02"] .l-partners .l-logo img { display: block; width: auto; height: auto; max-width: 120px; max-height: 36px; object-fit: contain; }
 html body [data-s="l02"] .l-partners .l-status { margin-top: auto; display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
-html body [data-s="l02"] .l-partners .l-status i { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 99px; background: #4a6b1f; }
+html body [data-s="l02"] .l-partners .l-status i { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 999px; background: #4a6b1f; }
 html body [data-s="l02"] .l-partners > * > em,
 html body [data-s="l02"] .l-partners > * > a { margin-top: 16px; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-style: normal; font-weight: 500; font-size: 14px; line-height: 18px; color: #0b0c08; }
 html body [data-s="l02"] .l-partners .l-arrow { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 999px; border: 1px solid rgba(11, 12, 8, 0.3); display: grid; place-items: center; box-sizing: border-box; transition: background-color 200ms var(--ease), border-color 200ms var(--ease); }
@@ -136,7 +136,7 @@ html body [data-s="l03"] [data-lab-list] article:not(.is-on):not(.is-flash):hove
 html body [data-s="l03"] [data-lab-list] article:not(.is-on):hover .l-actions .btn-ghost { color: rgba(11, 12, 8, 0.65); }
 html body [data-s="l03"] .fox-pin span[data-pin] {
   position: absolute; left: 50%; top: 50%; box-sizing: border-box;
-  width: 32px; height: 32px; margin: 0; border-radius: 99px;
+  width: 32px; height: 32px; margin: 0; border-radius: 999px;
   background: radial-gradient(circle, #e7f551 0 4px, #21251d 4.5px);
   border: 2px solid #fff; box-shadow: 0 2px 8px rgba(11, 12, 8, 0.06);
   transform: translate(-50%, -50%);
@@ -160,7 +160,7 @@ html body [data-s="l03"] .fox-pin span[data-pin].is-on {
 }
 html body [data-s="l03"] .fox-pin .fox-tip {
   position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
-  display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 12px; background: #fff;
+  display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; border-radius: 8px; background: #fff;
   white-space: nowrap; pointer-events: none; text-align: left; font-weight: 400;
   box-shadow: 0 4px 12px rgba(11, 12, 8, 0.08), 0 24px 64px -8px rgba(11, 12, 8, 0.16);
   animation: fade 150ms ease-out;
@@ -180,7 +180,7 @@ html body [data-s="l03"] .fox-tip small { font-size: 12px; line-height: 16px; le
 
 /* ---------- 1257:1044 Подтверждение города (первый визит) ---------- */
 html body .l01 .l-ask {
-  display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 20px; background: #fff;
+  display: flex; flex-direction: column; gap: 16px; padding: 20px; border-radius: 16px; background: #fff;
   border: 1px solid rgba(11, 12, 8, 0.1); box-shadow: 0 2px 6px rgba(11, 12, 8, 0.05), 0 8px 24px -4px rgba(11, 12, 8, 0.1);
   max-width: 520px; box-sizing: border-box; animation: fade 200ms ease-out;
 }
@@ -197,11 +197,11 @@ html body .l01 .l-city { position: relative; }
 html body .l01 .l-city-hints {
   position: absolute; z-index: 30; left: 12px; right: 12px; top: calc(100% - 12px);
   margin: 0; padding: 12px; list-style: none; display: flex; flex-direction: column; gap: 8px;
-  background: #fff; border: 1px solid rgba(11, 12, 8, 0.1); border-radius: 20px;
+  background: #fff; border: 1px solid rgba(11, 12, 8, 0.1); border-radius: 16px;
   box-shadow: 0 2px 6px rgba(11, 12, 8, 0.05), 0 8px 24px -4px rgba(11, 12, 8, 0.1);
   max-height: 320px; overflow: auto; overscroll-behavior: contain;
 }
-html body .l01 .l-city-hints li { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; cursor: pointer; }
+html body .l01 .l-city-hints li { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; cursor: pointer; }
 html body .l01 .l-city-hints li.is-on { background: #f6fbc8; }
 html body .l01 .l-city-hints span { flex: 1 1 auto; min-width: 0; font-size: 16px; line-height: 20px; color: #0b0c08; }
 html body .l01 .l-city-hints small { flex: 0 0 auto; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }

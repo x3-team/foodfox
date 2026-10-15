@@ -20,10 +20,10 @@
 
   /* ---------- /blog ---------- */
   main.blog-feed [data-s="b01"].hero { padding: 24px 0 32px; gap: 32px; }
-  main.blog-feed [data-s="b01"] .hero-row { display: flex; flex-wrap: nowrap; align-items: flex-end; justify-content: space-between; gap: 32px; }
-  main.blog-feed [data-s="b01"] h1 { flex: 0 1 auto; max-width: 520px; font-size: 44px; line-height: 48px; letter-spacing: -1px; }
+  main.blog-feed [data-s="b01"] .hero-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 32px; }
+  main.blog-feed [data-s="b01"] h1 { flex: 0 1 auto; max-width: 520px; font-size: 56px; line-height: 60px; letter-spacing: -1px; }
   main.blog-feed [data-s="b01"] .intro { flex: 0 1 400px; min-width: 300px; width: auto; max-width: none; gap: 16px; }
-  main.blog-feed [data-s="b01"] .intro p { font-size: 18px; line-height: 24px; }
+  main.blog-feed [data-s="b01"] .intro p { font-size: 20px; line-height: 24px; }
   main.blog-feed [data-s="b01"] .intro-links { flex-wrap: wrap; gap: 8px 24px; }
 
   /* Chips first (as on desktop), then «Все теги» + search. Chips scroll horizontally (note 1083:2225 «чипы — горизонтальный
@@ -44,8 +44,8 @@
   main.blog-feed .featured-photo { height: auto; min-height: 100%; }
   main.blog-feed .featured-photo img { position: absolute; inset: 0; }
   main.blog-feed .featured-copy { padding: 32px; gap: 24px; }
-  main.blog-feed .featured h2 { margin-top: 20px; font-size: clamp(24px, 1.6vw + 12px, 28px); line-height: 1.15; letter-spacing: -0.5px; }
-  main.blog-feed .featured .lead { font-size: 16px; line-height: 22px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  main.blog-feed .featured h2 { margin-top: 20px; font-size: 24px; line-height: 28px; letter-spacing: -0.5px; }
+  main.blog-feed .featured .lead { font-size: 16px; line-height: 20px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   main.blog-feed .featured-bottom { flex-wrap: nowrap; gap: 16px; }
   main.blog-feed .featured-bottom .author { min-width: 0; flex: 1 1 auto; }
   main.blog-feed .featured-bottom .author > span { min-width: 0; overflow: hidden; }
@@ -53,34 +53,34 @@
   main.blog-feed .featured-bottom .read-link { flex: none; }
 
   /* Feed: 2 columns (note 1083:2225: «1024 — 2, 768 — 2»); the whole page of 6 with the desktop pager. */
-  main.blog-feed [data-s="b03"].grid-section { padding-top: 40px; }
-  main.blog-feed .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 16px; }
+  main.blog-feed [data-s="b03"].grid-section { padding-top: 48px; }
+  main.blog-feed .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px 16px; }
   main.blog-feed .blog-grid:not(.is-more) > span:nth-child(n+5) { display: contents; }
   main.blog-feed .blog-grid .card-cover { height: auto; aspect-ratio: 437 / 300; }
-  main.blog-feed .blog-grid .card h3 { font-size: 22px; line-height: 26px; letter-spacing: -0.3px; }
+  main.blog-feed .blog-grid .card h3 { font-size: 24px; line-height: 28px; letter-spacing: -0.3px; }
   main.blog-feed .blog-more, main.blog-feed .blog-shown { display: none; }
   main.blog-feed [data-s="b03"] .pager { display: flex; }
   main.blog-feed [data-s="b04"].cta-band { padding: 64px 0; }
 
   /* ---------- /blog/{slug} ---------- */
   main.blog-article .article-top h1 { max-width: 860px; font-size: 40px; line-height: 44px; letter-spacing: -1px; }
-  main.blog-article .article-cover { height: auto; aspect-ratio: 2 / 1; border-radius: 20px; }
+  main.blog-article .article-cover { height: auto; aspect-ratio: 2 / 1; border-radius: 16px; }
   /* Note 1085:2225: «<1280 — оглавление в аккордеон «Содержание» над лидом, aside под статью; текст 760 по центру».
      The accordion is the phone's sticky «Содержание · n из N» bar (1313:5686); the static TOC column is hidden. */
-  main.blog-article .article-grid { padding-top: 40px; align-items: center; }
+  main.blog-article .article-grid { padding-top: 48px; align-items: center; }
   main.blog-article .article-grid > * { width: 100%; max-width: 760px; }
   main.blog-article .article-grid > .toc { display: none; }
   main.blog-article .art-toc-m { display: block; position: sticky; top: calc(var(--header) + 2px); z-index: 30; margin: 2px 0 0; background: #d7d8cd; border-bottom: 1px solid rgba(11, 12, 8, 0.1); }
   main.blog-article .art-toc-m > button,
   main.blog-article .art-toc-m nav { width: min(760px, calc(100% - 64px)); margin: 0 auto; box-sizing: border-box; }
-  main.blog-article .art-toc-m > button { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 0; border: 0; background: transparent; font: inherit; color: #0b0c08; text-align: left; cursor: pointer; }
+  main.blog-article .art-toc-m > button { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 12px 0; border: 0; background: transparent; font: inherit; color: #0b0c08; text-align: left; cursor: pointer; }
   main.blog-article .art-toc-m > button > span { display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-width: 0; }
   main.blog-article .art-toc-m small { font-size: 12px; line-height: 16px; color: rgba(11, 12, 8, 0.65); }
-  main.blog-article .art-toc-m strong { font-size: 15px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  main.blog-article .art-toc-m strong { font-size: 14px; line-height: 18px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   main.blog-article .art-toc-m > button img { width: 20px; height: 20px; flex: 0 0 20px; transition: transform 150ms var(--ease); }
   main.blog-article .art-toc-m.is-open > button img { transform: rotate(180deg); }
   main.blog-article .art-toc-m nav { display: flex; flex-direction: column; padding: 0 0 12px; }
-  main.blog-article .art-toc-m nav a { padding: 10px 0; font-size: 15px; line-height: 20px; color: rgba(11, 12, 8, 0.65); }
+  main.blog-article .art-toc-m nav a { padding: 12px 0; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
   main.blog-article .art-toc-m nav a.is-active { color: #0b0c08; font-weight: 500; }
   main.blog-article .art-share-m .art-share > span { display: none; }
   main.blog-article .art-share-m { align-items: center; }
@@ -95,9 +95,9 @@
 
   /* ---------- /blog/authors ---------- */
   main.blog-authors .authors-head .hero-row { display: flex; flex-wrap: nowrap; align-items: flex-end; justify-content: space-between; gap: 32px; }
-  main.blog-authors .authors-head h1 { flex: 1 1 auto; width: auto; font-size: 44px; line-height: 48px; }
+  main.blog-authors .authors-head h1 { flex: 1 1 auto; width: auto; font-size: 56px; line-height: 60px; }
   main.blog-authors .authors-head .intro { flex: 0 1 420px; width: auto; max-width: 52%; gap: 16px; }
-  main.blog-authors .authors-head .intro p { font-size: 18px; line-height: 24px; }
+  main.blog-authors .authors-head .intro p { font-size: 20px; line-height: 24px; }
   main.blog-authors .authors-head .filter-row { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; }
   main.blog-authors .authors-head .chips { flex-wrap: wrap; overflow: visible; }
   main.blog-authors .author-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px 16px; }
@@ -106,16 +106,16 @@
   /* ---------- /blog/authors/{slug} ---------- */
   main.blog-author .profile { grid-template-columns: minmax(0, 38%) minmax(0, 1fr); gap: 32px; padding-bottom: 48px; }
   main.blog-author .profile-photo { height: auto; aspect-ratio: 437 / 520; }
-  main.blog-author .profile h1 { font-size: 44px; line-height: 48px; letter-spacing: -1px; }
-  main.blog-author .profile .role { font-size: 18px; line-height: 24px; }
-  main.blog-author .profile .columns { gap: 24px; margin-top: 28px; }
+  main.blog-author .profile h1 { font-size: 56px; line-height: 60px; letter-spacing: -1px; }
+  main.blog-author .profile .role { font-size: 20px; line-height: 24px; }
+  main.blog-author .profile .columns { gap: 24px; margin-top: 24px; }
   main.blog-author .profile .columns li { grid-template-columns: 110px minmax(0, 1fr); gap: 12px; }
   main.blog-author .profile .columns li > span:first-child { color: var(--ink-65); }
   main.blog-author .related .related-head { align-items: center; }
   main.blog-author .related .chips { flex-wrap: wrap; overflow: visible; }
-  main.blog-author .related .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 16px; }
+  main.blog-author .related .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px 16px; }
   main.blog-author .related .card-cover { height: auto; aspect-ratio: 437 / 300; }
-  main.blog-author .related .card h3 { font-size: 22px; line-height: 26px; letter-spacing: -0.3px; }
+  main.blog-author .related .card h3 { font-size: 24px; line-height: 28px; letter-spacing: -0.3px; }
   main.blog-author .related h2,
   main.blog-article .article-related h2 { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
 }
@@ -123,11 +123,11 @@
 /* Narrow desktop 1101–1279: the 1440 composition, with type stepped down so nothing collides. */
 @media (min-width: 1101px) and (max-width: 1279px) {
   /* Featured copy (h2 40px × 6 lines + lead) overflowed the 520px card and cut off the author row. */
-  main.blog-feed .featured-copy { padding: 40px; }
+  main.blog-feed .featured-copy { padding: 48px; }
   main.blog-feed .featured h2 { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
-  main.blog-feed .featured .lead { font-size: 18px; line-height: 24px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  main.blog-feed .featured .lead { font-size: 20px; line-height: 24px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   /* Profile: the years column squeezed the experience text («Врач-/дерматовенеролог»). */
-  main.blog-author .profile { gap: 40px; }
+  main.blog-author .profile { gap: 48px; }
   main.blog-author .profile .columns { gap: 24px; }
   main.blog-author .profile .columns li { grid-template-columns: 96px minmax(0, 1fr); }
 }
@@ -150,12 +150,12 @@ main.blog-feed [data-s="b02"] .filter-row { position: relative; z-index: 2; }
 main.blog-feed .tag-trigger[aria-expanded="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 0.5px var(--ink); }
 main.blog-feed .popover { border: 1px solid rgba(11, 12, 8, 0.1); box-shadow: 0 2px 6px rgba(11, 12, 8, 0.05), 0 8px 24px -4px rgba(11, 12, 8, 0.1); }
 main.blog-feed .tag-wrap .popover { width: 280px; }
-main.blog-feed .tag-row, main.blog-feed .suggest-row { gap: 12px; min-height: 40px; padding: 10px 12px; border-radius: 8px; }
+main.blog-feed .tag-row, main.blog-feed .suggest-row { gap: 12px; min-height: 40px; padding: 12px 12px; border-radius: 8px; }
 main.blog-feed .tag-row[aria-selected="true"] { background: #f2f2f2; }
 main.blog-feed .tag-row:hover, main.blog-feed .suggest-row:hover, main.blog-feed .suggest-row.is-active { background: #f2f2f2; }
 main.blog-feed .tag-row .tag-label, main.blog-feed .suggest-row .suggest-label { flex: 1 1 auto; min-width: 0; display: block; font-size: 16px; line-height: 20px; color: var(--ink); }
 main.blog-feed .tag-row .count, main.blog-feed .suggest-row .count { flex: none; font-size: 14px; line-height: 18px; }
-main.blog-feed .tag-row .check { width: 20px; height: 20px; border-radius: 6px; border-color: rgba(11, 12, 8, 0.3); background: #fff; }
+main.blog-feed .tag-row .check { width: 20px; height: 20px; border-radius: 4px; border-color: rgba(11, 12, 8, 0.3); background: #fff; }
 main.blog-feed .tag-row .check.on { background: #101400; border-color: #101400; }
 main.blog-feed .popover-foot { padding: 8px 12px 4px; margin-top: 0; font-size: 14px; line-height: 18px; }
 main.blog-feed .popover-foot button { padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
@@ -167,7 +167,7 @@ main.blog-feed .popover-foot button:hover { text-decoration: underline; text-und
 main.blog-feed .search input:focus-visible { outline: none; box-shadow: none; }
 main.blog-feed .search-wrap .suggest-pop { width: 420px; }
 main.blog-feed .suggest-row > img { width: 16px; height: 16px; flex: none; }
-main.blog-feed .suggest-row.suggest-all { justify-content: flex-start; gap: 8px; min-height: 0; padding: 10px 12px 4px; font-size: 14px; line-height: 18px; background: none; }
+main.blog-feed .suggest-row.suggest-all { justify-content: flex-start; gap: 8px; min-height: 0; padding: 12px 12px 4px; font-size: 14px; line-height: 18px; background: none; }
 main.blog-feed .suggest-row.suggest-all.is-active span,
 main.blog-feed .suggest-row.suggest-all:hover span { text-decoration: underline; text-underline-offset: 3px; }
 
@@ -190,7 +190,7 @@ main.blog-feed .skeleton .bone {
 main.blog-feed .skeleton .card-cover { box-shadow: none; }
 main.blog-feed .skeleton .sk-meta, main.blog-feed .skeleton .sk-author { display: flex; align-items: center; gap: 8px; }
 main.blog-feed .skeleton .sk-title, main.blog-feed .skeleton .sk-text { display: flex; flex-direction: column; gap: 8px; }
-main.blog-feed .skeleton .sk-text { gap: 6px; }
+main.blog-feed .skeleton .sk-text { gap: 8px; }
 main.blog-feed .skeleton .sk-meta i { height: 28px; width: 72px; border-radius: 999px; }
 main.blog-feed .skeleton .sk-meta i + i { width: 96px; }
 main.blog-feed .skeleton .sk-title i { height: 24px; width: 92%; border-radius: 8px; }
@@ -205,7 +205,7 @@ main.blog-page .card:focus-visible:not(:hover) .hover-arrow { opacity: 0; }
 main.blog-page .card:focus-visible:not(:hover) h3 { background-size: 0 1px; }
 
 /* A1 · ToC / Item: hover = grey 2px marker + primary text; the lime marker is measured per item (1–2 lines). */
-main.blog-article .toc a { padding: 6px 0 6px 14px; }
+main.blog-article .toc a { padding: 8px 0 8px 16px; }
 main.blog-article .toc a::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: rgba(11, 12, 8, 0.1); opacity: 0; transition: opacity 150ms ease-out; }
 /* ToC / Item hover = Smart Animate 150 мс EASE_OUT (marker 0 → 10% ink, label 65% → 100%). The active lime marker
    travels 250 мс ease-out (B3). */
@@ -218,7 +218,7 @@ main.blog-article .toc-marker { z-index: 1; }
 main.blog-article .art-share-d .art-share a, main.blog-article .art-share-d .art-share button { border-color: rgba(11, 12, 8, 0.1); }
 main.blog-article .art-share button.is-copied { background: #f2f2f2; }
 /* Article / CTA (1070:256): padding 40, r24, H4 + body 8 apart, actions 24 below — white button + Link / Arrow. */
-main.blog-article .article-cta { padding: 40px; border-radius: 24px; }
+main.blog-article .article-cta { padding: 48px; border-radius: 24px; }
 main.blog-article .article-cta p { margin-top: 8px; }
 main.blog-article .article-cta .actions { gap: 24px; margin-top: 24px; align-items: center; }
 main.blog-article .article-cta .cta-arrow { color: var(--paper); display: inline-flex; align-items: center; gap: 8px; }
@@ -226,7 +226,7 @@ main.blog-article .article-cta .cta-arrow img { width: 16px; height: 16px; trans
 main.blog-article .article-cta .cta-arrow:hover { text-decoration: underline; text-underline-offset: 3px; }
 main.blog-article .article-cta .cta-arrow:hover img { transform: translateX(4px); }
 /* Aside / Read next (1070:299): 40 below the CTA card, rows 16/0 with a divider and an arrow. */
-main.blog-article .next-reads { margin-top: 40px; gap: 0; }
+main.blog-article .next-reads { margin-top: 48px; gap: 0; }
 main.blog-article .next-reads h2 { margin: 0; }
 main.blog-article .next-reads a { display: flex; align-items: flex-start; gap: 12px; padding: 16px 0; border-bottom: 1px solid rgba(11, 12, 8, 0.1); font-size: 16px; line-height: 20px; color: var(--ink); }
 main.blog-article .next-reads a span { flex: 1 1 auto; min-width: 0; }
@@ -236,7 +236,7 @@ main.blog-article .next-reads a:hover span { text-decoration: underline; text-un
 main.blog-article .next-reads a:hover img { transform: translateX(4px); }
 
 /* Toast (1065:235): pill #101400, check icon, 12/20/12/16. */
-.toast.art-toast { display: flex; align-items: center; gap: 10px; padding: 12px 20px 12px 16px; border-radius: 999px; background: #101400; font-size: 16px; line-height: 20px; white-space: nowrap; }
+.toast.art-toast { display: flex; align-items: center; gap: 12px; padding: 12px 20px 12px 16px; border-radius: 999px; background: #101400; font-size: 16px; line-height: 20px; white-space: nowrap; }
 
 /* U1 · authors filter: hidden cards leave with opacity + scale .96 before the grid re-flows (FLIP in AuthorsBrowser). */
 main.blog-authors .author-card { transition: opacity 200ms var(--ease), transform 200ms var(--ease); }
@@ -268,10 +268,10 @@ main.blog-authors .author-card:hover .hover-arrow { opacity: 1; transform: none;
 
 @media (max-width: 767px) {
   main.blog-feed .search-wrap .suggest-pop { width: auto; left: 0; right: 0; }
-  main.blog-feed .empty { padding: 48px 20px; border-radius: 20px; }
-  main.blog-feed .empty h2 { font-size: 28px; line-height: 32px; }
+  main.blog-feed .empty { padding: 48px 20px; border-radius: 16px; }
+  main.blog-feed .empty h2 { font-size: 32px; line-height: 36px; }
   /* Phone CTA (1313:5686): tighter box, «Где сдать тест →» drops under the button. */
-  main.blog-article .article-cta { padding: 24px; border-radius: 20px; }
+  main.blog-article .article-cta { padding: 24px; border-radius: 16px; }
   main.blog-article .article-cta .actions { gap: 16px; }
 }
 
@@ -322,10 +322,10 @@ main.blog-article .quote.rv.is-shown::before { animation: quote-line 500ms var(-
 /* M01: phone contents sheet (BottomSheet, rendered into <body>). */
 .art-toc-sheet .art-toc-sheet-h { margin: 0 0 8px; font-size: 12px; line-height: 16px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(11, 12, 8, 0.65); }
 .art-toc-sheet nav { display: flex; flex-direction: column; }
-.art-toc-sheet nav a { position: relative; display: block; padding: 12px 0 12px 14px; border-bottom: 1px solid rgba(11, 12, 8, 0.08); font-size: 16px; line-height: 20px; color: rgba(11, 12, 8, 0.65); }
+.art-toc-sheet nav a { position: relative; display: block; padding: 12px 0 12px 16px; border-bottom: 1px solid rgba(11, 12, 8, 0.08); font-size: 16px; line-height: 20px; color: rgba(11, 12, 8, 0.65); }
 .art-toc-sheet nav a:last-child { border-bottom: 0; }
 .art-toc-sheet nav a.is-active { color: #0b0c08; font-weight: 500; }
-.art-toc-sheet nav a.is-active::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 2px; background: #e7f551; }
+.art-toc-sheet nav a.is-active::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 999px; background: #e7f551; }
 
 @media (prefers-reduced-motion: reduce) {
   main.blog-article .quote.rv::before, main.blog-article .quote.rv:not(.is-shown)::before { transform: none; animation: none !important; }
@@ -387,3 +387,4 @@ main.blog-article .table-swipe.is-gone { opacity: 0; }
 @media (min-width: 1280px) {
   main.blog-article .article-grid { grid-template-columns: 208px minmax(0, 760px) 312px; justify-content: space-between; }
 }
+main.blog-author > .author-top { padding-top: 24px; }

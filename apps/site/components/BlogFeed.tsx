@@ -293,7 +293,7 @@ export function BlogFeed() {
       <main className="blog-page blog-feed">
         <section className="wrap hero" data-s="b01">
           <p className="crumbs rise">
-            <Link href="/blog">Главная</Link>
+            <Link href="/">Главная</Link>
             <span className="sep">/</span>
             <span aria-current="page">Блог</span>
           </p>

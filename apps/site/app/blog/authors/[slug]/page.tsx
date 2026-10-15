@@ -33,9 +33,9 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
     <>
       <Header />
       <main className="blog-page blog-author">
-        <section className="wrap" style={{ paddingTop: 24 }}>
+        <section className="wrap author-top">
           <p className="crumbs">
-            <Link href="/blog">Главная</Link>
+            <Link href="/">Главная</Link>
             <span className="sep">/</span>
             <Link href="/blog">Блог</Link>
             <span className="sep">/</span>

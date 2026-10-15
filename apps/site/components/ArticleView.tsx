@@ -369,7 +369,7 @@ export function ArticleView({ article }: { article: Article }) {
         <article>
           <header className="wrap article-top">
             <p className="crumbs rise">
-              <Link href="/blog">Главная</Link>
+              <Link href="/">Главная</Link>
               <span className="sep">/</span>
               <Link href="/blog">Блог</Link>
               <span className="sep">/</span>

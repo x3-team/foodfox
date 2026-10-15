@@ -4,6 +4,7 @@ import { CookieBar } from "@/components/CookieBar";
 import { SiteOverlays } from "@/components/SiteOverlays";
 import "./globals.css";
 import "./adaptive/shared.css";
+import "./adaptive/system.css";
 
 // Manrope v4.504 (same build Google Fonts serves; latin + cyrillic incl. ext), served from the repo:
 // fetching Google Fonts at build time made VPS deploys flaky.
