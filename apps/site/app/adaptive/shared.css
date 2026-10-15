@@ -296,3 +296,7 @@ html body [data-s="s15"] .acc.is-open .acc-plus { background-image: none; }
   body .bs-back.is-closing .bs { animation: rm-out 100ms ease-in forwards !important; }
   body .acc-plus { transition-property: background-color, border-color, color; }
 }
+
+/* Touch: no blue Chromium tap flash on the lecturer cards and the tab rows — they have their own press / active states
+   (M17 .is-tapped, M09 / M19 pills, P06 tabs). */
+.kf-lector, .sp-lectors > div, .sp-tabs button, .sp-report-tabs button, .ls-tabs button { -webkit-tap-highlight-color: transparent; }

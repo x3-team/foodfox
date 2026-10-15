@@ -939,11 +939,28 @@ export function LessonsPage() {
 
   /* M18: turning the phone to landscape while a lesson plays puts the player in full screen; back to portrait leaves
      it. The Fullscreen API may refuse a request that does not come from a tap (an orientation change is not a user
-     gesture on most mobile browsers), so the player also covers the screen by itself (.is-landscape, fixed, black). */
+     gesture on most mobile browsers), so the player also covers the screen by itself (.is-landscape, fixed, black).
+     Some browsers pause the video when full screen ends (seen in headless Chromium); the player resumes it — playback
+     was started by the user's tap, so play() is allowed afterwards. */
   const playerRef = useRef<HTMLDivElement>(null);
   const [landscape, setLandscape] = useState(false);
   useEffect(() => {
     const query = window.matchMedia("(orientation: landscape) and (hover: none) and (pointer: coarse)");
+    let wasPlaying = false;
+    const resume = () => {
+      const video = videoRef.current;
+      if (!video || !wasPlaying) return;
+      wasPlaying = false;
+      // the pause arrives after the fullscreenchange event itself, so look again on the next frames
+      let tries = 0;
+      const check = () => {
+        if (!video.paused || tries > 20) return;
+        tries += 1;
+        if (tries > 1) void video.play().catch(() => {});
+        requestAnimationFrame(check);
+      };
+      requestAnimationFrame(check);
+    };
     const sync = () => {
       const node = playerRef.current;
       const video = videoRef.current;
@@ -953,11 +970,21 @@ export function LessonsPage() {
         if (!document.fullscreenElement && node.requestFullscreen) void node.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
       } else if (!query.matches) {
         setLandscape(false);
+        wasPlaying = !video.paused;
         if (document.fullscreenElement === node) void document.exitFullscreen().catch(() => {});
+        resume();
       }
     };
+    const onFullscreen = () => {
+      if (document.fullscreenElement) return;
+      resume();
+    };
     query.addEventListener("change", sync);
-    return () => query.removeEventListener("change", sync);
+    document.addEventListener("fullscreenchange", onFullscreen);
+    return () => {
+      query.removeEventListener("change", sync);
+      document.removeEventListener("fullscreenchange", onFullscreen);
+    };
   }, []);
 
   // L01: «счётчик меняется после анимации» — the «N из 6» label follows the progress bar (width 300 мс ease-out).
