@@ -50,11 +50,12 @@
 }
 
 /* ---------- Line heights from the type scale (12/16 · 14/18 · 16/20 · 20/24 · 24/28) ----------
-   These elements set a font size but inherited the parent's line height (14/20, 12/20, 20/20 …). */
-html body :is(.checker-meters em, .f-search kbd, .rev small, .rev p em, .l05 li small, .sp-facts span, .v-collage2 .v-play):not(#_) { line-height: 16px; }
+   These elements set a font size but inherited the parent's line height (14/20, 12/20, 20/20 …). Every pair of the scale
+   is size + 4 (12/16 … 64/68), so calc(1em + 4px) keeps the pair at whatever size a breakpoint gives the element. */
+html body :is(.checker-meters em, .f-search kbd, .rev small, .rev p em, .l05 li small, .sp-facts span, .v-collage2 .v-play):not(#_) { line-height: calc(1em + 4px); }
 html body .l05 li small:not(#_) { font-size: 12px; }
-html body :is(.l-near span, .l-found, .l-found span, .f01-visual article p, .f01-expert, .f-actions, .f-actions button, .f-groups header span, .columns h2, .fx-kicker, .fx-eye, .v-shown, .v-hint, .k-cards p, .lf-head .lead-note, .pr02 aside > p, [data-s="s12"] .lab-tile .lab-go, [data-s="k03"] .kf-num, .seg button):not(#_) { line-height: 18px; }
-html body :is(.author strong):not(#_) { line-height: 20px; }
+html body :is(.l-near span, .l-found, .l-found span, .f01-visual article p, .f01-expert, .f-actions, .f-actions button, .f-groups header span, .columns h2, .fx-kicker, .fx-eye, .v-shown, .v-hint, .k-cards p, .lf-head .lead-note, .pr02 aside > p, [data-s="s12"] .lab-tile .lab-go, [data-s="k03"] .kf-num, .seg button):not(#_) { line-height: calc(1em + 4px); }
+html body :is(.author strong):not(#_) { line-height: calc(1em + 4px); }
 html body :is(.l05 h3, .f03-phone, .k-routes h3):not(#_) { font-size: 20px; line-height: 24px; }
 html body :is(.pr-op h3, .rev-promo h3):not(#_) { font-size: 24px; line-height: 28px; }
 html body :is(.author-block p, .author-block .text-link):not(#_) { font-size: 16px; line-height: 20px; }
@@ -81,7 +82,7 @@ html body main p.crumbs:not(#_) { margin-top: 0; }
 
 /* ---------- Phone: one inner padding for cards, 24 (F-B3: a button inside a card is 302 wide everywhere) ---------- */
 @media (max-width: 767px) {
-  html body main :is(.k-cards article, .k-routes article, .wrap.k03 > form.lf-page, .report-page .rf-after, .report-page .rf-limits, [data-s="b04"] .cta, [data-s="au03"] .cta):not(#_) { padding: 24px; }
+  html body main :is(.k-cards article, .k-routes article, .wrap.k03 > form.lf-page, .report-page .rf-after, .report-page .rf-limits, [data-s="b04"] .cta, [data-s="au03"] .cta, .pf-tg-m):not(#_) { padding: 24px; }
   html body main :is([data-s="b04"], [data-s="au03"]) .cta .btn:not(#_) { width: 100%; }
 }
 
