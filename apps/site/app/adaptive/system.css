@@ -84,3 +84,9 @@ html body main p.crumbs:not(#_) { margin-top: 0; }
   html body main :is(.k-cards article, .k-routes article, .wrap.k03 > form.lf-page, .report-page .rf-after, .report-page .rf-limits, [data-s="b04"] .cta, [data-s="au03"] .cta):not(#_) { padding: 24px; }
   html body main :is([data-s="b04"], [data-s="au03"]) .cta .btn:not(#_) { width: 100%; }
 }
+
+/* F-B2: «button inside an input» token — pill input 72, pill button 48 — the same on / (S10) and /faq (F01).
+   On /faq the input was 44 tall, so the 48 button stuck out of it. */
+@media (min-width: 768px) {
+  html body main [data-s="f01"] .f-search:not(#_) { height: 72px; padding: 0 12px 0 24px; }
+}
