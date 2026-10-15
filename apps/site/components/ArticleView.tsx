@@ -81,7 +81,7 @@ function Blocks({ blocks }: { blocks: Block[] }) {
           );
         return (
           <aside className="article-cta rv rv-24" key={index}>
-            <img className="bokeh" src="/figma/course/cta-bg.webp" alt="" />
+            <img className="bokeh" src="/figma/course/cta-bg.webp" srcSet="/figma/course/cta-bg.webp 1024w, /figma/course/cta-bg@2x.webp 2048w" sizes="100vw" alt="" />
             <div className="shade" />
             <h2>{block.title}</h2>
             <p>{block.text}</p>
@@ -459,7 +459,7 @@ export function ArticleView({ article }: { article: Article }) {
             </div>
             <aside className="aside">
               <div className="aside-card is-off" ref={asideRef}>
-                <img className="bokeh" src="/figma/course/cta-bg.webp" alt="" />
+                <img className="bokeh" src="/figma/course/cta-bg.webp" srcSet="/figma/course/cta-bg.webp 1024w, /figma/course/cta-bg@2x.webp 2048w" sizes="100vw" alt="" />
                 <div className="shade" />
                 <h2>Записаться на тест</h2>
                 <p>286 продуктов, один забор крови, результат через 7–10 дней. Стоимость устанавливает лаборатория.</p>

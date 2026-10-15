@@ -166,3 +166,15 @@
 @media (min-width: 1101px) {
   [data-s="p06"] .sp-sheet.is-back-2 { left: 32px; }
 }
+
+/* P01 ≥1600: the hero is ~1124 px tall whatever the width, so cover scaled the 2400×1792 photo to the full width and cut
+   the doctor's head off (at 2560 only the middle 59% stayed). Now the photo is as tall as the hero and stays on the right
+   edge, as in the 1440 frame 1120:3219 (her hand and the report touch the right edge there too); to its left the hero's
+   own ground (#1f241a) continues, and the photo's left edge fades into it. */
+@media (min-width: 1600px) {
+  body [data-s="p01"].dark-hero > img.bg {
+    left: auto; right: 0; width: auto; height: 100%; max-width: none; aspect-ratio: 2400 / 1792; object-fit: cover;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 18%);
+  }
+}

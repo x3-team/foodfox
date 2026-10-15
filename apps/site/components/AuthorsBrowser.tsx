@@ -191,7 +191,7 @@ export function AuthorsBrowser() {
         </section>
         <section className="wrap cta-band" data-s="au03">
           <article className="cta">
-            <img className="bokeh" src="/figma/course/cta-bg.webp" alt="" />
+            <img className="bokeh" src="/figma/course/cta-bg.webp" srcSet="/figma/course/cta-bg.webp 1024w, /figma/course/cta-bg@2x.webp 2048w" sizes="100vw" alt="" />
             <div className="shade" />
             <div>
               <h2>Работаете с пациентами? Пройдите курс FOX для специалистов</h2>

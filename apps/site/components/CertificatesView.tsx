@@ -291,7 +291,7 @@ export function CertificatesView() {
                 <div className="c-fan">
                   {[1, 2, 3].map((n) => (
                     <div key={n} className={`c-fan-p c-fan-p${n}`}>
-                      <img className="c-fan-sh" src={`/figma/certificates/fan/p${n}-shadow.png`} alt="" />
+                      <img className="c-fan-sh" src={`/figma/certificates/fan/p${n}-shadow.webp`} alt="" />
                       <img className="c-fan-sheet" src={`/figma/certificates/fan/p${n}-flat.png`} alt="" />
                     </div>
                   ))}
