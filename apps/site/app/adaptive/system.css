@@ -78,3 +78,9 @@ html body main p.crumbs:not(#_) { margin-top: 0; }
   /* FAQ hero: crumbs sat 8 px above the eyebrow chip */
   html body main [data-s="f01"] p.crumbs:not(#_) { margin-bottom: 24px; }
 }
+
+/* ---------- Phone: one inner padding for cards, 24 (F-B3: a button inside a card is 302 wide everywhere) ---------- */
+@media (max-width: 767px) {
+  html body main :is(.k-cards article, .k-routes article, .wrap.k03 > form.lf-page, .report-page .rf-after, .report-page .rf-limits, [data-s="b04"] .cta, [data-s="au03"] .cta):not(#_) { padding: 24px; }
+  html body main :is([data-s="b04"], [data-s="au03"]) .cta .btn:not(#_) { width: 100%; }
+}

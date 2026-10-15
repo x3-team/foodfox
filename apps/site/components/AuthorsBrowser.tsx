@@ -197,7 +197,7 @@ export function AuthorsBrowser() {
               <h2>Работаете с пациентами? Пройдите курс FOX для специалистов</h2>
               <p>6 уроков от лекторов с этой страницы: как устроен тест, как читать отчёт и как применять его в практике. Бесплатно, с сертификатом.</p>
             </div>
-            <Link className="btn btn-light" href="/contacts">
+            <Link className="btn btn-light" href="/course">
               О курсе
             </Link>
           </article>

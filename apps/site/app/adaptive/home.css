@@ -189,8 +189,8 @@
 
   /* S10 · products: chip cloud wraps, the card goes under the list (note 1415:2400) and is not a sheet */
   body [data-s="s10"].band { padding: 96px 0; gap: 32px; background: #d7d8cd; box-shadow: 0 0 0 100vmax #d7d8cd; clip-path: inset(0 -100vmax); }
-  body [data-s="s10"] .s10-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px 48px; padding: 0; }
-  body [data-s="s10"] .s10-head .lead { display: block; margin: 16px 0 0; max-width: 520px; font-size: 20px; line-height: 24px; }
+  body [data-s="s10"] .s10-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px 48px; padding: 0; margin-bottom: 32px; }
+  body [data-s="s10"] .s10-head .lead { display: block; margin: 16px 0 0; max-width: 520px; font-size: 16px; line-height: 20px; }
   body [data-s="s10"] .count-line { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin: 0; text-align: right; }
   body [data-s="s10"] .count-line strong { font-size: 120px; line-height: .9; letter-spacing: -5px; font-weight: 300; }
   body [data-s="s10"] .count-line span.d-only { display: block; max-width: 220px; font-size: 14px; line-height: 18px; }
@@ -905,6 +905,8 @@ body [data-s="s10"].band { background: #d7d8cd; box-shadow: 0 0 0 100vmax #d7d8c
 @media (max-width: 1100px) {
   body [data-s="s09"].band,
   body [data-s="s12"].band { padding-left: 0; padding-right: 0; }
+}
+@media (max-width: 767px) {
   body [data-s="s15"] .s15-grid { padding-left: 0; padding-right: 0; }
 }
 
