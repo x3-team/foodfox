@@ -1,0 +1,26 @@
+/* Demo mode of the course (/course?demo=1): a floating panel that is visible only in demo mode. It sits below the
+   header and under the modals (85), so the registration steps stay in front of it. */
+.demo-bar {
+  position: fixed; right: 16px; top: calc(var(--header-now, var(--header, 72px)) + 12px); z-index: 84;
+  display: flex; flex-direction: column; gap: 8px; width: 264px; padding: 14px; border-radius: 16px;
+  background: #0b0c08; color: #fff; box-shadow: 0 12px 32px rgba(11, 12, 8, .28); font-size: 13px; line-height: 1.35;
+}
+.demo-bar.is-min { width: auto; padding: 8px 12px; }
+.demo-bar-top { display: flex; align-items: center; gap: 8px; }
+.demo-bar-top b { font-weight: 600; }
+.demo-bar-top .demo-tag { padding: 2px 8px; border-radius: 999px; background: var(--lime); color: #0b0c08; font-size: 11px; font-weight: 600; letter-spacing: .02em; }
+.demo-bar-top button { margin-left: auto; background: none; border: 0; color: rgba(255, 255, 255, .7); font: inherit; cursor: pointer; padding: 0 2px; }
+.demo-bar p { margin: 0; color: rgba(255, 255, 255, .72); }
+.demo-bar .demo-act {
+  display: block; width: 100%; padding: 9px 12px; border: 0; border-radius: 10px; background: #fff; color: #0b0c08;
+  font: inherit; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer;
+}
+.demo-bar .demo-act.is-ghost { background: rgba(255, 255, 255, .12); color: #fff; font-weight: 500; }
+.demo-bar .demo-act:disabled { opacity: .5; cursor: default; }
+.demo-bar .demo-act:hover:not(:disabled) { filter: brightness(.94); }
+.reg-demo-mail { margin-top: 12px; width: 100%; }
+@media (max-width: 767px) {
+  .demo-bar { right: 8px; left: 8px; width: auto; top: calc(var(--header-now, var(--header, 64px)) + 8px); }
+  /* folded on a phone: a small pill on the left, above the bottom bars (M04 / the lesson programme bar) */
+  .demo-bar.is-min { left: 8px; right: auto; top: auto; bottom: calc(96px + env(safe-area-inset-bottom)); }
+}

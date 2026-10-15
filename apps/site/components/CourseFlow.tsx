@@ -215,11 +215,64 @@ const COURSE_FAQ = [
 
 const SPECIALTIES = ["Нутрициолог", "Диетолог", "Гастроэнтеролог", "Терапевт / врач общей практики", "Специалист по аутоиммунным заболеваниям", "Невролог"];
 
+/* Demo mode (/course?demo=1, /course/lessons?demo=1): the registration fills itself in with the demo account below,
+   the e-mail link is replaced by a button, and the lessons get an autopilot. Nothing is sent to /api/lead.
+   The flag lives in sessionStorage, so it survives the move to /course/lessons; ?demo=0 or «Выйти из демо» drops it. */
+const DEMO_USER = { email: "demo@foodfox.ru", name: "Анна Демидова", spec: "Гастроэнтеролог" };
+const DEMO_KEY = "fox-demo";
+const DEMO_PROGRESS = "fox-demo-progress";
+
+function useDemo() {
+  const [demo, setDemo] = useState(false);
+  const [fresh, setFresh] = useState(false);
+  useEffect(() => {
+    const flag = new URLSearchParams(window.location.search).get("demo");
+    let on = flag !== null && flag !== "0";
+    try {
+      if (flag === "0") { window.sessionStorage.removeItem(DEMO_KEY); window.sessionStorage.removeItem(DEMO_PROGRESS); }
+      else if (on) window.sessionStorage.setItem(DEMO_KEY, "1");
+      else on = window.sessionStorage.getItem(DEMO_KEY) === "1";
+    } catch { /* storage blocked: demo only while ?demo=1 is in the address */ }
+    setDemo(on);
+    setFresh(flag !== null && flag !== "0");
+  }, []);
+  const exit = useCallback(() => {
+    try { window.sessionStorage.removeItem(DEMO_KEY); window.sessionStorage.removeItem(DEMO_PROGRESS); } catch { /* ignore */ }
+    const url = new URL(window.location.href);
+    url.searchParams.delete("demo");
+    window.location.assign(url.toString());
+  }, []);
+  return { demo, fresh, exit };
+}
+
+function DemoBar({ children, hint }: { children: React.ReactNode; hint: string }) {
+  const [min, setMin] = useState(false);
+  // On a phone the panel starts folded into a small pill, so it does not cover the player and the lesson text.
+  useEffect(() => { if (window.matchMedia("(max-width: 767px)").matches) setMin(true); }, []);
+  return (
+    <div className={`demo-bar${min ? " is-min" : ""}`} role="region" aria-label="Демо-режим курса">
+      <div className="demo-bar-top">
+        <span className="demo-tag">ДЕМО</span>
+        <b>{min ? "Демо-режим" : "Демо-данные, не настоящие"}</b>
+        <button type="button" onClick={() => setMin(!min)} aria-label={min ? "Развернуть панель демо" : "Свернуть панель демо"}>{min ? "▾" : "—"}</button>
+      </div>
+      {!min && (
+        <>
+          <p>{hint}</p>
+          {children}
+        </>
+      )}
+    </div>
+  );
+}
+
 /* K08 (Figma 1136:561 «Модалка регистрации · 3 коротких шага»): e-mail + consent → name → specialty → «Проверьте почту».
    Steps crossfade 200 мс + y 8, the indicator segment fills 150 мс, «Назад» keeps the input, autofocus + Enter on every step,
    e-mail checked on blur, the button is inactive without consent, Esc asks before dropping typed data, resend timer 60 s.
    The request goes to /api/lead (kind: "course"). */
-function useRegistration() {
+function useRegistration(demo = false) {
+  const demoRef = useRef(demo);
+  demoRef.current = demo;
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [sent, setSent] = useState(false);
@@ -245,6 +298,7 @@ function useRegistration() {
   }, [wait]);
 
   function start() {
+    if (demoRef.current) { runDemo(); return; }
     setOpen(true);
     setSent(false);
     setStep(0);
@@ -257,7 +311,7 @@ function useRegistration() {
     setBusy(true);
     try {
       await Promise.all([
-        fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "course", email, name, specialty: spec }) }),
+        demoRef.current ? Promise.resolve() : fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "course", email, name, specialty: spec }) }),
         new Promise((resolve) => window.setTimeout(resolve, 600)),
       ]);
       setSent(true);
@@ -278,16 +332,42 @@ function useRegistration() {
     else void send();
   }
 
-  function close() {
-    const typed = !sent && (email.trim() || name.trim());
-    if (typed && !window.confirm("Прервать регистрацию?")) return;
-    setOpen(false);
+  // Demo: the three steps fill themselves in (the e-mail and the name are typed letter by letter), then «Проверьте почту».
+  const [demoRun, setDemoRun] = useState(false);
+  const demoTimers = useRef<number[]>([]);
+  const stopDemo = () => { demoTimers.current.forEach((timer) => window.clearTimeout(timer)); demoTimers.current = []; };
+  useEffect(() => stopDemo, []);
+  function runDemo() {
+    stopDemo();
+    setDemoRun(true);
+    setOpen(true); setSent(false); setStep(0); setError(""); setBusy(false);
+    setEmail(""); setName(""); setSpec(SPECIALTIES[0]); setAgree(false);
+    let t = 600;
+    const at = (ms: number, fn: () => void) => { t += ms; demoTimers.current.push(window.setTimeout(fn, t)); };
+    const type = (text: string, set: (value: string) => void) => { for (let i = 1; i <= text.length; i += 1) at(55, () => set(text.slice(0, i))); };
+    type(DEMO_USER.email, setEmail);
+    at(350, () => setAgree(true));
+    at(700, () => setStep(1));
+    at(500, () => {});
+    type(DEMO_USER.name, setName);
+    at(700, () => setStep(2));
+    at(800, () => setSpec(DEMO_USER.spec));
+    at(900, () => setBusy(true));
+    at(700, () => { setBusy(false); setSent(true); setWait(60); });
   }
 
-  return { open, close, step, setStep, sent, setSent, busy, error, setError, email, setEmail, name, setName, spec, setSpec, agree, setAgree, wait, start, next, send, emailError };
+  function close() {
+    const typed = !sent && (email.trim() || name.trim());
+    if (!demoRun && typed && !window.confirm("Прервать регистрацию?")) return;
+    stopDemo();
+    setOpen(false);
+  }
+  function dismiss() { stopDemo(); setOpen(false); }
+
+  return { open, setOpen, close, step, setStep, sent, setSent, busy, error, setError, email, setEmail, name, setName, spec, setSpec, agree, setAgree, wait, start, next, send, emailError, demoRun, runDemo, dismiss };
 }
 
-function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration> }) {
+function RegistrationDialog({ flow, onDemoMail }: { flow: ReturnType<typeof useRegistration>; onDemoMail?: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef(flow.close);
   closeRef.current = flow.close;
@@ -404,6 +484,9 @@ function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration>
                 </button>
                 <button type="button" className="btn reg-change" onClick={() => { flow.setSent(false); flow.setStep(0); }}>Изменить e-mail</button>
               </div>
+              {onDemoMail ? (
+                <button type="button" className="btn btn-dark reg-demo-mail" data-autofocus onClick={onDemoMail}>Демо: открыть ссылку из письма</button>
+              ) : null}
             </div>
           ) : (
             <form noValidate onSubmit={(event) => { event.preventDefault(); flow.next(); }}>
@@ -455,7 +538,7 @@ function RegistrationDialog({ flow }: { flow: ReturnType<typeof useRegistration>
  * (/course?access=1). The link itself is sent by the back end; the site has no token check yet, so this screen
  * only presents the state and leads to lesson 1.
  */
-function AccessDialog({ onClose }: { onClose: () => void }) {
+function AccessDialog({ onClose, href = "/course/lessons" }: { onClose: () => void; href?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -474,7 +557,7 @@ function AccessDialog({ onClose }: { onClose: () => void }) {
           <ul className="access-chips">
             {["6 уроков", "Конспекты PDF", "Гайд по отчёту", "Сертификат после 6/6"].map((item) => <li key={item}>{item}</li>)}
           </ul>
-          <Link className="btn btn-dark" href="/course/lessons" data-autofocus>Перейти к уроку 1</Link>
+          <Link className="btn btn-dark" href={href} data-autofocus>Перейти к уроку 1</Link>
           <p className="reg-hint">Ссылку на кабинет мы также продублировали в письме.</p>
         </div>
       </div>
@@ -536,11 +619,21 @@ function LecturerSheet({ open, onClose }: { open: BioOpen; onClose: () => void }
 }
 
 export function CoursePage() {
-  const flow = useRegistration();
+  const { demo, fresh, exit } = useDemo();
+  const flow = useRegistration(demo);
   const [access, setAccess] = useState(false);
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("access") !== null) setAccess(true);
   }, []);
+  // Demo entry by the link (?demo=1): the registration starts by itself a moment after the page opens.
+  const { runDemo } = flow;
+  useEffect(() => {
+    if (!fresh || new URLSearchParams(window.location.search).get("access") !== null) return;
+    const timer = window.setTimeout(runDemo, 900);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fresh]);
+  const demoMail = () => { flow.dismiss(); setAccess(true); };
   const closeAccess = useCallback(() => {
     setAccess(false);
     const url = new URL(window.location.href);
@@ -842,8 +935,16 @@ export function CoursePage() {
             <p className="kf-disclaimer kf-lead-m" data-rv="0" data-rv-base="760">Сертификат подтверждает прохождение курса и не является документом о повышении квалификации.</p>
           </div>
         </section>
-        <RegistrationDialog flow={flow} />
-        {access && <AccessDialog onClose={closeAccess} />}
+        <RegistrationDialog flow={flow} onDemoMail={demo ? demoMail : undefined} />
+        {access && <AccessDialog onClose={closeAccess} href={demo ? "/course/lessons?demo=1" : undefined} />}
+        {demo && (
+          <DemoBar hint={`Регистрация заполняется сама: ${DEMO_USER.email}, ${DEMO_USER.name}, ${DEMO_USER.spec.toLowerCase()}. Письмо не отправляется.`}>
+            <button type="button" className="demo-act" onClick={flow.runDemo}>▶ Заполнить регистрацию</button>
+            <button type="button" className="demo-act is-ghost" onClick={demoMail}>Экран «Доступ открыт»</button>
+            <Link className="demo-act is-ghost" href="/course/lessons?demo=1">Сразу в кабинет курса</Link>
+            <button type="button" className="demo-act is-ghost" onClick={exit}>Выйти из демо</button>
+          </DemoBar>
+        )}
         {bio && <LecturerSheet open={bio} onClose={closeBio} />}
       </main>
       <Footer />
@@ -862,6 +963,39 @@ export function LessonsPage() {
   const [failed, setFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const lesson = LESSONS[current];
+
+  // Demo: the course starts from lesson 1 with nothing watched, progress is kept for the tab, and the autopilot walks
+  // through all six lessons, marking each one watched, until the certificate opens.
+  const { demo, exit } = useDemo();
+  const restored = useRef(false);
+  useEffect(() => {
+    if (!demo) return;
+    let saved: { current?: number; done?: number[] } | null = null;
+    try { saved = JSON.parse(window.sessionStorage.getItem(DEMO_PROGRESS) || "null"); } catch { saved = null; }
+    setCurrent(typeof saved?.current === "number" ? Math.min(5, Math.max(0, saved.current)) : 0);
+    setDone(Array.isArray(saved?.done) ? saved.done.filter((n) => Number.isInteger(n) && n >= 0 && n < 6) : []);
+    restored.current = true;
+  }, [demo]);
+  useEffect(() => {
+    if (!demo || !restored.current) return;
+    try { window.sessionStorage.setItem(DEMO_PROGRESS, JSON.stringify({ current, done })); } catch { /* ignore */ }
+  }, [demo, current, done]);
+  const [touring, setTouring] = useState(false);
+  const tourTimers = useRef<number[]>([]);
+  const stopTour = useCallback(() => { tourTimers.current.forEach((timer) => window.clearTimeout(timer)); tourTimers.current = []; setTouring(false); }, []);
+  useEffect(() => () => tourTimers.current.forEach((timer) => window.clearTimeout(timer)), []);
+  function tour() {
+    stopTour();
+    setTouring(true);
+    setDone([]);
+    let t = 0;
+    const at = (ms: number, fn: () => void) => { t += ms; tourTimers.current.push(window.setTimeout(fn, t)); };
+    LESSONS.forEach((_, index) => {
+      at(index ? 1600 : 100, () => { setCurrent(index); window.scrollTo({ top: 0, behavior: reduceMotion() ? "auto" : "smooth" }); });
+      at(1400, () => setDone((prev) => (prev.includes(index) ? prev : [...prev, index])));
+    });
+    at(400, () => setTouring(false));
+  }
 
   const [tab, setTab] = useState<"about" | "files" | "ask">("about");
   /* M19: the white pill of the segment slides to the picked tab (240 мс), the content crossfades (160 мс) and the
@@ -1232,6 +1366,19 @@ export function LessonsPage() {
               </div>
             </div>
           </div>
+          {demo && (
+            <DemoBar hint={`Кабинет демо-слушателя: ${DEMO_USER.name}. Уроки можно щёлкать в программе слева или запустить автопросмотр.`}>
+              {touring ? (
+                <button type="button" className="demo-act" onClick={stopTour}>■ Остановить автопросмотр</button>
+              ) : (
+                <button type="button" className="demo-act" onClick={tour}>▶ Пройти все 6 уроков</button>
+              )}
+              <button type="button" className="demo-act is-ghost" disabled={touring || unlocked} onClick={() => setDone([0, 1, 2, 3, 4, 5])}>Отметить все — открыть сертификат</button>
+              <button type="button" className="demo-act is-ghost" disabled={touring} onClick={() => { setDone([]); setCurrent(0); firstUnlock.current = true; }}>Сбросить прогресс</button>
+              <Link className="demo-act is-ghost" href="/course?demo=1">Заново: регистрация</Link>
+              <button type="button" className="demo-act is-ghost" onClick={exit}>Выйти из демо</button>
+            </DemoBar>
+          )}
           <button type="button" className="ls-sticky" aria-label="Программа курса" onClick={() => setSheet(true)}>
             <span className="ls-sticky-row">
               <span className="ls-sticky-prog">Программа · урок {current + 1} из 6</span>
