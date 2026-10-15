@@ -566,6 +566,27 @@ body [data-s="s03"].scale .scale-pin { flex-direction: column; gap: inherit; }
   body [data-s="s01"].home-hero .hero-media img.bg { object-position: 100% 100%; }
 }
 
+/* S01 ≥1440: the hero is at most 900 px tall, so on a wide screen cover scaled the 1440×900 photo to the full width and
+   cut its top: at 2560 only the lower 56% stayed, the eyes went above the frame. Now the photo keeps the 1440 frame's
+   composition (1440 wide, or the hero's width when that is narrower; cover inside it) and the sides continue the photo's own
+   ground: the gradient is sampled from its edge columns, and from 1600 the photo's edges fade into it. */
+@media (min-width: 1440px) {
+  body [data-s="s01"].dark-hero.home-hero {
+    background: linear-gradient(180deg, #3d4434 0%, #37402f 10%, #333a2c 20%, #2c3325 30%, #21281b 40%, #1b2116 50%,
+      #181c11 60%, #151a0f 70%, #161a0f 80%, #181b13 90%, #191c16 100%);
+  }
+  body [data-s="s01"].home-hero .hero-media picture {
+    left: 50%; right: auto; translate: -50% 0;
+    width: min(100%, max(calc(clamp(560px, 100svh, 900px) * 1.6), 1440px));
+  }
+}
+@media (min-width: 1600px) {
+  body [data-s="s01"].home-hero .hero-media picture {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+  }
+}
+
 /* ── Выравнивание по сетке 48 / 1344 (правка по замечаниям заказчика 09.10) ── */
 /* S02: подпись над лентой — .meta-line во flex, текст прижимался к левому краю экрана */
 body [data-s="s02"] .meta-line { justify-content: center; }

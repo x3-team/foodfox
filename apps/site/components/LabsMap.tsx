@@ -67,6 +67,10 @@ export function LabsMap({
       holder.current.classList.add("is-sk");
       const tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap",
+        // On DPR ≥ 2 screens Leaflet asks OSM for the next zoom level and draws those tiles at half size, so the
+        // 256 px tiles stop being upscaled ×2 (they were the blurry «10243…10247.png» in the image audit).
+        detectRetina: true,
+        maxZoom: 19,
       }).addTo(map);
       let loaded = false;
       let errors = 0;

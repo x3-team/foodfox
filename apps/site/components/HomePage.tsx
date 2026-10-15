@@ -1006,7 +1006,7 @@ export function HomePage() {
                 type="image/webp"
               />
               <source media="(max-width: 767px)" srcSet="/figma/home/hero-photo-mobile.jpg" />
-              <source srcSet="/figma/home/hero-desktop.webp 1440w, /figma/home/hero-desktop@2x.webp 2880w" sizes="max(100vw, min(1440px, max(896px, 160vh)))" type="image/webp" />
+              <source srcSet="/figma/home/hero-desktop.webp 1440w, /figma/home/hero-desktop@2x.webp 2880w" sizes="(min-width: 1440px) 1440px, max(100vw, min(1440px, max(896px, 160vh)))" type="image/webp" />
               <img className="bg" src="/figma/home/hero-desktop.jpg" alt="" />
             </picture>
           </div>
