@@ -238,7 +238,7 @@ export default function Page() {
             <ReportFaq />
 
             <section data-s="cta" className="rf-cta d-only">
-              <img src="/figma/course/cta-bg.webp" srcSet="/figma/course/cta-bg.webp 1024w, /figma/course/cta-bg@2x.webp 2048w" sizes="100vw" alt="" />
+              <img src="/figma/course/cta-bg.webp" srcSet="/figma/course/cta-bg.webp 1024w, /figma/course/cta-bg@2x.webp 2048w, /figma/course/cta-bg@3x.webp 2880w" sizes="100vw" alt="" />
               <div className="rf-cta-shade" />
               <div className="rf-cta-copy">
                 <h2>Готовы сдать тест или нужно обсудить отчёт?</h2>
@@ -256,7 +256,7 @@ export default function Page() {
               <i />
               <h2>Готовы сдать тест или нужно обсудить отчёт?</h2>
               <p>Выберите лабораторию-партнёра или покажите эту страницу своему врачу.</p>
-              <img src="/figma/course/cta-bg.webp" srcSet="/figma/course/cta-bg.webp 1024w, /figma/course/cta-bg@2x.webp 2048w" sizes="100vw" alt="" />
+              <img src="/figma/course/cta-bg.webp" srcSet="/figma/course/cta-bg.webp 1024w, /figma/course/cta-bg@2x.webp 2048w, /figma/course/cta-bg@3x.webp 2880w" sizes="100vw" alt="" />
               <Link className="btn btn-dark" href="/labs">Где сдать тест</Link>
               <ShareButton />
             </section>

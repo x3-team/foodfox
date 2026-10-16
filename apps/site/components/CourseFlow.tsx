@@ -727,7 +727,7 @@ export function CoursePage() {
       <Header />
       <main>
         <section className="dark-hero" data-s="k01">
-          <img className="bg" src="/figma/course/hero-bg.webp" srcSet="/figma/course/hero-bg.webp 736w, /figma/course/hero-bg@2x.webp 1472w" sizes="100vw" alt="" />
+          <img className="bg" src="/figma/course/hero-bg.webp" srcSet="/figma/course/hero-bg.webp 736w, /figma/course/hero-bg@2x.webp 1472w, /figma/course/hero-bg@4x.webp 2944w" sizes="100vw" alt="" />
           <div className="shade" />
           <div className="wrap inner">
             <div className="kf-hero-row">
@@ -874,7 +874,7 @@ export function CoursePage() {
         </section>
 
         <section className="kf-includes" id="includes" data-s="k05">
-          <img className="kf-includes-bg" src="/figma/course/hero-bg.webp" srcSet="/figma/course/hero-bg.webp 736w, /figma/course/hero-bg@2x.webp 1472w" sizes="100vw" alt="" />
+          <img className="kf-includes-bg" src="/figma/course/hero-bg.webp" srcSet="/figma/course/hero-bg.webp 736w, /figma/course/hero-bg@2x.webp 1472w, /figma/course/hero-bg@4x.webp 2944w" sizes="100vw" alt="" />
           <div className="kf-includes-shade" />
           <div className="wrap kf-includes-in">
             <h2>Что входит в курс</h2>
@@ -920,7 +920,7 @@ export function CoursePage() {
         </section>
 
         <section className="kf-final" data-s="k07">
-          <img src="/figma/course/cta-bg.webp" srcSet="/figma/course/cta-bg.webp 1024w, /figma/course/cta-bg@2x.webp 2048w" sizes="100vw" alt="" />
+          <img src="/figma/course/cta-bg.webp" srcSet="/figma/course/cta-bg.webp 1024w, /figma/course/cta-bg@2x.webp 2048w, /figma/course/cta-bg@3x.webp 2880w" sizes="100vw" alt="" />
           <div className="kf-includes-shade" />
           <div className="wrap kf-final-in">
             <i className="kf-bar" data-rv="0" />

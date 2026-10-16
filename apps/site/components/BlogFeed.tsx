@@ -506,7 +506,7 @@ export function BlogFeed() {
           <div>
             {featured && featuredAuthor && (
               <Link href={`/blog/${featured.slug}`} className="featured featured-in">
-                <img className="featured-bg" src="/figma/course/hero-bg.webp" srcSet="/figma/course/hero-bg.webp 736w, /figma/course/hero-bg@2x.webp 1472w" sizes="100vw" alt="" />
+                <img className="featured-bg" src="/figma/course/hero-bg.webp" srcSet="/figma/course/hero-bg.webp 736w, /figma/course/hero-bg@2x.webp 1472w, /figma/course/hero-bg@4x.webp 2944w" sizes="100vw" alt="" />
                 <div className="featured-shade" />
                 <div className="featured-photo">
                   <img className="photo-in" src={featured.cover} alt="" />
@@ -630,7 +630,7 @@ export function BlogFeed() {
 
         <section className="wrap cta-band" data-s="b04">
           <article className="cta" ref={ctaRef}>
-            <img className="bokeh" src="/figma/course/cta-bg.webp" srcSet="/figma/course/cta-bg.webp 1024w, /figma/course/cta-bg@2x.webp 2048w" sizes="100vw" alt="" />
+            <img className="bokeh" src="/figma/course/cta-bg.webp" srcSet="/figma/course/cta-bg.webp 1024w, /figma/course/cta-bg@2x.webp 2048w, /figma/course/cta-bg@3x.webp 2880w" sizes="100vw" alt="" />
             <div className="shade" />
             <div>
               <h2>Не уверены, что симптомы связаны с едой?</h2>

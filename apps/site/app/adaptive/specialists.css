@@ -76,7 +76,7 @@
   /* P04: фон-фото и тонировка как на десктопе, 4 шага → сетка 2 × 2, линия скрыта
      (заметка P04: «На 1024 — шаги 2×2, линия скрывается»). */
   [data-s="p04"] .sp-route-line { display: none; }
-  body [data-s="p04"].sp-dark { background-image: url("/figma/course/cta-bg@2x.webp"); background-size: cover; background-position: center; }
+  body [data-s="p04"].sp-dark { background-image: url("/figma/course/cta-bg@3x.webp"); background-size: cover; background-position: center; }
   body [data-s="p04"].sp-dark::before { content: ""; position: absolute; inset: 0; background: rgba(33, 37, 29, 0.86); pointer-events: none; }
   body [data-s="p04"].sp-dark > .wrap { position: relative; z-index: 1; }
   [data-s="p04"] .sp-steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; overflow: visible; scroll-snap-type: none; }
