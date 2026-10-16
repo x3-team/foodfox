@@ -40,7 +40,7 @@ export default function PartnerPendingPage() {
           Скачать материалы о тесте
         </Link>
         <Link href="/partner" className="mt-4 text-[14px] font-medium text-[#4A6B1F]">
-          Войти в демо-кабинет
+          Войти
         </Link>
       </div>
       <style>{`

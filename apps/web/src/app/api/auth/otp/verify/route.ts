@@ -16,11 +16,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Неверный код" }, { status: 400 });
     }
 
-    const session = await verifyPhoneOtp(phone, code);
+    const session = await verifyPhoneOtp(phone, code, body.intent === "partner");
     if (!session) {
       return NextResponse.json(
         { error: "Код неверный или истёк" },
         { status: 401 },
+      );
+    }
+
+    if (body.intent === "partner" && session.role !== "partner") {
+      return NextResponse.json(
+        {
+          error:
+            "Этот номер зарегистрирован как клиент. В кабинет партнёра он не входит.",
+        },
+        { status: 403 },
       );
     }
 

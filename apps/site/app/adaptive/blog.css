@@ -1,0 +1,390 @@
+/* Адаптив: blog. Брейкпоинты сайта (единые):
+   телефон ≤767 · планшет 768–1100 · десктоп ≥1101 (подшаги 1280 / 1440).
+   Подшаги телефона: ≤480, ≤374. Этот файл подключается после globals.css и frame.css страницы.
+
+   Scope: every rule hangs off main.blog-page (/blog, /blog/{slug}, /blog/authors, /blog/authors/{slug}),
+   so the shared blog classes (.hero, .grid, .card, .featured, .profile…) are untouched on other pages.
+   Tablet = the desktop compositions (Figma 1071:239, 1076:645, 1078:1055, 1079:1377) squeezed to 704–1036 px,
+   not the stretched phone layout: 2–3 column grids, photo | copy featured card, portrait author crops. */
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  /* Cover / featured photo crops keep the face (eyes sit at ~36% of cover-lactose.png). */
+  main.blog-page .featured-photo img,
+  main.blog-page .article-cover img { object-position: 50% 30%; }
+  main.blog-page .author-card .shot img,
+  main.blog-page .profile-photo img { object-position: 50% 25%; }
+
+  /* Tablet gutter 32px. */
+  main.blog-page .wrap,
+  main.blog-page .article-grid { width: min(var(--content), calc(100% - 64px)); }
+
+  /* ---------- /blog ---------- */
+  main.blog-feed [data-s="b01"].hero { padding: 24px 0 32px; gap: 32px; }
+  main.blog-feed [data-s="b01"] .hero-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 32px; }
+  main.blog-feed [data-s="b01"] h1 { flex: 0 1 auto; max-width: 520px; font-size: 56px; line-height: 60px; letter-spacing: -1px; }
+  main.blog-feed [data-s="b01"] .intro { flex: 0 1 400px; min-width: 300px; width: auto; max-width: none; gap: 16px; }
+  main.blog-feed [data-s="b01"] .intro p { font-size: 20px; line-height: 24px; }
+  main.blog-feed [data-s="b01"] .intro-links { flex-wrap: wrap; gap: 8px 24px; }
+
+  /* Chips first (as on desktop), then «Все теги» + search. Chips scroll horizontally (note 1083:2225 «чипы — горизонтальный
+     скролл») and fade out at the right edge (M05) instead of being cut by the edge. */
+  main.blog-feed [data-s="b02"] .filter-row { flex-direction: column; align-items: stretch; gap: 12px; }
+  main.blog-feed [data-s="b02"] .chips {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; width: 100%;
+    padding: 2px 24px 2px 2px; margin: -2px 0 -2px -2px; box-sizing: content-box; max-width: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent);
+  }
+  main.blog-feed [data-s="b02"] .chips::-webkit-scrollbar { display: none; }
+  main.blog-feed [data-s="b02"] .chip { flex: none; }
+  main.blog-feed [data-s="b02"] .tools { order: 0; width: auto; flex-wrap: nowrap; }
+  main.blog-feed [data-s="b02"] .search { width: 320px; }
+
+  /* Featured: photo | copy like the 1440 frame. */
+  main.blog-feed .featured { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); height: auto; min-height: 440px; overflow: hidden; border-radius: 24px; }
+  main.blog-feed .featured-photo { height: auto; min-height: 100%; }
+  main.blog-feed .featured-photo img { position: absolute; inset: 0; }
+  main.blog-feed .featured-copy { padding: 32px; gap: 24px; }
+  main.blog-feed .featured h2 { margin-top: 20px; font-size: 24px; line-height: 28px; letter-spacing: -0.5px; }
+  main.blog-feed .featured .lead { font-size: 16px; line-height: 20px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  main.blog-feed .featured-bottom { flex-wrap: nowrap; gap: 16px; }
+  main.blog-feed .featured-bottom .author { min-width: 0; flex: 1 1 auto; }
+  main.blog-feed .featured-bottom .author > span { min-width: 0; overflow: hidden; }
+  main.blog-feed .featured-bottom .author .role { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  main.blog-feed .featured-bottom .read-link { flex: none; }
+
+  /* Feed: 2 columns (note 1083:2225: «1024 — 2, 768 — 2»); the whole page of 6 with the desktop pager. */
+  main.blog-feed [data-s="b03"].grid-section { padding-top: 48px; }
+  main.blog-feed .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px 16px; }
+  main.blog-feed .blog-grid:not(.is-more) > span:nth-child(n+5) { display: contents; }
+  main.blog-feed .blog-grid .card-cover { height: auto; aspect-ratio: 437 / 300; }
+  main.blog-feed .blog-grid .card h3 { font-size: 24px; line-height: 28px; letter-spacing: -0.3px; }
+  main.blog-feed .blog-more, main.blog-feed .blog-shown { display: none; }
+  main.blog-feed [data-s="b03"] .pager { display: flex; }
+  main.blog-feed [data-s="b04"].cta-band { padding: 64px 0; }
+
+  /* ---------- /blog/{slug} ---------- */
+  main.blog-article .article-top h1 { max-width: 860px; font-size: 40px; line-height: 44px; letter-spacing: -1px; }
+  main.blog-article .article-cover { height: auto; aspect-ratio: 2 / 1; border-radius: 16px; }
+  /* Note 1085:2225: «<1280 — оглавление в аккордеон «Содержание» над лидом, aside под статью; текст 760 по центру».
+     The accordion is the phone's sticky «Содержание · n из N» bar (1313:5686); the static TOC column is hidden. */
+  main.blog-article .article-grid { padding-top: 48px; align-items: center; }
+  main.blog-article .article-grid > * { width: 100%; max-width: 760px; }
+  main.blog-article .article-grid > .toc { display: none; }
+  main.blog-article .art-toc-m { display: block; position: sticky; top: calc(var(--header) + 2px); z-index: 30; margin: 2px 0 0; background: #d7d8cd; border-bottom: 1px solid rgba(11, 12, 8, 0.1); }
+  main.blog-article .art-toc-m > button,
+  main.blog-article .art-toc-m nav { width: min(760px, calc(100% - 64px)); margin: 0 auto; box-sizing: border-box; }
+  main.blog-article .art-toc-m > button { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 12px 0; border: 0; background: transparent; font: inherit; color: #0b0c08; text-align: left; cursor: pointer; }
+  main.blog-article .art-toc-m > button > span { display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-width: 0; }
+  main.blog-article .art-toc-m small { font-size: 12px; line-height: 16px; color: rgba(11, 12, 8, 0.65); }
+  main.blog-article .art-toc-m strong { font-size: 14px; line-height: 18px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  main.blog-article .art-toc-m > button img { width: 20px; height: 20px; flex: 0 0 20px; transition: transform 150ms var(--ease); }
+  main.blog-article .art-toc-m.is-open > button img { transform: rotate(180deg); }
+  main.blog-article .art-toc-m nav { display: flex; flex-direction: column; padding: 0 0 12px; }
+  main.blog-article .art-toc-m nav a { padding: 12px 0; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+  main.blog-article .art-toc-m nav a.is-active { color: #0b0c08; font-weight: 500; }
+  main.blog-article .art-share-m .art-share > span { display: none; }
+  main.blog-article .art-share-m { align-items: center; }
+  main.blog-article .aside { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+  main.blog-article .aside .next-reads { margin-top: 0; }
+  main.blog-article .aside-card .btn { width: auto; }
+  main.blog-article .article-related .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 16px; overflow: visible; }
+  main.blog-article .article-related .card { flex: none; }
+  main.blog-article .article-related .card-cover { height: 240px; }
+  main.blog-article .article-related .related-count,
+  main.blog-article .article-related .related-dots { display: none; }
+
+  /* ---------- /blog/authors ---------- */
+  main.blog-authors .authors-head .hero-row { display: flex; flex-wrap: nowrap; align-items: flex-end; justify-content: space-between; gap: 32px; }
+  main.blog-authors .authors-head h1 { flex: 1 1 auto; width: auto; font-size: 56px; line-height: 60px; }
+  main.blog-authors .authors-head .intro { flex: 0 1 420px; width: auto; max-width: 52%; gap: 16px; }
+  main.blog-authors .authors-head .intro p { font-size: 20px; line-height: 24px; }
+  main.blog-authors .authors-head .filter-row { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; }
+  main.blog-authors .authors-head .chips { flex-wrap: wrap; overflow: visible; }
+  main.blog-authors .author-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px 16px; }
+  main.blog-authors .author-card .shot { height: auto; aspect-ratio: 352 / 400; }
+
+  /* ---------- /blog/authors/{slug} ---------- */
+  main.blog-author .profile { grid-template-columns: minmax(0, 38%) minmax(0, 1fr); gap: 32px; padding-bottom: 48px; }
+  main.blog-author .profile-photo { height: auto; aspect-ratio: 437 / 520; }
+  main.blog-author .profile h1 { font-size: 56px; line-height: 60px; letter-spacing: -1px; }
+  main.blog-author .profile .role { font-size: 20px; line-height: 24px; }
+  main.blog-author .profile .columns { gap: 24px; margin-top: 24px; }
+  main.blog-author .profile .columns li { grid-template-columns: 110px minmax(0, 1fr); gap: 12px; }
+  main.blog-author .profile .columns li > span:first-child { color: var(--ink-65); }
+  main.blog-author .related .related-head { align-items: center; }
+  main.blog-author .related .chips { flex-wrap: wrap; overflow: visible; }
+  main.blog-author .related .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px 16px; }
+  main.blog-author .related .card-cover { height: auto; aspect-ratio: 437 / 300; }
+  main.blog-author .related .card h3 { font-size: 24px; line-height: 28px; letter-spacing: -0.3px; }
+  main.blog-author .related h2,
+  main.blog-article .article-related h2 { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
+}
+
+/* Narrow desktop 1101–1279: the 1440 composition, with type stepped down so nothing collides. */
+@media (min-width: 1101px) and (max-width: 1279px) {
+  /* Featured copy (h2 40px × 6 lines + lead) overflowed the 520px card and cut off the author row. */
+  main.blog-feed .featured-copy { padding: 48px; }
+  main.blog-feed .featured h2 { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
+  main.blog-feed .featured .lead { font-size: 20px; line-height: 24px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  /* Profile: the years column squeezed the experience text («Врач-/дерматовенеролог»). */
+  main.blog-author .profile { gap: 48px; }
+  main.blog-author .profile .columns { gap: 24px; }
+  main.blog-author .profile .columns li { grid-template-columns: 96px minmax(0, 1fr); }
+}
+
+/* Tablet article: the header slides away on scroll (≤1100), so the progress line and the contents bar move up with it. */
+@media (min-width: 768px) and (max-width: 1100px) {
+  body:has(main.blog-article):has(.site-header.is-hidden) .progress { top: 0; }
+  body:has(.site-header.is-hidden) main.blog-article .art-toc-m { top: 2px; }
+}
+
+/* ===== States (Figma 1057:86 «04 · Блог · состояния»: 1080:1739 лента, 1081:2017 статья, 1081:2214 авторы) ===== */
+
+/* F1/F2: the filter row animates in (transform) and so forms its own stacking context — without a z-index the
+   tag menu and the autocomplete slid under the featured card / empty state that come later in the DOM. */
+main.blog-feed [data-s="b02"] { position: relative; z-index: 20; }
+main.blog-feed [data-s="b02"] .filter-row { position: relative; z-index: 2; }
+
+/* F1 · Menu / Tags (1065:220): 280 wide, border + Shadow M, rows 10/12 with a 20px checkbox, selected rows tinted,
+   footer is two text actions («Сбросить» secondary, «Показать N →» primary). Trigger open = 1.5px ink outline. */
+main.blog-feed .tag-trigger[aria-expanded="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 0.5px var(--ink); }
+main.blog-feed .popover { border: 1px solid rgba(11, 12, 8, 0.1); box-shadow: 0 2px 6px rgba(11, 12, 8, 0.05), 0 8px 24px -4px rgba(11, 12, 8, 0.1); }
+main.blog-feed .tag-wrap .popover { width: 280px; }
+main.blog-feed .tag-row, main.blog-feed .suggest-row { gap: 12px; min-height: 40px; padding: 12px 12px; border-radius: 8px; }
+main.blog-feed .tag-row[aria-selected="true"] { background: #f2f2f2; }
+main.blog-feed .tag-row:hover, main.blog-feed .suggest-row:hover, main.blog-feed .suggest-row.is-active { background: #f2f2f2; }
+main.blog-feed .tag-row .tag-label, main.blog-feed .suggest-row .suggest-label { flex: 1 1 auto; min-width: 0; display: block; font-size: 16px; line-height: 20px; color: var(--ink); }
+main.blog-feed .tag-row .count, main.blog-feed .suggest-row .count { flex: none; font-size: 14px; line-height: 18px; }
+main.blog-feed .tag-row .check { width: 20px; height: 20px; border-radius: 4px; border-color: rgba(11, 12, 8, 0.3); background: #fff; }
+main.blog-feed .tag-row .check.on { background: #101400; border-color: #101400; }
+main.blog-feed .popover-foot { padding: 8px 12px 4px; margin-top: 0; font-size: 14px; line-height: 18px; }
+main.blog-feed .popover-foot button { padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
+main.blog-feed .popover-foot .tag-reset { color: var(--ink-65); }
+main.blog-feed .popover-foot .tag-apply { color: var(--ink); }
+main.blog-feed .popover-foot button:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* F2 · autocomplete (1080:1937): 420 wide, a search icon per row, «label · hint» on one line, «Все результаты по «…» →». */
+main.blog-feed .search input:focus-visible { outline: none; box-shadow: none; }
+main.blog-feed .search-wrap .suggest-pop { width: 420px; }
+main.blog-feed .suggest-row > img { width: 16px; height: 16px; flex: none; }
+main.blog-feed .suggest-row.suggest-all { justify-content: flex-start; gap: 8px; min-height: 0; padding: 12px 12px 4px; font-size: 14px; line-height: 18px; background: none; }
+main.blog-feed .suggest-row.suggest-all.is-active span,
+main.blog-feed .suggest-row.suggest-all:hover span { text-decoration: underline; text-underline-offset: 3px; }
+
+/* F3 · Feed / Empty state (1070:332): outlined box r24, 80/48 padding, H3 32/36, body 16/20 × 520, dark + text button. */
+main.blog-feed .empty { min-height: 0; gap: 24px; padding: 80px 48px; border: 1px solid rgba(11, 12, 8, 0.1); border-radius: 24px; }
+main.blog-feed .empty h2 { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
+main.blog-feed .empty p { max-width: 520px; font-size: 16px; line-height: 20px; margin-top: -12px; }
+main.blog-feed .empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+main.blog-feed .empty-actions .btn { height: 48px; }
+main.blog-feed .empty-actions .empty-all { border-color: transparent; background: transparent; }
+main.blog-feed .empty-actions .empty-all:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* F4 · Card / Skeleton (1066:230): same box as a card, bones in bg/skeleton (ink 6%) with the 1.4s shimmer. */
+main.blog-feed .skeleton { gap: 16px; }
+main.blog-feed .skeleton .bone {
+  background: linear-gradient(90deg, rgba(11, 12, 8, 0.06) 0%, rgba(11, 12, 8, 0.025) 45%, rgba(11, 12, 8, 0.06) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+main.blog-feed .skeleton .card-cover { box-shadow: none; }
+main.blog-feed .skeleton .sk-meta, main.blog-feed .skeleton .sk-author { display: flex; align-items: center; gap: 8px; }
+main.blog-feed .skeleton .sk-title, main.blog-feed .skeleton .sk-text { display: flex; flex-direction: column; gap: 8px; }
+main.blog-feed .skeleton .sk-text { gap: 8px; }
+main.blog-feed .skeleton .sk-meta i { height: 28px; width: 72px; border-radius: 999px; }
+main.blog-feed .skeleton .sk-meta i + i { width: 96px; }
+main.blog-feed .skeleton .sk-title i { height: 24px; width: 92%; border-radius: 8px; }
+main.blog-feed .skeleton .sk-title i + i { width: 69%; }
+main.blog-feed .skeleton .sk-text i { height: 16px; width: 100%; border-radius: 8px; }
+main.blog-feed .skeleton .sk-text i + i { width: 60%; }
+main.blog-feed .skeleton .sk-author i { width: 32px; height: 32px; border-radius: 999px; }
+main.blog-feed .skeleton .sk-author i + i { width: 140px; height: 12px; }
+
+/* F5: keyboard focus is the 3px lime ring only — arrow and title underline are hover cues (right card in the frame). */
+main.blog-page .card:focus-visible:not(:hover) .hover-arrow { opacity: 0; }
+main.blog-page .card:focus-visible:not(:hover) h3 { background-size: 0 1px; }
+
+/* A1 · ToC / Item: hover = grey 2px marker + primary text; the lime marker is measured per item (1–2 lines). */
+main.blog-article .toc a { padding: 8px 0 8px 16px; }
+main.blog-article .toc a::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: rgba(11, 12, 8, 0.1); opacity: 0; transition: opacity 150ms ease-out; }
+/* ToC / Item hover = Smart Animate 150 мс EASE_OUT (marker 0 → 10% ink, label 65% → 100%). The active lime marker
+   travels 250 мс ease-out (B3). */
+main.blog-article .toc a { transition: color 150ms ease-out; }
+main.blog-article .toc-marker { transition: transform 250ms ease-out, height 250ms ease-out; }
+main.blog-article .toc a:hover { color: var(--ink); }
+main.blog-article .toc a:hover:not(.is-active)::before { opacity: 1; }
+main.blog-article .toc-marker { z-index: 1; }
+/* Share / Bar: 40px icon buttons with a 10% outline; the copy button stays tinted while «Ссылка скопирована» is up. */
+main.blog-article .art-share-d .art-share a, main.blog-article .art-share-d .art-share button { border-color: rgba(11, 12, 8, 0.1); }
+main.blog-article .art-share button.is-copied { background: #f2f2f2; }
+/* Article / CTA (1070:256): padding 40, r24, H4 + body 8 apart, actions 24 below — white button + Link / Arrow. */
+main.blog-article .article-cta { padding: 48px; border-radius: 24px; }
+main.blog-article .article-cta p { margin-top: 8px; }
+main.blog-article .article-cta .actions { gap: 24px; margin-top: 24px; align-items: center; }
+main.blog-article .article-cta .cta-arrow { color: var(--paper); display: inline-flex; align-items: center; gap: 8px; }
+main.blog-article .article-cta .cta-arrow img { width: 16px; height: 16px; transition: transform 200ms ease-out; }
+main.blog-article .article-cta .cta-arrow:hover { text-decoration: underline; text-underline-offset: 3px; }
+main.blog-article .article-cta .cta-arrow:hover img { transform: translateX(4px); }
+/* Aside / Read next (1070:299): 40 below the CTA card, rows 16/0 with a divider and an arrow. */
+main.blog-article .next-reads { margin-top: 48px; gap: 0; }
+main.blog-article .next-reads h2 { margin: 0; }
+main.blog-article .next-reads a { display: flex; align-items: flex-start; gap: 12px; padding: 16px 0; border-bottom: 1px solid rgba(11, 12, 8, 0.1); font-size: 16px; line-height: 20px; color: var(--ink); }
+main.blog-article .next-reads a span { flex: 1 1 auto; min-width: 0; }
+main.blog-article .next-reads a img { width: 16px; height: 16px; flex: none; margin-top: 2px; transition: transform 200ms ease-out; }
+main.blog-article .next-reads a:hover { text-decoration: none; }
+main.blog-article .next-reads a:hover span { text-decoration: underline; text-underline-offset: 3px; }
+main.blog-article .next-reads a:hover img { transform: translateX(4px); }
+
+/* Toast (1065:235): pill #101400, check icon, 12/20/12/16. */
+.toast.art-toast { display: flex; align-items: center; gap: 12px; padding: 12px 20px 12px 16px; border-radius: 999px; background: #101400; font-size: 16px; line-height: 20px; white-space: nowrap; }
+
+/* U1 · authors filter: hidden cards leave with opacity + scale .96 before the grid re-flows (FLIP in AuthorsBrowser). */
+main.blog-authors .author-card { transition: opacity 200ms var(--ease), transform 200ms var(--ease); }
+main.blog-authors .author-card.is-leaving { opacity: 0; transform: scale(0.96); pointer-events: none; }
+/* Card / Author hover = Figma Smart Animate 400 мс EASE_OUT: photo ×1.10, Shadow S → M, the round arrow fades in,
+   the name is underlined. */
+main.blog-authors .author-card .shot { position: relative; box-shadow: 0 2px 8px rgba(11, 12, 8, 0.06); transition: box-shadow 400ms ease-out; }
+main.blog-authors .author-card:hover .shot { box-shadow: 0 8px 24px -4px rgba(11, 12, 8, 0.1), 0 2px 6px rgba(11, 12, 8, 0.05); }
+main.blog-authors .author-card .shot img { transition: transform 400ms ease-out; }
+main.blog-authors .author-card h2 { transition: background-size 400ms ease-out; }
+/* C2 = A3: enter 400 мс, leave 350 мс. */
+main.blog-authors .author-card .shot, main.blog-authors .author-card .shot img, main.blog-authors .author-card h2, main.blog-authors .author-card .hover-arrow { transition-duration: 350ms; }
+main.blog-authors .author-card:hover .shot, main.blog-authors .author-card:hover .shot img, main.blog-authors .author-card:hover h2, main.blog-authors .author-card:hover .hover-arrow { transition-duration: 400ms; }
+main.blog-authors .author-card .shot .hover-arrow img,
+main.blog-authors .author-card:hover .shot .hover-arrow img { width: 16px; height: 16px; border-radius: 0; transform: none; }
+main.blog-authors .author-card:hover .hover-arrow { opacity: 1; transform: none; }
+
+/* Desktop: the header slides away while reading down (≥1101, after 400px) — keep the reading line at the top edge
+   instead of hanging 72px below the vanished header. */
+@media (min-width: 1101px) {
+  body:has(main.blog-article):has(.site-header.is-hidden) .progress { top: 0; }
+}
+
+/* Tablet: «Все теги» and search sit at the left under the chips — open the menus rightwards so they stay on screen. */
+@media (min-width: 768px) and (max-width: 1100px) {
+  main.blog-feed .tag-wrap .popover,
+  main.blog-feed .search-wrap .suggest-pop { left: 0; right: auto; transform-origin: top left; }
+}
+
+@media (max-width: 767px) {
+  main.blog-feed .search-wrap .suggest-pop { width: auto; left: 0; right: 0; }
+  main.blog-feed .empty { padding: 48px 20px; border-radius: 16px; }
+  main.blog-feed .empty h2 { font-size: 32px; line-height: 36px; }
+  /* Phone CTA (1313:5686): tighter box, «Где сдать тест →» drops under the button. */
+  main.blog-article .article-cta { padding: 24px; border-radius: 16px; }
+  main.blog-article .article-cta .actions { gap: 16px; }
+}
+
+/* ===== Motion (A1–A7 · B1–B7 · C1–C4 · S01–S06 · A01–A04 · U01–U04 · R01–R02 · M01–M07, M49–M50) ===== */
+
+/* S01 / U01: the page heads animate by themselves from the first paint (.rise: H1, intro, links, filters — 600 мс,
+   stagger 80 мс). The global section entrance is off here: it waited for hydration + IntersectionObserver and then
+   moved the hero row *and* the .rise H1 inside it (48 px and two overlapping fades instead of one 24 px rise).
+   Grids enter card by card (useReveal), not as one block. */
+main.blog-feed [data-s="b01"]:not(.dark-hero).wrap > *,
+main.blog-feed [data-s="b02"]:not(.dark-hero).wrap > *,
+main.blog-feed [data-s="b03"]:not(.dark-hero).wrap > *,
+main.blog-authors [data-s="au01"]:not(.dark-hero).wrap > * { opacity: 1; transform: none; animation: none; }
+main.blog-feed [data-s]:not(.dark-hero).wrap > .rise,
+main.blog-authors [data-s]:not(.dark-hero).wrap > .rise { animation: rise 600ms var(--ease) backwards; }
+main.blog-page [data-s]:not(.dark-hero).wrap > .rise-d1 { animation-delay: 80ms; }
+main.blog-page [data-s]:not(.dark-hero).wrap > .rise-d2 { animation-delay: 160ms; }
+main.blog-page [data-s]:not(.dark-hero).wrap > .rise-d3 { animation-delay: 240ms; }
+main.blog-page [data-s]:not(.dark-hero).wrap > .rise-d4 { animation-delay: 320ms; }
+@media (prefers-reduced-motion: reduce) {
+  main.blog-feed [data-s]:not(.dark-hero).wrap > .rise,
+  main.blog-authors [data-s]:not(.dark-hero).wrap > .rise { animation: fade 100ms linear backwards; }
+  /* R01 profile entrance: 100 мс fade (adaptive rule 08), not 150. */
+  main.blog-author .profile-photo img, main.blog-author .profile > div:nth-child(2) > * { animation-duration: 100ms; }
+}
+
+/* Chip / Filter and Pagination / Item hover = Smart Animate 150 мс EASE_OUT. */
+main.blog-page .chip, main.blog-page .page-btn { transition-timing-function: ease-out; }
+
+/* A2: leaving cards — opacity→0 + scale .98, 200 мс (only the ones that leave when just the tags change). */
+/* B5 quote: the lime line grows from the top (scaleY 0→1, 500 мс) when the quote enters. */
+main.blog-article .quote { position: relative; border-left-color: transparent; }
+main.blog-article .quote::before { content: ""; position: absolute; left: -2px; top: 0; bottom: 0; width: 2px; background: var(--lime); transform-origin: 50% 0; }
+main.blog-article .quote.rv:not(.is-shown)::before { transform: scaleY(0); }
+main.blog-article .quote.rv.is-shown::before { animation: quote-line 500ms var(--ease) var(--rv-d, 0ms) backwards; }
+@keyframes quote-line { from { transform: scaleY(0); } to { transform: none; } }
+
+/* B7: the sticky aside CTA appears after the cover (opacity 0→1, y 16→0, 300 мс) and leaves before the author block. */
+@media (min-width: 1101px) {
+  main.blog-article .aside-card { transition: opacity 300ms var(--ease), transform 300ms var(--ease), visibility 0s linear 0s; }
+  main.blog-article .aside-card.is-off { opacity: 0; transform: translateY(16px); visibility: hidden; pointer-events: none; transition: opacity 300ms var(--ease), transform 300ms var(--ease), visibility 0s linear 300ms; }
+}
+
+/* B6: the «Ссылка скопирована» toast leaves in 150 мс (it used to vanish on the spot). */
+.toast.art-toast.is-out { animation: art-toast-out 150ms ease-in forwards; }
+@keyframes art-toast-out { to { opacity: 0; transform: translate(-50%, 12px); } }
+
+/* M01: phone contents sheet (BottomSheet, rendered into <body>). */
+.art-toc-sheet .art-toc-sheet-h { margin: 0 0 8px; font-size: 12px; line-height: 16px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(11, 12, 8, 0.65); }
+.art-toc-sheet nav { display: flex; flex-direction: column; }
+.art-toc-sheet nav a { position: relative; display: block; padding: 12px 0 12px 16px; border-bottom: 1px solid rgba(11, 12, 8, 0.08); font-size: 16px; line-height: 20px; color: rgba(11, 12, 8, 0.65); }
+.art-toc-sheet nav a:last-child { border-bottom: 0; }
+.art-toc-sheet nav a.is-active { color: #0b0c08; font-weight: 500; }
+.art-toc-sheet nav a.is-active::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 999px; background: #e7f551; }
+
+@media (prefers-reduced-motion: reduce) {
+  main.blog-article .quote.rv::before, main.blog-article .quote.rv:not(.is-shown)::before { transform: none; animation: none !important; }
+  .rv.rv-24.is-shown { animation-name: fade; }
+  main.blog-article .aside-card, main.blog-article .aside-card.is-off { transition: none; }
+  .toast.art-toast.is-out { animation: none; opacity: 0; }
+}
+
+main.blog-page .blog-grid > .is-out-wrap > .card.rv,
+main.blog-page .grid.is-leaving > .card.rv { animation: leave 200ms var(--ease) both; pointer-events: none; }
+
+/* A6: the tag menu and the suggestions open in 180 мс ease-out (y −8 → 0). */
+main.blog-feed .popover { animation-timing-function: ease-out; }
+main.blog-feed .blog-end { display: none; }
+
+@media (max-width: 767px) {
+  /* M05: on a phone the old cards just fade out in 120 мс (BlogFeed waits the same 120 мс before the swap). */
+  main.blog-page .blog-grid > .is-out-wrap > .card.rv,
+  main.blog-page .grid.is-leaving > .card.rv { animation: blog-out 120ms ease-out both; }
+  /* M05: «N материалов» — the new number slides up 200 мс. */
+  main.blog-feed .meta-count, main.blog-authors .meta-count { display: inline-block; }
+  main.blog-feed .meta-count.is-swap, main.blog-authors .meta-count.is-swap { animation: blog-count 200ms ease-out backwards; }
+  /* M06: suggestions — fade + translateY 4 px, 160 мс. */
+  main.blog-feed .search-wrap .suggest-pop { animation: blog-suggest 160ms ease-out; }
+  /* M07: everything is shown — the closing line replaces the button. */
+  main.blog-feed .blog-end { display: block; margin: 16px 0 0; text-align: center; font-size: 14px; line-height: 18px; color: rgba(11, 12, 8, 0.65); }
+  main.blog-feed .blog-end a { color: #0b0c08; text-decoration: underline; text-underline-offset: 3px; }
+}
+@keyframes blog-out { to { opacity: 0; } }
+@keyframes blog-count { from { opacity: 0; transform: translateY(8px); } }
+@keyframes blog-suggest { from { opacity: 0; transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) {
+  main.blog-feed .meta-count.is-swap, main.blog-authors .meta-count.is-swap { animation: fade 100ms linear backwards; }
+  main.blog-feed .search-wrap .suggest-pop { animation: fade 100ms linear; }
+}
+
+/* M02: the article table scrolls inside its own box (the next column peeks out, the page does not get pulled sideways);
+   «← свайпните →» under it fades out in 200 мс after the first swipe (ArticleView). */
+main.blog-article .table-block { margin: 8px 0 24px; min-width: 0; max-width: 100%; }
+main.blog-article .table-block .table-wrap { margin: 0; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+main.blog-article .table-swipe { margin: 8px 0 0; font-size: 12px; line-height: 16px; color: rgba(11, 12, 8, 0.5); transition: opacity 200ms ease-out; }
+main.blog-article .table-swipe.is-gone { opacity: 0; }
+
+/* M03 / M49: a pressed card shrinks to .98 in 120 мс (usePress adds .is-press on touch). */
+@media (max-width: 767px) {
+  main.blog-page .card, main.blog-page .author-card { transition: transform 120ms ease-out; -webkit-tap-highlight-color: transparent; }
+  main.blog-page .card.is-press, main.blog-page .author-card.is-press { transform: scale(0.98); }
+  /* M49: the role chips stay under the header while the authors grid scrolls (the head is lifted by --fr-off, so only
+     the chip row shows), with Shadow S. */
+  main.blog-authors .authors-head { position: sticky; top: calc(var(--header-now, 64px) - var(--fr-off, 0px)); z-index: 6; background: #f8f9f6; transition: top 200ms ease-out; }
+  body:has(.site-header.is-hidden) main.blog-authors .authors-head { top: calc(0px - var(--fr-off, 0px)); }
+}
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  main.blog-page .card.is-press, main.blog-page .author-card.is-press { transform: none; }
+}
+
+/* WIDE-DIFF: 208 + 760 + 312 + 2 × 32 = 1344 exactly — with a classic scrollbar on 1440 the container is 1329 and the
+   right column stuck out by 15 px. The text column gives way instead. */
+@media (min-width: 1280px) {
+  main.blog-article .article-grid { grid-template-columns: 208px minmax(0, 760px) 312px; justify-content: space-between; }
+}
+main.blog-author > .author-top { padding-top: 24px; }

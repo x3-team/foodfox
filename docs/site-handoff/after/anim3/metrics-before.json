@@ -1,0 +1,310 @@
+{
+  "r01_390": {
+    "cls": [
+      "",
+      "",
+      ""
+    ],
+    "blockCls": "rf-zones",
+    "anims": [
+      [],
+      [],
+      []
+    ],
+    "kf": [
+      null,
+      null,
+      null
+    ]
+  },
+  "r01_390_reduce": {
+    "cls": [
+      "rv-in",
+      "rv-in",
+      "rv-in"
+    ],
+    "blockCls": "rf-zones",
+    "anims": [
+      [],
+      [],
+      []
+    ],
+    "kf": [
+      null,
+      null,
+      null
+    ]
+  },
+  "r01_frames_ms": [
+    56,
+    101,
+    135,
+    171,
+    202,
+    238,
+    272,
+    300,
+    333,
+    367
+  ],
+  "l03_1440": {
+    "id": "gem",
+    "before": {
+      "cls": "",
+      "w": "32px",
+      "h": "32px",
+      "transform": "matrix(1, 0, 0, 1, -16, -16)",
+      "rect": [
+        32,
+        32
+      ],
+      "border": "rgb(255, 255, 255)",
+      "bg": "radial-gradient(circle, rgb(231, 245, 81) 0px, rgb(231, 245, 81) 4px, rgb(33, 37, 29) 4.5px)",
+      "shadow": "rgba(11, 12, 8, 0.06) 0px 2px 8px 0px",
+      "transition": "0.15s, 0.15s, 0.15s, 0.15s, 0.15s, 0.15s"
+    },
+    "hover": {
+      "cls": "is-hover",
+      "w": "32px",
+      "h": "32px",
+      "transform": "matrix(1.15, 0, 0, 1.15, -16, -16)",
+      "rect": [
+        36.8,
+        36.8
+      ],
+      "border": "rgb(11, 12, 8)",
+      "bg": "radial-gradient(circle, rgb(11, 12, 8) 0px, rgb(11, 12, 8) 5px, rgb(231, 245, 81) 5.5px)",
+      "shadow": "rgba(11, 12, 8, 0.05) 0px 2px 6px 0px, rgba(11, 12, 8, 0.1) 0px 8px 24px -4px",
+      "transition": "0.15s, 0.15s, 0.15s, 0.15s, 0.15s, 0.15s"
+    },
+    "active": {
+      "cls": "is-on",
+      "w": "46px",
+      "h": "46px",
+      "transform": "matrix(1, 0, 0, 1, -23, -23)",
+      "rect": [
+        46,
+        46
+      ],
+      "border": "rgb(11, 12, 8)",
+      "bg": "radial-gradient(circle, rgb(11, 12, 8) 0px, rgb(11, 12, 8) 6px, rgb(231, 245, 81) 6.5px)",
+      "shadow": "rgba(231, 245, 81, 0.35) 0px 0px 32px 0px",
+      "transition": "0.15s, 0.15s, 0.15s, 0.15s, 0.15s, 0.15s"
+    },
+    "activeHover": {
+      "cls": "is-on is-hover",
+      "w": "46px",
+      "h": "46px",
+      "transform": "matrix(1, 0, 0, 1, -23, -23)",
+      "rect": [
+        46,
+        46
+      ],
+      "border": "rgb(11, 12, 8)",
+      "bg": "radial-gradient(circle, rgb(11, 12, 8) 0px, rgb(11, 12, 8) 6px, rgb(231, 245, 81) 6.5px)",
+      "shadow": "rgba(231, 245, 81, 0.35) 0px 0px 32px 0px",
+      "transition": "0.15s, 0.15s, 0.15s, 0.15s, 0.15s, 0.15s"
+    }
+  },
+  "l03_1440_reduce": {
+    "hover": {
+      "transform": "matrix(1, 0, 0, 1, -16, -16)",
+      "transition": "0.1s"
+    },
+    "active": {
+      "w": "46px",
+      "transition": "0.1s",
+      "anim": "none"
+    }
+  },
+  "m10_390": {
+    "states": [
+      {
+        "scrollLeft": 0,
+        "dots": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "counter": null,
+        "counterCss": null,
+        "counterRect": null,
+        "dotsRect": {
+          "x": 20,
+          "y": 689,
+          "h": 6
+        },
+        "current": [
+          "cur",
+          "-",
+          "-",
+          "-"
+        ]
+      },
+      {
+        "scrollLeft": 299,
+        "dots": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "counter": null,
+        "counterCss": null,
+        "counterRect": null,
+        "dotsRect": {
+          "x": 20,
+          "y": 689,
+          "h": 6
+        },
+        "current": [
+          "passed",
+          "cur",
+          "-",
+          "-"
+        ]
+      },
+      {
+        "scrollLeft": 598,
+        "dots": [
+          0,
+          0,
+          1,
+          0
+        ],
+        "counter": null,
+        "counterCss": null,
+        "counterRect": null,
+        "dotsRect": {
+          "x": 20,
+          "y": 689,
+          "h": 6
+        },
+        "current": [
+          "passed",
+          "passed",
+          "cur",
+          "-"
+        ]
+      },
+      {
+        "scrollLeft": 299,
+        "dots": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "counter": null,
+        "counterCss": null,
+        "counterRect": null,
+        "dotsRect": {
+          "x": 20,
+          "y": 689,
+          "h": 6
+        },
+        "current": [
+          "passed",
+          "cur",
+          "-",
+          "-"
+        ]
+      }
+    ],
+    "frames": [
+      47,
+      743,
+      862,
+      978,
+      1076,
+      1178,
+      1710,
+      3044,
+      4360
+    ]
+  },
+  "m10_390_reduce": {
+    "nudge": false,
+    "rowAnim": "none",
+    "counter": null,
+    "counterAnim": null
+  },
+  "hscroll": {
+    "390/report": {
+      "sw": 390,
+      "cw": 390,
+      "bw": 390
+    },
+    "390/labs": {
+      "sw": 390,
+      "cw": 390,
+      "bw": 390
+    },
+    "390/specialists": {
+      "sw": 390,
+      "cw": 390,
+      "bw": 390
+    },
+    "360/report": {
+      "sw": 360,
+      "cw": 360,
+      "bw": 360
+    },
+    "360/labs": {
+      "sw": 360,
+      "cw": 360,
+      "bw": 360
+    },
+    "360/specialists": {
+      "sw": 360,
+      "cw": 360,
+      "bw": 360
+    },
+    "768/report": {
+      "sw": 753,
+      "cw": 768,
+      "bw": 753
+    },
+    "768/labs": {
+      "sw": 753,
+      "cw": 768,
+      "bw": 753
+    },
+    "768/specialists": {
+      "sw": 753,
+      "cw": 768,
+      "bw": 753
+    },
+    "1024/report": {
+      "sw": 1009,
+      "cw": 1024,
+      "bw": 1009
+    },
+    "1024/labs": {
+      "sw": 1009,
+      "cw": 1024,
+      "bw": 1009
+    },
+    "1024/specialists": {
+      "sw": 1009,
+      "cw": 1024,
+      "bw": 1009
+    },
+    "1440/report": {
+      "sw": 1425,
+      "cw": 1440,
+      "bw": 1425
+    },
+    "1440/labs": {
+      "sw": 1425,
+      "cw": 1440,
+      "bw": 1425
+    },
+    "1440/specialists": {
+      "sw": 1425,
+      "cw": 1440,
+      "bw": 1425
+    }
+  }
+}

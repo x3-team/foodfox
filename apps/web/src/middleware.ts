@@ -3,6 +3,21 @@ import { decodeSession, SESSION_COOKIE } from "@/lib/auth-edge";
 
 const PROTECTED = ["/upload", "/results", "/plan", "/recipes", "/chat", "/account"];
 
+const PARTNER_GUARDED = [
+  "/partner/home",
+  "/partner/reports",
+  "/partner/payouts",
+  "/partner/materials",
+  "/partner/certification",
+  "/partner/settings",
+];
+
+function isGuardedPartnerPath(pathname: string): boolean {
+  return PARTNER_GUARDED.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(SESSION_COOKIE)?.value;
@@ -37,6 +52,22 @@ export async function middleware(request: NextRequest) {
 
   if (pathname.startsWith("/api/auth")) {
     return NextResponse.next();
+  }
+
+  if (pathname === "/partner" && session?.role === "partner") {
+    return NextResponse.redirect(new URL("/partner/home", request.url));
+  }
+
+  if (isGuardedPartnerPath(pathname)) {
+    if (!session || session.role !== "partner") {
+      const login = new URL("/partner", request.url);
+      if (session && session.role !== "partner") {
+        login.searchParams.set("error", "role");
+      } else {
+        login.searchParams.set("next", pathname);
+      }
+      return NextResponse.redirect(login);
+    }
   }
 
   const needsAuth =

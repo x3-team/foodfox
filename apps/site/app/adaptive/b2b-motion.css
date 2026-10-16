@@ -1,0 +1,16 @@
+/* Item-level entrance for /specialists, /report, /course (components/useReveal.ts).
+   Hidden until `rv-in`; then rise from --rv-y (24px by default) over --rv-dur with the per-item delay --rv-d.
+   Fill «backwards»: when the entrance ends nothing keeps a transform / opacity on the item (no stacking context,
+   no jump at the end, hover transforms of the item work as before). `rv-now` = shown in place without motion.
+   Curve: power2.out = cubic-bezier(.33,1,.68,1) — the entrance curve of the P-anim / K-anim notes (was --ease). */
+[data-rv]:not(.rv-in) { opacity: 0; transform: translateY(var(--rv-y, 24px)) scale(var(--rv-s, 1)); }
+[data-rv].rv-in:not(.rv-now) {
+  animation: rv-rise var(--rv-dur, 600ms) var(--rv-ease, cubic-bezier(0.33, 1, 0.68, 1)) var(--rv-d, 0ms) backwards;
+}
+@keyframes rv-rise { from { opacity: 0; transform: translateY(var(--rv-y, 24px)) scale(var(--rv-s, 1)); } }
+@media (prefers-reduced-motion: reduce) {
+  /* Agreed behaviour: entrances become a 100 мс fade, nothing moves. */
+  [data-rv]:not(.rv-in) { transform: none; }
+  [data-rv].rv-in:not(.rv-now) { animation: rv-fade 100ms ease-out backwards !important; }
+}
+@keyframes rv-fade { from { opacity: 0; } }

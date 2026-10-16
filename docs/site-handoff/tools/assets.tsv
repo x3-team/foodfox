@@ -1,0 +1,133 @@
+file	format	width	height	KB	bytes_per_px	jpeg_q	mode
+blog/author-alyona.png	PNG	1024	1024	1465	1.431		RGB
+blog/author-anna.png	PNG	1797	1371	1498	0.623		RGB
+blog/author-dmitry.png	PNG	1024	1024	1354	1.323		RGB
+blog/author-editorial.png	PNG	736	1474	2069	1.953		RGBA
+blog/author-ksenia.png	PNG	1024	1024	1415	1.382		RGB
+blog/author-svetlana.png	PNG	1024	1024	1425	1.392		RGB
+blog/avatar-alyona.png	PNG	64	64	7	1.903		RGBA
+blog/avatar-editorial.png	PNG	64	64	8	2.131		RGBA
+blog/avatar-ksenia-s.png	PNG	64	64	9	2.374		RGBA
+blog/avatar-ksenia.png	PNG	80	80	10	1.745		RGBA
+blog/avatar-svetlana.png	PNG	64	64	9	2.371		RGBA
+blog/cover-citrus.jpg	JPEG	1002	1122	223	0.203	75	RGB
+blog/cover-lab.png	PNG	1024	1024	1354	1.323		RGB
+blog/cover-lactose.png	PNG	1797	1371	1498	0.623		RGB
+blog/cover-plate.jpg	JPEG	1152	864	470	0.484	95	RGB
+blog/cover-report.png	PNG	1002	1310	277	0.216		RGBA
+blog/cover-story.png	PNG	1024	1024	1415	1.382		RGB
+blog/cover-symptoms.jpg	JPEG	1152	864	360	0.371	95	RGB
+blog/featured-bg.png	PNG	736	1474	2069	1.953		RGBA
+blog/footer-bokeh.png	PNG	1024	1024	1439	1.406		RGB
+figma/home/anna.webp	WEBP	96	96	2	0.283		RGB
+figma/home/hero-desktop.jpg	JPEG	1440	900	90	0.072	85	RGB
+figma/home/hero-desktop.webp	WEBP	1440	900	46	0.037		RGB
+figma/home/hero-desktop@2x.webp	WEBP	2880	1800	98	0.019		RGB
+figma/home/hero-panel-texture.png	PNG	640	1050	1011	1.542		RGBA
+figma/home/hero-panel-texture.webp	WEBP	640	1050	104	0.159		RGB
+figma/home/hero-photo-mobile.jpg	JPEG	780	880	63	0.095	84	RGB
+figma/home/hero-photo-mobile.webp	WEBP	780	880	30	0.046		RGB
+figma/home/s08-bg.jpg	JPEG	1440	996	139	0.100	80	RGB
+figma/home/s12-map.webp	WEBP	540	540	55	0.194		RGB
+figma/home/s15-bg.jpg	JPEG	1440	1782	153	0.061	82	RGB
+figma/home/reviews/a1.webp	WEBP	160	160	3	0.139		RGB
+figma/home/reviews/p1.webp	WEBP	800	800	42	0.068		RGB
+figma/home/reviews/p2.webp	WEBP	800	800	43	0.070		RGB
+figma/home/reviews/p3.webp	WEBP	800	800	59	0.095		RGB
+figma/home/references/figma-home-top1000.png	PNG	390	1000	423	1.112		RGBA
+figma/home/references/hero-export@2x.png	PNG	780	1708	1321	1.015		RGBA
+figma/home/checker/panel-bg.webp	WEBP	440	722	10	0.034		RGB
+figma/home/deck/card-1.webp	WEBP	1118	558	28	0.047		RGB
+figma/home/deck/card-2.webp	WEBP	1118	558	23	0.038		RGB
+figma/home/deck/card-3.webp	WEBP	1118	558	28	0.047		RGB
+figma/reviews/hero-a.jpg	JPEG	1205	1600	179	0.096	82	RGB
+figma/reviews/hero-b.jpg	JPEG	1205	1600	207	0.110	82	RGB
+figma/reviews/r1.png	JPEG	1205	1600	207	0.110	82	RGB
+figma/reviews/r2.png	JPEG	1600	1205	243	0.129	86	RGB
+figma/reviews/r3.png	JPEG	1205	1600	179	0.096	82	RGB
+figma/reviews/r4.png	JPEG	1205	1600	207	0.110	82	RGB
+figma/reviews/r5.png	JPEG	1600	1205	161	0.086	86	RGB
+figma/reviews/r6.png	JPEG	1600	1205	243	0.129	86	RGB
+figma/reviews/r7.png	JPEG	1600	1205	197	0.105	86	RGB
+figma/reviews/r8.png	JPEG	1600	1205	155	0.083	86	RGB
+figma/specialists/alyona.png	PNG	1024	1024	1465	1.431		RGB
+figma/specialists/arg-bg.png	PNG	640	1050	1322	2.015		RGBA
+figma/specialists/dmitry.png	PNG	1024	1024	1354	1.323		RGB
+figma/specialists/hero-m.webp	WEBP	780	960	26	0.037		RGB
+figma/specialists/hero.jpeg	JPEG	2400	1792	324	0.077	88	RGB
+figma/specialists/ksenia.png	PNG	1024	1024	1415	1.382		RGB
+figma/specialists/route-bg.webp	WEBP	1440	1440	27	0.014		RGB
+figma/specialists/scenario.jpg	JPEG	1168	880	135	0.135	90	RGB
+figma/specialists/svetlana.png	PNG	1024	1024	1425	1.392		RGB
+figma/contacts/hero.jpg	JPEG	1600	1205	197	0.105	86	RGB
+figma/austria/a1.png	PNG	1024	1024	1354	1.323		RGB
+figma/austria/a2.png	PNG	512	512	435	1.703		RGBA
+figma/labs/chromolab.png	PNG	260	40	8	0.821		RGBA
+figma/labs/invitro.png	PNG	382	105	18	0.467		RGBA
+figma/labs/room.jpg	JPEG	1600	1205	155	0.083	86	RGB
+figma/labs/fig/chromolab.png	PNG	451	36	17	1.074		RGBA
+figma/labs/fig/citilab.png	PNG	331	103	2	0.083		P
+figma/labs/fig/cmd.png	PNG	480	94	5	0.125		P
+figma/labs/fig/dnkom.png	PNG	254	120	4	0.136		P
+figma/labs/fig/gemotest.png	PNG	389	41	1	0.103		P
+figma/labs/fig/helix.png	PNG	283	98	3	0.113		P
+figma/labs/fig/invitro.png	PNG	234	43	8	0.912		RGBA
+figma/labs/fig/kdl.png	PNG	404	119	19	0.407		RGBA
+figma/labs/fig/unimed.png	PNG	389	120	4	0.103		P
+figma/faq/consultant.jpg	JPEG	1600	1205	243	0.129	86	RGB
+figma/faq/expert.jpg	JPEG	1600	1205	161	0.086	86	RGB
+figma/faq/hero.jpg	JPEG	1600	1205	199	0.106	82	RGB
+figma/course/ccd.jpg	JPEG	1024	1024	217	0.212	90	RGB
+figma/course/cta-bg-2.png	PNG	512	512	426	1.667		RGBA
+figma/course/cta-bg.png	PNG	1024	1024	1439	1.406		RGB
+figma/course/hero-bg-2.png	PNG	184	369	145	2.198		RGBA
+figma/course/hero-bg.png	PNG	736	1474	2069	1.953		RGBA
+figma/course/hero-visual.jpg	JPEG	1152	864	219	0.226	95	RGB
+figma/course/lector-1a.png	PNG	1024	1024	1425	1.392		RGB
+figma/course/lector-1b.png	PNG	512	512	542	2.121		RGBA
+figma/course/lector-2a.png	PNG	1024	1024	1465	1.431		RGB
+figma/course/lector-2b.png	PNG	512	512	520	2.032		RGBA
+figma/course/lector-3a.png	PNG	1024	1024	1415	1.382		RGB
+figma/course/lector-3b.png	PNG	512	512	559	2.184		RGBA
+figma/course/lector-4a.png	PNG	1024	1024	1354	1.323		RGB
+figma/course/lector-4b.png	PNG	512	512	435	1.703		RGBA
+figma/course/lesson-poster.webp	WEBP	1280	720	16	0.018		RGB
+figma/course/my-avatar.webp	WEBP	96	96	1	0.149		RGB
+figma/course/player-poster.jpg	JPEG	1280	720	129	0.144	95	RGB
+figma/not-found/plate.jpg	JPEG	1600	1600	641	0.257	82	RGB
+figma/certificates/doc-1.png	PNG	664	436	58	0.207		RGBA
+figma/certificates/doc-2.png	PNG	436	218	33	0.364		RGBA
+figma/certificates/doc-3.png	PNG	340	218	20	0.281		RGBA
+figma/certificates/doc-4.png	PNG	332	218	18	0.268		RGBA
+figma/certificates/elisa.jpg	JPEG	1600	1205	134	0.071	82	RGB
+figma/certificates/madx.jpg	JPEG	1600	904	149	0.106	82	RGB
+figma/certificates/stack.png	PNG	1120	960	341	0.325		RGBA
+figma/certificates/fan/ce.png	PNG	372	140	19	0.380		RGBA
+figma/certificates/fan/chip.png	PNG	434	168	23	0.332		RGBA
+figma/certificates/fan/p1.png	PNG	808	867	131	0.193		RGBA
+figma/certificates/fan/p2.png	PNG	768	916	133	0.194		RGBA
+figma/certificates/fan/p3.png	PNG	767	844	124	0.197		RGBA
+figma/symptoms/gut-card.png	PNG	648	1040	709	1.078		RGBA
+figma/symptoms/gut.png	PNG	1024	1024	950	0.928		RGBA
+figma/symptoms/gut1.png	PNG	512	512	267	1.046		RGBA
+figma/symptoms/s1.png	PNG	1024	1024	1159	1.132		RGB
+figma/symptoms/s10.png	PNG	512	512	370	1.446		RGBA
+figma/symptoms/s11.png	PNG	832	1248	1181	1.165		RGB
+figma/symptoms/s12.png	PNG	1024	1024	1188	1.161		RGBA
+figma/symptoms/s2.png	PNG	208	312	100	1.586		RGBA
+figma/symptoms/s3.png	PNG	208	312	93	1.469		RGBA
+figma/symptoms/s4.png	PNG	832	1248	1116	1.101		RGB
+figma/symptoms/s5.png	PNG	512	512	389	1.521		RGBA
+figma/symptoms/s6.png	PNG	1024	1024	913	0.893		RGBA
+figma/symptoms/s7.png	PNG	832	1248	1059	1.045		RGBA
+figma/symptoms/s8.png	PNG	512	512	267	1.046		RGBA
+figma/symptoms/s9.png	PNG	208	312	110	1.739		RGBA
+figma/symptoms/skin.png	PNG	683	1024	548	0.804		RGBA
+figma/symptoms/well.png	PNG	1024	1024	741	0.724		RGBA
+figma/report/front.png	PNG	1210	1384	438	0.268		RGBA
+figma/report/p1.png	PNG	736	1308	1879	1.999		RGBA
+figma/report/p2.png	PNG	251	328	46	0.582		RGBA
+figma/report/p3.png	PNG	184	327	122	2.086		RGBA
+figma/report/p4.png	PNG	1002	1310	277	0.216		RGBA
+figma/report/sheet1.png	PNG	1002	1310	277	0.216		RGBA
+figma/report/sheet2.png	PNG	251	328	46	0.582		RGBA
