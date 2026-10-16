@@ -12,7 +12,7 @@ gain = float(sys.argv[4]) if len(sys.argv) > 4 else 0.8
 a = np.asarray(Image.open(src).convert('RGB'), float) / 255
 H, W, _ = a.shape
 L = a @ [0.299, 0.587, 0.114]
-base = gaussian_filter1d(a, 1.4, axis=1, mode='nearest')
+base = gaussian_filter1d(gaussian_filter1d(a, 1.4, axis=1, mode='nearest'), 0.85, axis=0, mode='nearest')  # also kills a 2 px row ripple
 Lb = base @ [0.299, 0.587, 0.114]
 rel = (L - Lb) / np.maximum(Lb, 0.03)
 amp = np.sqrt(gaussian_filter(rel ** 2, 5))                      # local rib contrast
