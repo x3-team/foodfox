@@ -91,3 +91,46 @@ html body main p.crumbs:not(#_) { margin-top: 0; }
 @media (min-width: 768px) {
   html body main [data-s="f01"] .f-search:not(#_) { height: 72px; padding: 0 12px 0 24px; }
 }
+
+/* ---------- Сквозной проход 16.10 ---------- */
+/* Иконки, которые терялись на своём фоне. plus.svg и check.svg уже светлые (#F8F9F6): invert(1) делал их
+   чёрными на чёрной кнопке (S06 «Скачать список и записаться», S07 «Записаться на тест» на телефоне) и на тёмной
+   видеокарточке /reviews. arrow-right.svg тёмная (#0B0C08) и без инверсии пропадала на тёмных L04 и F02. */
+html body main [data-s="s06"] .checker-card .btn-dark img:not(#_),
+html body main .shows-cta-m img:not(#_),
+html body main [data-s="v02"] .rev-video small img:not(#_) { filter: none; }
+html body main [data-s="l04"] a > img[src$="arrow-right.svg"]:not(#_),
+html body main .f-spec a > img[src$="arrow-right.svg"]:not(#_) { filter: invert(1); }
+
+/* S13 на 768–1100: карточка 280 × 440 с полем 48 не вмещала длинный отзыв («Игорь Потруников»): 86 px текста
+   срезались краем карточки. Высота по содержимому, 440 — минимум; лента выравнивает карточки по самой высокой. */
+@media (max-width: 1100px) {
+  html body main [data-s="s13"] .review-card:not(#_) { height: auto; min-height: 440px; }
+}
+
+/* Статья, «Также рекомендуем» на десктопе: 4 карточки стояли в сетке на 3 колонки, четвёртая уходила одна во второй
+   ряд. В макете (статья 1440) — 4 в ряд на полосе #D7D8CD во всю ширину, отступы внутренней страницы 96. */
+@media (min-width: 1101px) {
+  html body main.blog-article .article-related:not(#_) { margin-top: 96px; padding: 96px 0; background: #d7d8cd; box-shadow: 0 0 0 100vmax #d7d8cd; clip-path: inset(0 -100vmax); }
+  html body main.blog-article .article-related .grid:not(#_) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* /blog/authors (AU03) и другие тёмные CTA-плашки: кнопка сжималась флексом до ширины слова, «О курсе» вставало
+   в две строки внутри кнопки 48. Кнопка не сжимается и не переносит текст. */
+html body main .cta > .btn:not(#_) { flex: none; white-space: nowrap; }
+
+/* Подписи, которые переносились внутри кнопок и ссылок: «Открыть PDF» (/certificates на 390, 1101–1280),
+   телефон «+7 (495) 374-83-05» рвался на две строки (/contacts 1101),
+   «К контактам оператора» (/privacy 390), «Лаборатория / партнёр» в переключателе формы (/contacts 768–1100). */
+html body main :is([data-s="c02"] .cert-open, [data-s="k02"] .k-strong, .pr-actions .btn, .lf-page [role="radiogroup"] button, .lf-page .lf-seg button):not(#_) { white-space: nowrap; }
+
+/* S08 «Получите персональную карту реакций»: стеклянные карточки над листом отчёта стояли с blur(50px), а Chrome при
+   таком радиусе на плашке 128 px высотой размывает подложку только в середине плашки — строки листа читались сквозь «стекло»
+   (в макете под карточками сплошное матовое пятно). 10 px размывает всю плашку равномерно, как в макете (16 и больше снова оставляют края читаемыми). */
+html body main [data-s="s08"] .s08-glass article:not(#_),
+html body main [data-s="s08"] .s08-nav:not(#_) { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+
+/* /privacy: плашки «Редакция / Оператор / Чтение» стояли вплотную под H1 (отступ 0, нижние выносные «у», «д» заходили
+   на плашки). Шаг шкалы 24, на телефоне 16. */
+html body main [data-s="pr01"] .pr-meta:not(#_) { margin-top: 24px; }
+@media (max-width: 767px) { html body main [data-s="pr01"] .pr-meta:not(#_) { margin-top: 16px; } }

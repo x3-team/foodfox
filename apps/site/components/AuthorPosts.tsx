@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArticleCard, RevealNoScript, usePress, useReveal } from "@/components/ArticleCard";
 import { CATEGORIES, type Article } from "@/lib/content";
+import { plural } from "@/lib/labs";
 
 const STEP = 6;
 
@@ -58,7 +59,7 @@ export function AuthorPosts({ posts }: { posts: Article[] }) {
     <section className="wrap related" ref={sectionRef}>
       <RevealNoScript />
       <div className="related-head">
-        <h2>{shown.length} публикаций</h2>
+        <h2>{shown.length} {plural(shown.length, "публикация", "публикации", "публикаций")}</h2>
         <div className="chips" data-allow-x>
           {CATEGORIES.map((item) => (
             <button key={item.id} type="button" className={`chip${filter === item.id ? " is-active" : ""}`} onClick={() => pick(item.id)}>

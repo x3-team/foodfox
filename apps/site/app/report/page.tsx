@@ -95,7 +95,7 @@ export default function Page() {
               <div className="rf-hero-visual">
                 <div className="rf-paper">
                   <span className="rf-paper-back" />
-                  <img src="/figma/report/front.webp" alt="Первая страница примера отчёта FOX" />
+                  <img src="/figma/report/p4.webp" alt="Первая страница примера отчёта FOX" />
                 </div>
                 <div className="rf-audiences d-only">
                   <span>Пациентам — до и после теста</span>
