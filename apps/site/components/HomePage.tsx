@@ -1474,7 +1474,7 @@ export function HomePage() {
             </div>
           </div>
           <div className="aus-photo" data-allow-x>
-            <img className="parallax" src="/figma/austria/a1.webp" alt="" />
+            <img className="parallax" src="/figma/austria/a1.webp" srcSet="/figma/austria/a1.webp 1024w, /figma/austria/a1@2x.webp 2048w" sizes="(min-width: 1280px) 1024px, (min-width: 900px) 800px, 100vw" alt="" />
             <div className="aus-cards">
               {[
                 ["CE-IVDR", "Европейский стандарт для медизделий in vitro диагностики"],
