@@ -235,7 +235,7 @@ export function HomePage() {
     setTurnDir(dir);
     setCurl({ src: REPORT_SLIDES[reportPage][0], n: Date.now(), dir });
     setReportPage(next);
-    // the M44 curl takes 520 мс, the desktop turn 640 мс, the reduced-motion fade 160 мс; animationend releases the
+    // the deal takes 780 мс, the reduced-motion fade 160 мс; animationend releases the
     // lock, this is only the safety net
     window.clearTimeout(turnTimer.current);
     turnTimer.current = window.setTimeout(() => { turning.current = false; }, reduce ? 300 : 1000);
@@ -1315,7 +1315,7 @@ export function HomePage() {
                 </div>
               </div>
               <div
-                className="s08-stack"
+                className={`s08-stack${curl ? " is-dealing" : ""}`}
                 data-allow-x
                 onTouchStart={(event) => { reportTouch.current = event.touches[0]?.clientX ?? null; }}
                 onTouchEnd={(event) => {

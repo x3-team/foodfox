@@ -440,34 +440,54 @@ body [data-s="s03"].scale .scale-pin { flex-direction: column; gap: inherit; }
   body [data-s="s02"] .marquee::-webkit-scrollbar { display: none; }
 }
 
-/* S08 · report pages on desktop. Before: the leaving page faded out with a 24px shift while the next one faded in
-   (note 1401:802) — two near-identical white tables cross-faded and the turn read as no animation at all.
-   Now it is the same page turn as M44 on phones: the next page already lies in the stack, the leaving one turns over
-   its left edge (forward) or its right edge (back) with a shadow on the fold, 640ms. */
-@media (min-width: 1101px) and (prefers-reduced-motion: no-preference) {
-  body [data-s="s08"] .s08-stack { perspective: 1800px; }
-  body [data-s="s08"] .s08-stack .s08-shot:not(.s08-curl) { animation: s08-under 640ms cubic-bezier(.33, 1, .68, 1) both; }
-  body [data-s="s08"] .s08-stack .s08-shot.s08-curl { display: block; z-index: 3; pointer-events: none; transform-origin: 0 50%; backface-visibility: hidden; animation: s08-turn 640ms cubic-bezier(.45, 0, .25, 1) forwards; }
-  body [data-s="s08"] .s08-stack .s08-shot.s08-curl.is-back { transform-origin: 100% 50%; animation-name: s08-turn-back; }
+/* S08 · report pages, all widths (Vitalii, 2026-10-16): a deck. The next page slides out from under the current one,
+   swings round and lands on top; the page that was on top sinks to the back of the deck. Back is the mirror: the
+   last page of the deck comes out to the left and lands on top, the top page goes one down.
+   Before: a 24px cross-fade (note 1401:802), then a page turn over the edge — neither read as a stack of sheets.
+   The two layers are the same as before: .s08-shot is the incoming page (src already decoded), .s08-curl the leaving
+   one. z-index is animated (it is discrete), so each layer passes under/over the other at the widest point; the
+   leaving page stays above the grey .s08-sheet-2 while it sinks and fades (under it, the sheet read as a grey slab). The
+   offsets are those of .s08-sheet-2 / -3 under the page (≈6.5% / 2.6% and 9.6% / 5%, scale .96 from the top left). */
+@media (prefers-reduced-motion: no-preference) {
+  body [data-s="s08"] .s08-stack { perspective: none; }
+  /* no entry animation on load: the page only moves while a turn is on (.is-dealing, set by HomePage.tsx) */
+  body [data-s="s08"] .s08-stack .s08-shot:not(.s08-curl) { animation: none; }
+  body [data-s="s08"] .s08-stack.is-dealing .s08-shot:not(.s08-curl) { transform-origin: 0 0; animation: s08-deal-in 780ms cubic-bezier(.65, 0, .35, 1) both; }
+  body [data-s="s08"] .s08-stack.is-dealing .s08-shot.is-back:not(.s08-curl) { animation-name: s08-deal-in-back; }
+  body [data-s="s08"] .s08-stack .s08-shot.s08-curl { display: block; pointer-events: none; transform-origin: 0 0; backface-visibility: visible; animation: s08-deal-out 780ms cubic-bezier(.65, 0, .35, 1) forwards; }
+  body [data-s="s08"] .s08-stack .s08-shot.s08-curl.is-back { animation-name: s08-deal-out-back; }
 }
-/* The stack is its own stacking context (perspective here, the fit-to-width transform at 1101–1300) and so fell under
-   .s08-copy (z-index 1): its box covered the «‹» arrow, which did not respond to clicks. It goes above the copy, and
-   only its pages and arrows catch the pointer so the empty part of its box does not cover the copy. */
+@keyframes s08-deal-in {
+  0% { z-index: 1; transform: translate(6.5%, 2.6%) scale(.96); filter: brightness(.55); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
+  46% { z-index: 1; transform: translate(48%, 1%) rotate(3deg) scale(.98); filter: brightness(.92); box-shadow: 0 24px 48px rgba(11, 12, 8, .35); }
+  47% { z-index: 3; }
+  100% { z-index: 3; transform: none; filter: none; box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
+}
+@keyframes s08-deal-in-back {
+  0% { z-index: 0; transform: translate(9.6%, 5%) scale(.96); filter: brightness(.45); opacity: .4; box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
+  46% { z-index: 0; transform: translate(-48%, 1%) rotate(-3deg) scale(.98); filter: brightness(.92); opacity: 1; box-shadow: 0 24px 48px rgba(11, 12, 8, .35); }
+  47% { z-index: 3; }
+  100% { z-index: 3; transform: none; filter: none; opacity: 1; box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
+}
+@keyframes s08-deal-out {
+  0% { z-index: 2; transform: none; filter: none; opacity: 1; }
+  46% { z-index: 2; transform: translate(-7%, 0) rotate(-1.5deg); filter: brightness(.9); opacity: 1; }
+  47% { z-index: 1; }
+  85% { opacity: 1; }
+  100% { z-index: 1; transform: translate(9.6%, 5%) scale(.96); filter: brightness(.45); opacity: 0; }
+}
+@keyframes s08-deal-out-back {
+  0% { z-index: 2; transform: none; filter: none; }
+  46% { z-index: 2; transform: translate(7%, 0) rotate(1.5deg); filter: brightness(.9); }
+  47% { z-index: 1; }
+  100% { z-index: 1; transform: translate(6.5%, 2.6%) scale(.96); filter: brightness(.55); }
+}
+/* The stack is its own stacking context (the fit-to-width transform at 1101–1300) and so fell under .s08-copy
+   (z-index 1): its box covered the «‹» arrow, which did not respond to clicks. It goes above the copy, and only its
+   pages and arrows catch the pointer so the empty part of its box does not cover the copy. */
 @media (min-width: 1101px) {
   body [data-s="s08"] .s08-stack { z-index: 2; pointer-events: none; }
   body [data-s="s08"] .s08-stack > :not(.s08-curl) { pointer-events: auto; }
-}
-/* the page underneath is in the shade of the turning one and lightens as it lands */
-@keyframes s08-under { from { filter: brightness(.82); } to { filter: none; } }
-@keyframes s08-turn {
-  from { transform: rotateY(0deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
-  45% { box-shadow: 32px 0 48px rgba(11, 12, 8, .32); }
-  to { transform: rotateY(-150deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
-}
-@keyframes s08-turn-back {
-  from { transform: rotateY(0deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
-  45% { box-shadow: -32px 0 48px rgba(11, 12, 8, .32); }
-  to { transform: rotateY(150deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
 }
 /* Adaptive rule 08: with reduced motion the old page only fades out over the new one, nothing moves. */
 @media (prefers-reduced-motion: reduce) {
@@ -687,19 +707,6 @@ body [data-s="s07"] .show-dots i { position: absolute; aspect-ratio: 1; border-r
 /* S10 · the 0 → 286 counter changed the width of its box on every frame (layout shifts, the row next to it
    moved); tabular digits in a box that is always three digits wide. */
 body [data-s="s10"] .count-line strong { display: inline-block; min-width: 3ch; font-variant-numeric: tabular-nums; }
-
-/* M44 · phone/tablet: the next page already lies under the curling one — it no longer fades in from .2 with a
-   16° turn (shotIn) underneath the curl. */
-@media (max-width: 1100px) and (prefers-reduced-motion: no-preference) {
-  body [data-s="s08"] .s08-stack .s08-shot:not(.s08-curl) { animation: none; }
-  /* back: the leaving page turns over its right edge, mirrored to the forward curl */
-  body [data-s="s08"] .s08-stack .s08-shot.s08-curl.is-back { transform-origin: 100% 50%; animation-name: s08-curl-back; }
-}
-@keyframes s08-curl-back {
-  from { transform: rotateY(0deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
-  50% { box-shadow: -24px 0 40px rgba(11, 12, 8, 0.28); }
-  to { transform: rotateY(160deg); box-shadow: 0 0 0 rgba(11, 12, 8, 0); }
-}
 
 /* S09 · «Как сдать тест»: one active column at a time (data-on, set by HomePage.tsx), its lime mask opens from the
    side the pointer came in and moves to the neighbour without closing (note 1401:808, storyboard 1410:1799).
