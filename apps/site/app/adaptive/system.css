@@ -168,3 +168,15 @@ html body main.blog-article .btn:not(#_) { font-size: 16px; line-height: 20px; }
   html body main [data-s="s11"] .aus-cards:not(#_) { left: 32px; right: 32px; bottom: 32px; }
   html body main [data-s="l03"] .l-nets:not(#_) { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; width: auto; max-width: 100%; }
 }
+
+/* F-B3 (FLAWS-RECHECK п.8): на телефоне кнопка во всю ширину колонки — 350 вне карточки, 302 в карточке с полем 24.
+   Были по ширине текста: «Показать все 9 специалистов» /course 308, «Показать ещё» /reviews 200, «Оставить отзыв» 151,
+   «Отправить» (форма отзыва) 113, «Скачать PDF» /privacy 150, «Построить маршрут» /contacts 184, «Задать вопрос» /faq 144,
+   «Проверить симптомы» в статье 196. */
+@media (max-width: 767px) {
+  html body main :is([data-s="k02"] .kf-aud-more, [data-s="v02"] .v-more-btn, [data-s="v02"] .rev-promo .btn, [data-s="v03"] form .btn, .pr-actions .btn, .k-route, [data-s="f03"] .btn, .blog-article .article-cta .actions .btn):not(#_) { width: 100%; max-width: none; flex: none; }
+}
+
+/* FLAWS-RECHECK п.8: заголовки карточек блога обрезались на 3-й строке (S14 на главной на всех ширинах — «Скрытая
+   непереносимость лактозы…», «Первые признаки…», «Непереносимость цитрусовых…»; /blog на 768). Заголовок целиком. */
+html body main :is([data-s="s14"] .blog-home-card h3, .card h3):not(#_) { display: block; -webkit-line-clamp: unset; line-clamp: none; overflow: visible; }
