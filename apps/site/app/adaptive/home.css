@@ -192,7 +192,7 @@
   body [data-s="s10"] .s10-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px 48px; padding: 0; margin-bottom: 32px; }
   body [data-s="s10"] .s10-head .lead { display: block; margin: 16px 0 0; max-width: 520px; font-size: 16px; line-height: 20px; }
   body [data-s="s10"] .count-line { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin: 0; text-align: right; }
-  body [data-s="s10"] .count-line strong { font-size: 120px; line-height: .9; letter-spacing: -5px; font-weight: 300; }
+  body [data-s="s10"] .count-line strong { font-size: 120px; line-height: 1; letter-spacing: -5px; font-weight: 300; }
   body [data-s="s10"] .count-line span.d-only { display: block; max-width: 220px; font-size: 14px; line-height: 18px; }
   body [data-s="s10"] .count-line span.m-only { display: none; }
   body [data-s="s10"] .suggest { padding: 0; }
@@ -287,7 +287,7 @@
   body [data-s="s07"] .shows-pin,
   body [data-s="s10"] .s10-head { grid-template-columns: 1fr; }
   body [data-s="s10"] .count-line { flex-direction: row; align-items: flex-end; text-align: left; gap: 16px; }
-  body [data-s="s10"] .count-line strong { font-size: 96px; }
+  body [data-s="s10"] .count-line strong { font-size: 96px; line-height: 1; }
   body [data-s="s07"] .shows-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body [data-s="s07"] .show-card-3 { grid-column: 1 / -1; min-height: 0; }
   body [data-s="s07"] .show-card-3 .igg-levels { flex-direction: row; flex-wrap: wrap; }
@@ -364,7 +364,7 @@
 }
 
 /* S04 · desktop deck (note 1401:784, storyboard 1407:1817). The stage holds at top 80; the cards stack at 80 + i × 12.
-   The next card slides up over the deck from under the viewport (scale .96 → 1, radius 32 → 24), the one it covers
+   The next card slides up over the deck from under the viewport (scale .96 → 1, radius 24 throughout), the one it covers
    stays in place and goes into the stack from its top edge (scale → .94, opacity → .55, a real `filter: blur` 0 → 3 px
    on that card) — all scrubbed by the scroll in HomePage.tsx. Before: the blur was a pre-blurred copy cross-faded over
    the card (the card's own filter stayed `none`), the radius stayed 8, the first card sank to .91 and the third sat

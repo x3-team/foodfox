@@ -202,27 +202,38 @@ export function HomePage() {
   const shotRef = useRef<HTMLImageElement>(null);
   // WIDE-DIFF 8.5: every page is fetched and decoded before it is shown — the turn used to cross-fade an empty white
   // box while the next page was still loading and then the picture snapped in.
+  // FLAWS-RECHECK 8.5: the decoded Image objects are kept here for the life of the page. Before, only the promises were
+  // kept, the Image objects could be collected, and the <img> of the next page went back to the network (the files are
+  // served with max-age=0, so a revalidation) — on DPR 2 the first ~150 мс of a turn showed a page that was not loaded.
+  // All pages are preloaded once the page is idle after mount, before the first click, not when S08 comes near.
+  const slideImgs = useRef<Map<string, HTMLImageElement>>(new Map());
   const slideReady = useRef<Map<string, Promise<void>>>(new Map());
   const loadSlide = (src: string) => {
     let ready = slideReady.current.get(src);
     if (!ready) {
       const img = new Image();
+      img.decoding = "async";
       img.src = src;
+      slideImgs.current.set(src, img);
       ready = img.decode().catch(() => undefined);
       slideReady.current.set(src, ready);
     }
     return ready;
   };
   useEffect(() => {
+    const preload = () => REPORT_SLIDES.forEach(([src]) => loadSlide(src));
+    const idle = window.requestIdleCallback ? window.requestIdleCallback(preload, { timeout: 2000 }) : window.setTimeout(preload, 600);
     const section = s08Ref.current;
-    if (!section) return;
-    const io = new IntersectionObserver((entries) => {
+    const io = section ? new IntersectionObserver((entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) return;
-      REPORT_SLIDES.forEach(([src]) => loadSlide(src));
-      io.disconnect();
-    }, { rootMargin: "1200px 0px" });
-    io.observe(section);
-    return () => io.disconnect();
+      preload();
+      io?.disconnect();
+    }, { rootMargin: "1200px 0px" }) : null;
+    if (section) io?.observe(section);
+    return () => {
+      if (window.cancelIdleCallback) window.cancelIdleCallback(idle); else window.clearTimeout(idle);
+      io?.disconnect();
+    };
   }, []);
   const [turnDir, setTurnDir] = useState<1 | -1>(1);
   const turnReport = async (dir: 1 | -1) => {
@@ -488,7 +499,7 @@ export function HomePage() {
         });
       }
       // S04 · desktop (note 1401:784, storyboard 1407:1817). The cards hold at top 80 + i × 12 px; the next one slides
-      // up over the deck from under the viewport (scale .96 → 1, radius 32 → 24); the one it covers goes into the
+      // up over the deck from under the viewport (scale .96 → 1; the radius stays 24 from the scale, FLAWS-RECHECK); the one it covers goes into the
       // stack in place (scale 1 → .94 from its top edge, opacity 1 → .55, a real blur 0 → 3 px), so the edges of the
       // earlier cards stay visible above, 12 px apart. Everything is scrubbed by the scroll; the content of a card
       // comes in with a 60 мс stagger once the card is mostly in. `will-change` only while the deck is near.
@@ -507,7 +518,6 @@ export function HomePage() {
           let size = 1;
           let opacity = 1;
           let blur = 0;
-          let radius = 24;
           if (rel <= 0) {
             const step = Math.min(1, -rel);
             size = 1 - 0.06 * step;
@@ -517,14 +527,12 @@ export function HomePage() {
             const t = Math.min(1, rel);
             y += geo.start * t;
             size = 1 - 0.04 * t;
-            radius = 24 + 8 * t;
           }
           put(card, "transform", `translate3d(0, ${y.toFixed(1)}px, 0) scale(${size.toFixed(4)})`);
           put(card, "opacity", opacity.toFixed(3));
-          // blur and radius change the card's raster, so they move in small steps (½ px blur, 1 px radius) rather than every frame
+          // blur changes the card's raster, so it moves in small steps (½ px) rather than every frame
           const blurStep = Math.round(blur * 2) / 2;
           put(cardIns[index], "filter", blurStep > 0 ? `blur(${blurStep.toFixed(2)}px)` : "none");
-          put(card, "border-radius", `${Math.round(radius)}px`);
           const shown = rel < 0.35;
           if (shown !== shownCard[index]) {
             shownCard[index] = shown;
