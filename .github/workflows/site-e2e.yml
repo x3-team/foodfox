@@ -26,7 +26,15 @@ jobs:
           cache: npm
           cache-dependency-path: apps/site/package-lock.json
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # The self-hosted runner has no passwordless sudo, so system deps can
+      # only be installed where sudo works; elsewhere they must be preinstalled.
+      - name: Install Playwright Chromium
+        run: |
+          if sudo -n true 2>/dev/null; then
+            npx playwright install --with-deps chromium
+          else
+            npx playwright install chromium
+          fi
       - run: npm run build
       - run: npx playwright test
         env:
