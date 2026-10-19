@@ -16,28 +16,39 @@ jobs:
     runs-on: [self-hosted, linux, x64, x3]
     if: github.repository == 'x3-team/foodfox'
     steps:
+      # Plain ssh instead of appleboy/ssh-action: that action is a Docker
+      # container and the self-hosted runner has no Docker.
       - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          command_timeout: 20m
-          script: |
-            set -euo pipefail
-            BRANCH=cursor/mvp-web-prototype-5e5b
-            cd /var/www/foodfox
+        timeout-minutes: 20
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          key="$RUNNER_TEMP/deploy_key"
+          trap 'rm -f "$key"' EXIT
+          printf '%s\n' "$VPS_SSH_KEY" > "$key"
+          chmod 600 "$key"
+          ssh -i "$key" -o IdentitiesOnly=yes -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
+            -o UserKnownHostsFile="$RUNNER_TEMP/known_hosts" \
+            -o ServerAliveInterval=30 \
+            "$VPS_USER@$VPS_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          BRANCH=cursor/mvp-web-prototype-5e5b
+          cd /var/www/foodfox
 
-            echo "==> checkout on server before running anything from it"
-            echo "    was: $(git rev-parse --short HEAD 2>/dev/null || echo 'not a git repo') \
-            on $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '-')"
-            git fetch --prune origin "$BRANCH"
-            git checkout -B "$BRANCH" "origin/$BRANCH"
-            # The deploy script itself lives in the repo, so the sync cannot be
-            # delegated to it: a server left on an older commit has no script
-            # to run. Hard reset because this checkout is a deploy target, not
-            # a workspace — apps/web/.env is untracked and survives.
-            git reset --hard "origin/$BRANCH"
-            echo "    now: $(git rev-parse --short HEAD)"
+          echo "==> checkout on server before running anything from it"
+          echo "    was: $(git rev-parse --short HEAD 2>/dev/null || echo 'not a git repo') \
+          on $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '-')"
+          git fetch --prune origin "$BRANCH"
+          git checkout -B "$BRANCH" "origin/$BRANCH"
+          # The deploy script itself lives in the repo, so the sync cannot be
+          # delegated to it: a server left on an older commit has no script
+          # to run. Hard reset because this checkout is a deploy target, not
+          # a workspace — apps/web/.env is untracked and survives.
+          git reset --hard "origin/$BRANCH"
+          echo "    now: $(git rev-parse --short HEAD)"
 
-            bash deploy/vps/update.sh
+          bash deploy/vps/update.sh </dev/null
+          REMOTE
