@@ -15,10 +15,6 @@ on:
 jobs:
   playwright:
     runs-on: [self-hosted, linux, x64, x3]
-    # The self-hosted runner has no root, so Chromium's system libraries
-    # come from Playwright's image. Keep the tag equal to @playwright/test
-    # in apps/site/package-lock.json.
-    container: mcr.microsoft.com/playwright:v1.63.0-noble
     defaults:
       run:
         working-directory: apps/site
@@ -30,6 +26,9 @@ jobs:
           cache: npm
           cache-dependency-path: apps/site/package-lock.json
       - run: npm ci
+      # The self-hosted runner has no root: Chromium's system libraries are
+      # installed on the host once (sudo npx playwright install-deps chromium).
+      - run: npx playwright install chromium
       - run: npm run build
       - run: npx playwright test
         env:
