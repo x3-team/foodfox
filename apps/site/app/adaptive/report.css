@@ -125,3 +125,106 @@
 @media (min-width: 768px) {
   body .report-page .crumbs.d-only { display: flex; }
 }
+
+/* ===== R01 hero (20.10): the Figma frame had flaws that the site copied (Vitalii's screenshot at 1920 / 125%).
+   - stat cards 286 / 13 / 3 / 12 had different heights (the first caption wraps to 2 lines) → one row height;
+   - the cards were 4 × 178px fixed and at 1101–1300 ran under the report sheet and the chips → columns follow the text column,
+     2 × 2 when it is narrower than 720px;
+   - the right column (sheet + chips + caption) was ~170px taller than the text, leaving a hole under the cards →
+     both columns end on one line: the sheet takes the height the text gives it, the chips lie on its lower-left corner;
+   - the back sheet was larger than the front one and stuck out to the right, cut by the column → a neat stack of two
+     equal sheets;
+   - the body («На этой странице» / 01) started right at the hero edge → 96px gap. ===== */
+body .report-page .rf-hero-copy > .crumbs { margin-bottom: 8px; }
+body .report-page .rf-stats { align-items: stretch; grid-auto-rows: 1fr; }
+body .report-page .rf-stats > div { box-sizing: border-box; }
+
+@media (min-width: 1101px) {
+  body .report-page .rf-hero-row {
+    grid-template-columns: minmax(0, 1fr) clamp(380px, 36vw, 520px);
+    gap: 64px;
+    align-items: stretch;
+    min-height: 0;
+  }
+  body .report-page .rf-hero-copy { container: rf-copy / inline-size; min-width: 0; }
+  body .report-page .rf-stats.d-only { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  body .report-page .rf-stats span { max-width: none; }
+
+  body .report-page .rf-hero-visual {
+    display: grid;
+    grid-template-rows: minmax(320px, 1fr) auto auto;
+    gap: 16px;
+    min-height: 0;
+    min-width: 0;
+  }
+  body .report-page .rf-paper { position: relative; height: auto; min-height: 0; container-type: size; overflow: visible; }
+  body .report-page .rf-paper img,
+  body .report-page .rf-paper-back {
+    position: absolute;
+    left: auto;
+    top: auto;
+    right: 40px;
+    bottom: 0;
+    width: auto;
+    height: min(calc(100cqh - 16px), 480px, calc((100cqw - 56px) * 1.3074));
+    aspect-ratio: 1002 / 1310;
+    border-radius: 8px;
+  }
+  body .report-page .rf-paper img { object-fit: cover; object-position: top; z-index: 1; box-shadow: 0 12px 32px rgba(11, 12, 8, 0.12); }
+  body .report-page .rf-paper-back {
+    background: #fff;
+    transform: translate(14px, -6px) rotate(5deg);
+    transform-origin: 50% 100%;
+    box-shadow: 0 8px 24px rgba(11, 12, 8, 0.08);
+  }
+  /* The chips lie on the lower-left corner of the sheet: a zero-height row whose chips overflow upwards
+     (justify-content: flex-end), lifted so their bottom is 24px above the sheet's bottom edge. */
+  body .report-page .rf-audiences.d-only {
+    position: relative;
+    z-index: 2;
+    height: 0;
+    justify-content: flex-end;
+    transform: translateY(-40px);
+  }
+  body .report-page .rf-audiences span { background: #fff; box-shadow: 0 6px 16px rgba(11, 12, 8, 0.1); }
+  body .report-page .rf-hero-visual p.d-only { align-self: end; }
+
+  body .report-page .rf-body { padding-top: 96px; }
+}
+@container rf-copy (max-width: 719px) {
+  body .report-page .rf-stats.d-only { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+}
+
+/* R01 hero on a tablet (20.10): the cards go across the full width under the text and the sheet (2 × 2 under the text
+   left a ~200px hole under the right column at 768), and the stack is two equal sheets like on the desktop. */
+@media (min-width: 768px) and (max-width: 1100px) {
+  body .report-page .rf-hero-row {
+    grid-template-columns: minmax(0, 1fr) minmax(250px, 38%);
+    grid-template-rows: auto auto auto auto 1fr auto;
+    gap: 24px 48px;
+  }
+  body .report-page .rf-hero-copy { display: contents; }
+  body .report-page .rf-hero-copy > * { grid-column: 1; }
+  body .report-page .rf-hero-visual { grid-column: 2; grid-row: 1 / 6; }
+  body .report-page .rf-stats.d-only { grid-column: 1 / -1; grid-row: 6; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  body .report-page .rf-hero-copy > .crumbs { margin-bottom: 0; }
+  body .report-page .rf-paper { height: 100cqw; }
+  body .report-page .rf-paper img,
+  body .report-page .rf-paper-back { left: 10cqw; right: auto; top: 3cqw; width: 72cqw; height: 94.1cqw; border-radius: 8px; }
+  body .report-page .rf-paper img { z-index: 1; object-fit: cover; object-position: top; }
+  body .report-page .rf-paper-back { transform: translate(4cqw, -1.5cqw) rotate(5deg); transform-origin: 50% 100%; }
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  /* chips on the sheet's corner only where the column is wide enough for them not to hide the sheet (≈ 900+) */
+  @container (min-width: 330px) {
+    body .report-page .rf-audiences.d-only {
+      position: relative;
+      z-index: 2;
+      height: 0;
+      justify-content: flex-end;
+      transform: translateY(calc(-2.9cqw - 40px));
+    }
+    body .report-page .rf-audiences span { background: #fff; box-shadow: 0 6px 16px rgba(11, 12, 8, 0.1); }
+  }
+}
+body .report-page .rf-audiences > span { flex-shrink: 0; }

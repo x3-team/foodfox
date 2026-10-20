@@ -66,13 +66,13 @@ export default function Page() {
       <main className="report-page">
         <section className="rf-hero" data-s="r01">
           <div className="wrap rf-hero-in">
-            <p className="crumbs d-only">
-              <Link href="/">Главная</Link>
-              <span className="sep">/</span>
-              <span aria-current="page">Отчёт FOX: как читать</span>
-            </p>
             <div className="rf-hero-row">
               <div className="rf-hero-copy">
+                <p className="crumbs d-only">
+                  <Link href="/">Главная</Link>
+                  <span className="sep">/</span>
+                  <span aria-current="page">Отчёт FOX: как читать</span>
+                </p>
                 <h1>Как читать отчёт FOX</h1>
                 <p className="rf-lead d-only">
                   Отчёт — не список запретов, а карта реактивности. Здесь разбираем каждый блок: что значат зоны и значения в U/mL, зачем нужен anti-CCD-контроль и что делать после получения результата.
