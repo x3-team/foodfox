@@ -7,6 +7,8 @@ export function ReportToc({ items }: { items: Array<[string, string]> }) {
   const [active, setActive] = useState(items[0]?.[0] ?? "");
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
+  // ≤1100 the contents bar is sticky over the whole body column; it steps away once the closing CTA reaches it.
+  const [past, setPast] = useState(false);
   // R00 / R01 / R05: item entrances of the /report page (the page itself is a server component).
   useReveal();
   const index = Math.max(0, items.findIndex(([id]) => id === active));
@@ -37,6 +39,12 @@ export function ReportToc({ items }: { items: Array<[string, string]> }) {
         if (node && node.getBoundingClientRect().top <= line) current = id;
       }
       setActive(current);
+      const nav = navRef.current;
+      const cta = Array.from(document.querySelectorAll<HTMLElement>(".report-page .rf-cta, .report-page .rf-cta-m")).find((node) => node.offsetHeight);
+      if (nav && cta) {
+        const bottom = (parseFloat(getComputedStyle(nav).top) || 0) + nav.offsetHeight;
+        setPast(cta.getBoundingClientRect().top < bottom);
+      }
     };
     const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(update); };
     update();
@@ -54,7 +62,7 @@ export function ReportToc({ items }: { items: Array<[string, string]> }) {
   useEffect(() => { setShareUrl(window.location.href); }, []);
 
   return (
-    <nav ref={navRef} className={`toc${open ? " is-open" : ""}`} data-allow-x aria-label="Содержание">
+    <nav ref={navRef} className={`toc${open ? " is-open" : ""}${past ? " is-past" : ""}`} data-allow-x aria-label="Содержание">
       {marker ? <span className="rf-toc-marker" aria-hidden style={{ transform: `translateY(${marker.top}px)`, height: marker.height }} /> : null}
       <button type="button" className="rf-toc-m m-only" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         {/* M12: the dot on the left takes the colour of the current section (green / yellow / red in turn, like the

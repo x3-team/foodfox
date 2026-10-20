@@ -180,3 +180,25 @@ html body main.blog-article .btn:not(#_) { font-size: 16px; line-height: 20px; }
 /* FLAWS-RECHECK п.8: заголовки карточек блога обрезались на 3-й строке (S14 на главной на всех ширинах — «Скрытая
    непереносимость лактозы…», «Первые признаки…», «Непереносимость цитрусовых…»; /blog на 768). Заголовок целиком. */
 html body main :is([data-s="s14"] .blog-home-card h3, .card h3):not(#_) { display: block; -webkit-line-clamp: unset; line-clamp: none; overflow: visible; }
+
+/* ---------- Решения 20.10 («сделай как лучше») ---------- */
+/* /reviews 1101–1279: «Смотреть историю · 1:24» переносилась на вторую строку в узкой видеокарточке —
+   в этом диапазоне подпись короче: «Смотреть · 1:24». */
+@media (min-width: 1101px) and (max-width: 1279px) {
+  html body main [data-s="v02"] .rev-play .rev-play-word:not(#_) { display: none; }
+}
+
+/* /report ≤1100: липкая плашка «На этой странице» уезжала вместе с колонкой до самого низа и закрывала CTA.
+   Когда CTA доходит до плашки, она уходит вверх под шапку (ReportToc ставит .is-past). */
+@media (max-width: 1100px) {
+  body .report-page .toc:not(#_) { transition: transform 250ms ease, opacity 250ms ease; }
+  body .report-page .toc.is-past:not(#_) { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+}
+@media (max-width: 1100px) and (prefers-reduced-motion: reduce) { body .report-page .toc:not(#_) { transition: none; } }
+
+/* S08: когда плашка стоит над белым листом отчёта, стекло с тоном 25 % давало светло-серый фон ≈ #bfbfbf, и лаймовый
+   заголовок с белым текстом почти не читались (контраст ~1.4:1). Тон стекла 55 %: над листом фон ≈ #737373,
+   лайм 4:1, белый 4.8:1; над тёмной зеленью карточка остаётся тёмной и матовой, как в макете. */
+@media (min-width: 1101px) {
+  html body main [data-s="s08"] .s08-glass article:not(#_):not(#__)::before { background: rgba(0,0,0,.55); }
+}

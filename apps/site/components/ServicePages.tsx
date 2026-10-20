@@ -1160,7 +1160,9 @@ export function ReviewsPage() {
   }, []);
   useEffect(() => setLimit(5), [filter, topic]);
   const visible = phone ? cards.slice(0, limit) : slice;
-  const shownCount = phone ? visible.length : Math.min(7, cards.length);
+  // The counter and the pager follow the cards actually loaded (the 312 in the rating is the total collected, the feed shows what is published here).
+  const shownCount = visible.length;
+  const pages = Math.max(1, Math.ceil(cards.length / 7));
   // The counter slides only after the visitor changed something (not when the phone layout settles after hydration).
   const touched = useRef(false);
   const prevShown = useRef<number | null>(null);
@@ -1378,14 +1380,14 @@ export function ReviewsPage() {
                 <select aria-label="Сначала новые" defaultValue="new"><option value="new">Сначала новые</option></select>
               </label>
               {/* M33: the new count slides up (200 мс, phone CSS). */}
-              <p className="v-shown"><span key={phone ? visible.length : Math.min(7, cards.length)} className={shownSwap ? "is-swap" : undefined}>Показано {phone ? visible.length : Math.min(7, cards.length)} из 312</span></p>
+              <p className="v-shown"><span key={shownCount} className={shownSwap ? "is-swap" : undefined}>Показано {shownCount} из {cards.length}</span></p>
             </div>
             <div className="v-grid" ref={gridRef}>
               {visible.map((item) => item.video ? (
                 <article key={item.id} data-k={item.id} className="rev rev-video" style={{ backgroundImage: `url(${item.photo})` }}>
                   <p><span>{item.tag}</span><span>Видео</span></p>
                   <div>
-                    <button type="button" className="rev-play" onClick={(event) => { setVideoFrom(event.currentTarget.closest("article")?.getBoundingClientRect() ?? null); setVideo(item); }}><img src="/figma/icons/play.svg" alt="" />Смотреть историю · 1:24</button>
+                    <button type="button" className="rev-play" onClick={(event) => { setVideoFrom(event.currentTarget.closest("article")?.getBoundingClientRect() ?? null); setVideo(item); }}><img src="/figma/icons/play.svg" alt="" /><span>Смотреть<span className="rev-play-word"> историю</span> · 1:24</span></button>
                     <h3>«{item.title}»</h3>
                     <b>{item.name}</b>
                     <small><img src="/figma/icons/check.svg" alt="" />Отзыв проверен модератором</small>
@@ -1417,11 +1419,11 @@ export function ReviewsPage() {
                 )}
               </div>
             )}
-            <div className="v-pages">
-              {[1, 2, 3].map((item) => (
+            {pages > 1 && <div className="v-pages">
+              {Array.from({ length: pages }, (_, index) => index + 1).map((item) => (
                 <button key={item} type="button" className={page === item ? "is-on" : ""} onClick={() => setPage(item)} aria-label={`Страница ${item}`}>{item}</button>
               ))}
-            </div>
+            </div>}
           </div>
         </section>
         <section data-s="v03" id="review-form">
