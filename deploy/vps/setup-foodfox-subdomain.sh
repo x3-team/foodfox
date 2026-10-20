@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
-# FoodFox at https://foodfox.yuri.guru — subdomain + basic auth
+# FoodFox at https://foodfox.yuri.guru — subdomain (open, noindex)
 #
 # Prerequisites:
 #   DNS A record: foodfox.yuri.guru → VPS IP
 #
 # Run ON the VPS as root:
-#   export FOODFOX_AUTH_USER=demo
-#   export FOODFOX_AUTH_PASS='your-secret-password'
 #   bash /var/www/foodfox/deploy/vps/setup-foodfox-subdomain.sh
 
 set -euo pipefail
@@ -15,23 +13,7 @@ APP_ROOT="${APP_ROOT:-/var/www/foodfox}"
 PORT="${PORT:-3030}"
 DOMAIN="${DOMAIN:-foodfox.yuri.guru}"
 NGINX_SITE="/etc/nginx/sites-available/$DOMAIN"
-HTPASSWD="/etc/nginx/.htpasswd-foodfox"
-AUTH_USER="${FOODFOX_AUTH_USER:-demo}"
-AUTH_PASS="${FOODFOX_AUTH_PASS:-}"
 CERTBOT_EMAIL="${CERTBOT_EMAIL:-admin@yuri.guru}"
-
-if [[ -z "$AUTH_PASS" ]]; then
-  AUTH_PASS="$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | head -c 14)"
-  echo "Generated FOODFOX_AUTH_PASS=$AUTH_PASS"
-fi
-
-echo "==> htpasswd ($HTPASSWD)"
-if ! command -v htpasswd >/dev/null; then
-  apt-get update -qq && apt-get install -y apache2-utils
-fi
-htpasswd -bc "$HTPASSWD" "$AUTH_USER" "$AUTH_PASS"
-chmod 640 "$HTPASSWD"
-chown root:www-data "$HTPASSWD" 2>/dev/null || chown root:root "$HTPASSWD"
 
 echo "==> Nginx site ($DOMAIN)"
 sed "s/foodfox.yuri.guru/$DOMAIN/g" "$APP_ROOT/deploy/vps/nginx-foodfox-subdomain.conf" > "$NGINX_SITE"
@@ -101,5 +83,4 @@ fi
 
 echo ""
 echo "Done: https://$DOMAIN/upload"
-echo "Login: $AUTH_USER / $AUTH_PASS"
-echo "Health: curl -s -u $AUTH_USER:$AUTH_PASS https://$DOMAIN/api/health"
+echo "Health: curl -s https://$DOMAIN/api/health"

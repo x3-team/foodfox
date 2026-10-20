@@ -1,0 +1,204 @@
+/* Design-system tokens that win over page frames (FIGMA-FLAWS.md, 15.10.2026).
+   The Figma file mixes several values for the same role (H1 64/68 and 56/60, card headings 32/40/56, mobile H2 24/32/40);
+   these rules pin one value per role and breakpoint. `:not(#_)` lifts specificity to one id so a page's own
+   `body main [data-s] h1` rule cannot reintroduce the off-system value. Imported last in app/layout.tsx. */
+
+/* ---------- Desktop ≥1101: H1 64/68 Light −2 on every page (F-T1) ---------- */
+@media (min-width: 1101px) {
+  html body main h1:not(.e-a11y):not(#_) { font-size: 64px; line-height: 68px; letter-spacing: -2px; font-weight: 300; }
+  /* The lesson player title is a lesson heading inside the app-like player, not a page hero. */
+  html body main .ls-title h1:not(#_) { font-size: 40px; line-height: 44px; letter-spacing: -1px; }
+  /* Home H2 64/68 (F-T5: S04 was 56/60). S08 stays a card heading 40/44 (F-T4). */
+  html body [data-s="s04"] .deck-card h2:not(#_) { font-size: 64px; line-height: 68px; letter-spacing: -2px; }
+  /* Inner-page H2 40/44: /report sections were 32/36, P06 and F03 56/60, blog CTA cards 32/36. */
+  html body .report-page section h2:not(#_),
+  html body [data-s="p06"] .sp-anatomy-copy h2:not(#_),
+  html body [data-s="f03"] .f03-card h2:not(#_),
+  html body main [data-s="b04"] h2:not(#_),
+  html body main [data-s="au03"] h2:not(#_) { font-size: 40px; line-height: 44px; letter-spacing: -1px; }
+}
+
+/* ---------- Tablet 768–1100: H1 56/60, home H2 40/44, inner H2 32/36 ---------- */
+@media (min-width: 768px) and (max-width: 1100px) {
+  html body main h1:not(.e-a11y):not(#_) { font-size: 56px; line-height: 60px; letter-spacing: -1.5px; font-weight: 300; }
+  html body main .ls-title h1:not(#_) { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
+  html body main [data-s="c02"] h2:not(#_),
+  html body main [data-s="c03"] h2:not(#_),
+  html body main [data-s="c04"] h2:not(#_),
+  html body main [data-s="c05"] h2:not(#_),
+  html body main [data-s="v03"] h2:not(#_),
+  html body main [data-s="k03"] > .wrap > form h2:not(#_),
+  html body main [data-s="k03"] .lf-head h2:not(#_),
+  html body main [data-s="f03"] h2:not(#_),
+  html body main [data-s="e02"] h2:not(#_),
+  html body main [data-s="p06"] .sp-anatomy-copy h2:not(#_),
+  html body main [data-s="b04"] h2:not(#_),
+  html body main [data-s="au03"] h2:not(#_) { font-size: 32px; line-height: 36px; letter-spacing: -0.5px; }
+}
+
+/* ---------- Phone ≤767: H1 32/36, H2 24/28 (F-T15, F-T16) ---------- */
+@media (max-width: 767px) {
+  html body main h1:not(.e-a11y):not(#_) { font-size: 32px; line-height: 36px; letter-spacing: -1px; font-weight: 300; }
+  html body main .ls-title h1:not(#_) { font-size: 24px; line-height: 28px; letter-spacing: -0.5px; }
+  html body main [data-s="c03"] h2:not(#_),
+  html body main [data-s="c04"] h2:not(#_),
+  html body main [data-s="c05"] h2:not(#_),
+  html body main [data-s="v03"] h2:not(#_),
+  html body main [data-s="k03"] .lf-head h2:not(#_),
+  html body main [data-s="k03"] h2:not(#_),
+  html body main [data-s="k04"] h2:not(#_) { font-size: 24px; line-height: 28px; letter-spacing: -0.5px; }
+}
+
+/* ---------- Line heights from the type scale (12/16 · 14/18 · 16/20 · 20/24 · 24/28) ----------
+   These elements set a font size but inherited the parent's line height (14/20, 12/20, 20/20 …). Every pair of the scale
+   is size + 4 (12/16 … 64/68), so calc(1em + 4px) keeps the pair at whatever size a breakpoint gives the element. */
+html body :is(.checker-meters em, .f-search kbd, .rev small, .rev p em, .l05 li small, .sp-facts span, .v-collage2 .v-play):not(#_) { line-height: calc(1em + 4px); }
+html body .l05 li small:not(#_) { font-size: 12px; }
+html body :is(.l-near span, .l-found, .l-found span, .f01-visual article p, .f01-expert, .f-actions, .f-actions button, .f-groups header span, .columns h2, .fx-kicker, .fx-eye, .v-shown, .v-hint, .k-cards p, .lf-head .lead-note, .pr02 aside > p, [data-s="s12"] .lab-tile .lab-go, [data-s="k03"] .kf-num, .seg button):not(#_) { line-height: calc(1em + 4px); }
+html body :is(.author strong):not(#_) { line-height: calc(1em + 4px); }
+html body :is(.l05 h3, .f03-phone, .k-routes h3):not(#_) { font-size: 20px; line-height: 24px; }
+html body :is(.pr-op h3, .rev-promo h3):not(#_) { font-size: 24px; line-height: 28px; }
+html body :is(.author-block p, .author-block .text-link):not(#_) { font-size: 16px; line-height: 20px; }
+
+/* ---------- First screen: breadcrumbs 48 under the header on every inner page (F-S1, F-G2) ----------
+   Before: 32 (/certificates, /reviews), 38 (blog: section 24 + the paragraph's default 14 margin), 48, 56 (/faq). */
+html body main p.crumbs:not(#_) { margin-top: 0; }
+@media (min-width: 1101px) {
+  html body main :is([data-s="b01"], [data-s="au01"], [data-s="c01"], [data-s="v01"], [data-s="f01"], .blog-article .article-top, .blog-author > section.wrap:first-child):not(#_) { padding-top: 48px; }
+}
+
+/* ---------- Section rhythm on desktop: inner pages 96, cards inside a section 96 + 48 (F-S1, F-G7) ---------- */
+@media (min-width: 1101px) {
+  html body main [data-s="p06"].sp-report:not(#_) { padding-top: 96px; padding-bottom: 96px; }
+  html body main [data-s="p09"] .sp-course:not(#_) { padding: 48px; }
+  html body main [data-s="f02"]:not(#_) { padding-top: 96px; padding-bottom: 96px; }
+  html body main [data-s="f03"]:not(#_) { padding-top: 96px; padding-bottom: 96px; }
+  html body main [data-s="f03"] .f03-card:not(#_) { padding: 48px; }
+  /* F-G3: K02 cards 48 + 24 = 72; the K03 form had its text on 88/96. One inner padding, 24, both rows on 72. */
+  html body main .wrap.k03 > form.lf-page:not(#_) { padding: 24px; }
+  /* FAQ hero: crumbs sat 8 px above the eyebrow chip */
+  html body main [data-s="f01"] p.crumbs:not(#_) { margin-bottom: 24px; }
+}
+
+/* ---------- Phone: one inner padding for cards, 24 (F-B3: a button inside a card is 302 wide everywhere) ---------- */
+@media (max-width: 767px) {
+  html body main :is(.k-cards article, .k-routes article, .wrap.k03 > form.lf-page, .report-page .rf-after, .report-page .rf-limits, [data-s="b04"] .cta, [data-s="au03"] .cta, .pf-tg-m):not(#_) { padding: 24px; }
+  html body main :is([data-s="b04"], [data-s="au03"]) .cta .btn:not(#_) { width: 100%; }
+}
+
+/* F-B2: «button inside an input» token — pill input 72, pill button 48 — the same on / (S10) and /faq (F01).
+   On /faq the input was 44 tall, so the 48 button stuck out of it. */
+@media (min-width: 768px) {
+  html body main [data-s="f01"] .f-search:not(#_) { height: 72px; padding: 0 12px 0 24px; }
+}
+
+/* ---------- Сквозной проход 16.10 ---------- */
+/* Иконки, которые терялись на своём фоне. plus.svg и check.svg уже светлые (#F8F9F6): invert(1) делал их
+   чёрными на чёрной кнопке (S06 «Скачать список и записаться», S07 «Записаться на тест» на телефоне) и на тёмной
+   видеокарточке /reviews. arrow-right.svg тёмная (#0B0C08) и без инверсии пропадала на тёмных L04 и F02. */
+html body main [data-s="s06"] .checker-card .btn-dark img:not(#_),
+html body main .shows-cta-m img:not(#_),
+html body main [data-s="v02"] .rev-video small img:not(#_) { filter: none; }
+html body main [data-s="l04"] a > img[src$="arrow-right.svg"]:not(#_),
+html body main .f-spec a > img[src$="arrow-right.svg"]:not(#_) { filter: invert(1); }
+
+/* S13 на 768–1100: карточка 280 × 440 с полем 48 не вмещала длинный отзыв («Игорь Потруников»): 86 px текста
+   срезались краем карточки. Высота по содержимому, 440 — минимум; лента выравнивает карточки по самой высокой. */
+@media (max-width: 1100px) {
+  html body main [data-s="s13"] .review-card:not(#_) { height: auto; min-height: 440px; }
+}
+
+/* Статья, «Также рекомендуем» на десктопе: 4 карточки стояли в сетке на 3 колонки, четвёртая уходила одна во второй
+   ряд. В макете (статья 1440) — 4 в ряд на полосе #D7D8CD во всю ширину, отступы внутренней страницы 96. */
+@media (min-width: 1101px) {
+  html body main.blog-article .article-related:not(#_) { margin-top: 96px; padding: 96px 0; background: #d7d8cd; box-shadow: 0 0 0 100vmax #d7d8cd; clip-path: inset(0 -100vmax); }
+  html body main.blog-article .article-related .grid:not(#_) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* /blog/authors (AU03) и другие тёмные CTA-плашки: кнопка сжималась флексом до ширины слова, «О курсе» вставало
+   в две строки внутри кнопки 48. Кнопка не сжимается и не переносит текст. */
+html body main .cta > .btn:not(#_) { flex: none; white-space: nowrap; }
+
+/* Подписи, которые переносились внутри кнопок и ссылок: «Открыть PDF» (/certificates на 390, 1101–1280),
+   телефон «+7 (495) 374-83-05» рвался на две строки (/contacts 1101),
+   «К контактам оператора» (/privacy 390), «Лаборатория / партнёр» в переключателе формы (/contacts 768–1100). */
+html body main :is([data-s="c02"] .cert-open, [data-s="k02"] .k-strong, .pr-actions .btn, .lf-page [role="radiogroup"] button, .lf-page .lf-seg button):not(#_) { white-space: nowrap; }
+
+/* S08 «Получите персональную карту реакций»: стекло карточек над листом отчёта — blur 50 (Figma BACKGROUND_BLUR 100).
+   Chrome размывает подложку backdrop-filter только внутри рамки элемента и отражает её у краёв: при радиусе 50 на плашке
+   128 px высотой строки листа читались у верхнего и нижнего края (поэтому 16.10 стояло 10 px). Размытие перенесено на
+   ::before, который на 150 px (3σ) больше плашки во все стороны и обрезан маской до плашки с радиусом 8: край отражения
+   уходит за пределы видимой части. Матовость карточки S08 (blur 36) тоже на ::before, иначе карточка становится
+   «корнем подложки» и обрезает её по своему краю. Стрелки .s08-nav — 10 px. */
+html body main [data-s="s08"] .s08-nav:not(#_) { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+@media (min-width: 1101px) {
+  html body main [data-s="s08"] .s08-card:not(#_) { -webkit-backdrop-filter: none; backdrop-filter: none; background: none; isolation: isolate; }
+  html body main [data-s="s08"] .s08-card:not(#_)::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: rgba(0,0,0,.25); -webkit-backdrop-filter: blur(36px); backdrop-filter: blur(36px); pointer-events: none; }
+  html body main [data-s="s08"] .s08-glass article:not(#_) { position: relative; isolation: isolate; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  html body main [data-s="s08"] .s08-glass article:not(#_)::before {
+    content: ""; position: absolute; inset: -150px; z-index: -1; pointer-events: none;
+    background: rgba(0,0,0,.25); -webkit-backdrop-filter: blur(50px); backdrop-filter: blur(50px);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' rx='8'/%3E%3C/svg%3E") 150px 150px / calc(100% - 300px) calc(100% - 300px) no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' rx='8'/%3E%3C/svg%3E") 150px 150px / calc(100% - 300px) calc(100% - 300px) no-repeat;
+  }
+}
+
+/* /privacy: плашки «Редакция / Оператор / Чтение» стояли вплотную под H1 (отступ 0, нижние выносные «у», «д» заходили
+   на плашки). Шаг шкалы 24, на телефоне 16. */
+html body main [data-s="pr01"] .pr-meta:not(#_) { margin-top: 24px; }
+@media (max-width: 767px) { html body main [data-s="pr01"] .pr-meta:not(#_) { margin-top: 16px; } }
+
+/* ---------- FLAWS-RECHECK 16.10: остаток ---------- */
+/* F-S1: отступы секций по шкале на десктопе — внутренние страницы 96 сверху и снизу. Было: /contacts K02 72, K04 64/80,
+   /reviews V02 88/104, V03 72, /privacy PR02 72/96, /labs L03 снизу 80; низ первых экранов с фоном 48–88
+   (L01 80, F01 88, K01 /contacts 64, C01 64, PR01 72, V01 48). Поле карточки внутри секции — 48 (S04, CTA блога 56). */
+@media (min-width: 1101px) {
+  html body main :is([data-s="k02"]:has(.k-cards), [data-s="k04"]:has(.k04), [data-s="v02"], [data-s="v03"], [data-s="pr02"]):not(#_) { padding-top: 96px; padding-bottom: 96px; }
+  html body main :is([data-s="l03"], [data-s="l01"].fx-hero, [data-s="f01"], [data-s="k01"].fx-hero, [data-s="c01"], [data-s="pr01"], [data-s="v01"]):not(#_) { padding-bottom: 96px; }
+  html body main [data-s="s04"] .deck-card:not(#_) { padding: 48px; }
+  html body main :is([data-s="b04"], [data-s="au03"]) .cta:not(#_) { padding: 48px; }
+}
+
+/* Кнопка в CTA статьи наследовала кегль текста статьи 18/20; кнопки — 16/20 по шкале. */
+html body main.blog-article .btn:not(#_) { font-size: 16px; line-height: 20px; }
+
+/* 768–1100: «Австрия» — плашки на фото стояли с полем 24 при поле страницы 32; чипы сетей на /labs уходили под правый
+   край (последний чип обрезан экраном). Чипы переносятся внутри контейнера. */
+@media (min-width: 768px) and (max-width: 1100px) {
+  html body main [data-s="s11"] .aus-cards:not(#_) { left: 32px; right: 32px; bottom: 32px; }
+  html body main [data-s="l03"] .l-nets:not(#_) { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; width: auto; max-width: 100%; }
+}
+
+/* F-B3 (FLAWS-RECHECK п.8): на телефоне кнопка во всю ширину колонки — 350 вне карточки, 302 в карточке с полем 24.
+   Были по ширине текста: «Показать все 9 специалистов» /course 308, «Показать ещё» /reviews 200, «Оставить отзыв» 151,
+   «Отправить» (форма отзыва) 113, «Скачать PDF» /privacy 150, «Построить маршрут» /contacts 184, «Задать вопрос» /faq 144,
+   «Проверить симптомы» в статье 196. */
+@media (max-width: 767px) {
+  html body main :is([data-s="k02"] .kf-aud-more, [data-s="v02"] .v-more-btn, [data-s="v02"] .rev-promo .btn, [data-s="v03"] form .btn, .pr-actions .btn, .k-route, [data-s="f03"] .btn, .blog-article .article-cta .actions .btn):not(#_) { width: 100%; max-width: none; flex: none; }
+}
+
+/* FLAWS-RECHECK п.8: заголовки карточек блога обрезались на 3-й строке (S14 на главной на всех ширинах — «Скрытая
+   непереносимость лактозы…», «Первые признаки…», «Непереносимость цитрусовых…»; /blog на 768). Заголовок целиком. */
+html body main :is([data-s="s14"] .blog-home-card h3, .card h3):not(#_) { display: block; -webkit-line-clamp: unset; line-clamp: none; overflow: visible; }
+
+/* ---------- Решения 20.10 («сделай как лучше») ---------- */
+/* /reviews 1101–1279: «Смотреть историю · 1:24» переносилась на вторую строку в узкой видеокарточке —
+   в этом диапазоне подпись короче: «Смотреть · 1:24». */
+@media (min-width: 1101px) and (max-width: 1279px) {
+  html body main [data-s="v02"] .rev-play .rev-play-word:not(#_) { display: none; }
+}
+
+/* /report ≤1100: липкая плашка «На этой странице» уезжала вместе с колонкой до самого низа и закрывала CTA.
+   Когда CTA доходит до плашки, она уходит вверх под шапку (ReportToc ставит .is-past). */
+@media (max-width: 1100px) {
+  body .report-page .toc:not(#_) { transition: transform 250ms ease, opacity 250ms ease; }
+  body .report-page .toc.is-past:not(#_) { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+}
+@media (max-width: 1100px) and (prefers-reduced-motion: reduce) { body .report-page .toc:not(#_) { transition: none; } }
+
+/* S08: когда плашка стоит над белым листом отчёта, стекло с тоном 25 % давало светло-серый фон ≈ #bfbfbf, и лаймовый
+   заголовок с белым текстом почти не читались (контраст ~1.4:1). Тон стекла 55 %: над листом фон ≈ #737373,
+   лайм 4:1, белый 4.8:1; над тёмной зеленью карточка остаётся тёмной и матовой, как в макете. */
+@media (min-width: 1101px) {
+  html body main [data-s="s08"] .s08-glass article:not(#_):not(#__)::before { background: rgba(0,0,0,.55); }
+}

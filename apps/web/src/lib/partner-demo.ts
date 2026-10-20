@@ -2,7 +2,7 @@ export const partner = {
   name: "Мария",
   fullName: "Ковалёва Мария",
   email: "kovaleva@clinic.ru",
-  phone: "+7 999 000-11-22",
+  phone: "+7 925 111-11-11",
   specialty: "Нутрициолог",
   certificate: "FOX-EDU-2026-0418",
   status: "сертифицирован",

@@ -30,6 +30,7 @@ import {
   demoCodeFor,
   generateOtp,
   hashOtp,
+  isPartnerDemoPhone,
   OTP_MAX_ATTEMPTS,
   OTP_RESEND_MS,
 } from "./otp";
@@ -185,7 +186,11 @@ export async function ensureSchema(): Promise<void> {
   } catch {
     // schema may already exist
   }
-  for (const name of ["002_auth_telemetry_rls.sql", "003_phone_auth.sql"]) {
+  for (const name of [
+    "002_auth_telemetry_rls.sql",
+    "003_phone_auth.sql",
+    "004_partner_role.sql",
+  ]) {
     try {
       const sql = readFileSync(
         join(process.cwd(), "../../packages/database/migrations", name),
@@ -372,10 +377,16 @@ export async function requestPhoneOtp(phone: string): Promise<{
   return { resendAfterMs: OTP_RESEND_MS, demoCode: demo };
 }
 
-/** Verify a code and return the session, creating the client on first login. */
+/**
+ * Verify a code and return the session, creating the client on first login.
+ * `partnerIntent` (the partner-cabinet login) on the partner demo number gives
+ * this session the partner role without storing it: the number is shared with
+ * the mobile app demo, whose plain login must stay a client.
+ */
 export async function verifyPhoneOtp(
   phone: string,
   code: string,
+  partnerIntent = false,
 ): Promise<SessionData | null> {
   await ensureSchema();
   const p = requirePool();
@@ -410,18 +421,30 @@ export async function verifyPhoneOtp(
      WHERE u.phone = $1 LIMIT 1`,
     [phone],
   );
+  const partnerDemo = partnerIntent && isPartnerDemoPhone(phone);
+
   if (existing.rows[0]) {
     const u = existing.rows[0];
+    let role = (u.role as UserRole) ?? "client";
+    let displayName = (u.display_name as string | null) ?? "Клиент";
+    if (partnerDemo) {
+      role = "partner";
+      displayName = "Мария Ковалёва";
+    }
     trackEvent(p, u.client_id as string, "user_logged_in", { method: "phone" });
     return {
       userId: u.id,
       clientId: u.client_id,
       email: u.email ?? `${phone}@phone.foodfox`,
-      displayName: u.display_name ?? "Клиент",
-      role: (u.role as UserRole) ?? "client",
+      displayName,
+      role,
     };
   }
 
+  const role: UserRole = partnerDemo ? "partner" : "client";
+  const displayName = partnerDemo ? "Мария Ковалёва" : "Клиент";
+
+  // Stored as a client either way; the partner role lives in this session only.
   const user = await p.query(
     `INSERT INTO users (phone, email, role) VALUES ($1, $2, 'client') RETURNING id`,
     [phone, `${phone}@phone.foodfox`],
@@ -441,8 +464,8 @@ export async function verifyPhoneOtp(
     userId: user.rows[0].id,
     clientId,
     email: `${phone}@phone.foodfox`,
-    displayName: "Клиент",
-    role: "client",
+    displayName,
+    role,
   };
 }
 

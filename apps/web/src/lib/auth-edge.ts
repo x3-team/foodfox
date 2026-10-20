@@ -1,6 +1,6 @@
 export const SESSION_COOKIE = "fox_session";
 
-export type UserRole = "client" | "admin" | "nutritionist";
+export type UserRole = "client" | "admin" | "nutritionist" | "partner";
 
 export interface SessionData {
   userId: string;
