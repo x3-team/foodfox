@@ -7,6 +7,7 @@ import { FAQ_GROUPS_DEFAULT } from "@/lib/site-data/faq";
 import { HOME_FAQ_DEFAULT } from "@/lib/site-data/home";
 import { PARTNERS } from "@/lib/labs";
 import { REVIEWS_DEFAULT } from "@/lib/site-data/reviews";
+import { ARTICLES_DEFAULT } from "@/lib/cms/blog";
 
 export type ImageValue = { src: string; srcSet?: string; alt?: string };
 
@@ -187,6 +188,8 @@ export const PRICE_FIELDS: Field[] = [
 /* Collections with their own admin pages (reviews, blog); validated in app/admin/(panel)/content/actions.ts. */
 export const COLLECTION_FIELDS: Field[] = [
   { key: "reviews.list", label: "Отзывы", type: "json", default: REVIEWS_DEFAULT },
+  { key: "blog.articles", label: "Статьи блога", type: "json", default: ARTICLES_DEFAULT },
+  { key: "blog.authors", label: "Авторы блога", type: "json", default: [] },
 ];
 
 export const ALL_FIELDS: Field[] = [...PAGES.flatMap((p) => p.sections.flatMap((s) => s.fields)), ...PRICE_FIELDS, ...COLLECTION_FIELDS];

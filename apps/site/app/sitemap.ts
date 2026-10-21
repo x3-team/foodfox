@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
-import { articles, authors } from "@/lib/content";
+import { blogFrom } from "@/lib/cms/blog";
+import { getContentOverrides } from "@/lib/cms/server";
 import { getSeoRows, SEO_PAGES, SITE_URL } from "@/lib/cms/seo";
 
 /** sitemap.xml: site pages, articles and authors, minus what the SEO section closes from indexing or the sitemap. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const seo = await getSeoRows();
+  const { articles, authors } = blogFrom(await getContentOverrides());
   const paths = [
     ...SEO_PAGES.map((p) => p.path),
     ...articles.map((a) => `/blog/${a.slug}`),

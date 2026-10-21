@@ -8,8 +8,8 @@ import { Header } from "@/components/Header";
 import { BottomSheet } from "@/components/BottomSheet";
 import { useDialog } from "@/components/useDialog";
 import { ZoomPane } from "@/components/ZoomPane";
-import { articles, authors, CATEGORIES } from "@/lib/content";
-import { useContent } from "@/components/ContentProvider";
+import { CATEGORIES } from "@/lib/content";
+import { useBlog, useContent } from "@/components/ContentProvider";
 import { type Partner, withUtm } from "@/lib/labs";
 
 const SYMPTOMS = [
@@ -175,6 +175,7 @@ trailer<</Root 1 0 R>>
 
 export function HomePage() {
   const content = useContent();
+  const { articles, authors } = useBlog();
   const FAQ = content.get<Array<[string, string]>>("home.faq");
   // M46: the lab networks of S12 in the same order as lib/labs.ts (counts there are for Moscow, the default city);
   // counts, links and prices come from the admin.

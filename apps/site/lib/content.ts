@@ -462,12 +462,12 @@ export const toc = [
 export const DISCLAIMER =
   "Материал носит информационный характер и не является медицинской рекомендацией. FOX — лабораторный тест для поддержки персонализированных диетических вмешательств; не тест на аллергию (IgE), не устанавливает диагноз и не заменяет консультацию специалиста.";
 
-export function searchTopics(query: string, min = 3) {
+export function searchTopics(list: Article[], query: string, min = 3) {
   const q = query.trim().toLowerCase();
   if (q.length < min) return [];
   return TOPICS
     .filter((t) => t.match(q))
-    .map((t) => ({ label: t.label, hint: t.hint, count: articles.filter(t.test).length }));
+    .map((t) => ({ label: t.label, hint: t.hint, count: list.filter(t.test).length }));
 }
 
 /* Autocomplete topics (F2 / M06). A picked topic filters by the same test that counted it in the list — the label

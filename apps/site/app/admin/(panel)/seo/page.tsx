@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { SeoManager } from "@/components/admin/SeoManager";
 import { requireStaff } from "@/lib/admin/auth";
-import { articles, authors } from "@/lib/content";
+import { blogFrom } from "@/lib/cms/blog";
+import { getContentOverrides } from "@/lib/cms/server";
 import { SEO_PAGES } from "@/lib/cms/seo";
 import { q } from "@/lib/admin/db";
 
@@ -12,6 +13,7 @@ export default async function SeoPage() {
   // Straight from the table, not the site cache, so the editor shows what was just saved.
   const rows = await q<{ path: string; title: string; description: string; og_image: string; canonical: string; noindex: boolean; in_sitemap: boolean }>("SELECT * FROM seo_pages");
   const saved = Object.fromEntries(rows.map((r) => [r.path, r]));
+  const { articles, authors } = blogFrom(await getContentOverrides());
   const pages = [
     ...SEO_PAGES.map((p) => ({ ...p, group: "Страницы" })),
     ...articles.map((a) => ({ path: `/blog/${a.slug}`, label: a.title, title: `${a.title} — FOX Food Xplorer`, description: a.excerpt, group: "Статьи" })),

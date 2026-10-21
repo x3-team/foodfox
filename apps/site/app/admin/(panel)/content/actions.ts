@@ -6,6 +6,8 @@ import { audit } from "@/lib/admin/audit";
 import { one, q, tx } from "@/lib/admin/db";
 import { DEFAULTS, FIELD_BY_KEY, PRICE_LABS_KEY, type Field } from "@/lib/cms/registry";
 import { CONTENT_TAG } from "@/lib/cms/server";
+import { AUTHORS_DEFAULT, BLOG_ARTICLES_KEY, BLOG_AUTHORS_KEY } from "@/lib/cms/blog";
+import { CATEGORIES, type Block } from "@/lib/content";
 
 type Result = { ok: boolean; message?: string };
 
@@ -84,7 +86,92 @@ function cleanCollection(key: string, value: unknown): unknown[] {
       return out;
     });
   }
+  if (key === BLOG_ARTICLES_KEY) return cleanArticles(value);
+  if (key === BLOG_AUTHORS_KEY) {
+    return value.map((raw) => {
+      const a = raw as Record<string, unknown>;
+      if (!AUTHORS_DEFAULT.some((x) => x.slug === a.slug)) throw new Error("Неизвестный автор");
+      const img = (v: unknown) => { const s = str(v, 300).trim(); if (s && !s.startsWith("/")) throw new Error("Фото автора — из медиатеки или путь с /"); return s || undefined; };
+      return {
+        slug: a.slug, name: str(a.name, 120).trim() || undefined, role: str(a.role, 200).trim() || undefined, bio: str(a.bio, 2000).trim() || undefined,
+        avatar: img(a.avatar), portrait: img(a.portrait), listed: typeof a.listed === "boolean" ? a.listed : undefined,
+      };
+    });
+  }
   throw new Error(`Неизвестная коллекция ${key}`);
+}
+
+const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id).filter((id) => id !== "all"));
+const words = (v: unknown, max: number) => Array.from(new Set((Array.isArray(v) ? v : []).map((w) => str(w, 40).trim()).filter(Boolean))).slice(0, max);
+
+function cleanArticles(value: unknown[]): unknown[] {
+  const slugs = new Set<string>();
+  let featured = false;
+  return value.map((raw, index) => {
+    const a = raw as Record<string, unknown>;
+    const title = str(a.title, 200).trim();
+    const name = title ? `«${title.slice(0, 40)}»` : `Статья ${index + 1}`;
+    const slug = str(a.slug, 90).trim().toLowerCase();
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) throw new Error(`${name}: адрес — латиница, цифры и дефисы`);
+    if (slugs.has(slug)) throw new Error(`${name}: адрес /blog/${slug} уже занят`);
+    slugs.add(slug);
+    if (title.length < 5) throw new Error(`${name}: нужен заголовок`);
+    const excerpt = str(a.excerpt, 400).trim();
+    if (!excerpt) throw new Error(`${name}: нужен анонс`);
+    if (!CATEGORY_IDS.has(a.category as never)) throw new Error(`${name}: выберите рубрику`);
+    if (!AUTHORS_DEFAULT.some((x) => x.slug === a.author)) throw new Error(`${name}: выберите автора`);
+    const cover = str(a.cover, 300).trim();
+    if (!cover.startsWith("/")) throw new Error(`${name}: выберите обложку`);
+    const draft = Boolean(a.draft);
+    const isFeatured = Boolean(a.featured) && !draft && !featured;
+    if (isFeatured) featured = true;
+    const blocks = Array.isArray(a.blocks) ? a.blocks.map((b, i) => cleanBlock(b, `${name}, блок ${i + 1}`)).filter(Boolean) as Block[] : undefined;
+    const synonyms = words(a.synonyms, 12);
+    return {
+      slug, title, excerpt, category: a.category, tags: words(a.tags, 8), minutes: Math.min(120, Math.max(1, Math.round(Number(a.minutes) || 5))),
+      author: a.author, cover, ...(isFeatured ? { featured: true } : {}), ...(synonyms.length ? { synonyms } : {}),
+      ...(blocks?.length ? { blocks } : {}), ...(draft ? { draft: true } : {}),
+    };
+  });
+}
+
+function cleanBlock(raw: unknown, where: string): Block | null {
+  const b = raw as Record<string, unknown>;
+  const t = (k: string, max = 5000) => str(b?.[k], max).trim();
+  switch (b?.type) {
+    case "p": return t("text") ? { type: "p", text: t("text") } : null;
+    case "h2": {
+      const text = t("text", 200);
+      if (!text) return null;
+      const id = t("id", 60).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "") || `h-${Math.abs(hash(text))}`;
+      return { type: "h2", id, text };
+    }
+    case "list": {
+      const items = (Array.isArray(b.items) ? b.items : []).map((i) => str(i, 1000).trim()).filter(Boolean);
+      return items.length ? { type: "list", items } : null;
+    }
+    case "callout": return t("text") ? { type: "callout", title: t("title", 200), text: t("text") } : null;
+    case "quote": return t("text") ? { type: "quote", text: t("text"), by: t("by", 200) } : null;
+    case "figure": {
+      if (!t("src", 300)) return null;
+      if (!t("src", 300).startsWith("/")) throw new Error(`${where}: картинка — из медиатеки`);
+      return { type: "figure", src: t("src", 300), caption: t("caption", 300) };
+    }
+    case "table": {
+      const headers = (Array.isArray(b.headers) ? b.headers : []).map((h) => str(h, 100).trim());
+      const rows = (Array.isArray(b.rows) ? b.rows : []).map((r) => (Array.isArray(r) ? r : []).map((c) => str(c, 300).trim())).filter((r) => r.some(Boolean));
+      if (!headers.length || !rows.length) return null;
+      return { type: "table", headers, rows: rows.map((r) => headers.map((_, i) => r[i] ?? "")) };
+    }
+    case "cta": return t("title") ? { type: "cta", title: t("title", 200), text: t("text", 1000), primary: t("primary", 40), secondary: t("secondary", 40) } : null;
+    default: throw new Error(`${where}: неизвестный тип блока`);
+  }
+}
+
+function hash(s: string) {
+  let h = 0;
+  for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) | 0;
+  return h;
 }
 
 function areaFor(key: string): Area {

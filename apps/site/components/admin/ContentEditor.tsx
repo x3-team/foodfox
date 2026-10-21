@@ -111,7 +111,7 @@ export function FieldInput({ field, value, onChange }: { field: Field; value: un
   }
 }
 
-function AutoText({ value, onChange, label, rows = 3 }: { value: string; onChange: (v: string) => void; label: string; rows?: number }) {
+export function AutoText({ value, onChange, label, rows = 3 }: { value: string; onChange: (v: string) => void; label: string; rows?: number }) {
   const lines = Math.min(16, Math.max(rows, value.split("\n").length + Math.floor(value.length / 90)));
   return <textarea className="a-input" style={{ minHeight: 0 }} rows={lines} value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} />;
 }
@@ -131,7 +131,7 @@ export function ImageInput({ value, onChange }: { value: ImageValue; onChange: (
   const [open, setOpen] = useState(false);
   return (
     <div className="a-image-field">
-      <img src={value?.src} alt="" />
+      {value?.src ? <img src={value.src} alt="" /> : <div className="a-image-empty">Картинка не выбрана</div>}
       <div className="a-actions" style={{ gap: 8 }}>
         <button className="a-btn is-ghost is-small" type="button" onClick={() => setOpen(true)}><Icon name="media" size={16} /> Выбрать из медиатеки</button>
         <span className="faint" style={{ fontSize: 13, overflowWrap: "anywhere" }}>{value?.src}</span>

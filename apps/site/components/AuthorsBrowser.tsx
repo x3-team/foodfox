@@ -5,7 +5,8 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { RevealNoScript, usePress, useReveal } from "@/components/ArticleCard";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { ROLE_FILTERS, articles, authors, materialsWord } from "@/lib/content";
+import { ROLE_FILTERS, materialsWord, type Author } from "@/lib/content";
+import { useBlog } from "@/components/ContentProvider";
 
 // U1 (1081:2214): the filter lives in the URL (?role=doctors).
 const ROLE_PARAM: Record<string, string> = {
@@ -22,14 +23,15 @@ function plural(n: number, one: string, few: string, many: string) {
   return many;
 }
 
-function filterAuthors(role: string) {
+function filterAuthors(authors: Author[], role: string) {
   const filtered = authors.filter((author) => author.listed !== false && (role === "all" || author.roles.includes(role as never)));
   return [...filtered].sort((a, b) => Number(b.slug === "svetlana-kanevskaya") - Number(a.slug === "svetlana-kanevskaya"));
 }
 
 export function AuthorsBrowser() {
+  const { articles, authors } = useBlog();
   const [role, setRole] = useState("all");
-  const list = useMemo(() => filterAuthors(role), [role]);
+  const list = useMemo(() => filterAuthors(authors, role), [authors, role]);
   // Cards on screen: the new list plus the ones that are still fading out (opacity + scale .96, then removed).
   const [shown, setShown] = useState(list);
   const [leaving, setLeaving] = useState<string[]>([]);
@@ -59,7 +61,7 @@ export function AuthorsBrowser() {
     const id = Object.keys(ROLE_PARAM).find((key) => ROLE_PARAM[key] === value);
     if (id) {
       setRole(id);
-      setShown(filterAuthors(id));
+      setShown(filterAuthors(authors, id));
     }
   }, []);
 
@@ -76,7 +78,7 @@ export function AuthorsBrowser() {
     if (id === "all") url.searchParams.delete("role");
     else url.searchParams.set("role", ROLE_PARAM[id]);
     window.history.replaceState(window.history.state, "", url);
-    const next = filterAuthors(id);
+    const next = filterAuthors(authors, id);
     setRole(id);
     setFiltered(true);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

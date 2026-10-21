@@ -4,16 +4,18 @@ import { notFound } from "next/navigation";
 import { AuthorPosts, SubscribeLink } from "@/components/AuthorPosts";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { authors, articles, authorBySlug, materialsWord } from "@/lib/content";
+import { materialsWord } from "@/lib/content";
+import { blogFrom } from "@/lib/cms/blog";
+import { getContentOverrides } from "@/lib/cms/server";
 import "@/app/adaptive/blog.css";
 import { seoMetadata } from "@/lib/cms/seo";
 
-export function generateStaticParams() {
-  return authors.map((author) => ({ slug: author.slug }));
+export async function generateStaticParams() {
+  return blogFrom(await getContentOverrides()).authors.map((author) => ({ slug: author.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const author = authorBySlug((await params).slug);
+  const author = blogFrom(await getContentOverrides()).authorBySlug((await params).slug);
   if (!author) return {};
   return seoMetadata(`/blog/authors/${(await params).slug}`, { title: author.name, description: author.bio });
 }
@@ -26,6 +28,7 @@ function authorGenitive(name: string) {
 }
 
 export default async function AuthorPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { articles, authorBySlug } = blogFrom(await getContentOverrides());
   const author = authorBySlug((await params).slug);
   if (!author) notFound();
   const posts = articles.filter((article) => article.author === author.slug);

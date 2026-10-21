@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo } from "react";
+import { blogFrom } from "@/lib/cms/blog";
 import { DEFAULTS, PRICE_LABS_KEY, type ImageValue } from "@/lib/cms/registry";
 import { LESSONS_DEFAULT, type Lesson } from "@/lib/site-data/course";
 import { PARTNERS, type Partner } from "@/lib/labs";
@@ -37,6 +38,12 @@ export function useContent() {
     };
     return { get, text, lines, image, telHref, lessons, faqGroups, labs, showPrices };
   }, [values]);
+}
+
+/** Blog articles (without drafts) and authors as edited in the admin. */
+export function useBlog() {
+  const values = useContext(Ctx);
+  return useMemo(() => blogFrom(values), [values]);
 }
 
 function countLabel(n: number) {
