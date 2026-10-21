@@ -6,7 +6,8 @@
 definitions:
   env: &env
     groups:
-      - foodfox_apple # ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8, optional APPLE_TEAM_ID
+      - foodfox_apple # ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8, optional APPLE_TEAM_ID,
+                      # optional FOX_APPMETRICA_KEY, APPMETRICA_POST_API_KEY (docs/MONITORING.md)
     flutter: stable
     xcode: latest
   cache: &cache
@@ -27,3 +28,4 @@ workflows:
         script: FOX_BUILD=$((2000 + BUILD_NUMBER)) scripts/ios-release.sh
     artifacts:
       - apps/mobile/build/ios-release/*.ipa
+      - apps/mobile/build/ios-release-dsyms/*.zip

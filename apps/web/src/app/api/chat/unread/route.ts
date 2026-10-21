@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthClientId, handleAuthError } from "@/lib/api-auth";
 import { getUnreadCount, markMessagesRead } from "@/lib/db";
+import { reportServerError } from "@/lib/monitoring";
 
 // Reads the caller's session, so it must never be prerendered; stated
 // explicitly to match the rest of the API and keep it that way.
@@ -14,6 +15,7 @@ export async function GET() {
   } catch (e) {
     const auth = handleAuthError(e);
     if (auth) return auth;
+    reportServerError(e, { route: "GET /api/chat/unread" });
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
@@ -26,6 +28,7 @@ export async function PATCH() {
   } catch (e) {
     const auth = handleAuthError(e);
     if (auth) return auth;
+    reportServerError(e, { route: "PATCH /api/chat/unread" });
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

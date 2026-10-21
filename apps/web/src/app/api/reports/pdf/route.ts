@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthClientId, handleAuthError } from "@/lib/api-auth";
 import { getLatestReportId } from "@/lib/db";
 import { readReportPdf } from "@/lib/report-storage";
+import { reportServerError } from "@/lib/monitoring";
 
 // Reads the caller's session, so it must never be prerendered; stated
 // explicitly to match the rest of the API and keep it that way.
@@ -33,6 +34,7 @@ export async function GET() {
   } catch (e) {
     const auth = handleAuthError(e);
     if (auth) return auth;
+    reportServerError(e, { route: "GET /api/reports/pdf" });
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

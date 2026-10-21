@@ -8,6 +8,7 @@ import "package:foodfox/screens/auth/sms_screen.dart";
 import "package:foodfox/screens/onboarding_screen.dart";
 import "package:foodfox/services/auth_store.dart";
 import "package:foodfox/services/foodfox_api.dart";
+import "package:foodfox/services/telemetry.dart";
 import "package:foodfox/theme/fox_motion.dart";
 
 enum _Step { onboarding, phone, sms, pinCreate, pinConfirm }
@@ -31,6 +32,7 @@ class AuthFlow extends StatefulWidget {
 
 class _AuthFlowState extends State<AuthFlow> {
   _Step _step = _Step.onboarding;
+  _Step? _reported;
   String _phone = "";
   String _firstPin = "";
   String? _error;
@@ -50,6 +52,7 @@ class _AuthFlowState extends State<AuthFlow> {
     });
     try {
       await widget.api.requestOtp(phone);
+      Telemetry.event(FoxEvent.otpRequested);
       if (!mounted) return;
       setState(() {
         _phone = phone;
@@ -62,6 +65,7 @@ class _AuthFlowState extends State<AuthFlow> {
       // The demo account is meant for reviewing the app, so an unreachable or
       // out-of-date backend must not be the thing that blocks it.
       if (_isDemoPhone(phone)) {
+        Telemetry.event(FoxEvent.otpRequested, {"offline_demo": true});
         setState(() {
           _phone = phone;
           _offlineDemo = true;
@@ -70,6 +74,7 @@ class _AuthFlowState extends State<AuthFlow> {
         });
         return;
       }
+      Telemetry.event(FoxEvent.otpRequestFailed, {"reason": _reason(e)});
       setState(() {
         _error = _clean(e);
         _busy = false;
@@ -95,12 +100,15 @@ class _AuthFlowState extends State<AuthFlow> {
         displayName: profile.displayName,
         demo: _offlineDemo,
       );
+      Telemetry.setDemo(widget.api.isDemo);
+      Telemetry.event(FoxEvent.otpVerified);
       if (!mounted) return;
       setState(() {
         _step = _Step.pinCreate;
         _busy = false;
       });
     } catch (e) {
+      Telemetry.event(FoxEvent.otpFailed, {"reason": _reason(e)});
       if (!mounted) return;
       setState(() {
         _error = _clean(e);
@@ -120,6 +128,27 @@ class _AuthFlowState extends State<AuthFlow> {
 
   String _clean(Object e) =>
       e.toString().replaceFirst("Exception: ", "").trim();
+
+  /// A category for analytics; the message itself may quote the phone.
+  static String _reason(Object e) {
+    final text = e.toString();
+    if (text.contains("Нет связи")) return "network";
+    if (text.contains("Слишком много") || text.contains("Повторная")) {
+      return "rate_limited";
+    }
+    if (text.contains("неверный") || text.contains("Неверный")) {
+      return "wrong_code";
+    }
+    return "other";
+  }
+
+  static const _screenNames = {
+    _Step.onboarding: "onboarding",
+    _Step.phone: "auth_phone",
+    _Step.sms: "auth_sms",
+    _Step.pinCreate: "auth_pin_create",
+    _Step.pinConfirm: "auth_pin_confirm",
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -142,10 +171,17 @@ class _AuthFlowState extends State<AuthFlow> {
   }
 
   Widget _current() {
+    if (_reported != _step) {
+      _reported = _step;
+      Telemetry.screen(_screenNames[_step]!);
+    }
     switch (_step) {
       case _Step.onboarding:
         return OnboardingScreen(
-          onStart: () => setState(() => _step = _Step.phone),
+          onStart: () {
+            Telemetry.event(FoxEvent.onboardingStart);
+            setState(() => _step = _Step.phone);
+          },
         );
 
       case _Step.phone:
@@ -199,6 +235,9 @@ class _AuthFlowState extends State<AuthFlow> {
             if (await widget.store.biometricsAvailable()) {
               await widget.store.setBiometricsEnabled(true);
             }
+            Telemetry.event(FoxEvent.signInCompleted, {
+              "demo": widget.api.isDemo,
+            });
             widget.onAuthenticated();
             return null;
           },
@@ -251,7 +290,10 @@ class _UnlockGateState extends State<UnlockGate> {
 
   Future<void> _tryBiometric() async {
     final ok = await widget.store.authenticateBiometric();
-    if (ok && mounted) widget.onUnlocked();
+    if (ok && mounted) {
+      Telemetry.event(FoxEvent.unlocked, {"method": "biometric"});
+      widget.onUnlocked();
+    }
   }
 
   @override
@@ -264,6 +306,7 @@ class _UnlockGateState extends State<UnlockGate> {
     onCompleted: (pin) async {
       final ok = await widget.store.verifyPin(pin);
       if (ok) {
+        Telemetry.event(FoxEvent.unlocked, {"method": "pin"});
         widget.onUnlocked();
         return null;
       }

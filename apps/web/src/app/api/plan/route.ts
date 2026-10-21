@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthClientId, handleAuthError } from "@/lib/api-auth";
 import { getPlanOverview, getPlanWeek } from "@/lib/db";
+import { reportServerError } from "@/lib/monitoring";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
   } catch (e) {
     const auth = handleAuthError(e);
     if (auth) return auth;
-    console.error(e);
+    reportServerError(e, { route: "GET /api/plan" });
     return NextResponse.json({ error: "Ошибка загрузки плана" }, { status: 500 });
   }
 }

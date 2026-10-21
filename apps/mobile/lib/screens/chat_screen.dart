@@ -4,6 +4,7 @@ import "package:flutter/material.dart";
 
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
+import "package:foodfox/services/telemetry.dart";
 import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/utils/lazy_tab_loader.dart";
@@ -109,6 +110,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     try {
       final messages = await widget.api.sendChat(text);
+      Telemetry.event(FoxEvent.chatMessageSent, {"preset": preset != null});
       if (!mounted) return;
       setState(() {
         _messages = messages;

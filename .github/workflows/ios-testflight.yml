@@ -77,7 +77,8 @@ jobs:
             --dart-define=FOX_BASIC_USER=demo \
             --dart-define=FOX_BASIC_PASS=FoodFox2026! \
             --dart-define=FOX_DEMO_PHONE=9251111111 \
-            --dart-define=FOX_DEMO_OTP=1111
+            --dart-define=FOX_DEMO_OTP=1111 \
+            --dart-define=FOX_APPMETRICA_KEY=${{ vars.FOX_APPMETRICA_KEY }}
           xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner \
             -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' \
             -archivePath build/ios/Runner.xcarchive \

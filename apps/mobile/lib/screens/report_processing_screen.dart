@@ -4,6 +4,7 @@ import "dart:math" as math;
 import "package:flutter/material.dart";
 
 import "package:foodfox/services/foodfox_api.dart";
+import "package:foodfox/services/telemetry.dart";
 import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/widgets/ui/fox_ui.dart";
@@ -52,6 +53,8 @@ class _ReportProcessingScreenState extends State<ReportProcessingScreen> {
   String? _error;
   Timer? _ticker;
   var _elapsed = Duration.zero;
+  final _clock = Stopwatch();
+  var _attempt = 0;
 
   @override
   void initState() {
@@ -60,6 +63,14 @@ class _ReportProcessingScreenState extends State<ReportProcessingScreen> {
   }
 
   void _start() {
+    _attempt++;
+    _clock
+      ..reset()
+      ..start();
+    Telemetry.event(
+      _attempt == 1 ? FoxEvent.processingStarted : FoxEvent.processingRetry,
+      {"attempt": _attempt},
+    );
     const tick = Duration(milliseconds: 250);
     _elapsed = Duration.zero;
     _ticker?.cancel();
@@ -80,6 +91,12 @@ class _ReportProcessingScreenState extends State<ReportProcessingScreen> {
   Future<void> _run() async {
     try {
       final outcome = await widget.work();
+      Telemetry.event(FoxEvent.processingSucceeded, {
+        "parsed_count": outcome.parsedCount,
+        "confidence": outcome.confidence ?? "unknown",
+        "seconds": _clock.elapsed.inSeconds,
+        "attempt": _attempt,
+      });
       if (!mounted) return;
       _ticker?.cancel();
       setState(() {
@@ -90,11 +107,21 @@ class _ReportProcessingScreenState extends State<ReportProcessingScreen> {
       await Future<void>.delayed(const Duration(milliseconds: 1100));
       if (mounted) widget.onDone();
     } catch (e) {
+      final message = e.toString().replaceFirst("Exception: ", "").trim();
+      Telemetry.event(FoxEvent.processingFailed, {
+        "reason": _FailedView.isRecognition(message)
+            ? "recognition"
+            : message.contains("Нет связи")
+            ? "network"
+            : "server",
+        "seconds": _clock.elapsed.inSeconds,
+        "attempt": _attempt,
+      });
       if (!mounted) return;
       _ticker?.cancel();
       setState(() {
         _phase = _Phase.failed;
-        _error = e.toString().replaceFirst("Exception: ", "").trim();
+        _error = message;
       });
     }
   }
@@ -407,7 +434,9 @@ class _FailedView extends StatelessWidget {
 
   /// The server answers with a sentence when it read the file and found it
   /// wanting. Anything else means the file never got a verdict.
-  bool get _isRecognition =>
+  bool get _isRecognition => isRecognition(error);
+
+  static bool isRecognition(String error) =>
       error.contains("Распознано") ||
       error.contains("извлечь текст") ||
       error.contains("антиген") ||
@@ -496,9 +525,8 @@ class _FailedView extends StatelessWidget {
                   FoxButton(
                     label: "Написать в поддержку",
                     kind: FoxButtonKind.outline,
-                    onPressed: () => onSupport!(
-                      "Не получается загрузить отчёт FOX: $error",
-                    ),
+                    onPressed: () =>
+                        onSupport!("Не получается загрузить отчёт FOX: $error"),
                   )
                 else
                   FoxButton(
