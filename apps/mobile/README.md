@@ -62,10 +62,11 @@ flutter build apk --release \
 ## iOS / TestFlight
 
 iOS project lives in `ios/` (bundle id `guru.yuri.foodfox`, display name "FoodFox").
-Build & upload run on GitHub Actions (macOS): workflow **iOS TestFlight**
-(`.github/workflows/ios-testflight.yml`), manual `workflow_dispatch` only.
+Main path: Codemagic, workflow **iOS → TestFlight** in `codemagic.yaml`, manual start only.
+Setup steps: [`docs/codemagic.md`](../../docs/codemagic.md).
 
-Required repo secrets:
+Fallback: GitHub Actions workflow **iOS TestFlight** (`.github/workflows/ios-testflight.yml`,
+`macos-latest`), manual `workflow_dispatch` only. Its repo secrets:
 
 | Secret | Value |
 |---|---|

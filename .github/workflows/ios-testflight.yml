@@ -1,4 +1,5 @@
-# iOS build + TestFlight upload (manual only).
+# iOS build + TestFlight upload (manual only). Fallback path: the main one is Codemagic
+# (codemagic.yaml, docs/codemagic.md).
 #
 # Required GitHub repo secrets (Settings → Secrets and variables → Actions):
 #   APPSTORE_ISSUER_ID     – Issuer ID (UUID) from App Store Connect API keys page

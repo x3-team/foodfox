@@ -1,0 +1,29 @@
+# FoodFox iPhone build to TestFlight on Codemagic (Mac mini M2). Manual starts only:
+# no triggering section, so pushes and pull requests start nothing. The workflow runs
+# scripts/ios-release.sh, which signs through the App Store Connect API key
+# (scripts/asc-signing.rb: FoodFox's own certificate and profile) and uploads with altool.
+# Setup: docs/codemagic.md. The GitHub workflow ios-testflight.yml stays as a fallback.
+definitions:
+  env: &env
+    groups:
+      - foodfox_apple # ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8, optional APPLE_TEAM_ID
+    flutter: stable
+    xcode: latest
+  cache: &cache
+    cache_paths:
+      - $HOME/.pub-cache
+      - $HOME/Library/Caches/CocoaPods
+
+workflows:
+  ios-testflight:
+    name: iOS → TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment: *env
+    cache: *cache
+    scripts:
+      - name: Build, sign and upload
+        # 2000+ keeps Codemagic build numbers above the GitHub fallback's 1000 + run number
+        script: FOX_BUILD=$((2000 + BUILD_NUMBER)) scripts/ios-release.sh
+    artifacts:
+      - apps/mobile/build/ios-release/*.ipa
