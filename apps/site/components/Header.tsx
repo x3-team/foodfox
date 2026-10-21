@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BottomSheet } from "@/components/BottomSheet";
 import { prefersReducedMotion, useDialog } from "@/components/useDialog";
+import { useContent } from "@/components/ContentProvider";
 
 export const NAV = [
   { href: "/specialists", label: "Для специалистов" },
@@ -62,6 +63,7 @@ export const PARTNER_APPLY = "https://foodfox.yuri.guru/partner/apply";
 
 export function Header() {
   const path = usePathname();
+  const content = useContent();
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [menu, setMenuOpen] = useState(false);
@@ -317,8 +319,8 @@ export function Header() {
               </a>
             </div>
             <div className="mm-contacts">
-              <a href="tel:+74953748305">+7 (495) 374-83-05</a>
-              <a href="https://t.me/foxfoodxplorer">
+              <a href={content.telHref}>{content.text("contacts.phone")}</a>
+              <a href={content.text("contacts.telegram")}>
                 <img src="/icons/share/telegram.svg" alt="" />
                 Telegram
               </a>

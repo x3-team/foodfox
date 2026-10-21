@@ -5,8 +5,13 @@ import "@/app/adaptive/course.css";
 import "@/app/adaptive/b2b-motion.css";
 import "./motion.css";
 import "./demo.css";
+import { seoMetadata } from "@/lib/cms/seo";
 
-export const metadata: Metadata = { title: "Курс FOX для специалистов" };
+const baseMetadata: Metadata = { title: "Курс FOX для специалистов" };
+
+export function generateMetadata(): Promise<Metadata> {
+  return seoMetadata("/course", baseMetadata);
+}
 
 export default function Page() {
   return <CoursePage />;

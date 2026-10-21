@@ -3,11 +3,18 @@
 import { useState } from "react";
 import { PartnerShell } from "@/components/partner/PartnerShell";
 import { ReportTable } from "@/components/partner/ReportTable";
-import { kpis, partner, reports } from "@/lib/partner-demo";
+import { usePartnerData } from "@/components/partner/PartnerData";
+import { reports as demoReports, type PartnerReport } from "@/lib/partner-demo";
 
-const sample = reports[0];
+// The upload dialog is still a mock-up: it «recognises» the newest report (or the demo one).
+function useSample(): PartnerReport {
+  const { reports } = usePartnerData();
+  return reports[0] ?? demoReports[0];
+}
 
 export default function PartnerHomePage() {
+  const { partner, kpis } = usePartnerData();
+  const sample = useSample();
   const [uploadOpen, setUploadOpen] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [consent, setConsent] = useState(true);
@@ -114,6 +121,7 @@ function Upload({
   onCancel: () => void;
   onSubmit: () => void;
 }) {
+  const sample = useSample();
   const fields = [
     ["Номер отчёта", sample.number],
     ["Дата теста", sample.date],
@@ -206,6 +214,8 @@ function Confirmed({
   onMore: () => void;
   onDone: () => void;
 }) {
+  const sample = useSample();
+  const { fee } = usePartnerData();
   return (
     <div className="w-full max-w-[560px] rounded-[24px] bg-[#F8F9F6] px-5 pb-8 pt-8 text-center shadow-xl sm:px-9">
       <div className="mx-auto flex size-[72px] items-center justify-center rounded-full bg-[#EDF3D9] text-[32px] text-[#4A6B1F]">
@@ -219,7 +229,7 @@ function Confirmed({
       </p>
       <div className="mt-5 rounded-[20px] bg-[#21251D] px-6 py-5 text-left text-[#F8F9F6]">
         <p className="text-[13px] text-[#A8AAA3]">Начислено вознаграждение</p>
-        <p className="mt-1 text-[32px] font-light text-[#E7F551]">2 400 ₽</p>
+        <p className="mt-1 text-[32px] font-light text-[#E7F551]">{new Intl.NumberFormat("ru-RU").format(fee)} ₽</p>
         <p className="mt-1 text-[13px] text-[#A8AAA3]">
           Выплата 5 октября · баланс 21 600 ₽
         </p>

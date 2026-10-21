@@ -9,110 +9,15 @@ import { Footer } from "@/components/Footer";
 import { Header, PARTNER_LOGIN } from "@/components/Header";
 import { LabsMap, type Branch } from "@/components/LabsMap";
 import { LeadForm } from "@/components/LeadForm";
-import { PARTNERS, withUtm } from "@/lib/labs";
+import { useContent } from "@/components/ContentProvider";
+import { withUtm } from "@/lib/labs";
+import type { Review } from "@/lib/site-data/reviews";
 
-const FAQ_GROUPS: Array<{ id: string; title: string; count: string; items: Array<[string, string]> }> = [
-  {
-    id: "method",
-    title: "О тесте и методе",
-    count: "8 вопросов",
-    items: [
-      ["Можно ли доверять FOX, если IgG-тесты критикуют?", "Споры возникают, когда пищеспецифические IgG используют как окончательный диагноз или готовый список запрещённой еды. FOX решает другую задачу: лабораторно измеряет IgG к 286 пищевым антигенам и объединяет результаты в подробном отчёте. Широкая панель помогает системно оценить рацион, составить план временной элиминации и последовательно возвращать продукты под наблюдением специалиста."],
-      ["Чем пищевая непереносимость отличается от аллергии?", "Аллергия — быстрая реакция IgE. FOX смотрит IgG, реакции могут быть отложенными. Тест не диагностирует аллергию."],
-      ["Почему сложно самостоятельно определить триггеры?", "Отсроченная реакция проявляется через 3–72 часа, поэтому дневник без опоры быстро становится догадкой."],
-      ["Может ли результат измениться со временем?", "FOX показывает текущее состояние IgG, а не предрасположенность. Повторный отчёт может отличаться."],
-      ["Какие продукты входят в панель?", "286 пищевых антигенов из 13 групп: от молочных белков до специй и компонентов добавок."],
-      ["Что такое anti-CCD-контроль?", "Отдельный канал на перекрёстные углеводные структуры. Он снижает риск принять шум за сигнал."],
-      ["Сколько занимает сам анализ?", "Лабораторная часть занимает около трёх часов. Готовый отчёт обычно приходит через 7–10 дней."],
-      ["Нужен ли повторный визит в лабораторию?", "Нет. Один забор крови закрывает всю панель из 286 антигенов."],
-    ],
-  },
-  {
-    id: "prep",
-    title: "Перед сдачей",
-    count: "5 вопросов",
-    items: [
-      ["Нужно ли специально готовиться к сдаче крови?", "Правила на месте называет лаборатория. FOX не назначает диету накануне и не заменяет эту инструкцию."],
-      ["Нужно ли голодать перед забором крови?", "Нет. Специальной подготовки и диеты накануне не требуется."],
-      ["Подходит ли тест детям?", "Решение принимает специалист, который ведёт ребёнка. Тест не заменяет педиатра."],
-      ["Можно ли сдавать тест на фоне приёма лекарств?", "Это вопрос к врачу перед записью. Сайт не даёт индивидуальных назначений."],
-      ["Сколько стоит тест FOX?", "Цену устанавливает лаборатория. На сайте её нет."],
-    ],
-  },
-  {
-    id: "read",
-    title: "Как читать результат",
-    count: "7 вопросов",
-    items: [
-      ["Что означают зоны отчёта?", "Красная, жёлтая и зелёная зоны сравнивают IgG внутри одного бланка. Это не диагноз и не пожизненный запрет."],
-      ["Что такое U/mL в отчёте FOX?", "Условные единицы на миллилитр. Сравнивать число имеет смысл только с другими позициями того же отчёта."],
-      ["Почему в отчёте есть отдельные белки?", "Казеин, фракции глютена и другие компоненты показывают, на что именно среагировал IgG, а не на полку целиком."],
-      ["Как читать anti-CCD?", "Это контрольный канал на перекрёстные углеводные структуры. Если он повышен, часть сигналов читают осторожнее."],
-      ["Можно ли сравнивать два отчёта между собой?", "Повторный тест смотрят как новый снимок рациона. Абсолютные числа разных бланков напрямую не складывают."],
-      ["Что делать с длинным списком в красной зоне?", "Список — повод для разговора со специалистом о временной элиминации и полноценных заменах, а не готовое меню."],
-      ["Где посмотреть пример отчёта?", "На странице «Пример результата» разобраны зоны, таблица семейства и контрольные параметры."],
-    ],
-  },
-  {
-    id: "after",
-    title: "После теста и рацион",
-    count: "6 вопросов",
-    items: [
-      ["Нужно ли сразу убрать всё из красной зоны?", "На первом этапе продукты красной и жёлтой зон обычно убирают временно и возвращают по одному. Схему задаёт специалист."],
-      ["Как долго держать элиминацию?", "Ориентир — несколько недель, затем возврат жёлтой зоны. Срок зависит от самочувствия и рациона, его не назначает сайт."],
-      ["Чем заменить убранные продукты?", "Замены подбирают так, чтобы рацион оставался полноценным: белок, кальций, клетчатка. Это задача специалиста, а не списка запретов."],
-      ["Можно ли есть продукт из зелёной зоны без ограничений?", "Зелёная зона значит низкий IgG в этом бланке, а не разрешение игнорировать другие диагнозы."],
-      ["Когда имеет смысл пересдать тест?", "Когда рацион заметно изменился и специалист хочет увидеть новый профиль IgG. FOX не показывает предрасположенность."],
-      ["Отчёт заменяет дневник питания?", "Нет. Дневник и самочувствие остаются частью работы. Отчёт даёт лабораторную точку отсчёта, а не готовый план."],
-    ],
-  },
-  {
-    id: "doubt",
-    title: "Скепсис и критика IgG",
-    count: "4 вопроса",
-    items: [
-      ["Почему IgG-тесты критикуют?", "Критикуют попытку поставить диагноз или пожизненный запрет по одному числу. FOX измеряет панель и оставляет решение специалисту."],
-      ["Это то же самое, что тест на аллергию?", "Нет. Аллергия — IgE и быстрая реакция. FOX смотрит пищеспецифические IgG и не оценивает риск анафилаксии."],
-      ["Можно ли по отчёту поставить диагноз?", "Нельзя. Тест не диагностирует аллергию, целиакию, непереносимость лактозы и не заменяет очный приём."],
-      ["Есть ли у метода регуляторный статус?", "Панель разработана MADx (Вена) и маркируется как изделие для in vitro диагностики. Маркировку смотрите в разделе сертификатов."],
-    ],
-  },
-  {
-    id: "pro",
-    title: "Для специалистов",
-    count: "6 вопросов",
-    items: [
-      ["Кому из пациентов уместно предложить FOX?", "Когда жалобы со стороны ЖКТ, кожи или самочувствия могут быть связаны с рационом, а дневник не даёт опоры. Решение принимает врач."],
-      ["Как объяснить пациенту, что это не диагноз?", "Отчёт — карта IgG к продуктам панели. Он помогает собрать гипотезу по питанию и не заменяет аллергообследование."],
-      ["Как встроить отчёт в приём?", "Сначала клиника и уже известные диагнозы, затем зоны и отдельные белки, затем временная элиминация с возвратом."],
-      ["Есть ли материалы для кабинета?", "Курс из шести уроков, пример отчёта и страница для специалистов. Сертификат курса не является баллом НМО."],
-      ["Можно ли назначать элиминацию только по красной зоне?", "Красная зона — приоритет разговора, не автоматический запрет. Замены и срок возврата остаются клиническим решением."],
-      ["Где взять протокол чтения отчёта?", "В курсе и в разборе примера: шапка, сводка зон, таблица семейства, отдельные белки, anti-CCD."],
-    ],
-  },
-  {
-    id: "pay",
-    title: "Оплата и лаборатории",
-    count: "3 вопроса",
-    items: [
-      ["Где оплачивается тест?", "На сайте лаборатории-партнёра: отделение, время и оплата проходят там, а не на foodfox."],
-      ["Почему на сайте нет цены?", "Цену устанавливает сеть. В разных городах и лабораториях она отличается."],
-      ["Что делать, если в городе нет партнёра?", "Можно выбрать соседний город с сетью или оставить почту: напишем один раз, когда тест появится."],
-    ],
-  },
-];
-
-const FAQ_NAV = [
-  ["method", "О тесте и методе", "8"],
-  ["prep", "Перед сдачей", "5"],
-  ["read", "Как читать результат", "7"],
-  ["after", "После теста и рацион", "6"],
-  ["doubt", "Скепсис и критика IgG", "4"],
-  ["pro", "Для специалистов", "6"],
-  ["pay", "Оплата и лаборатории", "3"],
-];
 
 export function FaqPage() {
+  const content = useContent();
+  const FAQ_GROUPS = useMemo(() => content.faqGroups(), [content]);
+  const FAQ_NAV = FAQ_GROUPS.map((group) => [group.id, group.title, String(group.items.length)]);
   const [open, setOpen] = useState<string[]>([FAQ_GROUPS[0].items[0][0]]);
   const [q, setQ] = useState("");
   const [nav, setNav] = useState("method");
@@ -380,7 +285,7 @@ export function FaqPage() {
                 <h2>Не нашли ответ?</h2>
                 <p>Напишите в службу заботы. Дистанционно отчёт не интерпретируем — это разговор со специалистом, который вас ведёт.</p>
                 <Link className="btn btn-dark" href="/contacts">Задать вопрос</Link>
-                <p className="f03-phone"><a href="tel:+74953748305">+7 (495) 374-83-05</a></p>
+                <p className="f03-phone"><a href={content.telHref}>{content.text("contacts.phone")}</a></p>
               </div>
               <div className="f03-photo">
                 <img src="/figma/faq/consultant.jpg" alt="" />
@@ -455,6 +360,8 @@ function labName(lab: string) {
 
 /** `savedCity` — the city cookie read on the server (null = first visit → the confirmation is rendered right away). */
 export function LabsPage({ savedCity = null }: { savedCity?: string | null }) {
+  const content = useContent();
+  const PARTNERS = useMemo(() => content.labs(), [content]);
   const [city, setCity] = useState(savedCity || "Москва");
   const [labView, setLabView] = useState<"list" | "map">("list");
   const [wide, setWide] = useState(false);
@@ -694,7 +601,7 @@ export function LabsPage({ savedCity = null }: { savedCity?: string | null }) {
                   <button type="button" className={labView === "list" ? "is-active" : ""} onClick={() => setLabView("list")}>Список</button>
                   <button type="button" className={labView === "map" ? "is-active" : ""} onClick={() => setLabView("map")}>Карта</button>
                 </div>
-                <p className="l-note">Цена на сайте FOX не публикуется: она зависит от региона и сети.</p>
+                <p className="l-note">{content.showPrices && content.text("prices.from") ? `Тест FOX — ${content.text("prices.from")}. Точная цена зависит от региона и сети.` : "Цена на сайте FOX не публикуется: она зависит от региона и сети."}</p>
               </div>
               <div className="l01-photo">
                 <img src="/figma/labs/room.jpg" alt="" />
@@ -726,7 +633,7 @@ export function LabsPage({ savedCity = null }: { savedCity?: string | null }) {
                   // L02: a network card opens the booking modal straight on step 2 with this network.
                   <button key={item.name} type="button" onClick={() => window.dispatchEvent(new CustomEvent("fox:book", { detail: { lab: item.name } }))}>
                     {mark}
-                    <span className="l-status"><i />{key === "москва" || key === "" ? `Есть в Москве · ${item.count}` : item.count}</span>
+                    <span className="l-status"><i />{key === "москва" || key === "" ? `Есть в Москве · ${item.count}` : item.count}{item.price ? ` · ${item.price}` : ""}</span>
                     <em>Сдать тест на сайте сети <b className="l-arrow"><img src="/icons/arrow-up-right.svg" alt="" /></b></em>
                   </button>
                 ) : (
@@ -909,17 +816,19 @@ export function LabsPage({ savedCity = null }: { savedCity?: string | null }) {
 }
 
 const OFFICE: Branch[] = [{ id: "office", lab: "Офис", address: "ул. Таганская, 3", metro: "Марксистская", hours: "Пн–Пт 10–19", lat: 55.7406, lng: 37.653 }];
-const OFFICE_ADDRESS = "Москва, ул. Таганская, 3";
 const noop = () => undefined;
 
 /** M26: map-app chooser — Яндекс Карты, 2ГИС, Apple / Google Карты (by platform), «Скопировать адрес». */
 function RouteSheet({ onClose }: { onClose: () => void }) {
+  const content = useContent();
+  const OFFICE_ADDRESS = content.text("contacts.address");
+  const mapUrl = content.text("contacts.mapUrl");
   const [apple, setApple] = useState(false);
   useEffect(() => setApple(/iPhone|iPad|Macintosh/.test(navigator.userAgent) && "ontouchend" in document), []);
   const q = encodeURIComponent(OFFICE_ADDRESS);
   return (
     <BottomSheet label="Построить маршрут" className="route-bs" duration={280} onClose={onClose} portal>
-      <a href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer">Яндекс Карты <img src="/icons/arrow-up-right.svg" alt="" /></a>
+      <a href={mapUrl} target="_blank" rel="noreferrer">Яндекс Карты <img src="/icons/arrow-up-right.svg" alt="" /></a>
       <a href={`https://2gis.ru/moscow/search/${q}`} target="_blank" rel="noreferrer">2ГИС <img src="/icons/arrow-up-right.svg" alt="" /></a>
       {apple ? (
         <a href={`https://maps.apple.com/?q=${q}&ll=55.7406,37.653`} target="_blank" rel="noreferrer">Apple Карты <img src="/icons/arrow-up-right.svg" alt="" /></a>
@@ -943,6 +852,13 @@ function RouteSheet({ onClose }: { onClose: () => void }) {
 }
 
 export function ContactsPage() {
+  const content = useContent();
+  const phone = content.text("contacts.phone");
+  const email = content.text("contacts.email");
+  const address = content.text("contacts.address");
+  const street = address.replace(/^Москва,\s*/, "");
+  const telegram = content.text("contacts.telegram");
+  const mapUrl = content.text("contacts.mapUrl");
   const [route, setRoute] = useState(false);
   const closeRoute = useCallback(() => setRoute(false), []);
   const phoneRoute = (event: { preventDefault: () => void }) => {
@@ -1012,8 +928,8 @@ export function ContactsPage() {
                 <img src="/figma/contacts/hero.jpg" alt="" />
                 <div className="k-hero-card">
                   <small className={officeOpen ? "is-open" : ""}>{officeOpen ? "Сейчас открыто · до 19:00" : "Сейчас закрыто"}</small>
-                  <b>Москва, ул. Таганская, 3</b>
-                  <span>МФК Инмунотех · м. Марксистская</span>
+                  <b>{address}</b>
+                  <span>{content.text("contacts.addressNote")}</span>
                 </div>
               </div>
             </div>
@@ -1021,41 +937,41 @@ export function ContactsPage() {
         </section>
         <section data-s="k02">
           <div className="wrap k-cards">
-            <article className="k-tap" onClick={cardTap} {...holdToCopy("+7 (495) 374-83-05", "Номер скопирован")}>
+            <article className="k-tap" onClick={cardTap} {...holdToCopy(phone, "Номер скопирован")}>
               <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-phone.svg)" }} aria-hidden />
               <div>
                 <h2>Телефон</h2>
-                <button type="button" className="k-strong" onClick={() => { if (isPhone()) window.location.href = "tel:+74953748305"; else copyValue("+7 (495) 374-83-05", "Номер скопирован"); }}>+7 (495) 374-83-05</button>
-                <p>Пн–Пт 10:00–19:00 (МСК)</p>
+                <button type="button" className="k-strong" onClick={() => { if (isPhone()) window.location.href = content.telHref; else copyValue(phone, "Номер скопирован"); }}>{phone}</button>
+                <p>{content.text("contacts.hours")}</p>
                 <p role="status">{officeOpen ? "Сейчас офис на связи" : "Сейчас офис закрыт — напишите, ответим утром"}</p>
-                <a className="k-go" href="tel:+74953748305">Позвонить <img src="/icons/arrow-right.svg" alt="" /></a>
+                <a className="k-go" href={content.telHref}>Позвонить <img src="/icons/arrow-right.svg" alt="" /></a>
               </div>
             </article>
-            <article className="k-tap" onClick={cardTap} {...holdToCopy("info@inmunotech.ru", "E-mail скопирован")}>
+            <article className="k-tap" onClick={cardTap} {...holdToCopy(email, "E-mail скопирован")}>
               <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-mail.svg)" }} aria-hidden />
               <div>
                 <h2>E-mail</h2>
-                <a className="k-value" href="mailto:info@inmunotech.ru" onClick={(event) => { if (!isPhone()) { event.preventDefault(); copyValue("info@inmunotech.ru", "E-mail скопирован"); } }}>info@inmunotech.ru</a>
+                <a className="k-value" href={`mailto:${email}`} onClick={(event) => { if (!isPhone()) { event.preventDefault(); copyValue(email, "E-mail скопирован"); } }}>{email}</a>
                 <p>Для общих вопросов и партнёрства</p>
-                <a className="k-go" href="mailto:info@inmunotech.ru">Написать <img src="/icons/arrow-right.svg" alt="" /></a>
+                <a className="k-go" href={`mailto:${email}`}>Написать <img src="/icons/arrow-right.svg" alt="" /></a>
               </div>
             </article>
             <article className="k-tap" onClick={cardTap} {...holdToCopy()}>
               <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-pin.svg)" }} aria-hidden />
               <div>
                 <h2>Адрес</h2>
-                <p className="k-strong">ул. Таганская, 3</p>
+                <p className="k-strong">{street}</p>
                 <p>Офис, не лаборатория</p>
-                <a className="k-go" href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer" onClick={(event) => phoneRoute(event)}>Маршрут <img src="/icons/arrow-right.svg" alt="" /></a>
+                <a className="k-go" href={mapUrl} target="_blank" rel="noreferrer" onClick={(event) => phoneRoute(event)}>Маршрут <img src="/icons/arrow-right.svg" alt="" /></a>
               </div>
             </article>
             <article className="k-tap" onClick={cardTap} {...holdToCopy()}>
               <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-tg.svg)" }} aria-hidden />
               <div>
                 <h2>Telegram</h2>
-                <p className="k-strong">@foxfoodxplorer</p>
+                <p className="k-strong">{telegram.replace(/^https?:\/\/t\.me\//, "@")}</p>
                 <p>Новости и материалы</p>
-                <a className="k-go" href="https://t.me/foxfoodxplorer" target="_blank" rel="noreferrer">Открыть канал <img src="/icons/arrow-right.svg" alt="" /></a>
+                <a className="k-go" href={telegram} target="_blank" rel="noreferrer">Открыть канал <img src="/icons/arrow-right.svg" alt="" /></a>
               </div>
             </article>
           </div>
@@ -1074,8 +990,8 @@ export function ContactsPage() {
               </div>
               <div>
                 <h2>Офис Инмунотех</h2>
-                <p>Москва, ул. Таганская, 3 · 5 минут от м. Марксистская</p>
-                <a className="btn btn-dark k-route" href="https://yandex.ru/maps/-/CHwvqE4z" target="_blank" rel="noreferrer" onClick={(event) => phoneRoute(event)}>Построить маршрут</a>
+                <p>{address} · 5 минут от м. Марксистская</p>
+                <a className="btn btn-dark k-route" href={mapUrl} target="_blank" rel="noreferrer" onClick={(event) => phoneRoute(event)}>Построить маршрут</a>
               </div>
             </aside>
           </div>
@@ -1107,7 +1023,7 @@ export function ContactsPage() {
                 <span className="k-ico" style={{ backgroundImage: "url(/icons/contact-tg.svg)" }} aria-hidden />
                 <h3>Прессе и партнёрам</h3>
                 <p>Комментарии экспертов, материалы, логотипы</p>
-                <a href="mailto:info@inmunotech.ru">Написать <img src="/icons/arrow-right.svg" alt="" /></a>
+                <a href={`mailto:${email}`}>Написать <img src="/icons/arrow-right.svg" alt="" /></a>
               </article>
             </div>
           </div>
@@ -1119,18 +1035,10 @@ export function ContactsPage() {
   );
 }
 
-const REVIEWS = [
-  { id: "r1", kind: "Видео", who: "Пациенты", tag: "ЖКТ", photo: "/figma/reviews/r1.webp", video: true, title: "Наконец поняла, что менять в рационе", name: "Елена, 34 года", text: "" },
-  { id: "r2", kind: "Текст", who: "Пациенты", tag: "Питание", photo: "/figma/reviews/r2.webp", video: false, title: "", name: "Екатерина Ласковская", text: "Убирала молочку, потом глютен, потом всё сразу — и каждый раз наугад. Отчёт наконец дал конкретный список." },
-  { id: "r3", kind: "Текст", who: "Пациенты", tag: "Общее самочувствие", photo: "/figma/reviews/r3.webp", video: false, title: "", name: "Игорь Потруников", text: "Списывал всё на возраст и работу. Четыре месяца вёл дневник питания и не продвинулся ни на шаг." },
-  { id: "r4", kind: "Текст", who: "Специалисты", tag: "Специалист", photo: "/figma/reviews/r1.webp", video: false, title: "", name: "Алёна Вавилова", role: "Нутрициолог", text: "С отчётом легче выстроить разговор: пациент видит структуру, а не список запретов." },
-  { id: "r5", kind: "Видео", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r5.webp", video: true, title: "Ответ оказался не в косметологии", name: "Алексей, 41 год", text: "" },
-  { id: "r6", kind: "Текст", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r2.webp", video: false, title: "", name: "Марина К.", text: "С врачом собрали план по отчёту — без угадывания. Через два месяца стало заметно лучше." },
-  { id: "r7", kind: "Текст", who: "Пациенты", tag: "Вес и отёчность", photo: "/figma/reviews/r7.webp", video: false, title: "", name: "Ольга, 29 лет", text: "Думала, что дело в соли. С нутрициологом временно убрали лишнее — ушло ощущение тяжести." },
-  { id: "r8", kind: "Текст", who: "Специалисты", tag: "Общее самочувствие", photo: "/figma/reviews/r8.webp", video: false, title: "", name: "Клиника на Таганке", text: "Отчёт стал структурой приёма, а не списком запретов, который пациент составил сам." },
-];
 
 export function ReviewsPage() {
+  const content = useContent();
+  const REVIEWS = useMemo(() => content.get<Review[]>("reviews.list").filter((item) => !item.hidden), [content]);
   const [filter, setFilter] = useState("Все");
   useEffect(() => {
     const type = new URLSearchParams(window.location.search).get("type");
@@ -1141,7 +1049,7 @@ export function ReviewsPage() {
   const [chipNow, setChipNow] = useState<string | null>(null);
   const [topicNow, setTopicNow] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [video, setVideo] = useState<(typeof REVIEWS)[number] | null>(null);
+  const [video, setVideo] = useState<Review | null>(null);
   const [videoFrom, setVideoFrom] = useState<DOMRect | null>(null);
   const closeVideo = useCallback(() => setVideo(null), []);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -1479,7 +1387,7 @@ function RevText({ text }: { text: string }) {
    Phone (M34): a full-screen player that grows out of the tapped poster (shared element, 320 мс (.2,.8,.2,1)) — the
    player is revealed through a window that starts on the poster's rectangle; swipe down closes it (it follows the
    finger, >80 px or a flick closes, otherwise it springs back). */
-function VideoModal({ item, from, onClose }: { item: (typeof REVIEWS)[number]; from: DOMRect | null; onClose: () => void }) {
+function VideoModal({ item, from, onClose }: { item: Review; from: DOMRect | null; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const scrimRef = useRef<HTMLDivElement>(null);
   const [subs, setSubs] = useState(true);

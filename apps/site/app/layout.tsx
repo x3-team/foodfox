@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { ContentProvider } from "@/components/ContentProvider";
 import { CookieBar } from "@/components/CookieBar";
+import { getContentOverrides } from "@/lib/cms/server";
+import { BLOG_ARTICLES_KEY, type BlogArticle } from "@/lib/cms/blog";
+import { SiteOnly } from "@/components/SiteOnly";
 import { SiteOverlays } from "@/components/SiteOverlays";
 import "./globals.css";
 import "./adaptive/shared.css";
@@ -15,6 +19,11 @@ const manrope = localFont({
   variable: "--font",
   display: "swap",
 });
+
+/* Saving in the admin re-renders the pages at once (revalidatePath). That mark lives in the server's memory, so a
+   restart before anyone opened the page would bring back the HTML of the build; the minute below re-renders such a
+   page on its own. */
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: {
@@ -34,17 +43,27 @@ export const metadata: Metadata = {
 // The rest of the page is revealed on scroll by the observer in SiteOverlays.
 const REVEAL_BOOT = `(function(){try{var r=matchMedia("(prefers-reduced-motion: reduce)").matches,l=innerHeight*0.92;document.querySelectorAll("[data-s]").forEach(function(n){if(r||n.getBoundingClientRect().top<l)n.classList.add("is-in")})}catch(e){}})()`;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Texts edited in /admin; empty when there is no database, then the site shows the defaults from the code.
+  const saved = await getContentOverrides();
+  // Every page carries the overrides to the browser: drafts stay on the server, and article bodies travel only with
+  // their own page (ArticleView gets the article as a prop), so the payload stays small.
+  const articles = saved[BLOG_ARTICLES_KEY] as BlogArticle[] | undefined;
+  const content = articles ? { ...saved, [BLOG_ARTICLES_KEY]: articles.filter((a) => !a.draft).map(({ blocks: _blocks, ...rest }) => rest) } : saved;
   return (
     // data-scroll-behavior: Next keeps the page-level smooth scrolling (globals.css) for anchors but jumps instantly
     // on route changes instead of animating the old page up.
     <html lang="ru" data-scroll-behavior="smooth">
       <body className={manrope.variable} style={{ fontFamily: "var(--font), Manrope, sans-serif" }}>
         <a className="skip-link" href="#content">К содержанию</a>
-        <div id="content">{children}</div>
-        <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOT }} />
-        <CookieBar />
-        <SiteOverlays />
+        <ContentProvider values={content}>
+          <div id="content">{children}</div>
+          <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOT }} />
+          <SiteOnly>
+            <CookieBar />
+            <SiteOverlays />
+          </SiteOnly>
+        </ContentProvider>
       </body>
     </html>
   );

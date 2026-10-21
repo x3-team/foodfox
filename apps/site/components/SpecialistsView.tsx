@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Footer } from "@/components/Footer";
+import { useContent } from "@/components/ContentProvider";
 import { Header } from "@/components/Header";
 import { useReveal } from "@/components/useReveal";
 import { ARG_GRAPHICS } from "@/app/specialists/arg-graphics";
@@ -248,7 +249,6 @@ function replayGraphic(event: React.MouseEvent<HTMLElement>) {
   row.dataset.play = row.dataset.play === "b" ? "a" : "b";
 }
 
-const HERO_TITLE = "Пищеспецифические IgG к 286 антигенам — в одном подробном отчёте";
 
 /** Horizontal swipe (touch): calls back with +1 (finger to the left) / −1 (to the right). */
 function useSwipe(onSwipe: (dir: 1 | -1) => void) {
@@ -695,6 +695,7 @@ function ExpertsSection() {
 }
 
 export function SpecialistsView() {
+  const content = useContent();
   const heroRef = useRef<HTMLElement>(null);
   useReveal();
 
@@ -797,21 +798,19 @@ export function SpecialistsView() {
           <div className="wrap inner">
             <div className="sp-hero-copy">
               <div className="sp-pills">
-                <span>Для врачей и нутрициологов</span>
-                <span>Платформа MADx · Австрия</span>
+                <span>{content.text("specialists.hero.pill1")}</span>
+                <span>{content.text("specialists.hero.pill2")}</span>
               </div>
-              <h1>{HERO_TITLE.split(" ").map((word, index, all) => (
+              <h1>{content.text("specialists.hero.title").split(" ").map((word, index, all) => (
                 <Fragment key={index}><span className="sp-w" style={{ "--i": index } as React.CSSProperties}>{word}</span>{index < all.length - 1 ? " " : null}</Fragment>
               ))}</h1>
               <p className="sp-lead-inv">
-                <span className="is-desk">FOX Food Xplorer исследует иммунную реактивность к 286 продуктам и пищевым компонентам. Один образец крови позволяет одновременно оценить широкую панель и получить основу для персональной тактики питания.</span>
-                <span className="is-mob">Один образец крови — иммунная реактивность к 286 продуктам и пищевым компонентам. Опора для работы с ЖКТ, кожей и функциональными жалобами.</span>
+                <span className="is-desk">{content.text("specialists.hero.lead")}</span>
+                <span className="is-mob">{content.text("specialists.hero.leadMobile")}</span>
               </p>
-              <p className="sp-body-inv">
-                FOX можно использовать в комплексной работе с пациентами с функциональными жалобами ЖКТ, кожными проявлениями, головными болями и другими состояниями, при которых специалист предполагает связь самочувствия с рационом.
-              </p>
+              <p className="sp-body-inv">{content.text("specialists.hero.body")}</p>
               <div className="sp-cta">
-                <Link className="btn btn-light" href="/report">Скачать пример отчёта</Link>
+                <Link className="btn btn-light" href="/report">{content.text("specialists.hero.cta")}</Link>
                 <Link className="sp-arrow sp-arrow-light" href="/labs">
                   Найти лабораторию-партнёра
                   <img className="is-desk" src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />

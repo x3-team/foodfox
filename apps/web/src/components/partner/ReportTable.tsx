@@ -1,5 +1,7 @@
+"use client";
+
+import { usePartnerData } from "@/components/partner/PartnerData";
 import {
-  reports,
   statusLabel,
   type ReportStatus,
 } from "@/lib/partner-demo";
@@ -23,6 +25,7 @@ export function ReportTable({
   highlightNumber?: string;
   showAllLink?: boolean;
 }) {
+  const { reports } = usePartnerData();
   return (
     <div className="overflow-hidden rounded-[22px] border border-[#E3E4DF] bg-white px-4 pb-3 pt-5 sm:px-6">
       <div className="flex items-center justify-between gap-3 pb-4">

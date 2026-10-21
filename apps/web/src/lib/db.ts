@@ -377,6 +377,19 @@ export async function requestPhoneOtp(phone: string): Promise<{
   return { resendAfterMs: OTP_RESEND_MS, demoCode: demo };
 }
 
+/** The partners table belongs to the site admin (migration 005); a database without it simply has no partners. */
+async function approvedPartnerName(p: Pool, phone: string): Promise<string | null> {
+  try {
+    const { rows } = await p.query(
+      `SELECT full_name FROM partners WHERE phone = $1 AND status IN ('approved', 'certified') LIMIT 1`,
+      [phone],
+    );
+    return rows[0] ? (rows[0].full_name as string) : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Verify a code and return the session, creating the client on first login.
  * `partnerIntent` (the partner-cabinet login) on the partner demo number gives
@@ -421,7 +434,9 @@ export async function verifyPhoneOtp(
      WHERE u.phone = $1 LIMIT 1`,
     [phone],
   );
-  const partnerDemo = partnerIntent && isPartnerDemoPhone(phone);
+  // Partner cabinet login: the demo number, or a phone an admin approved in the site admin (/admin/partners).
+  const partnerName = partnerIntent ? await approvedPartnerName(p, phone) : null;
+  const partnerDemo = partnerIntent && (isPartnerDemoPhone(phone) || partnerName !== null);
 
   if (existing.rows[0]) {
     const u = existing.rows[0];
@@ -429,7 +444,7 @@ export async function verifyPhoneOtp(
     let displayName = (u.display_name as string | null) ?? "Клиент";
     if (partnerDemo) {
       role = "partner";
-      displayName = "Мария Ковалёва";
+      displayName = partnerName ?? "Мария Ковалёва";
     }
     trackEvent(p, u.client_id as string, "user_logged_in", { method: "phone" });
     return {
@@ -442,7 +457,7 @@ export async function verifyPhoneOtp(
   }
 
   const role: UserRole = partnerDemo ? "partner" : "client";
-  const displayName = partnerDemo ? "Мария Ковалёва" : "Клиент";
+  const displayName = partnerDemo ? partnerName ?? "Мария Ковалёва" : "Клиент";
 
   // Stored as a client either way; the partner role lives in this session only.
   const user = await p.query(
@@ -1481,4 +1496,9 @@ export async function refreshSessionFromToken(
     displayName: row.display_name ?? "Клиент",
     role: (row.role as UserRole) ?? "client",
   };
+}
+
+/** Raw pool for read-only lookups outside this module (partner cabinet data); null without DATABASE_URL. */
+export function sharedPool(): Pool | null {
+  return getPool();
 }

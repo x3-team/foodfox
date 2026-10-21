@@ -1,5 +1,7 @@
+"use client";
+
 import { PartnerShell } from "@/components/partner/PartnerShell";
-import { partner } from "@/lib/partner-demo";
+import { usePartnerData } from "@/components/partner/PartnerData";
 
 const opened = [
   "Получите реферальный код и QR",
@@ -8,6 +10,7 @@ const opened = [
 ];
 
 export default function PartnerCertificationPage() {
+  const { partner } = usePartnerData();
   return (
     <PartnerShell>
       <h1 className="text-[28px] font-light leading-8 tracking-[-0.5px] sm:text-[34px] sm:leading-[38px]">

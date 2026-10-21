@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { BottomSheet } from "@/components/BottomSheet";
 import { useDialog } from "@/components/useDialog";
 import { ZoomPane } from "@/components/ZoomPane";
-import { articles, authors, CATEGORIES } from "@/lib/content";
-import { PARTNERS, withUtm } from "@/lib/labs";
+import { CATEGORIES } from "@/lib/content";
+import { useBlog, useContent } from "@/components/ContentProvider";
+import { type Partner, withUtm } from "@/lib/labs";
 
 const SYMPTOMS = [
   {
@@ -118,8 +119,6 @@ const REPORT_SLIDES = [
   ["/figma/report/front.webp", "Понятная градация", "Сразу видно, что убрать в первую очередь."],
 ];
 
-// M46: the lab networks of S12 in the same order as lib/labs.ts (counts there are for Moscow, the default city).
-const LAB_DATA = LABS.map(([name], index) => PARTNERS[index] ?? PARTNERS.find((item) => item.name.toLowerCase() === name.toLowerCase()));
 
 // S07 «286 продуктов»: the dots of /figma/home/shows/dots.svg (306 × 288) as separate points, ordered from the centre
 // out — they come in as a wave, 8 мс apart (note 1401:796). Colour = the art's radial gradient (white 1 → .2).
@@ -140,14 +139,6 @@ const STEPS = [
   ["ШАГ 3", "Получить результаты", "Через 7–10 дней. Сам анализ занимает около трёх часов", "/figma/symptoms/s5.png"],
 ];
 
-const FAQ = [
-  ["Чем пищевая непереносимость отличается от пищевой аллергии?", "Аллергия — быстрая реакция с участием IgE: симптомы появляются в течение минут. Реакции, которые оценивает FOX, связаны с IgG и могут проявляться отложенно — через часы или дни. Тест не диагностирует аллергию — результат интерпретирует специалист."],
-  ["Насколько надёжен тест FOX?", "В основе мультиплексный ELISA и европейская маркировка IVDR. Результат — карта IgG, её читает специалист."],
-  ["Мне уже делали тесты на аллергию. Нужен ли FOX?", "Это разные вопросы. Если симптомы остались, специалист может предложить FOX как отдельный инструмент."],
-  ["Нужно ли голодать перед забором крови?", "Нет. Специальной подготовки и диеты накануне не требуется."],
-  ["Можно ли доверять IgG-тестам?", "Споры возникают, когда IgG выдают за диагноз. FOX — карта для разговора о рационе, не запрет навсегда."],
-  ["Сколько ждать результат?", "7–10 дней. Сам анализ занимает около трёх часов."],
-];
 
 const REVIEWS = [
   ["Екатерина Ласковская", "Убирала молочку, потом глютен, потом всё сразу — и каждый раз наугад. Отчёт наконец дал конкретный список. Двух продуктов из него я бы не заподозрила никогда."],
@@ -183,6 +174,17 @@ trailer<</Root 1 0 R>>
 }
 
 export function HomePage() {
+  const content = useContent();
+  const { articles, authors } = useBlog();
+  const FAQ = content.get<Array<[string, string]>>("home.faq");
+  // M46: the lab networks of S12 in the same order as lib/labs.ts (counts there are for Moscow, the default city);
+  // counts, links and prices come from the admin.
+  const LAB_DATA = useMemo(() => {
+    const partners = content.labs();
+    return LABS.map(([name], index) => partners[index] ?? partners.find((item) => item.name.toLowerCase() === name.toLowerCase()));
+  }, [content]);
+  const heroImage = content.image("home.hero.image");
+  const heroCustom = heroImage.src !== "/figma/home/hero-desktop.jpg";
   const [checked, setChecked] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState(GROUPS[0]);
@@ -1015,8 +1017,14 @@ export function HomePage() {
                 type="image/webp"
               />
               <source media="(max-width: 767px)" srcSet="/figma/home/hero-photo-mobile.jpg" />
-              <source srcSet="/figma/home/hero-desktop.webp 1440w, /figma/home/hero-desktop@2x.webp 2880w" sizes="(min-width: 1440px) 1440px, max(100vw, min(1440px, max(896px, 160vh)))" type="image/webp" />
-              <img className="bg" src="/figma/home/hero-desktop.jpg" alt="" />
+              {heroCustom ? (
+                <img className="bg" src={heroImage.src} srcSet={heroImage.srcSet} sizes="(min-width: 1440px) 1440px, max(100vw, min(1440px, max(896px, 160vh)))" alt="" />
+              ) : (
+                <>
+                  <source srcSet="/figma/home/hero-desktop.webp 1440w, /figma/home/hero-desktop@2x.webp 2880w" sizes="(min-width: 1440px) 1440px, max(100vw, min(1440px, max(896px, 160vh)))" type="image/webp" />
+                  <img className="bg" src="/figma/home/hero-desktop.jpg" alt="" />
+                </>
+              )}
             </picture>
           </div>
           <div className="shade" aria-hidden />
@@ -1025,19 +1033,21 @@ export function HomePage() {
               {/* S01 / M40: the title comes in line by line — each line is its own box */}
               <h1>
                 <span className="hero-h1-mobile">
-                  <span className="h1-line">Узнайте, какие</span> <span className="h1-line">продукты не подходят</span> <span className="h1-line">именно вам</span>
+                  {content.lines("home.hero.titleMobile").map((line, index) => (
+                    <Fragment key={index}>{index > 0 && " "}<span className="h1-line">{line}</span></Fragment>
+                  ))}
                 </span>
                 <span className="hero-h1-desktop">
-                  <span className="h1-line">Узнайте, какие продукты</span>
-                  <br />
-                  <span className="h1-line">не подходят именно вам</span>
+                  {content.lines("home.hero.title").map((line, index) => (
+                    <Fragment key={index}>{index > 0 && <br />}<span className="h1-line">{line}</span></Fragment>
+                  ))}
                 </span>
               </h1>
               <div className="hero-side">
-                <p className="lead">Персональный тест питания против болей в животе, вздутия, акне и других симптомов</p>
+                <p className="lead">{content.text("home.hero.lead")}</p>
                 <div className="hero-actions">
                   <button className="btn btn-light hero-book-btn" type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>
-                    <span>Записаться на тест</span>
+                    <span>{content.text("home.hero.cta")}</span>
                     <svg className="hero-book-plus" viewBox="0 0 24 24" width="24" height="24" aria-hidden>
                       <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                     </svg>
@@ -1498,8 +1508,8 @@ export function HomePage() {
 
         <section className="wrap band" data-s="s12">
           {/* Figma S12 1385:815 · mobile 1437:48658 */}
-          <h2 className="page-title">Сдайте тест <br className="s12-br" />в любой из 1500+ лабораторий</h2>
-          <p className="lead">Цена устанавливается лабораторией. Уточняйте на официальном сайте.</p>
+          <h2 className="page-title">{content.text("home.labs.title").replace(/^Сдайте тест /, "Сдайте тест\u0000").split("\u0000").map((part, index) => <Fragment key={index}>{index > 0 && <>{" "}<br className="s12-br" /></>}{part}</Fragment>)}</h2>
+          <p className="lead">{content.showPrices && content.text("prices.from") ? `Тест FOX — ${content.text("prices.from")}. Точная цена — на сайте лаборатории.` : content.text("home.labs.lead")}</p>
           <p className="s12-count"><strong>1500+</strong><span>пунктов в 9 сетях</span></p>
           <div className="lab-grid">
             {LABS.map(([name, slug], index) => {
@@ -1659,7 +1669,7 @@ export function HomePage() {
               <h2>Не нашли ответ?</h2>
               <p>Напишите нам — ответим в течение одного рабочего дня и добавим вопрос в подборку.</p>
               <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:contact"))}>Задать вопрос</button>
-              <a className="btn s15-tel" href="tel:+74953748305">+7 (495) 374-83-05</a>
+              <a className="btn s15-tel" href={content.telHref}>{content.text("contacts.phone")}</a>
             </div>
           </div>
         </section>
@@ -1674,7 +1684,7 @@ export function HomePage() {
  * that the price is set by the network, «Открыть на карте» and «Сайт сети». Only what lib/labs.ts knows is shown:
  * there is no price «от» and no distance to the nearest point in the site data, so neither is invented.
  */
-function LabSheet({ name, logo, lab, onClose }: { name: string; logo: string; lab: (typeof PARTNERS)[number]; onClose: () => void }) {
+function LabSheet({ name, logo, lab, onClose }: { name: string; logo: string; lab: Partner & { price?: string }; onClose: () => void }) {
   const away = !lab.here;
   return (
     <BottomSheet label={`Лаборатория ${name}`} className="lab-bs" onClose={onClose} portal>
@@ -1682,7 +1692,7 @@ function LabSheet({ name, logo, lab, onClose }: { name: string; logo: string; la
         <span className="lab-bs-logo"><img src={logo} alt="" /></span>
         <h3>{name}</h3>
       </div>
-      <p className="lab-bs-count">{away ? "Нет пунктов в Москве" : <>{lab.count} в Москве<span> · цена на сайте сети</span></>}</p>
+      <p className="lab-bs-count">{away ? "Нет пунктов в Москве" : <>{lab.count} в Москве<span> · {lab.price || "цена на сайте сети"}</span></>}</p>
       <div className="lab-bs-actions">
         {!away && <a className="btn btn-dark" href={withUtm(lab.href, "home_lab_sheet")} target="_blank" rel="noreferrer">Сайт сети</a>}
         <Link className={`btn ${away ? "btn-dark" : "btn-ghost"}`} href="/labs">{away ? "Где сдать рядом" : "Открыть на карте"}</Link>
