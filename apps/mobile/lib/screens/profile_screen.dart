@@ -15,12 +15,14 @@ class ProfileScreen extends StatefulWidget {
     required this.store,
     required this.onSignOut,
     this.onUploadReport,
+    this.onOpenDiary,
   });
 
   final FoodFoxApi api;
   final AuthStore store;
   final VoidCallback onSignOut;
   final VoidCallback? onUploadReport;
+  final VoidCallback? onOpenDiary;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -141,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: widget.onUploadReport,
               ),
               const _MenuDivider(),
-              const _MenuRow(title: "Дневник симптомов", hint: "ведётся"),
+              _MenuRow(title: "Дневник симптомов", onTap: widget.onOpenDiary),
               const _MenuDivider(),
               const _MenuRow(title: "Обучение", hint: "6 уроков"),
               const _MenuDivider(),

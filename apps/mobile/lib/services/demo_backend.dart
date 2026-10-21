@@ -2,6 +2,7 @@ import "dart:convert";
 
 import "package:flutter/services.dart" show rootBundle;
 
+import "package:foodfox/models/diary.dart";
 import "package:foodfox/models/models.dart";
 
 /// Canned responses that stand in for the server in review builds.
@@ -20,6 +21,7 @@ class DemoBackend {
   final Map<String, dynamic> _data;
   List<ChatMessage>? _chat;
   int _replies = 0;
+  Map<String, DiaryEntry>? _diary;
 
   static Future<DemoBackend> load() async {
     final cached = _instance;
@@ -173,4 +175,91 @@ class DemoBackend {
     );
     return List<ChatMessage>.from(history);
   }
+
+  /// The demo diary lives in memory for the session, seeded with two days so
+  /// history and the calendar have something to show.
+  Map<String, DiaryEntry> _diaryEntries() {
+    final existing = _diary;
+    if (existing != null) return existing;
+    final now = DateTime.now();
+    final yesterday = _dayKey(now.subtract(const Duration(days: 1)));
+    final before = _dayKey(now.subtract(const Duration(days: 2)));
+    final week = _weekOn(yesterday);
+    final weekBefore = _weekOn(before);
+    return _diary = {
+      yesterday: DiaryEntry(
+        date: yesterday,
+        wellbeing: Wellbeing.good,
+        weekNumber: week,
+        phase: week == null ? null : getWeekPhase(week),
+      ),
+      before: DiaryEntry(
+        date: before,
+        wellbeing: Wellbeing.soSo,
+        symptoms: const [Symptom.bloating],
+        note: "вздутие вечером",
+        weekNumber: weekBefore,
+        phase: weekBefore == null ? null : getWeekPhase(weekBefore),
+      ),
+    };
+  }
+
+  PlanDayItem? _planDay(String date) {
+    final plan = PlanData.fromJson(
+      _reanchorPlan(_section("plan")["plan"] as Map<String, dynamic>),
+    );
+    for (final w in plan.weeks) {
+      for (final d in w.days) {
+        if (d.date == date) return d;
+      }
+    }
+    return null;
+  }
+
+  int? _weekOn(String date) => _planDay(date)?.weekNumber;
+
+  DiaryData diary() {
+    final today = _dayKey(DateTime.now());
+    final day = _planDay(today);
+    final entries = _diaryEntries().values.toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+    return DiaryData(
+      context: DiaryContext(
+        today: today,
+        hasPlan: true,
+        weekNumber: day?.weekNumber,
+        phase: day == null ? null : getWeekPhase(day.weekNumber),
+        foodSuggestions: (day?.allowed ?? const <String>[]).take(12).toList(),
+      ),
+      entries: entries,
+    );
+  }
+
+  DiaryEntry saveDiary(DiaryDraft draft) {
+    final zones = {
+      for (final r in results().results)
+        r.foxName.toLowerCase().replaceAll("ё", "е"): r.zone.name,
+    };
+    final week = _weekOn(draft.date);
+    final json = draft.toJson();
+    final entry = DiaryEntry(
+      date: draft.date,
+      wellbeing: draft.wellbeing,
+      symptoms: [
+        for (final s in Symptom.values)
+          if (draft.symptoms.contains(s)) s,
+      ],
+      note: json["note"] as String?,
+      foods: [
+        for (final f in draft.foods)
+          DiaryFood(name: f, zone: zones[f.toLowerCase().replaceAll("ё", "е")]),
+      ],
+      weekNumber: week,
+      phase: week == null ? null : getWeekPhase(week),
+    );
+    _diaryEntries()[draft.date] = entry;
+    return entry;
+  }
+
+  void deleteDiary(String date) => _diaryEntries().remove(date);
 }

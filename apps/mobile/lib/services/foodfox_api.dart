@@ -4,6 +4,7 @@ import "dart:io";
 import "dart:math";
 
 import "package:foodfox/config/api_config.dart";
+import "package:foodfox/models/diary.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/demo_backend.dart";
 import "package:foodfox/services/telemetry.dart";
@@ -414,6 +415,47 @@ class FoodFoxApi {
       attempts: 2,
       timeout: const Duration(seconds: 90),
     );
+  }
+
+  /// Symptom diary: today's plan context and the last [days] of entries.
+  /// Health data, so it is never put in the response cache.
+  Future<DiaryData> fetchDiary({int days = 62}) async {
+    final demo = _demo;
+    if (demo != null) return demo.diary();
+    return _withRetry(() async {
+      final response = await _client.get(
+        _uri("/api/diary?days=$days"),
+        headers: _headers,
+      );
+      return DiaryData.fromJson(await _decode(response));
+    });
+  }
+
+  /// Creates or replaces the entry for [DiaryDraft.date].
+  Future<DiaryEntry> saveDiaryEntry(DiaryDraft draft) async {
+    final demo = _demo;
+    if (demo != null) return demo.saveDiary(draft);
+    return _withRetry(() async {
+      final response = await _client.put(
+        _uri("/api/diary"),
+        headers: {..._headers, "Content-Type": "application/json"},
+        body: jsonEncode(draft.toJson()),
+      );
+      final data = await _decode(response);
+      return DiaryEntry.fromJson(data["entry"] as Map<String, dynamic>);
+    }, attempts: 2);
+  }
+
+  Future<void> deleteDiaryEntry(String date) async {
+    final demo = _demo;
+    if (demo != null) return demo.deleteDiary(date);
+    await _withRetry(() async {
+      final response = await _client.delete(
+        _uri("/api/diary?date=$date"),
+        headers: _headers,
+      );
+      await _decode(response);
+    }, attempts: 2);
   }
 
   Future<UploadOutcome> uploadPdf(List<int> bytes, String filename) async {

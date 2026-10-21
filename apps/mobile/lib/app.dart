@@ -5,6 +5,7 @@ import "package:flutter/services.dart";
 
 import "package:foodfox/screens/auth/auth_flow.dart";
 import "package:foodfox/screens/chat_screen.dart";
+import "package:foodfox/screens/diary_screen.dart";
 import "package:foodfox/screens/plan_screen.dart";
 import "package:foodfox/screens/profile_screen.dart";
 import "package:foodfox/screens/recipes_screen.dart";
@@ -306,6 +307,7 @@ class _AppShellState extends State<AppShell> {
                   key: ValueKey("chat-$_chatSeed"),
                   api: widget.api,
                   initialMessage: _chatPrompt,
+                  onOpenDiary: () => _openDiary(from: "chat"),
                 ),
               ),
               _layer(
@@ -323,6 +325,7 @@ class _AppShellState extends State<AppShell> {
                   store: widget.store,
                   onSignOut: widget.onSignOut,
                   onUploadReport: () => _openUpload(from: "profile"),
+                  onOpenDiary: () => _openDiary(from: "profile"),
                 ),
               ),
             ],
@@ -339,6 +342,16 @@ class _AppShellState extends State<AppShell> {
             FoxTab(kind: FoxIconKind.profile, label: "Профиль"),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _openDiary({required String from}) {
+    foxDismissKeyboard();
+    return Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        settings: const RouteSettings(name: "diary"),
+        builder: (_) => DiaryScreen(api: widget.api, from: from),
       ),
     );
   }
