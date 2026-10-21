@@ -8,7 +8,8 @@
 #
 # How to create the API key:
 #   App Store Connect → Users and Access → Integrations → App Store Connect API
-#   → Team Keys → "+" → name it, role "App Manager" (or Admin) → Generate.
+#   → Team Keys → "+" → name it, role "Admin" → Generate. Admin is needed because
+#   cloud-managed distribution signing (-allowProvisioningUpdates) creates the cert.
 #   Copy the Issuer ID and Key ID, download the .p8 (downloadable only ONCE).
 #
 # Signing: automatic (cloud-managed) signing via the API key — xcodebuild is run with
@@ -66,8 +67,10 @@ jobs:
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          # build number = 1000 + run number so every upload is unique
+          # version = VERSION file (as on Android); build number = 1000 + run number
+          # so every upload is unique
           flutter build ios --release --no-codesign \
+            --build-name="$(tr -d '[:space:]' < ../../VERSION)" \
             --build-number=$((1000 + GITHUB_RUN_NUMBER)) \
             --dart-define=FOX_API_BASE=https://foodfox.yuri.guru \
             --dart-define=FOX_BASIC_USER=demo \

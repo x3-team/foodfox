@@ -75,6 +75,6 @@ Required repo secrets:
 | `APPLE_TEAM_ID` | Apple Developer Team ID (10 chars) |
 
 Create the key: App Store Connect → Users and Access → Integrations → App Store Connect API →
-Team Keys → "+" (role App Manager) → Generate; copy Issuer ID + Key ID, download the .p8 (one-time).
+Team Keys → "+" (role Admin) → Generate; copy Issuer ID + Key ID, download the .p8 (one-time).
 Before the first upload, create the App ID `guru.yuri.foodfox` and the app record in App Store Connect.
 Signing is automatic (Xcode cloud-managed via the API key); no certificate/profile secrets needed.
