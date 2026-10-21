@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 
 import "package:foodfox/screens/report_processing_screen.dart";
 import "package:foodfox/services/foodfox_api.dart";
+import "package:foodfox/services/telemetry.dart";
 import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/widgets/no_report_state.dart";
 import "package:foodfox/widgets/ui/fox_ui.dart";
@@ -46,6 +47,7 @@ class _UploadScreenState extends State<UploadScreen> {
       );
     } catch (_) {
       result = null;
+      Telemetry.event(FoxEvent.uploadRejected, {"reason": "picker_failed"});
       if (mounted) setState(() => _error = "Не удалось открыть выбор файла");
     } finally {
       if (mounted) setState(() => _picking = false);
@@ -55,21 +57,28 @@ class _UploadScreenState extends State<UploadScreen> {
     final file = result.files.first;
     final bytes = file.bytes;
     if (bytes == null) {
+      Telemetry.event(FoxEvent.uploadRejected, {"reason": "unreadable"});
       setState(() => _error = "Не удалось прочитать файл");
       return;
     }
     if (bytes.length > _maxBytes) {
+      Telemetry.event(FoxEvent.uploadRejected, {"reason": "too_big"});
       setState(() => _error = "Файл больше 20 МБ. Нужен PDF из лаборатории");
       return;
     }
     if (!file.name.toLowerCase().endsWith(".pdf")) {
+      Telemetry.event(FoxEvent.uploadRejected, {"reason": "not_pdf"});
       setState(() => _error = "Нужен файл в формате PDF");
       return;
     }
 
     final fileName = file.name.isNotEmpty ? file.name : "report.pdf";
+    Telemetry.event(FoxEvent.uploadFileChosen, {
+      "size": sizeBucket(bytes.length),
+    });
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
+        settings: const RouteSettings(name: "processing"),
         builder: (processingContext) => ReportProcessingScreen(
           fileName: fileName,
           sizeBytes: bytes.length,
@@ -87,7 +96,12 @@ class _UploadScreenState extends State<UploadScreen> {
 
   /// N2 «Фото отчёта»: the server reads text from the PDF and has no OCR
   /// yet, so a photo would only ever end on the error screen.
-  void _explainPhoto() => showFoxSheet(
+  void _explainPhoto(String source) {
+    Telemetry.event(FoxEvent.uploadPhotoAsked, {"source": source});
+    _photoSheet();
+  }
+
+  void _photoSheet() => showFoxSheet(
     context,
     icon: Icons.photo_camera_outlined,
     title: "Фото пока не распознаём",
@@ -128,7 +142,8 @@ class _UploadScreenState extends State<UploadScreen> {
             const SizedBox(height: 8),
             const FoxScreenTitle(
               title: "Отчёт FOX",
-              subtitle: "Загрузите PDF из лаборатории — распознаем 285 антигенов",
+              subtitle:
+                  "Загрузите PDF из лаборатории — распознаем 285 антигенов",
             ),
             const SizedBox(height: 20),
             _Dropzone(busy: _picking, onTap: _pickAndUpload),
@@ -139,7 +154,7 @@ class _UploadScreenState extends State<UploadScreen> {
                   child: _SourceButton(
                     icon: Icons.photo_camera_outlined,
                     label: "Камера",
-                    onTap: _explainPhoto,
+                    onTap: () => _explainPhoto("camera"),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -147,7 +162,7 @@ class _UploadScreenState extends State<UploadScreen> {
                   child: _SourceButton(
                     icon: Icons.photo_library_outlined,
                     label: "Галерея",
-                    onTap: _explainPhoto,
+                    onTap: () => _explainPhoto("gallery"),
                   ),
                 ),
               ],

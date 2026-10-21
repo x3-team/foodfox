@@ -7,6 +7,8 @@
 #   ASC_KEY_P8                  the .p8 text (or ASC_KEY_P8_BASE64)
 #   APPLE_TEAM_ID               optional, read from the distribution certificate by default
 #   FOX_BUILD                   build number; must grow from build to build
+#   FOX_APPMETRICA_KEY          optional, AppMetrica API key: crashes and analytics on
+#   APPMETRICA_POST_API_KEY     optional, uploads dSYMs so iOS crashes are symbolicated
 #   FOX_UPLOAD=false            build and sign only
 # Usage: scripts/ios-release.sh
 set -euo pipefail
@@ -57,7 +59,8 @@ flutter build ios --release --config-only --no-codesign \
   --dart-define=FOX_BASIC_USER=demo \
   --dart-define=FOX_BASIC_PASS=FoodFox2026! \
   --dart-define=FOX_DEMO_PHONE=9251111111 \
-  --dart-define=FOX_DEMO_OTP=1111
+  --dart-define=FOX_DEMO_OTP=1111 \
+  --dart-define=FOX_APPMETRICA_KEY="${FOX_APPMETRICA_KEY:-}"
 
 echo "== Archive"
 # FOX_APP_PROFILE reaches only the Runner target (PROVISIONING_PROFILE_SPECIFIER in project.pbxproj).
@@ -66,6 +69,23 @@ xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Relea
   CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="Apple Distribution" DEVELOPMENT_TEAM="$TEAM_ID" \
   FOX_APP_PROFILE="$FOX_APP_PROFILE" \
   -quiet archive
+
+# Symbols for this exact build go to AppMetrica so its iOS crash reports show
+# function names and lines. A failed upload must not cost the release:
+# the dSYMs can still be sent later from the Codemagic artifacts.
+mkdir -p "$ROOT/apps/mobile/build/ios-release-dsyms"
+(cd "$WORK/FoodFox.xcarchive" && zip -qr "$ROOT/apps/mobile/build/ios-release-dsyms/dSYMs-$VERSION-$FOX_BUILD.zip" dSYMs) || true
+if [ -n "${APPMETRICA_POST_API_KEY:-}" ]; then
+  echo "== dSYM → AppMetrica"
+  HELPER="$(find ios/Pods/AppMetricaCrashes -name helper -type f 2> /dev/null | head -n 1)"
+  if [ -n "$HELPER" ]; then
+    chmod +x "$HELPER"
+    "$HELPER" --post-api-key="$APPMETRICA_POST_API_KEY" "$WORK/FoodFox.xcarchive/dSYMs" \
+      || echo "warning: dSYM upload failed, send dSYMs-$VERSION-$FOX_BUILD.zip by hand" >&2
+  else
+    echo "warning: AppMetricaCrashes helper not found in ios/Pods, dSYMs not uploaded" >&2
+  fi
+fi
 
 echo "== Export .ipa"
 cat > "$WORK/ExportOptions.plist" <<PLIST

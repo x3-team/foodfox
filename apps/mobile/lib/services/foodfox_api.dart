@@ -1,10 +1,12 @@
 import "dart:convert";
 import "dart:async";
 import "dart:io";
+import "dart:math";
 
 import "package:foodfox/config/api_config.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/demo_backend.dart";
+import "package:foodfox/services/telemetry.dart";
 import "package:foodfox/utils/api_cache.dart";
 import "package:foodfox/utils/network_errors.dart";
 import "package:http/http.dart" as http;
@@ -50,6 +52,8 @@ class FoodFoxApi {
     final headers = {
       "Authorization": "Basic $credentials",
       "Accept": "application/json",
+      // Matches this call to the server's error log (docs/MONITORING.md).
+      "X-Request-Id": _requestId(),
     };
     if (_accessToken != null) {
       headers["X-Fox-Token"] = _accessToken!;
@@ -58,6 +62,13 @@ class FoodFoxApi {
     }
     return headers;
   }
+
+  static final _random = Random.secure();
+
+  static String _requestId() => List.generate(
+    16,
+    (_) => _random.nextInt(256).toRadixString(16).padLeft(2, "0"),
+  ).join();
 
   Uri _uri(String path) => Uri.parse("${ApiConfig.baseUrl}$path");
 
@@ -81,6 +92,9 @@ class FoodFoxApi {
         await Future<void>.delayed(Duration(milliseconds: 350 * attempt));
       }
     }
+    Telemetry.event(FoxEvent.apiNetworkError, {
+      "error": lastError.runtimeType.toString(),
+    });
     throw Exception(formatNetworkError(lastError ?? "Network error"));
   }
 
@@ -100,6 +114,15 @@ class FoodFoxApi {
 
   Future<Map<String, dynamic>> _decode(http.Response response) async {
     _captureSession(response);
+    if (response.statusCode >= 500) {
+      final request = response.request;
+      Telemetry.apiFailure(
+        method: request?.method ?? "?",
+        path: request?.url.path ?? "?",
+        status: response.statusCode,
+        requestId: response.headers["x-request-id"],
+      );
+    }
     final body = response.body.isEmpty ? "{}" : response.body;
     final data = jsonDecode(body) as Map<String, dynamic>;
     if (response.statusCode >= 400) {

@@ -3,6 +3,7 @@ import { buildAuthResponse } from "@/lib/auth-request";
 import { setSessionCookie } from "@/lib/auth";
 import { createRefreshToken, getDbPool, registerUser } from "@/lib/db";
 import { trackEvent } from "@/lib/analytics";
+import { reportServerError } from "@/lib/monitoring";
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,6 +37,9 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     const message = e instanceof Error ? e.message : "Ошибка регистрации";
     const status = message.includes("зарегистрирован") ? 409 : 500;
+    if (status === 500) {
+      reportServerError(e, { route: "POST /api/auth/register" });
+    }
     return NextResponse.json({ error: message }, { status });
   }
 }

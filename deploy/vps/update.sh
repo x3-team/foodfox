@@ -46,6 +46,7 @@ echo "    HELI_BASE_URL:    ${HELI_BASE_URL:-<code default>}"
 echo "    HELI_CHAT_MODEL:  ${HELI_CHAT_MODEL:-<code default>}"
 echo "    FOX_DEMO_PHONES:  ${FOX_DEMO_PHONES:-<code default>}"
 echo "    FOX_DEMO_OTP:     ${FOX_DEMO_OTP:-<code default>}"
+echo "    FOX_ERRORS_DSN:   $(flag "${FOX_ERRORS_DSN:-}")"
 
 echo "==> Build Next.js"
 npm ci --include=dev

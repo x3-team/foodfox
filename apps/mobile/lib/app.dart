@@ -13,6 +13,7 @@ import "package:foodfox/screens/splash_screen.dart";
 import "package:foodfox/screens/upload_screen.dart";
 import "package:foodfox/services/auth_store.dart";
 import "package:foodfox/services/foodfox_api.dart";
+import "package:foodfox/services/telemetry.dart";
 import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_theme.dart";
 import "package:foodfox/theme/fox_tokens.dart";
@@ -59,6 +60,7 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
       if (await _store.isDemoSession && await _store.hasPin) {
         try {
           await _api.startDemoSession().timeout(const Duration(seconds: 3));
+          Telemetry.setDemo(true);
           _hasStoredSession = await _store.hasPin;
           return;
         } catch (_) {
@@ -71,6 +73,7 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
       _api.restoreSession(accessToken: access, refreshToken: refresh);
       final hasPin = await _store.hasPin;
       _hasStoredSession = hasPin && _api.isLoggedIn;
+      Telemetry.setDemo(false);
       if (_api.isLoggedIn && !_api.isDemo) unawaited(_warmSession());
     } catch (_) {
       _hasStoredSession = false;
@@ -114,6 +117,8 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
   }
 
   Future<void> _signOut() async {
+    Telemetry.event(FoxEvent.signedOut);
+    Telemetry.setDemo(false);
     await _store.clear();
     _api.logout();
     if (mounted) setState(() => _stage = _Stage.auth);
@@ -131,7 +136,7 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
       title: "FoodFox",
       debugShowCheckedModeBanner: false,
       theme: buildFoxTheme(),
-      navigatorObservers: [_unfocusOnNavigate],
+      navigatorObservers: [_unfocusOnNavigate, TelemetryRouteObserver()],
       builder: (context, child) =>
           FoxKeyboardDismiss(child: child ?? const SizedBox.shrink()),
       home: AnimatedSwitcher(
@@ -201,10 +206,26 @@ class _AppShellState extends State<AppShell> {
   String? _chatPrompt;
   final _visited = <int>{0};
 
+  static const _tabScreens = ["results", "plan", "chat", "recipes", "profile"];
+
+  @override
+  void initState() {
+    super.initState();
+    Telemetry.screen(_tabScreens[_tab]);
+  }
+
+  /// Analytics for a tab that just came to the front.
+  void _reportTab(int index, {String from = "tab"}) {
+    Telemetry.screen(_tabScreens[index]);
+    if (index == 1) Telemetry.event(FoxEvent.planViewed, {"from": from});
+    if (index == 2) Telemetry.event(FoxEvent.chatOpened, {"from": from});
+  }
+
   void _select(int index) {
     // Tabs stay mounted offstage, and so would a focused field on them,
     // keeping the keyboard up over the next tab.
     foxDismissKeyboard();
+    if (index != _tab) _reportTab(index);
     setState(() {
       _tab = index;
       _visited.add(index);
@@ -213,6 +234,7 @@ class _AppShellState extends State<AppShell> {
 
   void _onUploaded() {
     foxDismissKeyboard();
+    Telemetry.screen(_tabScreens[0]);
     setState(() {
       _resultsReload++;
       // The plan and the assistant only exist once a report does, so their
@@ -223,8 +245,10 @@ class _AppShellState extends State<AppShell> {
     });
   }
 
-  void _askBot(String question) {
+  void _askBot(String question, {String from = "results"}) {
     foxDismissKeyboard();
+    Telemetry.event(FoxEvent.askAssistant, {"from": from});
+    if (_tab != 2) _reportTab(2, from: from);
     setState(() {
       _chatPrompt = question;
       _chatSeed++;
@@ -264,7 +288,7 @@ class _AppShellState extends State<AppShell> {
                   onAskBot: _askBot,
                   onOpenPlan: () => _select(1),
                   onOpenRecipes: () => _select(3),
-                  onUpload: _openUpload,
+                  onUpload: () => _openUpload(from: "results"),
                 ),
               ),
               _layer(
@@ -272,8 +296,8 @@ class _AppShellState extends State<AppShell> {
                 PlanScreen(
                   key: ValueKey("plan-$_resultsReload"),
                   api: widget.api,
-                  onUpload: _openUpload,
-                  onAsk: _askBot,
+                  onUpload: () => _openUpload(from: "plan"),
+                  onAsk: (question) => _askBot(question, from: "plan"),
                 ),
               ),
               _layer(
@@ -298,7 +322,7 @@ class _AppShellState extends State<AppShell> {
                   api: widget.api,
                   store: widget.store,
                   onSignOut: widget.onSignOut,
-                  onUploadReport: _openUpload,
+                  onUploadReport: () => _openUpload(from: "profile"),
                 ),
               ),
             ],
@@ -319,9 +343,11 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
-  Future<void> _openUpload() async {
+  Future<void> _openUpload({required String from}) async {
+    Telemetry.event(FoxEvent.uploadOpened, {"from": from});
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
+        settings: const RouteSettings(name: "upload"),
         builder: (_) => UploadScreen(
           api: widget.api,
           onUploaded: () {
@@ -331,7 +357,7 @@ class _AppShellState extends State<AppShell> {
           },
           onSupport: (question) {
             Navigator.of(context).popUntil((route) => route.isFirst);
-            _askBot(question);
+            _askBot(question, from: "upload_support");
           },
         ),
       ),

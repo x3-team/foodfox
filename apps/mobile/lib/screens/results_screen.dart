@@ -6,6 +6,7 @@ import "package:foodfox/data/fox_categories.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/screens/green_zone_screen.dart";
 import "package:foodfox/services/foodfox_api.dart";
+import "package:foodfox/services/telemetry.dart";
 import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/utils/lazy_tab_loader.dart";
@@ -86,6 +87,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
     });
     try {
       final data = await widget.api.fetchResults(force: force);
+      // Whether the person has a report at all, not what is in it.
+      Telemetry.event(FoxEvent.resultsViewed, {
+        "has_report": data.results.isNotEmpty,
+      });
       if (!mounted) return;
       setState(() {
         _results = data.results;

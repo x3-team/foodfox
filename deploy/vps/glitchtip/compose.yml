@@ -1,0 +1,64 @@
+# GlitchTip: collector for FoodFox API errors (Sentry protocol), self-hosted on the VPS.
+# All-in-one mode without Valkey: one web process with the worker inside, tasks and
+# cache in its own Postgres. About 256–512 MB of RAM.
+#
+#   cd /var/www/foodfox/deploy/vps/glitchtip
+#   cp .env.example .env   # fill SECRET_KEY, POSTGRES_PASSWORD, GLITCHTIP_DOMAIN
+#   docker compose up -d
+#
+# Then nginx: errors.foodfox.yuri.guru → 127.0.0.1:8010 (docs/MONITORING.md).
+
+x-env: &env
+  SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY}
+  DATABASE_URL: postgres://glitchtip:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/glitchtip
+  GLITCHTIP_DOMAIN: ${GLITCHTIP_DOMAIN:-https://errors.foodfox.yuri.guru}
+  DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-glitchtip@foodfox.yuri.guru}
+  EMAIL_URL: ${EMAIL_URL:-consolemail://}
+  VALKEY_URL: ""
+  SERVER_ROLE: all_in_one
+  # Open for the first account only, then set false and restart.
+  ENABLE_USER_REGISTRATION: ${ENABLE_USER_REGISTRATION:-true}
+  ENABLE_ORGANIZATION_CREATION: ${ENABLE_ORGANIZATION_CREATION:-true}
+  GLITCHTIP_MAX_EVENT_LIFE_DAYS: ${GLITCHTIP_MAX_EVENT_LIFE_DAYS:-90}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: glitchtip-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: glitchtip
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: glitchtip
+    volumes:
+      - glitchtip_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U glitchtip -d glitchtip"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: glitchtip/glitchtip:6.2.6
+    container_name: glitchtip-web
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment: *env
+    ports:
+      - "127.0.0.1:8010:8000"
+    volumes:
+      - glitchtip_uploads:/code/uploads
+
+  migrate:
+    image: glitchtip/glitchtip:6.2.6
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ./bin/run-migrate.sh
+    environment: *env
+
+volumes:
+  glitchtip_pg_data:
+  glitchtip_uploads:

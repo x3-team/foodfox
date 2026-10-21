@@ -3,6 +3,7 @@ import { setSessionCookie } from "@/lib/auth";
 import { buildAuthResponse } from "@/lib/auth-request";
 import { createRefreshToken, verifyPhoneOtp } from "@/lib/db";
 import { normalizePhone } from "@/lib/otp";
+import { reportServerError } from "@/lib/monitoring";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,6 +31,9 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     const message = e instanceof Error ? e.message : "Не удалось проверить код";
     const status = message.startsWith("Слишком много") ? 429 : 500;
+    if (status === 500) {
+      reportServerError(e, { route: "POST /api/auth/otp/verify" });
+    }
     return NextResponse.json({ error: message }, { status });
   }
 }

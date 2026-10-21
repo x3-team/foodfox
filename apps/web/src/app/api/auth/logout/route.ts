@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clearSessionCookie } from "@/lib/auth";
 import { revokeRefreshToken } from "@/lib/db";
+import { reportServerError } from "@/lib/monitoring";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function POST(req: NextRequest) {
     clearSessionCookie();
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error(e);
+    reportServerError(e, { route: "POST /api/auth/logout" });
     return NextResponse.json({ error: "Logout failed" }, { status: 500 });
   }
 }
