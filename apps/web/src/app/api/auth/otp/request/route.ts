@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requestPhoneOtp } from "@/lib/db";
 import { normalizePhone } from "@/lib/otp";
+import { reportServerError } from "@/lib/monitoring";
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,6 +25,9 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     const message = e instanceof Error ? e.message : "Не удалось отправить код";
     const status = message.startsWith("Повторная отправка") ? 429 : 500;
+    if (status === 500) {
+      reportServerError(e, { route: "POST /api/auth/otp/request" });
+    }
     return NextResponse.json({ error: message }, { status });
   }
 }

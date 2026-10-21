@@ -5,6 +5,8 @@ const nextConfig = {
   ...(basePath ? { basePath } : {}),
   experimental: {
     serverComponentsExternalPackages: ["pdf-parse"],
+    // src/instrumentation.ts: reports errors that escape the route handlers.
+    instrumentationHook: true,
   },
 };
 

@@ -111,6 +111,7 @@ class AuthStore {
       _kPinHash,
       _kPinSalt,
       _kBiometrics,
+      _kDemo,
       _kPhone,
       _kName,
     ]) {

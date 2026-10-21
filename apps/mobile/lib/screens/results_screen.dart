@@ -6,11 +6,14 @@ import "package:foodfox/data/fox_categories.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/screens/green_zone_screen.dart";
 import "package:foodfox/services/foodfox_api.dart";
+import "package:foodfox/services/telemetry.dart";
 import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/utils/lazy_tab_loader.dart";
 import "package:foodfox/widgets/network_error_panel.dart";
+import "package:foodfox/widgets/no_report_state.dart";
 import "package:foodfox/widgets/ui/fox_icons.dart";
+import "package:foodfox/widgets/ui/fox_keyboard.dart";
 import "package:foodfox/widgets/ui/fox_ui.dart";
 
 /// Screen 04 — the FOX report broken down by zones.
@@ -84,6 +87,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
     });
     try {
       final data = await widget.api.fetchResults(force: force);
+      // Whether the person has a report at all, not what is in it.
+      Telemetry.event(FoxEvent.resultsViewed, {
+        "has_report": data.results.isNotEmpty,
+      });
       if (!mounted) return;
       setState(() {
         _results = data.results;
@@ -160,6 +167,15 @@ class _ResultsScreenState extends State<ResultsScreen> {
   @override
   Widget build(BuildContext context) {
     final total = _counts.green + _counts.yellow + _counts.red;
+    final upload = widget.onUpload;
+
+    if (!_loading && _error == null && total == 0 && upload != null) {
+      return RefreshIndicator(
+        onRefresh: () => _load(force: true),
+        color: FoxTokens.bgGreen,
+        child: NoReportState(onUpload: upload, onAsk: widget.onAskBot),
+      );
+    }
 
     return RefreshIndicator(
       onRefresh: () => _load(force: true),
@@ -187,7 +203,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
               onRetry: () => _loader.sync(active: true, force: true),
             )
           else if (total == 0)
-            _EmptyState(onUpload: widget.onUpload)
+            const SizedBox.shrink()
           else ...[
             FoxFadeSlide(
               child: _Summary(counts: _counts, total: total),
@@ -432,6 +448,8 @@ class _SearchField extends StatelessWidget {
     ),
     child: TextField(
       controller: controller,
+      textInputAction: TextInputAction.search,
+      onTapOutside: foxTapOutside,
       style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
       decoration: InputDecoration(
         hintText: "Поиск продукта",
@@ -724,54 +742,4 @@ class _ProductRow extends StatelessWidget {
       ),
     );
   }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({this.onUpload});
-
-  final VoidCallback? onUpload;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      const SizedBox(height: 40),
-      Container(
-        width: 76,
-        height: 76,
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: FoxTokens.bgGrey,
-          shape: BoxShape.circle,
-        ),
-        child: const Icon(
-          Icons.description_outlined,
-          size: 32,
-          color: FoxTokens.textSecondary,
-        ),
-      ),
-      const SizedBox(height: 18),
-      Text(
-        "Пока нет отчёта",
-        textAlign: TextAlign.center,
-        style: FoxType.h4.copyWith(color: FoxTokens.textPrimary),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        "Загрузите PDF из лаборатории — распознаем 285 антигенов "
-        "и соберём персональный протокол",
-        textAlign: TextAlign.center,
-        style: FoxType.bodyS.copyWith(
-          color: FoxTokens.textSecondary,
-          height: 21 / 16,
-        ),
-      ),
-      const SizedBox(height: 28),
-      if (onUpload != null)
-        FoxButton(
-          label: "Загрузить отчёт FOX",
-          kind: FoxButtonKind.accent,
-          onPressed: onUpload,
-        ),
-    ],
-  );
 }

@@ -6,6 +6,7 @@ import {
   refreshSessionFromToken,
   revokeRefreshToken,
 } from "@/lib/db";
+import { reportServerError } from "@/lib/monitoring";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     const newRefresh = await createRefreshToken(session.userId);
     return NextResponse.json(buildAuthResponse(session, newRefresh));
   } catch (e) {
-    console.error(e);
+    reportServerError(e, { route: "POST /api/auth/refresh" });
     return NextResponse.json({ error: "Token refresh failed" }, { status: 500 });
   }
 }
@@ -39,7 +40,7 @@ export async function DELETE(req: NextRequest) {
     clearSessionCookie();
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error(e);
+    reportServerError(e, { route: "DELETE /api/auth/refresh" });
     return NextResponse.json({ error: "Logout failed" }, { status: 500 });
   }
 }

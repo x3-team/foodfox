@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthClientId, handleAuthError } from "@/lib/api-auth";
 import { getClientProfile, loadDemoReport } from "@/lib/db";
 import { countZones } from "@/lib/fox-parser";
+import { reportServerError } from "@/lib/monitoring";
 
 export async function POST() {
   try {
@@ -34,7 +35,7 @@ export async function POST() {
   } catch (e) {
     const auth = handleAuthError(e);
     if (auth) return auth;
-    console.error(e);
+    reportServerError(e, { route: "POST /api/demo/load-sample" });
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Ошибка демо-загрузки" },
       { status: 500 },

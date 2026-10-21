@@ -58,3 +58,24 @@ flutter build apk --release \
 ## Дизайн
 
 Токены из Figma / web: `#F7F9F4` bg, `#256029` primary — см. `lib/theme/fox_theme.dart`.
+
+## iOS / TestFlight
+
+iOS project lives in `ios/` (bundle id `guru.yuri.foodfox`, display name "FoodFox").
+Main path: Codemagic, workflow **iOS → TestFlight** in `codemagic.yaml`, manual start only.
+Setup steps: [`docs/codemagic.md`](../../docs/codemagic.md).
+
+Fallback: GitHub Actions workflow **iOS TestFlight** (`.github/workflows/ios-testflight.yml`,
+`macos-latest`), manual `workflow_dispatch` only. Its repo secrets:
+
+| Secret | Value |
+|---|---|
+| `APPSTORE_ISSUER_ID` | Issuer ID from App Store Connect API page |
+| `APPSTORE_KEY_ID` | API Key ID |
+| `APPSTORE_PRIVATE_KEY` | full text of `AuthKey_<KEY_ID>.p8` |
+| `APPLE_TEAM_ID` | Apple Developer Team ID (10 chars) |
+
+Create the key: App Store Connect → Users and Access → Integrations → App Store Connect API →
+Team Keys → "+" (role Admin) → Generate; copy Issuer ID + Key ID, download the .p8 (one-time).
+Before the first upload, create the App ID `guru.yuri.foodfox` and the app record in App Store Connect.
+Signing is automatic (Xcode cloud-managed via the API key); no certificate/profile secrets needed.
