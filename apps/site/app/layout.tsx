@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { CookieBar } from "@/components/CookieBar";
+import { SiteOnly } from "@/components/SiteOnly";
 import { SiteOverlays } from "@/components/SiteOverlays";
 import "./globals.css";
 import "./adaptive/shared.css";
@@ -43,8 +44,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a className="skip-link" href="#content">К содержанию</a>
         <div id="content">{children}</div>
         <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOT }} />
-        <CookieBar />
-        <SiteOverlays />
+        <SiteOnly>
+          <CookieBar />
+          <SiteOverlays />
+        </SiteOnly>
       </body>
     </html>
   );

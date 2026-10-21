@@ -49,6 +49,7 @@ echo "    FOX_DEMO_OTP:     ${FOX_DEMO_OTP:-<code default>}"
 echo "    FOX_PARTNER_DEMO_PHONE: ${FOX_PARTNER_DEMO_PHONE:-<code default 79251111111>}"
 echo "    FOX_PARTNER_DEMO_OTP:   ${FOX_PARTNER_DEMO_OTP:-<FOX_DEMO_OTP or 1111>}"
 echo "    FOX_DEMO_MODE:    ${FOX_DEMO_MODE:-off}"
+echo "    FOX_ADMIN_EMAIL:  ${FOX_ADMIN_EMAIL:-<not set>}"
 
 echo "==> Build Next.js"
 npm ci --include=dev
@@ -82,6 +83,9 @@ esac
 # after apps/web so the two builds never run at once. Its assets live under
 # /_site/_next/* because apps/web owns /_next/*; nginx strips the prefix.
 SITE_PORT="${SITE_PORT:-3041}"
+# Uploads of the admin media library live outside the checkout, so git reset on deploy never touches them.
+export FOX_MEDIA_DIR="${FOX_MEDIA_DIR:-/var/www/foodfox-data/media}"
+mkdir -p "$FOX_MEDIA_DIR"
 export SITE_ASSET_PREFIX=/_site
 echo "==> Marketing site (apps/site → 127.0.0.1:${SITE_PORT})"
 echo "    node $(node -v); memory:"
@@ -120,6 +124,16 @@ if [[ -z "$ASSET" ]] || ! curl -sf -o /dev/null "http://127.0.0.1:${SITE_PORT}${
   exit 1
 fi
 echo "    / 200, asset ${ASSET} 200"
+
+# Site admin (/admin): leads from the site forms land in Postgres, so the site must see DATABASE_URL.
+ADMIN_HEALTH="$(curl -s "http://127.0.0.1:${SITE_PORT}/admin/api/health" || true)"
+echo "    /admin/api/health: ${ADMIN_HEALTH}"
+case "$ADMIN_HEALTH" in
+  *'"admins":0}'*)
+    echo "!! admin: no administrator yet — set FOX_ADMIN_EMAIL and FOX_ADMIN_PASSWORD in apps/web/.env and redeploy" >&2 ;;
+  *'"database":"postgres"'*) ;;
+  *) echo "!! admin: the site has no database — form leads are NOT being stored" >&2 ;;
+esac
 
 # Live nginx site: no basic auth, noindex header, and the path routing between
 # apps/web and apps/site; nginx -t gates the reload.
