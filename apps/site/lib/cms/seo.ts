@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import { hasDatabase, q } from "@/lib/admin/db";
 
-export const SEO_TAG = "site-seo";
 export const SITE_URL = (process.env.SITE_URL || "https://foodfox.yuri.guru").replace(/\/$/, "");
 
 export type SeoRow = { path: string; title: string; description: string; og_image: string; canonical: string; noindex: boolean; in_sitemap: boolean };
 
-export const getSeoRows = unstable_cache(
+export const getSeoRows = cache(
   async (): Promise<Record<string, SeoRow>> => {
     if (!hasDatabase()) return {};
     try {
@@ -18,8 +17,6 @@ export const getSeoRows = unstable_cache(
       return {};
     }
   },
-  ["site-seo-v1"],
-  { tags: [SEO_TAG] },
 );
 
 /** Page metadata with the SEO fields from the admin on top; empty admin fields keep what the page code says. */

@@ -1,10 +1,10 @@
-import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import { hasDatabase, q } from "@/lib/admin/db";
 
-export const CONTENT_TAG = "site-content";
-
-/** Saved values that differ from the registry defaults. Cached until the admin saves (revalidateTag(CONTENT_TAG)). */
-export const getContentOverrides = unstable_cache(
+/** Saved values that differ from the registry defaults. Read once per render: pages are static and the admin's
+    revalidatePath("/", "layout") re-renders them. No unstable_cache on purpose: its tag invalidation lives in the
+    process memory, so after a restart the entry on disk would bring back content from before the last save. */
+export const getContentOverrides = cache(
   async (): Promise<Record<string, unknown>> => {
     if (!hasDatabase()) return {};
     try {
@@ -16,6 +16,4 @@ export const getContentOverrides = unstable_cache(
       return {};
     }
   },
-  ["site-content-v1"],
-  { tags: [CONTENT_TAG] },
 );

@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { ContentProvider } from "@/components/ContentProvider";
 import { CookieBar } from "@/components/CookieBar";
 import { getContentOverrides } from "@/lib/cms/server";
+import { BLOG_ARTICLES_KEY, type BlogArticle } from "@/lib/cms/blog";
 import { SiteOnly } from "@/components/SiteOnly";
 import { SiteOverlays } from "@/components/SiteOverlays";
 import "./globals.css";
@@ -18,6 +19,11 @@ const manrope = localFont({
   variable: "--font",
   display: "swap",
 });
+
+/* Saving in the admin re-renders the pages at once (revalidatePath). That mark lives in the server's memory, so a
+   restart before anyone opened the page would bring back the HTML of the build; the minute below re-renders such a
+   page on its own. */
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: {
@@ -39,7 +45,11 @@ const REVEAL_BOOT = `(function(){try{var r=matchMedia("(prefers-reduced-motion: 
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Texts edited in /admin; empty when there is no database, then the site shows the defaults from the code.
-  const content = await getContentOverrides();
+  const saved = await getContentOverrides();
+  // Every page carries the overrides to the browser: drafts stay on the server, and article bodies travel only with
+  // their own page (ArticleView gets the article as a prop), so the payload stays small.
+  const articles = saved[BLOG_ARTICLES_KEY] as BlogArticle[] | undefined;
+  const content = articles ? { ...saved, [BLOG_ARTICLES_KEY]: articles.filter((a) => !a.draft).map(({ blocks: _blocks, ...rest }) => rest) } : saved;
   return (
     // data-scroll-behavior: Next keeps the page-level smooth scrolling (globals.css) for anchors but jumps instantly
     // on route changes instead of animating the old page up.

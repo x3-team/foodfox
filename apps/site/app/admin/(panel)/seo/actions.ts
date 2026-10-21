@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { assertStaff } from "@/lib/admin/auth";
 import { audit, diff } from "@/lib/admin/audit";
 import { one, q } from "@/lib/admin/db";
-import { SEO_TAG, type SeoRow } from "@/lib/cms/seo";
+import { type SeoRow } from "@/lib/cms/seo";
 
 const EMPTY: Omit<SeoRow, "path"> = { title: "", description: "", og_image: "", canonical: "", noindex: false, in_sitemap: true };
 
@@ -33,7 +33,7 @@ export async function saveSeo(input: SeoRow) {
     );
   }
   await audit(staff, { action: "update", entity: "seo", entityId: input.path, summary: `SEO ${input.path}`, before: d.before, after: d.after });
-  revalidateTag(SEO_TAG);
   revalidatePath(input.path);
+  revalidatePath("/sitemap.xml");
   return { ok: true, message: "Сохранено" };
 }

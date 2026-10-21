@@ -1,11 +1,10 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { assertStaff, type Area } from "@/lib/admin/auth";
 import { audit } from "@/lib/admin/audit";
 import { one, q, tx } from "@/lib/admin/db";
 import { DEFAULTS, FIELD_BY_KEY, PRICE_LABS_KEY, type Field } from "@/lib/cms/registry";
-import { CONTENT_TAG } from "@/lib/cms/server";
 import { AUTHORS_DEFAULT, BLOG_ARTICLES_KEY, BLOG_AUTHORS_KEY } from "@/lib/cms/blog";
 import { CATEGORIES, type Block } from "@/lib/content";
 
@@ -233,7 +232,6 @@ export async function saveContent(changes: Record<string, unknown>, label: strin
     }
   });
   if (changed.length) {
-    revalidateTag(CONTENT_TAG);
     revalidatePath("/", "layout");
   }
   return { ok: true, message: changed.length ? `Опубликовано: ${changed.length}` : "Изменений нет" };
