@@ -158,6 +158,7 @@ class FoxRingPainter extends CustomPainter {
     required this.progress,
     required this.strokeWidth,
     this.gap = 0.05,
+    this.cap = StrokeCap.round,
   });
 
   /// Fractions of the full circle in drawing order, with their colours.
@@ -167,6 +168,10 @@ class FoxRingPainter extends CustomPainter {
   final double progress;
   final double strokeWidth;
   final double gap;
+
+  /// Round by default. The splash logo uses butt ends: Figma cuts the zones
+  /// square, and round caps would eat its narrow gaps.
+  final StrokeCap cap;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -186,7 +191,7 @@ class FoxRingPainter extends CustomPainter {
       final paint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round
+        ..strokeCap = cap
         ..color = seg.color;
 
       final g = sweepFull > 0.12 ? gap : 0.0;

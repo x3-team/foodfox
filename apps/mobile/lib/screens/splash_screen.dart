@@ -31,12 +31,6 @@ class _SplashScreenState extends State<SplashScreen>
     duration: _total,
   );
 
-  // Seed dot breathes in first, then hands over to the ring.
-  late final Animation<double> _seed = CurvedAnimation(
-    parent: _c,
-    curve: const Interval(0.0, 0.07, curve: FoxMotion.easeOut),
-  );
-
   // 290 → 1810 ms: arcs sweep round. easeInOutCubic keeps the start and the
   // finish gentle instead of snapping into place.
   late final Animation<double> _ring = CurvedAnimation(
@@ -71,13 +65,16 @@ class _SplashScreenState extends State<SplashScreen>
     curve: const Interval(0.66, 0.95, curve: Curves.easeInOutSine),
   );
 
-  /// How much larger the lockup sits at rest than in its docked corner.
-  /// Paired with [_ringSize]: the "FOOD XPLORER" line is the widest part of
-  /// the lockup and has to stay inside the ring.
-  static const _zoom = 2.05;
+  /// Diameter of the ring while it is being drawn (Figma SP2–SP4).
+  static const _ringSize = 160.0;
 
-  /// Diameter of the ring while it is being drawn.
-  static const _ringSize = 252.0;
+  /// Ring stroke at rest, measured off the Figma frame.
+  static const _ringStroke = 9.5;
+
+  /// Lime seed the splash opens on. The native launch screens (iOS
+  /// LaunchScreen.storyboard, Android launch_background) draw the very same
+  /// dot on the same green, so the first Flutter frame changes nothing.
+  static const seedSize = 12.0;
 
   var _handedOff = false;
 
@@ -163,8 +160,8 @@ class _SplashScreenState extends State<SplashScreen>
                 Opacity(
                   opacity: seedOpacity,
                   child: Container(
-                    width: 12 * _seed.value,
-                    height: 12 * _seed.value,
+                    width: seedSize,
+                    height: seedSize,
                     decoration: const BoxDecoration(
                       color: FoxTokens.accentLime,
                       shape: BoxShape.circle,
@@ -180,7 +177,9 @@ class _SplashScreenState extends State<SplashScreen>
                     painter: FoxRingPainter(
                       segments: segments,
                       progress: ringDraw,
-                      strokeWidth: 9 + burst * 28,
+                      strokeWidth: _ringStroke + burst * 28,
+                      gap: 0.08,
+                      cap: StrokeCap.butt,
                     ),
                   ),
                 ),
@@ -200,10 +199,10 @@ class _SplashScreenState extends State<SplashScreen>
                     top: (media.padding.top + FoxWordmark.topGap) * fly,
                   ),
                   child: Transform.scale(
-                    scale: logoScale * (1 + (_zoom - 1) * (1 - fly)),
+                    scale: logoScale,
                     child: Opacity(
                       opacity: _logo.value.clamp(0.0, 1.0),
-                      child: const FoxWordmark(),
+                      child: FoxWordmark(dock: fly),
                     ),
                   ),
                 ),

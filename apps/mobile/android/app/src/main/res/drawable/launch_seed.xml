@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The lime seed the Flutter splash opens on (SplashScreen.seedSize), centred
+     on the screen so the first Flutter frame lands on the same pixels. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="12dp"
+        android:height="12dp"
+        android:gravity="center">
+        <shape android:shape="oval">
+            <solid android:color="@color/fox_lime" />
+        </shape>
+    </item>
+</layer-list>

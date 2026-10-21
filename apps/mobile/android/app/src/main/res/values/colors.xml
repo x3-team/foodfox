@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- FoxTokens.bgGreen and FoxTokens.accentLime -->
+    <color name="fox_bg_green">#FF21251D</color>
+    <color name="fox_lime">#FFE7F551</color>
+</resources>
