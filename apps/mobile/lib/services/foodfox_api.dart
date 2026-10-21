@@ -9,6 +9,16 @@ import "package:foodfox/utils/api_cache.dart";
 import "package:foodfox/utils/network_errors.dart";
 import "package:http/http.dart" as http;
 
+/// What the server made of an uploaded report.
+class UploadOutcome {
+  const UploadOutcome({required this.parsedCount, this.confidence});
+
+  final int parsedCount;
+
+  /// `high`, `medium` or `low`, as the parser rated it.
+  final String? confidence;
+}
+
 class FoodFoxApi {
   FoodFoxApi({http.Client? client}) : _client = client ?? http.Client();
 
@@ -164,10 +174,15 @@ class FoodFoxApi {
     }
   }
 
+  /// Drops every trace of the previous account, the bundled demo included.
+  ///
+  /// The demo backend used to survive this, so the next person to sign in on
+  /// the device, a brand new client too, was served the demo report.
   void logout() {
     _accessToken = null;
     _refreshToken = null;
     _sessionCookie = null;
+    _demo = null;
     _cache.clear();
   }
 
@@ -378,14 +393,14 @@ class FoodFoxApi {
     );
   }
 
-  Future<void> uploadPdf(List<int> bytes, String filename) async {
+  Future<UploadOutcome> uploadPdf(List<int> bytes, String filename) async {
     if (_demo != null) {
       throw Exception(
         "В демо-режиме отчёт не загружается: разбор PDF выполняется на сервере. "
         "Результаты во вкладке «Результаты» — из демо-отчёта.",
       );
     }
-    await _withRetry(() async {
+    return _withRetry(() async {
       final request = http.MultipartRequest(
         "POST",
         _uri("/api/reports/upload"),
@@ -396,9 +411,17 @@ class FoodFoxApi {
       );
       final streamed = await _client.send(request);
       final response = await http.Response.fromStream(streamed);
-      await _decode(response);
+      final data = await _decode(response);
       invalidateDataCache();
-    });
+      final quality = data["parseQuality"] as Map<String, dynamic>?;
+      return UploadOutcome(
+        parsedCount: data["parsedCount"] as int? ?? 0,
+        confidence: quality?["confidence"] as String?,
+      );
+      // Parsing takes up to a couple of minutes on the server. A retry after a
+      // timeout would upload the same report again, so the person retries
+      // from the error screen instead.
+    }, attempts: 1, timeout: const Duration(seconds: 150));
   }
 
   void dispose() => _client.close();

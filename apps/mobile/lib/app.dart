@@ -53,7 +53,10 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
   /// green) on screen for as long as the network stayed quiet.
   Future<void> _bootstrap() async {
     try {
-      if (await _store.isDemoSession) {
+      // Only a demo session that got as far as a PIN is worth restoring. A
+      // leftover flag must not switch the bundled data on for whoever signs
+      // in next.
+      if (await _store.isDemoSession && await _store.hasPin) {
         try {
           await _api.startDemoSession().timeout(const Duration(seconds: 3));
           _hasStoredSession = await _store.hasPin;
@@ -212,6 +215,9 @@ class _AppShellState extends State<AppShell> {
     foxDismissKeyboard();
     setState(() {
       _resultsReload++;
+      // The plan and the assistant only exist once a report does, so their
+      // empty states are thrown away along with the cached data.
+      _chatSeed++;
       _visited.add(0);
       _tab = 0;
     });
@@ -258,12 +264,17 @@ class _AppShellState extends State<AppShell> {
                   onAskBot: _askBot,
                   onOpenPlan: () => _select(1),
                   onOpenRecipes: () => _select(3),
-                  onUpload: () => _select(4),
+                  onUpload: _openUpload,
                 ),
               ),
               _layer(
                 1,
-                PlanScreen(key: const ValueKey("plan"), api: widget.api),
+                PlanScreen(
+                  key: ValueKey("plan-$_resultsReload"),
+                  api: widget.api,
+                  onUpload: _openUpload,
+                  onAsk: _askBot,
+                ),
               ),
               _layer(
                 2,
@@ -275,7 +286,10 @@ class _AppShellState extends State<AppShell> {
               ),
               _layer(
                 3,
-                RecipesScreen(key: const ValueKey("recipes"), api: widget.api),
+                RecipesScreen(
+                  key: ValueKey("recipes-$_resultsReload"),
+                  api: widget.api,
+                ),
               ),
               _layer(
                 4,
@@ -284,7 +298,7 @@ class _AppShellState extends State<AppShell> {
                   api: widget.api,
                   store: widget.store,
                   onSignOut: widget.onSignOut,
-                  onUploadReport: () => _openUpload(),
+                  onUploadReport: _openUpload,
                 ),
               ),
             ],
@@ -311,8 +325,13 @@ class _AppShellState extends State<AppShell> {
         builder: (_) => UploadScreen(
           api: widget.api,
           onUploaded: () {
-            Navigator.of(context).pop();
+            // Upload and processing sit on top of the shell.
+            Navigator.of(context).popUntil((route) => route.isFirst);
             _onUploaded();
+          },
+          onSupport: (question) {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            _askBot(question);
           },
         ),
       ),

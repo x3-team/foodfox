@@ -1,56 +1,106 @@
 import "package:file_picker/file_picker.dart";
 import "package:flutter/material.dart";
 
+import "package:foodfox/screens/report_processing_screen.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_tokens.dart";
-import "package:foodfox/widgets/report_processing_overlay.dart";
+import "package:foodfox/widgets/no_report_state.dart";
 import "package:foodfox/widgets/ui/fox_ui.dart";
 
-/// Screen 02 — pick the laboratory PDF and see what happens next.
+/// Screen 02 — pick the laboratory PDF, then hand over to processing (03).
 class UploadScreen extends StatefulWidget {
-  const UploadScreen({super.key, required this.api, required this.onUploaded});
+  const UploadScreen({
+    super.key,
+    required this.api,
+    required this.onUploaded,
+    this.onSupport,
+  });
 
   final FoodFoxApi api;
   final VoidCallback onUploaded;
+  final void Function(String question)? onSupport;
 
   @override
   State<UploadScreen> createState() => _UploadScreenState();
 }
 
 class _UploadScreenState extends State<UploadScreen> {
-  bool _loading = false;
+  /// Matches «PDF до 20 МБ» on the screen.
+  static const _maxBytes = 20 * 1024 * 1024;
+
+  bool _picking = false;
   String? _error;
 
   Future<void> _pickAndUpload() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: const ["pdf"],
-      withData: true,
-    );
-    if (result == null || result.files.isEmpty) return;
+    if (_picking) return;
+    setState(() {
+      _picking = true;
+      _error = null;
+    });
+    FilePickerResult? result;
+    try {
+      result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ["pdf"],
+        withData: true,
+      );
+    } catch (_) {
+      result = null;
+      if (mounted) setState(() => _error = "Не удалось открыть выбор файла");
+    } finally {
+      if (mounted) setState(() => _picking = false);
+    }
+    if (result == null || result.files.isEmpty || !mounted) return;
+
     final file = result.files.first;
-    if (file.bytes == null) {
+    final bytes = file.bytes;
+    if (bytes == null) {
       setState(() => _error = "Не удалось прочитать файл");
+      return;
+    }
+    if (bytes.length > _maxBytes) {
+      setState(() => _error = "Файл больше 20 МБ. Нужен PDF из лаборатории");
+      return;
+    }
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      setState(() => _error = "Нужен файл в формате PDF");
       return;
     }
 
     final fileName = file.name.isNotEmpty ? file.name : "report.pdf";
-    if (!mounted) return;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-
-    final ok = await showReportProcessing(
-      context: context,
-      fileName: fileName,
-      work: () => widget.api.uploadPdf(file.bytes!, fileName),
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (processingContext) => ReportProcessingScreen(
+          fileName: fileName,
+          sizeBytes: bytes.length,
+          work: () => widget.api.uploadPdf(bytes, fileName),
+          onDone: widget.onUploaded,
+          onSupport: widget.onSupport,
+          onPickAnother: () {
+            Navigator.of(processingContext).pop();
+            _pickAndUpload();
+          },
+        ),
+      ),
     );
-
-    if (!mounted) return;
-    setState(() => _loading = false);
-    if (ok) widget.onUploaded();
   }
+
+  /// N2 «Фото отчёта»: the server reads text from the PDF and has no OCR
+  /// yet, so a photo would only ever end on the error screen.
+  void _explainPhoto() => showFoxSheet(
+    context,
+    icon: Icons.photo_camera_outlined,
+    title: "Фото пока не распознаём",
+    body: const [
+      "Значения IgG мы читаем из PDF, который присылает лаборатория. "
+          "На фото и сканах цифры легко перепутать, а от них зависит план.",
+      "PDF обычно приходит на почту из лаборатории или от вашего "
+          "нутрициолога.",
+    ],
+    primaryLabel: "Выбрать PDF-файл",
+    onPrimary: _pickAndUpload,
+    secondaryLabel: "Понятно",
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -60,47 +110,49 @@ class _UploadScreenState extends State<UploadScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
           children: [
-            FoxPressable(
-              onTap: () => Navigator.of(context).maybePop(),
-              child: const SizedBox(
-                width: 40,
-                height: 40,
-                child: Icon(
-                  Icons.arrow_back_rounded,
-                  size: 22,
-                  color: FoxTokens.textPrimary,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FoxPressable(
+                onTap: () => Navigator.of(context).maybePop(),
+                child: const SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Icon(
+                    Icons.arrow_back_rounded,
+                    size: 22,
+                    color: FoxTokens.textPrimary,
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 8),
             const FoxScreenTitle(
               title: "Отчёт FOX",
-              subtitle:
-                  "Загрузите PDF из лаборатории — распознаем 285 антигенов",
+              subtitle: "Загрузите PDF из лаборатории — распознаем 285 антигенов",
             ),
             const SizedBox(height: 20),
-            _Dropzone(loading: _loading, onTap: _pickAndUpload),
-            const SizedBox(height: 12),
+            _Dropzone(busy: _picking, onTap: _pickAndUpload),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
                   child: _SourceButton(
                     icon: Icons.photo_camera_outlined,
                     label: "Камера",
-                    onTap: _loading ? null : _pickAndUpload,
+                    onTap: _explainPhoto,
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _SourceButton(
                     icon: Icons.photo_library_outlined,
                     label: "Галерея",
-                    onTap: _loading ? null : _pickAndUpload,
+                    onTap: _explainPhoto,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
             const _NextSteps(),
             if (_error != null) ...[
               const SizedBox(height: 12),
@@ -111,9 +163,9 @@ class _UploadScreenState extends State<UploadScreen> {
             ],
             const SizedBox(height: 20),
             FoxButton(
-              label: _loading ? "Обрабатываем…" : "Выбрать PDF-файл",
-              loading: _loading,
-              onPressed: _loading ? null : _pickAndUpload,
+              label: "Выбрать PDF-файл",
+              loading: _picking,
+              onPressed: _pickAndUpload,
             ),
           ],
         ),
@@ -123,47 +175,53 @@ class _UploadScreenState extends State<UploadScreen> {
 }
 
 class _Dropzone extends StatelessWidget {
-  const _Dropzone({required this.loading, required this.onTap});
+  const _Dropzone({required this.busy, required this.onTap});
 
-  final bool loading;
+  final bool busy;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) => FoxPressable(
-    onTap: loading ? null : onTap,
+    onTap: busy ? null : onTap,
+    scale: 1.01,
     borderRadius: BorderRadius.circular(22),
     child: CustomPaint(
       painter: _DashedRoundedPainter(),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: 44, horizontal: 20),
         child: Column(
           children: [
             Container(
-              width: 56,
-              height: 56,
+              width: 64,
+              height: 64,
               alignment: Alignment.center,
               decoration: const BoxDecoration(
-                color: FoxTokens.bgCard,
+                color: FoxTokens.zoneGreenBg,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.upload_file_rounded,
-                size: 26,
-                color: FoxTokens.textPrimary,
+                Icons.file_upload_outlined,
+                size: 28,
+                color: FoxTokens.zoneGreen,
               ),
             ),
             const SizedBox(height: 14),
+            // Figma says «Перетащите или выберите файл», but there is
+            // nothing to drag a file from on a phone.
             Text(
-              "Перетащите PDF сюда",
-              style: FoxType.bodyS.copyWith(
+              "Выберите файл отчёта",
+              textAlign: TextAlign.center,
+              style: FoxType.bodyM.copyWith(
                 color: FoxTokens.textPrimary,
                 fontWeight: FontWeight.w500,
+                fontSize: 18,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 12),
             Text(
-              "или выберите файл с устройства",
+              "PDF до 20 МБ · отчёт FOX Food Xplorer",
+              textAlign: TextAlign.center,
               style: FoxType.caption.copyWith(color: FoxTokens.textSecondary),
             ),
           ],
@@ -214,15 +272,15 @@ class _NextSteps extends StatelessWidget {
   const _NextSteps();
 
   static const _steps = [
-    "Разберём PDF и разложим антигены по зонам",
-    "Соберём план на ближайшие недели",
-    "Подберём рецепты из зелёной зоны",
+    "Распознаем 285 антигенов и зоны",
+    "Автоматически построим протокол на 4–6 месяцев",
+    "Покажем рецепты из вашей зелёной зоны",
   ];
 
   @override
   Widget build(BuildContext context) => FoxCard(
     tone: FoxCardTone.grey,
-    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+    padding: const EdgeInsets.fromLTRB(18, 18, 18, 4),
     radius: 20,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,24 +292,34 @@ class _NextSteps extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 14),
         for (var i = 0; i < _steps.length; i++)
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.only(bottom: 14),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "${i + 1}",
-                  style: FoxType.label.copyWith(color: FoxTokens.zoneGreen),
+                Container(
+                  width: 26,
+                  height: 26,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    color: FoxTokens.bgGreen,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    "${i + 1}",
+                    style: FoxType.label.copyWith(
+                      color: FoxTokens.textInverted,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     _steps[i],
                     style: FoxType.caption.copyWith(
-                      color: FoxTokens.textPrimary,
-                      height: 20 / 14,
+                      color: FoxTokens.textSecondary,
+                      height: 19 / 14,
                     ),
                   ),
                 ),
