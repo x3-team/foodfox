@@ -39,7 +39,7 @@ export function PartnerMoney({ partnerId, reports, payouts, available, unpaidRep
           <button className="a-btn" type="submit" disabled={pending}>Привязать</button>
         </form>
         {reports.length ? (
-          <div className="a-table-wrap">
+          <div className="a-table-wrap"><div className="a-table-scroll">
             <table className="a-table">
               <thead><tr><th>Отчёт</th><th>Дата теста</th><th>Статус</th><th>Вознаграждение</th><th></th></tr></thead>
               <tbody>
@@ -58,7 +58,7 @@ export function PartnerMoney({ partnerId, reports, payouts, available, unpaidRep
                 ))}
               </tbody>
             </table>
-          </div>
+          </div></div>
         ) : <p className="muted">Отчётов пока нет.</p>}
       </section>
 

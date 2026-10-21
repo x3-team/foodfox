@@ -61,7 +61,7 @@ export function BlogList({ list, categories, authors }: Props) {
         {shown.length ? (
           <div className="a-table-wrap">
             <table className="a-table">
-              <thead><tr><th>Статья</th><th>Рубрика</th><th>Автор</th><th>На сайте</th><th></th></tr></thead>
+              <thead><tr><th>Статья</th><th>На сайте</th><th></th></tr></thead>
               <tbody>
                 {shown.map(({ article: a, index }) => (
                   <tr key={a.slug}>
@@ -70,7 +70,8 @@ export function BlogList({ list, categories, authors }: Props) {
                         <img src={a.cover} alt="" loading="lazy" />
                         <div style={{ minWidth: 0 }}>
                           <Link href={`/admin/blog/${a.slug}`}>{a.title}</Link>
-                          <span className="sub">/blog/{a.slug} · {a.minutes} мин{a.blocks?.length ? "" : " · текст не заполнен"}</span>
+                          <span className="sub">{label(a.category)} · {authors[a.author] ?? a.author} · {a.minutes} мин</span>
+                          <span className="sub">/blog/{a.slug}{a.blocks?.length ? "" : " · текст не заполнен"}</span>
                           <span className="a-badges">
                             {a.featured && !a.draft && <span className="a-badge s-in_progress">Главная в ленте</span>}
                             {a.draft && <span className="a-badge s-spam">Черновик</span>}
@@ -78,8 +79,6 @@ export function BlogList({ list, categories, authors }: Props) {
                         </div>
                       </div>
                     </td>
-                    <td data-label="Рубрика">{label(a.category)}</td>
-                    <td data-label="Автор">{authors[a.author] ?? a.author}</td>
                     <td data-label="На сайте" style={{ position: "relative", zIndex: 1 }}><Toggle checked={!a.draft} label={`Показывать «${a.title}»`} onChange={(v) => patch(index, { draft: v ? undefined : true })} /></td>
                     <td data-label="">
                       <div className="a-row-actions" style={{ position: "relative", zIndex: 1, flexWrap: "nowrap", maxWidth: "none" }}>

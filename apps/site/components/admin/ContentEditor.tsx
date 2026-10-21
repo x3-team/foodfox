@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
 import { fieldHistory, revisionValue, saveContent } from "@/app/admin/(panel)/content/actions";
 import type { Field, ImageValue, ItemField, Section } from "@/lib/cms/registry";
 import { Icon } from "./Icon";
@@ -112,8 +112,18 @@ export function FieldInput({ field, value, onChange }: { field: Field; value: un
 }
 
 export function AutoText({ value, onChange, label, rows = 3 }: { value: string; onChange: (v: string) => void; label: string; rows?: number }) {
-  const lines = Math.min(16, Math.max(rows, value.split("\n").length + Math.floor(value.length / 90)));
-  return <textarea className="a-input" style={{ minHeight: 0 }} rows={lines} value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} />;
+  // Grows with the text at any width, so nothing hides behind the scroll of a narrow field.
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const fit = () => { el.style.height = "auto"; el.style.height = `${Math.min(el.scrollHeight + 2, 640)}px`; };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(el.parentElement ?? el);
+    return () => observer.disconnect();
+  }, [value]);
+  return <textarea ref={ref} className="a-input" style={{ minHeight: 0, resize: "vertical" }} rows={rows} value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} />;
 }
 
 export function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
