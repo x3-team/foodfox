@@ -154,3 +154,14 @@ export const kpis = [
     tone: "light" as const,
   },
 ];
+
+/** Cards on «Начисления и выплаты» for the demo partner. */
+export const money = {
+  available: "19 200 ₽",
+  availableHint: "8 подтверждённых отчётов · ближайшая выплата 5 октября",
+  review: "7 200 ₽",
+  reviewHint: "3 отчёта ждут подтверждения лаборатории",
+  paidLabel: "Выплачено за 2026",
+  paid: "142 800 ₽",
+  paidHint: "за 9 месяцев · 59 отчётов",
+};

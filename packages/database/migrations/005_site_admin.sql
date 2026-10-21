@@ -138,3 +138,52 @@ CREATE TABLE IF NOT EXISTS media (
     created_by    UUID REFERENCES admin_users(id) ON DELETE SET NULL
 );
 CREATE INDEX IF NOT EXISTS idx_media_created ON media (created_at DESC);
+
+-- Partners (specialists who bring clients). The partner cabinet of apps/web reads these by the phone the partner
+-- signs in with; the partner role is granted at login when the phone belongs to an approved partner.
+CREATE TABLE IF NOT EXISTS partners (
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    phone          TEXT NOT NULL,
+    full_name      TEXT NOT NULL,
+    email          TEXT NOT NULL DEFAULT '',
+    specialty      TEXT NOT NULL DEFAULT '',
+    city           TEXT NOT NULL DEFAULT '',
+    status         TEXT NOT NULL DEFAULT 'applied' CHECK (status IN ('applied', 'approved', 'certified', 'blocked', 'rejected')),
+    promo_code     TEXT,
+    certificate_no TEXT NOT NULL DEFAULT '',
+    payout_method  TEXT NOT NULL DEFAULT '',
+    fee            INT,
+    notes          TEXT NOT NULL DEFAULT '',
+    lead_id        BIGINT REFERENCES leads(id) ON DELETE SET NULL,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS partners_phone_unique ON partners (phone);
+CREATE UNIQUE INDEX IF NOT EXISTS partners_code_unique ON partners (upper(promo_code)) WHERE promo_code IS NOT NULL;
+
+-- Client reports attributed to a partner, and the fee for each.
+CREATE TABLE IF NOT EXISTS partner_reports (
+    id            BIGSERIAL PRIMARY KEY,
+    partner_id    UUID NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
+    report_number TEXT NOT NULL,
+    client_name   TEXT NOT NULL DEFAULT '',
+    lab           TEXT NOT NULL DEFAULT '',
+    test_date     DATE,
+    status        TEXT NOT NULL DEFAULT 'review' CHECK (status IN ('credited', 'review', 'missing')),
+    fee           INT NOT NULL DEFAULT 0,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS partner_reports_number_unique ON partner_reports (upper(report_number));
+CREATE INDEX IF NOT EXISTS idx_partner_reports_partner ON partner_reports (partner_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS partner_payouts (
+    id         BIGSERIAL PRIMARY KEY,
+    partner_id UUID NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
+    period     TEXT NOT NULL,
+    amount     INT NOT NULL CHECK (amount > 0),
+    reports    INT NOT NULL DEFAULT 0,
+    status     TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid')),
+    paid_at    TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_partner_payouts_partner ON partner_payouts (partner_id, created_at DESC);

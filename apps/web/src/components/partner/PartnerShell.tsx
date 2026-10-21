@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { partner } from "@/lib/partner-demo";
+import { usePartnerData } from "@/components/partner/PartnerData";
 
 const nav = [
   { href: "/partner/home", label: "Дашборд" },
@@ -16,6 +16,7 @@ const nav = [
 
 export function PartnerShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { partner } = usePartnerData();
   const [copied, setCopied] = useState(false);
   const [leaving, setLeaving] = useState(false);
 

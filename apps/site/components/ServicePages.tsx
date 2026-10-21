@@ -11,6 +11,7 @@ import { LabsMap, type Branch } from "@/components/LabsMap";
 import { LeadForm } from "@/components/LeadForm";
 import { useContent } from "@/components/ContentProvider";
 import { withUtm } from "@/lib/labs";
+import type { Review } from "@/lib/site-data/reviews";
 
 
 export function FaqPage() {
@@ -1034,18 +1035,10 @@ export function ContactsPage() {
   );
 }
 
-const REVIEWS = [
-  { id: "r1", kind: "Видео", who: "Пациенты", tag: "ЖКТ", photo: "/figma/reviews/r1.webp", video: true, title: "Наконец поняла, что менять в рационе", name: "Елена, 34 года", text: "" },
-  { id: "r2", kind: "Текст", who: "Пациенты", tag: "Питание", photo: "/figma/reviews/r2.webp", video: false, title: "", name: "Екатерина Ласковская", text: "Убирала молочку, потом глютен, потом всё сразу — и каждый раз наугад. Отчёт наконец дал конкретный список." },
-  { id: "r3", kind: "Текст", who: "Пациенты", tag: "Общее самочувствие", photo: "/figma/reviews/r3.webp", video: false, title: "", name: "Игорь Потруников", text: "Списывал всё на возраст и работу. Четыре месяца вёл дневник питания и не продвинулся ни на шаг." },
-  { id: "r4", kind: "Текст", who: "Специалисты", tag: "Специалист", photo: "/figma/reviews/r1.webp", video: false, title: "", name: "Алёна Вавилова", role: "Нутрициолог", text: "С отчётом легче выстроить разговор: пациент видит структуру, а не список запретов." },
-  { id: "r5", kind: "Видео", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r5.webp", video: true, title: "Ответ оказался не в косметологии", name: "Алексей, 41 год", text: "" },
-  { id: "r6", kind: "Текст", who: "Пациенты", tag: "Кожа", photo: "/figma/reviews/r2.webp", video: false, title: "", name: "Марина К.", text: "С врачом собрали план по отчёту — без угадывания. Через два месяца стало заметно лучше." },
-  { id: "r7", kind: "Текст", who: "Пациенты", tag: "Вес и отёчность", photo: "/figma/reviews/r7.webp", video: false, title: "", name: "Ольга, 29 лет", text: "Думала, что дело в соли. С нутрициологом временно убрали лишнее — ушло ощущение тяжести." },
-  { id: "r8", kind: "Текст", who: "Специалисты", tag: "Общее самочувствие", photo: "/figma/reviews/r8.webp", video: false, title: "", name: "Клиника на Таганке", text: "Отчёт стал структурой приёма, а не списком запретов, который пациент составил сам." },
-];
 
 export function ReviewsPage() {
+  const content = useContent();
+  const REVIEWS = useMemo(() => content.get<Review[]>("reviews.list").filter((item) => !item.hidden), [content]);
   const [filter, setFilter] = useState("Все");
   useEffect(() => {
     const type = new URLSearchParams(window.location.search).get("type");
@@ -1056,7 +1049,7 @@ export function ReviewsPage() {
   const [chipNow, setChipNow] = useState<string | null>(null);
   const [topicNow, setTopicNow] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [video, setVideo] = useState<(typeof REVIEWS)[number] | null>(null);
+  const [video, setVideo] = useState<Review | null>(null);
   const [videoFrom, setVideoFrom] = useState<DOMRect | null>(null);
   const closeVideo = useCallback(() => setVideo(null), []);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -1394,7 +1387,7 @@ function RevText({ text }: { text: string }) {
    Phone (M34): a full-screen player that grows out of the tapped poster (shared element, 320 мс (.2,.8,.2,1)) — the
    player is revealed through a window that starts on the poster's rectangle; swipe down closes it (it follows the
    finger, >80 px or a flick closes, otherwise it springs back). */
-function VideoModal({ item, from, onClose }: { item: (typeof REVIEWS)[number]; from: DOMRect | null; onClose: () => void }) {
+function VideoModal({ item, from, onClose }: { item: Review; from: DOMRect | null; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const scrimRef = useRef<HTMLDivElement>(null);
   const [subs, setSubs] = useState(true);

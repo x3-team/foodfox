@@ -6,6 +6,7 @@ import { COURSE_FAQ_DEFAULT, LESSONS_DEFAULT } from "@/lib/site-data/course";
 import { FAQ_GROUPS_DEFAULT } from "@/lib/site-data/faq";
 import { HOME_FAQ_DEFAULT } from "@/lib/site-data/home";
 import { PARTNERS } from "@/lib/labs";
+import { REVIEWS_DEFAULT } from "@/lib/site-data/reviews";
 
 export type ImageValue = { src: string; srcSet?: string; alt?: string };
 
@@ -16,6 +17,7 @@ export type Field =
   | { key: string; label: string; type: "boolean"; default: boolean; hint?: string }
   | { key: string; label: string; type: "image"; default: ImageValue; hint?: string }
   | { key: string; label: string; type: "qa"; default: Array<[string, string]>; hint?: string }
+  | { key: string; label: string; type: "json"; default: unknown[]; hint?: string }
   | { key: string; label: string; type: "list"; default: Array<Record<string, unknown>>; of: ItemField[]; fixed?: boolean; itemTitle: string; hint?: string };
 
 export type ItemField = {
@@ -182,7 +184,12 @@ export const PRICE_FIELDS: Field[] = [
   { key: "prices.partnerFee", label: "Вознаграждение партнёра за отчёт, ₽", type: "number", default: 2400, hint: "Подставляется в начисления партнёрам." },
 ];
 
-export const ALL_FIELDS: Field[] = [...PAGES.flatMap((p) => p.sections.flatMap((s) => s.fields)), ...PRICE_FIELDS];
+/* Collections with their own admin pages (reviews, blog); validated in app/admin/(panel)/content/actions.ts. */
+export const COLLECTION_FIELDS: Field[] = [
+  { key: "reviews.list", label: "Отзывы", type: "json", default: REVIEWS_DEFAULT },
+];
+
+export const ALL_FIELDS: Field[] = [...PAGES.flatMap((p) => p.sections.flatMap((s) => s.fields)), ...PRICE_FIELDS, ...COLLECTION_FIELDS];
 export const FIELD_BY_KEY: Record<string, Field> = Object.fromEntries(ALL_FIELDS.map((f) => [f.key, f]));
 export const DEFAULTS: Record<string, unknown> = Object.fromEntries(ALL_FIELDS.map((f) => [f.key, f.default]));
 

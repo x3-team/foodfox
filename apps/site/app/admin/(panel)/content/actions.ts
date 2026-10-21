@@ -40,6 +40,8 @@ function clean(field: Field, value: unknown): unknown {
       if (pairs.some(([qq, a]) => !qq || !a)) throw new Error(`«${field.label}»: у каждого вопроса нужен ответ`);
       return pairs;
     }
+    case "json":
+      return cleanCollection(field.key, value);
     case "list": {
       if (!Array.isArray(value)) throw new Error(`«${field.label}»: неверный формат`);
       if (field.fixed && value.length !== field.default.length) throw new Error(`«${field.label}»: число элементов менять нельзя`);
@@ -60,8 +62,36 @@ function clean(field: Field, value: unknown): unknown {
   }
 }
 
+function cleanCollection(key: string, value: unknown): unknown[] {
+  if (!Array.isArray(value)) throw new Error("Неверный формат");
+  if (key === "reviews.list") {
+    const ids = new Set<string>();
+    return value.map((raw, index) => {
+      const r = raw as Record<string, unknown>;
+      const id = str(r.id, 60) || `r-${Date.now()}-${index}`;
+      if (ids.has(id)) throw new Error("Повторяется id отзыва");
+      ids.add(id);
+      const video = Boolean(r.video);
+      const out = {
+        id, kind: video ? "Видео" : "Текст", who: str(r.who, 40) === "Специалисты" ? "Специалисты" : "Пациенты",
+        tag: str(r.tag, 60).trim() || "Общее самочувствие", photo: str(r.photo, 300), video, title: str(r.title, 200).trim(),
+        name: str(r.name, 120).trim(), role: str(r.role, 120).trim() || undefined, text: str(r.text, 3000).trim(),
+        hidden: Boolean(r.hidden) || undefined, leadId: str(r.leadId, 20) || undefined,
+      };
+      if (!out.name) throw new Error(`Отзыв ${index + 1}: нужно имя`);
+      if (!video && out.text.length < 10) throw new Error(`Отзыв «${out.name}»: текст слишком короткий`);
+      if (video && !out.photo) throw new Error(`Видеоотзыв «${out.name}»: нужна обложка`);
+      return out;
+    });
+  }
+  throw new Error(`Неизвестная коллекция ${key}`);
+}
+
 function areaFor(key: string): Area {
-  return key.startsWith("prices.") ? "prices" : "content";
+  if (key.startsWith("prices.")) return "prices";
+  if (key.startsWith("reviews.")) return "reviews";
+  if (key.startsWith("blog.")) return "blog";
+  return "content";
 }
 
 /** Saves the changed fields of one editor at once. A value equal to the default removes the row. */
@@ -109,7 +139,7 @@ export async function saveContent(changes: Record<string, unknown>, label: strin
       await db.query("INSERT INTO content_revisions (key, value, author_id, author_name) VALUES ($1, $2, $3, $4)", [key, JSON.stringify(value), me.id, me.name || me.email]);
       changed.push(key);
       await audit(me, {
-        action: "update", entity: key.startsWith("prices.") ? "price" : "content", entityId: key,
+        action: "update", entity: key.startsWith("prices.") ? "price" : key.startsWith("reviews.") ? "review" : key.startsWith("blog.") ? "article" : "content", entityId: key,
         summary: `${label}: ${FIELD_BY_KEY[key]?.label ?? (key === PRICE_LABS_KEY ? "цены сетей" : key)}`,
         before, after: value,
       }, db);

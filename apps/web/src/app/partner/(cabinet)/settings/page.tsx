@@ -1,7 +1,9 @@
-import { PartnerShell } from "@/components/partner/PartnerShell";
-import { partner } from "@/lib/partner-demo";
+"use client";
 
-const rows = [
+import { PartnerShell } from "@/components/partner/PartnerShell";
+import { usePartnerData } from "@/components/partner/PartnerData";
+
+const rowsOf = (partner: ReturnType<typeof usePartnerData>["partner"]) => [
   ["Фамилия и имя", partner.fullName],
   ["Email", partner.email],
   ["Телефон", partner.phone],
@@ -11,6 +13,7 @@ const rows = [
 ];
 
 export default function PartnerSettingsPage() {
+  const rows = rowsOf(usePartnerData().partner);
   return (
     <PartnerShell>
       <h1 className="text-[28px] font-light leading-8 tracking-[-0.5px] sm:text-[34px] sm:leading-[38px]">

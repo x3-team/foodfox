@@ -420,3 +420,10 @@ a.a-stat:hover { border-color: var(--a-line-2); }
 .a-snippet small { color: #006621; font-size: 13px; }
 .a-snippet b { color: #1a0dab; font-size: 18px; line-height: 22px; font-weight: 400; }
 .a-snippet p { color: #4d5156; font-size: 14px; line-height: 20px; }
+.a-badge.p-applied { background: var(--a-lime); color: var(--a-dark); }
+.a-badge.p-approved { background: var(--a-blue-soft); color: var(--a-blue); }
+.a-badge.p-certified { background: var(--a-green-soft); color: var(--a-green); }
+.a-badge.p-blocked, .a-badge.p-rejected { background: var(--a-red-soft); color: var(--a-red); }
+.a-badge.rs-credited { background: var(--a-green-soft); color: var(--a-green); }
+.a-badge.rs-review { background: var(--a-amber-soft); color: var(--a-amber); }
+.a-badge.rs-missing { background: var(--a-red-soft); color: var(--a-red); }

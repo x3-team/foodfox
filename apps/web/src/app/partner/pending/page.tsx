@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { AuthSplit } from "@/components/partner/AuthSplit";
-import { partner } from "@/lib/partner-demo";
 
 const next = [
   "Получите реферальный код и QR",
@@ -20,7 +19,7 @@ export default function PartnerPendingPage() {
         </h2>
         <p className="mt-2 text-[14px] leading-[22px] text-[#5C5E57]">
           Проверяем сертификацию и контакты. Обычно занимает до 1 рабочего дня
-          — пришлём решение на {partner.email}
+          — сообщим решение по телефону или на почту из заявки
         </p>
         <div className="mt-5 w-full rounded-[20px] bg-[#D7D8CD] px-5 py-[18px] text-left">
           <p className="text-[14px] font-medium">Что будет после одобрения</p>
