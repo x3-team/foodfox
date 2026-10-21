@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 
 import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_tokens.dart";
+import "package:foodfox/widgets/ui/fox_keyboard.dart";
 
 /// Wraps a tap target with the standard press feedback (scale 0.98).
 class FoxPressable extends StatefulWidget {
@@ -418,6 +419,8 @@ class FoxInput extends StatelessWidget {
           obscureText: obscure,
           onChanged: onChanged,
           autofocus: autofocus,
+          textInputAction: TextInputAction.done,
+          onTapOutside: foxTapOutside,
           style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
           decoration: InputDecoration(
             hintText: hint,

@@ -17,6 +17,7 @@ import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_theme.dart";
 import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/widgets/ui/fox_icons.dart";
+import "package:foodfox/widgets/ui/fox_keyboard.dart";
 import "package:foodfox/widgets/ui/fox_tab_bar.dart";
 
 enum _Stage { splash, unlock, auth, app }
@@ -36,6 +37,7 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
   bool _bootstrapped = false;
   bool _splashFinished = false;
   bool _hasStoredSession = false;
+  final _unfocusOnNavigate = FoxUnfocusOnNavigate();
 
   @override
   void initState() {
@@ -126,6 +128,9 @@ class _FoodFoxAppState extends State<FoodFoxApp> {
       title: "FoodFox",
       debugShowCheckedModeBanner: false,
       theme: buildFoxTheme(),
+      navigatorObservers: [_unfocusOnNavigate],
+      builder: (context, child) =>
+          FoxKeyboardDismiss(child: child ?? const SizedBox.shrink()),
       home: AnimatedSwitcher(
         duration: FoxMotion.slow,
         switchInCurve: FoxMotion.easeOut,
@@ -194,6 +199,9 @@ class _AppShellState extends State<AppShell> {
   final _visited = <int>{0};
 
   void _select(int index) {
+    // Tabs stay mounted offstage, and so would a focused field on them,
+    // keeping the keyboard up over the next tab.
+    foxDismissKeyboard();
     setState(() {
       _tab = index;
       _visited.add(index);
@@ -201,6 +209,7 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _onUploaded() {
+    foxDismissKeyboard();
     setState(() {
       _resultsReload++;
       _visited.add(0);
@@ -209,6 +218,7 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _askBot(String question) {
+    foxDismissKeyboard();
     setState(() {
       _chatPrompt = question;
       _chatSeed++;

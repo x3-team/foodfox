@@ -11,6 +11,7 @@ import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/utils/lazy_tab_loader.dart";
 import "package:foodfox/widgets/network_error_panel.dart";
 import "package:foodfox/widgets/ui/fox_icons.dart";
+import "package:foodfox/widgets/ui/fox_keyboard.dart";
 import "package:foodfox/widgets/ui/fox_ui.dart";
 
 /// Screen 04 — the FOX report broken down by zones.
@@ -432,6 +433,8 @@ class _SearchField extends StatelessWidget {
     ),
     child: TextField(
       controller: controller,
+      textInputAction: TextInputAction.search,
+      onTapOutside: foxTapOutside,
       style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
       decoration: InputDecoration(
         hintText: "Поиск продукта",
