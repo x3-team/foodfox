@@ -4,8 +4,13 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import "./frame.css";
 import "@/app/adaptive/service.css";
+import { seoMetadata } from "@/lib/cms/seo";
 
-export const metadata: Metadata = { title: "Политика конфиденциальности" };
+const baseMetadata: Metadata = { title: "Политика конфиденциальности" };
+
+export function generateMetadata(): Promise<Metadata> {
+  return seoMetadata("/privacy", baseMetadata);
+}
 
 const LAW =
   "Настоящая политика определяет порядок обработки персональных данных пользователей сайта foxfoodxplorer.ru и меры по обеспечению их безопасности в соответствии с Федеральным законом № 152-ФЗ «О персональных данных». Текст — от юриста клиента, вёрстка не меняет формулировки.";

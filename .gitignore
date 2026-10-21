@@ -16,3 +16,4 @@ apps/site/test-results/
 apps/site/playwright-report/
 apps/site/blob-report/
 apps/site/tsconfig.tsbuildinfo
+apps/site/.media/

@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { authors, articles, authorBySlug, materialsWord } from "@/lib/content";
 import "@/app/adaptive/blog.css";
+import { seoMetadata } from "@/lib/cms/seo";
 
 export function generateStaticParams() {
   return authors.map((author) => ({ slug: author.slug }));
@@ -14,7 +15,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const author = authorBySlug((await params).slug);
   if (!author) return {};
-  return { title: author.name, description: author.bio };
+  return seoMetadata(`/blog/authors/${(await params).slug}`, { title: author.name, description: author.bio });
 }
 
 const GENITIVE: Record<string, string> = { Ксения: "Ксении", Алёна: "Алёны", Светлана: "Светланы", Дмитрий: "Дмитрия", Анна: "Анны" };

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { useContent } from "@/components/ContentProvider";
 
 const COLS = [
   {
@@ -46,6 +47,17 @@ const COLS = [
 
 export function Footer() {
   const ref = useRef<HTMLElement>(null);
+  const content = useContent();
+  const email = content.text("contacts.email");
+  const cols = COLS.map((col) => col.title !== "Контакты" ? col : {
+    ...col,
+    links: [
+      [content.text("contacts.phone"), content.telHref],
+      [email, `mailto:${email}`],
+      [content.text("contacts.address"), "/contacts"],
+      ["Наш Telegram", content.text("contacts.telegram")],
+    ],
+  });
 
   useEffect(() => {
     const node = ref.current;
@@ -89,7 +101,7 @@ export function Footer() {
           <p>Лабораторный тест на иммунологическую пищевую непереносимость. 286 продуктов, один забор крови, 7–10 дней.</p>
         </div>
         <div className="cols">
-          {COLS.map((col) => (
+          {cols.map((col) => (
             <div key={col.title}>
               <h3>{col.title}</h3>
               <div className="foot-links is-open">

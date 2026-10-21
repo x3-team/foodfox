@@ -7,7 +7,7 @@ import { logoutAction } from "../actions";
 export const dynamic = "force-dynamic";
 
 // Sections that already have pages; the rest of NAV joins as it is built.
-const READY = new Set(["/admin", "/admin/leads", "/admin/users", "/admin/audit"]);
+const READY = new Set(["/admin", "/admin/leads", "/admin/content", "/admin/course", "/admin/media", "/admin/seo", "/admin/prices", "/admin/users", "/admin/audit"]);
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const staff = await requireStaff();

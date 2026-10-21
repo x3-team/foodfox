@@ -90,3 +90,51 @@ CREATE TABLE IF NOT EXISTS lead_notes (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_lead_notes_lead ON lead_notes (lead_id, created_at);
+
+-- Editable site content (apps/site lib/cms/registry.ts): one row per field that differs from the default.
+CREATE TABLE IF NOT EXISTS site_content (
+    key             TEXT PRIMARY KEY,
+    value           JSONB NOT NULL,
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_by      UUID REFERENCES admin_users(id) ON DELETE SET NULL,
+    updated_by_name TEXT NOT NULL DEFAULT ''
+);
+
+-- Every saved value, for the history and rollback in the editor.
+CREATE TABLE IF NOT EXISTS content_revisions (
+    id          BIGSERIAL PRIMARY KEY,
+    key         TEXT NOT NULL,
+    value       JSONB,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    author_id   UUID REFERENCES admin_users(id) ON DELETE SET NULL,
+    author_name TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_content_revisions_key ON content_revisions (key, created_at DESC);
+
+-- SEO per path: empty fields fall back to the title/description in the page code.
+CREATE TABLE IF NOT EXISTS seo_pages (
+    path        TEXT PRIMARY KEY,
+    title       TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    og_image    TEXT NOT NULL DEFAULT '',
+    canonical   TEXT NOT NULL DEFAULT '',
+    noindex     BOOLEAN NOT NULL DEFAULT false,
+    in_sitemap  BOOLEAN NOT NULL DEFAULT true,
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Media library: files live on disk (FOX_MEDIA_DIR), WebP variants per width in `variants`.
+CREATE TABLE IF NOT EXISTS media (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    original_name TEXT NOT NULL,
+    mime          TEXT NOT NULL,
+    size          BIGINT NOT NULL,
+    width         INT,
+    height        INT,
+    alt           TEXT NOT NULL DEFAULT '',
+    url           TEXT NOT NULL,
+    variants      JSONB NOT NULL DEFAULT '[]',
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_by    UUID REFERENCES admin_users(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_media_created ON media (created_at DESC);

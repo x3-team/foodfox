@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { LeadForm } from "@/components/LeadForm";
 import { useDialog } from "@/components/useDialog";
-import { PARTNERS, plural, withUtm, type Partner } from "@/lib/labs";
+import { useContent } from "@/components/ContentProvider";
+import { plural, withUtm, type Partner } from "@/lib/labs";
 
 type ToastAction = { label: string; run: () => void };
 type ToastItem = { id: number; text: string; type: "success" | "error" | "info"; duration: number; action?: ToastAction; tag?: string; out?: boolean };
@@ -488,9 +489,8 @@ function ContactModal({ onClose }: { onClose: () => void }) {
 type BookLab = Pick<Partner, "name" | "logo" | "count" | "href">;
 type BookCity = { name: string; labs: BookLab[] };
 
-const MOSCOW_LABS: BookLab[] = PARTNERS.filter((item) => item.here);
-const BOOK_CITIES: BookCity[] = [
-  { name: "Москва", labs: MOSCOW_LABS },
+// Moscow networks come from the admin (counts, links, «есть в Москве»); the other cities are still demo data.
+const OTHER_CITIES: BookCity[] = [
   {
     name: "Московская область",
     labs: [
@@ -539,6 +539,9 @@ function StepMark({ step }: { step: 1 | 2 }) {
 
 /** «Записаться на тест» — 5 states from Figma 05 (1253:789): city → network → redirect · no partners → subscribed. */
 function BookModal({ initialLab, onClose }: { initialLab?: string; onClose: () => void }) {
+  const content = useContent();
+  const MOSCOW_LABS: BookLab[] = useMemo(() => content.labs().filter((item) => item.here), [content]);
+  const BOOK_CITIES: BookCity[] = useMemo(() => [{ name: "Москва", labs: MOSCOW_LABS }, ...OTHER_CITIES], [MOSCOW_LABS]);
   const preset = initialLab ? MOSCOW_LABS.find((item) => item.name === initialLab) ?? null : null;
   const [step, setStep] = useState<"city" | "labs" | "redirect" | "empty" | "done">(preset ? "labs" : "city");
   const [query, setQuery] = useState(preset ? "Москва" : "");

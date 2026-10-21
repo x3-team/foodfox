@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { ContentProvider } from "@/components/ContentProvider";
 import { CookieBar } from "@/components/CookieBar";
+import { getContentOverrides } from "@/lib/cms/server";
 import { SiteOnly } from "@/components/SiteOnly";
 import { SiteOverlays } from "@/components/SiteOverlays";
 import "./globals.css";
@@ -35,19 +37,23 @@ export const metadata: Metadata = {
 // The rest of the page is revealed on scroll by the observer in SiteOverlays.
 const REVEAL_BOOT = `(function(){try{var r=matchMedia("(prefers-reduced-motion: reduce)").matches,l=innerHeight*0.92;document.querySelectorAll("[data-s]").forEach(function(n){if(r||n.getBoundingClientRect().top<l)n.classList.add("is-in")})}catch(e){}})()`;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Texts edited in /admin; empty when there is no database, then the site shows the defaults from the code.
+  const content = await getContentOverrides();
   return (
     // data-scroll-behavior: Next keeps the page-level smooth scrolling (globals.css) for anchors but jumps instantly
     // on route changes instead of animating the old page up.
     <html lang="ru" data-scroll-behavior="smooth">
       <body className={manrope.variable} style={{ fontFamily: "var(--font), Manrope, sans-serif" }}>
         <a className="skip-link" href="#content">К содержанию</a>
-        <div id="content">{children}</div>
-        <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOT }} />
-        <SiteOnly>
-          <CookieBar />
-          <SiteOverlays />
-        </SiteOnly>
+        <ContentProvider values={content}>
+          <div id="content">{children}</div>
+          <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOT }} />
+          <SiteOnly>
+            <CookieBar />
+            <SiteOverlays />
+          </SiteOnly>
+        </ContentProvider>
       </body>
     </html>
   );
