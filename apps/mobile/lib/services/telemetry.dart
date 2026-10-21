@@ -13,8 +13,10 @@ import "package:foodfox/config/api_config.dart";
 ///
 /// What may go out: event names from [FoxEvent], counts, durations, coarse
 /// buckets and short enum-like strings. What may not: phone numbers, names,
-/// report values, zones, chat text, file names. [cleanParams] drops any string that
-/// looks like it could carry one of those, so a careless call site fails safe.
+/// report values, zones, chat text, file names, symptom diary content (only
+/// the fact that an entry was saved goes out). [cleanParams] drops any string
+/// that looks like it could carry one of those, so a careless call site fails
+/// safe.
 class Telemetry {
   Telemetry._();
 
@@ -68,7 +70,13 @@ class Telemetry {
     unawaited(AppMetrica.putErrorEnvironmentValue("demo", demo ? "1" : null));
   }
 
+  /// Sees every event with its cleaned parameters, key or no key. Tests use
+  /// it to prove what a screen sends.
+  @visibleForTesting
+  static void Function(String name, Map<String, Object> params)? debugSink;
+
   static void event(String name, [Map<String, Object?> params = const {}]) {
+    debugSink?.call(name, cleanParams(params));
     if (!_active) return;
     final clean = cleanParams(params);
     unawaited(
@@ -187,6 +195,10 @@ abstract final class FoxEvent {
   static const chatMessageSent = "chat_message_sent";
   static const askAssistant = "ask_assistant";
   static const recipeOpened = "recipe_opened";
+
+  // Symptom diary: the fact of an entry only. Never wellbeing, symptoms,
+  // foods, the note or the day, which are health data (docs/DIARY.md).
+  static const diaryEntrySaved = "diary_entry_saved";
 
   static const apiNetworkError = "api_network_error";
 }

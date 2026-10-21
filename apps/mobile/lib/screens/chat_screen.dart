@@ -16,10 +16,18 @@ import "package:foodfox/widgets/ui/fox_ui.dart";
 /// Screens 10–12 — the AI assistant. It only ever sees this client's report,
 /// plan phase and allowed products; the context is assembled server-side.
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.api, this.initialMessage});
+  const ChatScreen({
+    super.key,
+    required this.api,
+    this.initialMessage,
+    this.onOpenDiary,
+  });
 
   final FoodFoxApi api;
   final String? initialMessage;
+
+  /// Opens the symptom diary from the assistant's daily nudge.
+  final VoidCallback? onOpenDiary;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -177,6 +185,21 @@ class _ChatScreenState extends State<ChatScreen> {
 
     for (final m in _messages) {
       items.add(_Bubble(message: m));
+      if (m.isDiaryReminder && widget.onOpenDiary != null) {
+        items.add(const SizedBox(height: 8));
+        items.add(
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FoxButton(
+              label: "Открыть дневник",
+              kind: FoxButtonKind.accent,
+              size: FoxButtonSize.small,
+              expand: false,
+              onPressed: widget.onOpenDiary,
+            ),
+          ),
+        );
+      }
       items.add(const SizedBox(height: 12));
     }
     if (_sending) {
