@@ -494,8 +494,8 @@ const OTHER_CITIES: BookCity[] = [
   {
     name: "Московская область",
     labs: [
-      { name: "Ситилаб", logo: "/figma/labs/citilab.svg", count: "40 отделений", href: "https://citilab.ru" },
       { name: "Гемотест", logo: "/figma/labs/gemotest.svg", count: "22 отделения", href: "https://gemotest.ru" },
+      { name: "Ситилаб", logo: "/figma/labs/citilab.svg", count: "40 отделений", href: "https://citilab.ru" },
     ],
   },
   { name: "Моздок", labs: [] },

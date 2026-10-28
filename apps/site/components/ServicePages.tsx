@@ -325,7 +325,7 @@ function closesAt(hours: string) {
   return range ? `${range[1]}:${range[2] ?? "00"}` : "";
 }
 
-const NETS = ["Все сети", "Ситилаб", "Гемотест", "KDL", "ДНКОМ"];
+const NETS = ["Все сети", "Гемотест", "KDL", "ДНКОМ", "Ситилаб"];
 
 // Card / Lab partner (1248:249): logos as in the L02 grid 1250:252 — no grey plate, own size inside a 120×36 slot.
 const LAB_LOGOS: Record<string, [string, number, number]> = {

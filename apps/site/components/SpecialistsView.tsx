@@ -210,15 +210,15 @@ const EXPERTS = [
 ];
 
 const LABS: Array<[string, string]> = [
-  ["Ситилаб", "/figma/labs/fig/citilab.svg"],
   ["Гемотест", "/figma/labs/fig/gemotest.svg"],
   ["KDL", "/figma/labs/fig/kdl.svg"],
   ["ДНКОМ", "/figma/labs/fig/dnkom.svg"],
   ["Инвитро", "/figma/labs/fig/invitro.svg"],
   ["CMD", "/figma/labs/fig/cmd.svg"],
+  ["Юнимед", "/figma/labs/fig/unimed.svg"],
+  ["Ситилаб", "/figma/labs/fig/citilab.svg"],
   ["Хромолаб", "/figma/labs/fig/chromolab.svg"],
   ["Хеликс", "/figma/labs/fig/helix.svg"],
-  ["Юнимед", "/figma/labs/fig/unimed.svg"],
 ];
 
 const LECTURERS = [

@@ -1,15 +1,15 @@
 export type Partner = { name: string; logo: string; count: string; here: boolean; href: string };
 
 export const PARTNERS: Partner[] = [
-  { name: "Ситилаб", logo: "/figma/labs/citilab.svg", count: "86 отделений", here: true, href: "https://citilab.ru" },
   { name: "Гемотест", logo: "/figma/labs/gemotest.svg", count: "140 отделений", here: true, href: "https://gemotest.ru" },
   { name: "KDL", logo: "/figma/labs/kdl.svg", count: "54 отделения", here: true, href: "https://kdl.ru" },
   { name: "ДНКОМ", logo: "/figma/labs/dnkom.svg", count: "17 отделений", here: true, href: "https://dnkom.ru" },
   { name: "INVITRO", logo: "/figma/labs/invitro.svg", count: "128 отделений", here: true, href: "https://www.invitro.ru" },
   { name: "CMD", logo: "/figma/labs/cmd.svg", count: "41 отделение", here: true, href: "https://cmd-online.ru" },
+  { name: "Юнимед", logo: "/figma/labs/unimed.svg", count: "Нет в вашем городе", here: false, href: "#l05" },
+  { name: "Ситилаб", logo: "/figma/labs/citilab.svg", count: "86 отделений", here: true, href: "https://citilab.ru" },
   { name: "CHROMOLAB", logo: "/figma/labs/chromolab.png", count: "23 отделения", here: true, href: "https://chromolab.ru" },
   { name: "Хеликс", logo: "/figma/labs/helix.svg", count: "32 отделения", here: true, href: "https://helix.ru" },
-  { name: "Юнимед", logo: "/figma/labs/unimed.svg", count: "Нет в вашем городе", here: false, href: "#l05" },
 ];
 
 /** Routing only: booking and payment happen on the lab site, we add UTM (Figma 05 · /labs — логика страницы). */

@@ -415,10 +415,10 @@ test("booking modal walks the city and lab steps", async ({ page }) => {
   await dialog.getByRole("option", { name: /Москва/ }).click();
   await dialog.getByRole("button", { name: "Продолжить" }).click();
   await expect(dialog.getByRole("heading", { name: /Выберите лабораторию/ })).toBeVisible();
-  await dialog.getByRole("radio", { name: /Ситилаб/ }).click();
-  await page.context().route(/^https:\/\/citilab\.ru/, (route) => route.fulfill({ status: 200, body: "ok" }));
+  await dialog.getByRole("radio", { name: /Гемотест/ }).click();
+  await page.context().route(/^https:\/\/gemotest\.ru/, (route) => route.fulfill({ status: 200, body: "ok" }));
   const popup = page.waitForEvent("popup");
-  await dialog.getByRole("button", { name: "Перейти на сайт Ситилаб" }).click();
+  await dialog.getByRole("button", { name: "Перейти на сайт Гемотест" }).click();
   expect((await popup).url()).toContain("utm_source=foxfood");
   await expect(dialog.getByRole("heading", { name: /Открываем сайт/ })).toBeVisible();
 });
