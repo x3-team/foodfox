@@ -1,8 +1,8 @@
 {
   "fixture": "fox-report-e710.pdf",
   "verifiedInPdf": 287,
-  "parsedCount": 285,
-  "catalogCount": 285,
+  "parsedCount": 287,
+  "catalogCount": 287,
   "confidence": "high",
   "results": [
     {
@@ -234,6 +234,12 @@
       "zone": "green"
     },
     {
+      "foxName": "Глиадин пшеницы Tri a Gliadin *",
+      "valueUgMl": 6.76,
+      "isFloorValue": false,
+      "zone": "green"
+    },
+    {
       "foxName": "Глютен",
       "valueUgMl": 16.51,
       "isFloorValue": false,
@@ -379,12 +385,6 @@
     },
     {
       "foxName": "Зеленая фасоль",
-      "valueUgMl": null,
-      "isFloorValue": true,
-      "zone": "green"
-    },
-    {
-      "foxName": "зеленый / красный / желтый)",
       "valueUgMl": null,
       "isFloorValue": true,
       "zone": "green"
@@ -1098,6 +1098,12 @@
       "zone": "green"
     },
     {
+      "foxName": "Перец (черный / белый / зеленый / красный / желтый)",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
       "foxName": "Персик",
       "valueUgMl": null,
       "isFloorValue": true,
@@ -1387,6 +1393,12 @@
     },
     {
       "foxName": "Стебель сельдерея",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Страус",
       "valueUgMl": null,
       "isFloorValue": true,
       "zone": "green"

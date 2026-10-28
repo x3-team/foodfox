@@ -1,0 +1,1731 @@
+{
+  "fixture": "fox-report-2026-tabs.txt",
+  "verifiedInPdf": 287,
+  "parsedCount": 287,
+  "catalogCount": 287,
+  "confidence": "high",
+  "results": [
+    {
+      "foxName": "Абрикос",
+      "valueUgMl": 45.16,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Авокадо",
+      "valueUgMl": 6.35,
+      "isFloorValue": false,
+      "zone": "green"
+    },
+    {
+      "foxName": "Агар-агар",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Алоэ",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Амарант",
+      "valueUgMl": 24.33,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Ананас",
+      "valueUgMl": 29.01,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Анис",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Апельсин",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Арахис",
+      "valueUgMl": 32.57,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Арбуз",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Артишок",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Атлантическая сельдь",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Атлантическая треска",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Атлантический морской окунь",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Базилик",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Баклажан",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Банан",
+      "valueUgMl": 8.62,
+      "isFloorValue": false,
+      "zone": "green"
+    },
+    {
+      "foxName": "Баобаб",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Баранина",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Белая спаржа",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Белая фасоль",
+      "valueUgMl": 34.91,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Белокочанная капуста",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Бобы мунг",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Бразильский орех",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Брокколи",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Брюссельская капуста",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Бузина",
+      "valueUgMl": 27.54,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Буйволиное молоко",
+      "valueUgMl": 7.33,
+      "isFloorValue": false,
+      "zone": "green"
+    },
+    {
+      "foxName": "Ваниль",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Венериды",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Верблюжье молоко",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Вешенка",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Виноград",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Вишня",
+      "valueUgMl": 32.26,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Гауда",
+      "valueUgMl": 29.5,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Гвоздика",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Гибискус",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Гинкго билоба",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Глиадин пшеницы Tri a Gliadin *",
+      "valueUgMl": 23.7,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Глютен",
+      "valueUgMl": 34.06,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Говядина",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Горох",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Горчица",
+      "valueUgMl": 24.27,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Гранат",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Гребешок",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Грейпфрут",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Грецкий орех",
+      "valueUgMl": 32.1,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Гречка",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Груша",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Гуарана",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Двустворчатый моллюск",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Дикий чеснок",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Домашний сверчок",
+      "valueUgMl": 22.47,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Дорада",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Дрожжи хлебопекарные",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Дыня",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Европейская камбала",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Европейская сардина",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Европейский анчоус",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Ежевика",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Жасмин",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Женьшень",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Зеленая капуста",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Зеленая фасоль",
+      "valueUgMl": 26.16,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Зира",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Изюм",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Икра",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Имбирь",
+      "valueUgMl": 34.5,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Индейка",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Инжир",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Кабан",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Кайенский перец",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Какао",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Кальмар",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Камамбер",
+      "valueUgMl": 23.97,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Каперсы",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Капуста",
+      "valueUgMl": 19.34,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Кардамон",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Карп",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Карри",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Картофель",
+      "valueUgMl": 32.2,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Кедровый орех",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Кешью",
+      "valueUgMl": 45.04,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Кивано",
+      "valueUgMl": 13.31,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Киви",
+      "valueUgMl": 26.81,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Киноа",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Клубника",
+      "valueUgMl": 10.13,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Клюква",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Козий сыр",
+      "valueUgMl": 36.14,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Козлятина",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Козье молоко",
+      "valueUgMl": 39.16,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Кокос",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Кокосовое молоко",
+      "valueUgMl": 21.68,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Кольраби",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Конина",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Корень лопуха большой",
+      "valueUgMl": 17.4,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Корень одуванчика",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Корень сельдерея",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Корень якона",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Кориандр",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Корица",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Коровье молоко",
+      "valueUgMl": 31.69,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Кофе",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Краб",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Красная капуста",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Красная свекла",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Красная смородина",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Кресс-салат",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Кролик",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Крыжовник",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Кукуруза",
+      "valueUgMl": 31.27,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Кунжут",
+      "valueUgMl": 24.19,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Курица",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Куркума",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Лавровый лист",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Лайм",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Лемонграсс",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Лимон",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Лисички",
+      "valueUgMl": 30,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Листья крапивы",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Личи",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Лосось",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Лук",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Лук-порей",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Лук-шалот",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Льняные семена",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "М-трансглутаминаза мясной клей",
+      "valueUgMl": 33.96,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Майоран",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Мак",
+      "valueUgMl": 11.63,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Мака перуанская",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Макадамия, орех",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Малина",
+      "valueUgMl": 32.91,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Манго",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Мангольд",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Мандарин",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Маракуйя",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Мед",
+      "valueUgMl": 48.2,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Мидия обыкновенная",
+      "valueUgMl": 21.15,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Микс креветок",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Миндаль",
+      "valueUgMl": 41.91,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Миндальное молоко",
+      "valueUgMl": 15.66,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Молоко коровье Bos d 4 *",
+      "valueUgMl": 23.21,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Молоко коровье Bos d 5 *",
+      "valueUgMl": 19.84,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Молоко коровье Bos d 8 *",
+      "valueUgMl": 41.97,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Моринга",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Морковь",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Морские водоросли",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Морские ушки",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Морской черт",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Морской язык",
+      "valueUgMl": 49.34,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Моцарелла",
+      "valueUgMl": 22.01,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Мускатная тыква",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Мускатный орех",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Мясо косули",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Мята",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Мята перечная",
+      "valueUgMl": 26.84,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Нектарин",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Нори",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Нут",
+      "valueUgMl": 23.05,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Овёс",
+      "valueUgMl": 6.7,
+      "isFloorValue": false,
+      "zone": "green"
+    },
+    {
+      "foxName": "Овечий сыр",
+      "valueUgMl": 39.53,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Овечье молоко",
+      "valueUgMl": 48.13,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Огурец",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Оленина",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Олива",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Омар",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Опята",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Орегано",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Орех кола",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Орех пекан",
+      "valueUgMl": 29.01,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Осьминог",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Пажитник",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Пак-чой/китайская капуста",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Палтус",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Папайя",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Паприка",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Пармезан",
+      "valueUgMl": 34.21,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Пастернак",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Пахта",
+      "valueUgMl": 7.92,
+      "isFloorValue": false,
+      "zone": "green"
+    },
+    {
+      "foxName": "Пекинская капуста",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Перелетная саранча",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Перепелиное яйцо",
+      "valueUgMl": 21.8,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Перец (черный / белый / зеленый / красный / желтый)",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Персик",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Петрушка",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Пивные дрожжи",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Пикша",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Подосиновик/белый гриб",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Подсолнечник",
+      "valueUgMl": 19.34,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Полба",
+      "valueUgMl": 35.24,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Полевой салат",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Помидор",
+      "valueUgMl": 41.66,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Просо",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Пшеница",
+      "valueUgMl": 45.4,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Пшеница однозернянка",
+      "valueUgMl": 30.06,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Пшеница польская",
+      "valueUgMl": 43.69,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Пшеница твёрдая",
+      "valueUgMl": 29.4,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Пшеничные отруби",
+      "valueUgMl": 16.62,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Радиччо (красный салатный цикорий)",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Рапс",
+      "valueUgMl": 16.5,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Редис",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Репа",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Речной рак",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Рис",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Рожь",
+      "valueUgMl": 7.22,
+      "isFloorValue": false,
+      "zone": "green"
+    },
+    {
+      "foxName": "Розмарин",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Романеско",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Ромашка",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Ростки бамбука",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Ростки пшеницы",
+      "valueUgMl": 41.44,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Руккола",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Рыба-меч",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Сафлоровое масло",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Сахарный горошек",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Свинина",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Северная креветка",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Северная щука",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Семена конопли",
+      "valueUgMl": 32.51,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Семена люпина",
+      "valueUgMl": 20.57,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Семена тыквы",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Семена чиа",
+      "valueUgMl": 44.74,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Сепия",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Скат (морская лисица)",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Скумбрия",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Сладкий картофель",
+      "valueUgMl": 37.05,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Сладкий каштан",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Слива",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Солод (ячмень)",
+      "valueUgMl": 41.8,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Соя",
+      "valueUgMl": 44.55,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Спельта",
+      "valueUgMl": 44.8,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Спирулина",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Стебель сельдерея",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Страус",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Съедобный моллюск",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Сыть (чуфа)",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Тамаринд",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Тапиока",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Творог",
+      "valueUgMl": 18.8,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Телятина",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Тимьян",
+      "valueUgMl": 40.74,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Тмин",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Тростниковый сахар",
+      "valueUgMl": 37.84,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Тунец",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Тыква Хоккайдо",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Угорь",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Укроп",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Устрица",
+      "valueUgMl": 46.8,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Утиное мясо",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Фенхель (корень)",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Физалис",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Финик",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Фисташка",
+      "valueUgMl": 40.06,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Форель",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Фундук",
+      "valueUgMl": 13.04,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Хек",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Хлорелла",
+      "valueUgMl": 32.21,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Хмель",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Хрен",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Хрущак мучной",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Цветная капуста",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Цветы бузины",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Цикорий",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Цикорный салат",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Цуккини",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Чай, зеленый",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Чай, черный",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Черника",
+      "valueUgMl": 41.17,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Черноплодная рябина",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Чеснок",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Чечевица",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Чили (красный)",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Шалфей",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Шампиньон",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Шелковица",
+      "valueUgMl": 24.33,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Шнитт-лук",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Шпинат",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Эмменталь",
+      "valueUgMl": 14.28,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Эринги",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Эстрагон",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Яблоко",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Ягода можжевельника",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Яичный белок",
+      "valueUgMl": 20.99,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Яичный желток",
+      "valueUgMl": 12.51,
+      "isFloorValue": false,
+      "zone": "yellow"
+    },
+    {
+      "foxName": "Ячмень",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "Aspergillus niger",
+      "valueUgMl": 44,
+      "isFloorValue": false,
+      "zone": "red"
+    },
+    {
+      "foxName": "Cавойская капуста",
+      "valueUgMl": null,
+      "isFloorValue": true,
+      "zone": "green"
+    },
+    {
+      "foxName": "CCD",
+      "valueUgMl": 33.08,
+      "isFloorValue": false,
+      "zone": "red"
+    }
+  ]
+}
