@@ -7,6 +7,7 @@ export const LEAD_KINDS: Record<string, string> = {
   "city-wait": "Ждут в городе",
   "book-wait": "Запись на тест",
   partner: "Анкета партнёра",
+  partner_doctor: "Врач хочет в партнёры",
 };
 
 export const kindLabel = (kind: string) => LEAD_KINDS[kind] ?? kind;

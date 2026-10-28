@@ -5,6 +5,7 @@ apps/web/.next/
 apps/web/node_modules/
 artifacts/
 data/reports/
+data/partner-pd/
 .DS_Store
 .flutter-sdk/
 *.iml

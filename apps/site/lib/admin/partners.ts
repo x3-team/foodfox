@@ -39,3 +39,31 @@ export function promoFrom(fullName: string): string {
 }
 
 export const rub = (n: number) => `${new Intl.NumberFormat("ru-RU").format(n)} ₽`;
+
+/* Partner program by the customer's processes (migration 006). */
+
+export const LEGAL_FORMS = { ip: "ИП", sz: "Самозанятый", fl: "Физлицо" } as const;
+export type LegalForm = keyof typeof LEGAL_FORMS;
+
+export const STATEMENT_STATUSES = { sent: "Ждёт партнёра", disputed: "На сверке", confirmed: "Подтверждён", paid: "Оплачен" } as const;
+export type StatementStatus = keyof typeof STATEMENT_STATUSES;
+
+export const DOC_KINDS: Record<string, string> = {
+  passport_main: "Паспорт, фото", passport_reg: "Паспорт, прописка", snils: "СНИЛС", inn: "ИНН", analysis: "Фото анализа", act_scan: "Скан акта",
+};
+
+/** What each queued step means for staff until its adapter (Bitrix24, 1С, mail, Raptor, Telegram) does it. */
+export const EVENT_KINDS: Record<string, string> = {
+  "crm.partner_created": "Завести партнёра в Битрикс24",
+  "mail.accountant_new_partner": "Заявление нового партнёра бухгалтеру",
+  "mail.service_contract_copy": "Копия договора специалисту службы — согласовать в 1С:ДО",
+  "raptor.verify_code": "Проверить id кода анализа в Raptor",
+  "notify.statement_ready": "Сообщить партнёру об отчёте за месяц",
+  "mail.act_to_partner_and_service": "Акт партнёру и специалисту службы",
+  "service.statement_disputed": "Партнёр не подтвердил отчёт — согласовать",
+  "mail.act_scan_to_accountant": "Скан акта бухгалтеру",
+  "service.doctor_lead": "Врач хочет в партнёры — связаться",
+};
+
+export const monthOf = (period: string) =>
+  new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(period)).replace(" г.", "");

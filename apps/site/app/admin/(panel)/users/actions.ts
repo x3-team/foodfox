@@ -9,8 +9,8 @@ import { hashPassword, passwordProblem, verifyPassword } from "@/lib/admin/passw
 
 export type UserResult = { ok: boolean; message?: string; password?: string };
 
-const ROLE_LABEL: Record<Role, string> = { admin: "администратор", manager: "менеджер" };
-const isRole = (value: string): value is Role => value === "admin" || value === "manager";
+const ROLE_LABEL: Record<Role, string> = { admin: "администратор", manager: "менеджер", accountant: "бухгалтер" };
+const isRole = (value: string): value is Role => value === "admin" || value === "manager" || value === "accountant";
 
 /** Readable one-time password: no 0/O/1/l, letters and digits guaranteed. */
 function tempPassword(): string {

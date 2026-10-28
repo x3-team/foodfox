@@ -5,7 +5,7 @@ import { cache } from "react";
 import { one, q } from "./db";
 import { verifyPassword } from "./password";
 
-export type Role = "admin" | "manager";
+export type Role = "admin" | "manager" | "accountant";
 export type Staff = { id: string; email: string; name: string; role: Role; sessionId: string };
 
 export const COOKIE = "fox_adm";
@@ -21,15 +21,17 @@ export async function clientIp(): Promise<string> {
 }
 
 /* What each role may open. Managers work with leads, partners, reviews, content and media; prices, SEO, staff and
-   settings stay with admins. Pages and server actions both check it, the menu only hides what is closed. */
+   settings stay with admins. The accountant works with partners only and is, with the admin, the one who opens their
+   personal data (pd). Pages and server actions both check it, the menu only hides what is closed. */
 export const ACCESS = {
-  dashboard: ["admin", "manager"],
+  dashboard: ["admin", "manager", "accountant"],
   leads: ["admin", "manager"],
   content: ["admin", "manager"],
   media: ["admin", "manager"],
   blog: ["admin", "manager"],
   reviews: ["admin", "manager"],
-  partners: ["admin", "manager"],
+  partners: ["admin", "manager", "accountant"],
+  pd: ["admin", "accountant"],
   course: ["admin", "manager"],
   prices: ["admin"],
   seo: ["admin"],

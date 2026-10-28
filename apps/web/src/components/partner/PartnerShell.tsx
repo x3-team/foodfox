@@ -8,6 +8,7 @@ import { usePartnerData } from "@/components/partner/PartnerData";
 const nav = [
   { href: "/partner/home", label: "Дашборд" },
   { href: "/partner/reports", label: "Отчёты клиентов" },
+  { href: "/partner/acts", label: "Отчёты и акты" },
   { href: "/partner/payouts", label: "Начисления и выплаты" },
   { href: "/partner/materials", label: "Материалы" },
   { href: "/partner/certification", label: "Сертификация" },

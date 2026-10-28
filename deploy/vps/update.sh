@@ -50,6 +50,7 @@ echo "    FOX_PARTNER_DEMO_PHONE: ${FOX_PARTNER_DEMO_PHONE:-<code default 792511
 echo "    FOX_PARTNER_DEMO_OTP:   ${FOX_PARTNER_DEMO_OTP:-<FOX_DEMO_OTP or 1111>}"
 echo "    FOX_DEMO_MODE:    ${FOX_DEMO_MODE:-off}"
 echo "    FOX_ADMIN_EMAIL:  ${FOX_ADMIN_EMAIL:-<not set>}"
+echo "    FOX_PD_KEY:       $(flag "${FOX_PD_KEY:-}") (partner documents are refused without it)"
 
 echo "==> Build Next.js"
 npm ci --include=dev

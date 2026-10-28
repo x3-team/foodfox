@@ -1,3 +1,5 @@
+import type { Statement } from "@/lib/partner-program/shared";
+
 export const partner = {
   name: "Мария",
   fullName: "Ковалёва Мария",
@@ -165,3 +167,15 @@ export const money = {
   paid: "142 800 ₽",
   paidHint: "за 9 месяцев · 59 отчётов",
 };
+
+/** Monthly reports and acts of the demo partner (БПИТ10.1.1). */
+export const statements: Statement[] = [
+  {
+    id: "3", period: "2026-09-01", periodLabel: "сентябрь 2026", reports: 8, amount: 19200, status: "sent", disputeNote: "",
+    actNo: "FOX-202609-3", scanSent: false, scanReceived: false, originalSentAt: null, originalTrack: "", originalReceived: false, paidAt: null, actReturned: false,
+  },
+  {
+    id: "2", period: "2026-08-01", periodLabel: "август 2026", reports: 7, amount: 16800, status: "paid", disputeNote: "",
+    actNo: "FOX-202608-2", scanSent: true, scanReceived: true, originalSentAt: "29.08.2026", originalTrack: "80085012345678", originalReceived: true, paidAt: "05.09.2026", actReturned: true,
+  },
+];

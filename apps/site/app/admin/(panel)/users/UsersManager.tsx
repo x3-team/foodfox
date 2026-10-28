@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { ago } from "@/lib/admin/format";
 import { createUser, endSessions, resetPassword, updateUser, type UserResult } from "./actions";
 
-export type UserRow = { id: string; email: string; name: string; role: "admin" | "manager"; active: boolean; sessions: number; lastLogin: string | null; me: boolean };
+export type UserRow = { id: string; email: string; name: string; role: "admin" | "manager" | "accountant"; active: boolean; sessions: number; lastLogin: string | null; me: boolean };
 
 export function UsersManager({ users }: { users: UserRow[] }) {
   const router = useRouter();
@@ -44,7 +44,7 @@ export function UsersManager({ users }: { users: UserRow[] }) {
           <label className="a-field"><span>Имя</span><input className="a-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
           <label className="a-field"><span>Роль</span>
             <select className="a-input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-              <option value="manager">Менеджер</option><option value="admin">Администратор</option>
+              <option value="manager">Менеджер</option><option value="accountant">Бухгалтер</option><option value="admin">Администратор</option>
             </select>
           </label>
           <button className="a-btn is-lime" type="submit" disabled={pending}>Добавить</button>
@@ -62,7 +62,7 @@ export function UsersManager({ users }: { users: UserRow[] }) {
                   <td data-label="Роль">
                     <select className="a-input" style={{ minHeight: 36, padding: "6px 36px 6px 12px", width: "auto" }} value={u.role} disabled={pending}
                       onChange={(e) => run(() => updateUser(u.id, { role: e.target.value }))} aria-label={`Роль ${u.email}`}>
-                      <option value="manager">Менеджер</option><option value="admin">Администратор</option>
+                      <option value="manager">Менеджер</option><option value="accountant">Бухгалтер</option><option value="admin">Администратор</option>
                     </select>
                   </td>
                   <td data-label="Статус">{u.active ? <span className="a-badge s-done">Активен</span> : <span className="a-badge is-off">Заблокирован</span>}</td>

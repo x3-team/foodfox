@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { REPORT_STATUSES, rub } from "@/lib/admin/partners";
 import { addPayout, addReport, deleteReport, markPaid, setReportStatus } from "../actions";
 
-type Report = { id: string; number: string; client: string; lab: string; date: string; status: keyof typeof REPORT_STATUSES; fee: number };
+type Report = { id: string; number: string; client: string; lab: string; date: string; status: keyof typeof REPORT_STATUSES; fee: number; fromPartner: boolean; photo: string | null };
 type Payout = { id: string; period: string; amount: number; reports: number; status: "pending" | "paid"; paidAt: string | null };
 
 const MONTH = () => new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric" }).format(new Date()).replace(" г.", "");
@@ -45,7 +45,8 @@ export function PartnerMoney({ partnerId, reports, payouts, available, unpaidRep
               <tbody>
                 {reports.map((r) => (
                   <tr key={r.id}>
-                    <td className="a-cell-main"><b style={{ fontWeight: 500, whiteSpace: "nowrap" }}>{r.number}</b><span className="sub">{[r.client, r.lab].filter(Boolean).join(" · ")}</span></td>
+                    <td className="a-cell-main"><b style={{ fontWeight: 500, whiteSpace: "nowrap" }}>{r.number}</b><span className="sub">{[r.client, r.lab, r.fromPartner ? "прислал партнёр" : ""].filter(Boolean).join(" · ")}</span>
+                      {r.photo ? <a className="a-link" href={`/admin/api/partner-doc/${r.photo}`} target="_blank" rel="noreferrer">фото анализа</a> : null}</td>
                     <td data-label="Дата теста" className="nowrap">{r.date ? new Date(r.date).toLocaleDateString("ru-RU") : "—"}</td>
                     <td data-label="Статус">
                       <select className="a-input" style={{ minHeight: 36, padding: "6px 36px 6px 12px", width: "auto" }} value={r.status} disabled={pending} aria-label={`Статус ${r.number}`} onChange={(e) => run(() => setReportStatus(r.id, e.target.value))}>

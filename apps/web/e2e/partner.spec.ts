@@ -11,6 +11,7 @@ const PUBLIC_ROUTES = [LOGIN, "/partner/apply", "/partner/pending"] as const;
 const CABINET_ROUTES = [
   "/partner/home",
   "/partner/reports",
+  "/partner/acts",
   "/partner/payouts",
   "/partner/materials",
   "/partner/certification",

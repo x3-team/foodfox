@@ -8,13 +8,13 @@ import type { NavItem } from "./nav";
 
 type Props = {
   nav: NavItem[];
-  me: { name: string; email: string; role: "admin" | "manager" };
+  me: { name: string; email: string; role: "admin" | "manager" | "accountant" };
   counts: Record<string, number>;
   logout: () => Promise<void>;
   children: React.ReactNode;
 };
 
-const ROLE = { admin: "Администратор", manager: "Менеджер" };
+const ROLE = { admin: "Администратор", manager: "Менеджер", accountant: "Бухгалтер" };
 
 function isActive(path: string, href: string) {
   return href === "/admin" ? path === "/admin" : path === href || path.startsWith(`${href}/`);

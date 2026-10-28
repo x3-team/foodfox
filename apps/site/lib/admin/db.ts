@@ -23,7 +23,7 @@ function pool(): Pool {
   return state.pool;
 }
 
-const MIGRATIONS = ["005_site_admin.sql"];
+const MIGRATIONS = ["005_site_admin.sql", "006_partner_program.sql"];
 
 async function migrate(): Promise<void> {
   const client = await pool().connect();

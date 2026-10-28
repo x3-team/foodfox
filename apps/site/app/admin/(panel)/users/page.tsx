@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Пользователи" };
 
 export default async function UsersPage() {
   const staff = await requireStaff("users");
-  const rows = await q<{ id: string; email: string; name: string; role: "admin" | "manager"; is_active: boolean; last_login_at: Date | null; created_at: Date; sessions: number }>(
+  const rows = await q<{ id: string; email: string; name: string; role: "admin" | "manager" | "accountant"; is_active: boolean; last_login_at: Date | null; created_at: Date; sessions: number }>(
     `SELECT u.id, u.email, u.name, u.role, u.is_active, u.last_login_at, u.created_at,
             (SELECT count(*)::int FROM admin_sessions s WHERE s.user_id = u.id AND s.expires_at > now()) AS sessions
        FROM admin_users u ORDER BY u.is_active DESC, u.role, u.name, u.email`,
@@ -21,7 +21,7 @@ export default async function UsersPage() {
       <div className="a-head">
         <div>
           <h1>Пользователи</h1>
-          <p>Администратор видит и меняет всё. Менеджер работает с заявками, партнёрами, отзывами, страницами и медиа; цены, SEO и пользователи ему закрыты.</p>
+          <p>Администратор видит и меняет всё. Менеджер работает с заявками, партнёрами, отзывами, страницами и медиа; цены, SEO и пользователи ему закрыты. Бухгалтер работает только с партнёрами и, как и администратор, видит их паспортные данные и реквизиты.</p>
         </div>
       </div>
       <UsersManager users={users} />

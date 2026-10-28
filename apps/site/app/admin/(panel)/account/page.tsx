@@ -16,7 +16,7 @@ export default async function AccountPage() {
       <div className="a-head">
         <div>
           <h1>Профиль</h1>
-          <p>{staff.email} · {staff.role === "admin" ? "Администратор" : "Менеджер"}</p>
+          <p>{staff.email} · {{ admin: "Администратор", manager: "Менеджер", accountant: "Бухгалтер" }[staff.role]}</p>
         </div>
       </div>
       <AccountForm

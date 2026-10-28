@@ -7,6 +7,7 @@ const PARTNER_GUARDED = [
   "/partner/home",
   "/partner/reports",
   "/partner/payouts",
+  "/partner/acts",
   "/partner/materials",
   "/partner/certification",
   "/partner/settings",
