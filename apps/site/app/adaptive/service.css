@@ -129,7 +129,7 @@ body [data-s="e01"] .e-plate .e-four { white-space: nowrap; }
   body main [data-s="c05"] .c05 > header { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); gap: 32px; align-items: end; }
   body main [data-s="c05"] .c05 > header p { margin: 0; font-size: 16px; line-height: 20px; color: rgba(11, 12, 8, 0.65); }
   body main [data-s="c05"] .c05 h2 { font-size: 40px; line-height: 44px; }
-  body main [data-s="c05"] .c05 ol { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  body main [data-s="c05"] .c05 ol { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
 
   /* ===== /reviews (#17) ===== */
   body main [data-s="v01"] { padding: 32px 0 56px; }
