@@ -7,11 +7,22 @@ import { ZoomPane } from "@/components/ZoomPane";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 
-const DOCS = [
-  ["CE-IVDR", "Сертификат ЕС", "Соответствие требованиям ЕС к медицинским изделиям для лабораторной диагностики: разработка, производство, безопасность, контроль качества", "PDF · 1,2 МБ"],
-  ["EN ISO 13485", "Качество", "Система менеджмента качества для медицинских изделий: разработка, производство и контроль лабораторных систем", "PDF · 0,9 МБ"],
-  ["ISO 9001", "Качество", "Система менеджмента качества производственных процессов", "PDF · 0,7 МБ"],
-  ["Регистрация в РФ", "Россия", "Статус ввоза и обращения на территории России. Самый частый вопрос и пациентов, и врачей", "PDF · данные от клиента"],
+// A doc with `file` is a real PDF from the client: the viewer turns its `pages` (scans) and «Скачать» downloads the file.
+type Doc = { code: string; kind: string; text: string; size: string; file?: string; pages?: string[] };
+
+const RU = "/docs/fox-ru-rzn-2022-18604";
+const DOCS: Doc[] = [
+  { code: "CE-IVDR", kind: "Сертификат ЕС", text: "Соответствие требованиям ЕС к медицинским изделиям для лабораторной диагностики: разработка, производство, безопасность, контроль качества", size: "PDF · 1,2 МБ" },
+  { code: "EN ISO 13485", kind: "Качество", text: "Система менеджмента качества для медицинских изделий: разработка, производство и контроль лабораторных систем", size: "PDF · 0,9 МБ" },
+  { code: "ISO 9001", kind: "Качество", text: "Система менеджмента качества производственных процессов", size: "PDF · 0,7 МБ" },
+  {
+    code: "РЗН 2022/18604",
+    kind: "Регистрация в РФ",
+    text: "Регистрационное удостоверение Росздравнадзора от 21.10.2022: набор реагентов FOX (Food Xplorer) — медицинское изделие, допущенное к обращению в России. Класс риска 2а",
+    size: "PDF · 1,4 МБ",
+    file: `${RU}.pdf`,
+    pages: [`${RU}-1.webp`, `${RU}-2.webp`],
+  },
 ];
 
 export function CertificatesView() {
@@ -281,7 +292,7 @@ export function CertificatesView() {
                 <ul className="c-facts">
                   <li><img className="c-fact-ico" src="/figma/icons/file.svg" alt="" width={18} height={18} /><b>CE-IVDR</b><span>медизделие для IVD в ЕС</span></li>
                   <li><img className="c-fact-ico" src="/figma/icons/file.svg" alt="" width={18} height={18} /><b>ISO 13485</b><span>качество производства</span></li>
-                  <li><img className="c-fact-ico" src="/figma/icons/file.svg" alt="" width={18} height={18} /><b>РУ РФ</b><span>обращение в России</span></li>
+                  <li><img className="c-fact-ico" src="/figma/icons/file.svg" alt="" width={18} height={18} /><b>РУ РФ</b><span>№ РЗН 2022/18604</span></li>
                 </ul>
               </div>
               <div className="c-stack" aria-hidden="true">
@@ -311,7 +322,7 @@ export function CertificatesView() {
               <p>Формулировки — о производстве и качестве. Нажмите, чтобы открыть PDF в просмотрщике.</p>
             </header>
             <div className="c-docs" data-certs data-allow-x ref={docsRef}>
-              {DOCS.map(([code, kind, text, size], index) => (
+              {DOCS.map(({ code, kind, text, size, file }, index) => (
                 <article className="cert-card" key={code}>
                   <div className="c-paper" aria-hidden="true" style={{ backgroundImage: `url(/figma/certificates/doc-${index + 1}.webp)` }}><b>{code}</b></div>
                   {/* Doc / Card (1275:449): badge, title, text, actions row «Открыть PDF ↗ · PDF · size · download». */}
@@ -322,7 +333,9 @@ export function CertificatesView() {
                     <div className="cert-actions">
                       <button type="button" className="cert-open" onClick={(event) => openDoc(code, index, event.currentTarget.closest(".cert-card"))}>Открыть PDF <img src="/icons/arrow-up-right.svg" alt="" /></button>
                       <span>{size}</span>
-                      {/\d/.test(size) && (
+                      {file ? (
+                        <a className="cert-dl" href={file} download aria-label={`Скачать ${code}`}><img src="/icons/download.svg" alt="" /></a>
+                      ) : /\d/.test(size) && (
                         <button type="button" className="cert-dl" aria-label={`Скачать ${code}`} onClick={(event) => openDoc(code, index, event.currentTarget.closest(".cert-card"))}><img src="/icons/download.svg" alt="" /></button>
                       )}
                     </div>
@@ -339,7 +352,7 @@ export function CertificatesView() {
             <div>
               <p className="fx-kicker c03-kicker"><img src="/icons/building-light.svg" alt="" />О производителе</p>
               <h2>MacroArray Diagnostics</h2>
-              <p>Австрийская компания, с 2016 года создаёт лабораторные тесты, оборудование и программы для обработки результатов. В России и СНГ тест представляет МФК Инмунотех.</p>
+              <p>Австрийская компания, с 2016 года создаёт лабораторные тесты, оборудование и программы для обработки результатов. В России и СНГ тест представляет МФК Инмунотех — держатель регистрационного удостоверения.</p>
               <dl ref={factsRef}>
                 <div><b>2016</b><span>основание в Вене</span></div>
                 <div><b>286</b><span>пищевых антигенов</span></div>
@@ -384,6 +397,7 @@ export function CertificatesView() {
               <li><b>2017</b><span>Первый CE-маркированный IVD-продукт</span></li>
               {/* TODO: год расширения панели до 286 антигенов — уточнить у клиента */}
               <li><b>…</b><span>Расширение панели до 286 антигенов</span></li>
+              <li><b>2022</b><span>Регистрация в России как медицинского изделия</span></li>
               <li><b>Сегодня</b><span>1500+ лабораторий-партнёров в РФ</span></li>
             </ol>
           </div>
@@ -399,10 +413,12 @@ export function CertificatesView() {
 /**
  * M29: document viewer. On phones it is fullscreen — the card grows into the screen (320 мс), title and close on top,
  * «Скачать» and «Поделиться» (Web Share API) at the bottom, a page skeleton with shimmer while the preview loads,
- * swipe down to close. The PDF files themselves are not uploaded yet, so the viewer shows the page preview
- * and «Скачать» stays disabled — no fake download.
+ * swipe down to close. Docs with a real PDF show its scanned pages (‹ › to turn) and download the file; the others
+ * have no PDF yet, so the viewer shows the page preview and «Скачать» stays disabled — no fake download.
  */
 function DocViewer({ code, index, from, onClose }: { code: string; index: number; from: DOMRect | null; onClose: () => void }) {
+  const { file, pages = [`/figma/certificates/doc-${index + 1}.webp`] } = DOCS[index];
+  const [page, setPage] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -448,7 +464,7 @@ function DocViewer({ code, index, from, onClose }: { code: string; index: number
     <div className="modal-back doc-back" onClick={() => closeRef.current()} style={dy ? { background: `rgba(11, 12, 8, ${Math.max(0, 0.5 - dy / 800)})` } : undefined}>
       <div
         ref={ref}
-        className="modal doc-viewer"
+        className={`modal doc-viewer${file ? " is-sheet" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label={code}
@@ -479,13 +495,26 @@ function DocViewer({ code, index, from, onClose }: { code: string; index: number
         <div className="doc-page">
           {!loaded && <span className="doc-skel" aria-hidden><i /><i /><i /><i /><i /></span>}
           {/* M29: pinch-zoom inside the document (1–4×, double tap 2.5×); swipe-to-close pauses while zoomed. */}
-          <ZoomPane onZoomChange={(value) => { zoomed.current = value; }}>
-            <img src={`/figma/certificates/doc-${index + 1}.webp`} alt={`${code} — превью документа`} onLoad={() => setLoaded(true)} className={loaded ? "is-loaded" : ""} draggable={false} />
+          <ZoomPane resetKey={page} onZoomChange={(value) => { zoomed.current = value; }}>
+            <img key={page} src={pages[page]} alt={`${code} — ${file ? `лист ${page + 1}` : "превью документа"}`} onLoad={() => setLoaded(true)} className={loaded ? "is-loaded" : ""} draggable={false} />
           </ZoomPane>
         </div>
-        <p className="doc-note">PDF пока не загружен — показано превью документа.</p>
+        {file ? (
+          <div className="doc-note doc-pager">
+            <span>Лист {page + 1} из {pages.length}</span>
+            <button type="button" aria-label="Предыдущий лист" disabled={page === 0} onClick={() => { setLoaded(false); setPage(page - 1); }}>‹</button>
+            <button type="button" aria-label="Следующий лист" disabled={page === pages.length - 1} onClick={() => { setLoaded(false); setPage(page + 1); }}>›</button>
+            <a href={file} target="_blank" rel="noopener">Открыть PDF</a>
+          </div>
+        ) : (
+          <p className="doc-note">PDF пока не загружен — показано превью документа.</p>
+        )}
         <footer className="doc-actions">
-          <button type="button" className="btn btn-ghost" disabled title="PDF пока не загружен">Скачать</button>
+          {file ? (
+            <a className="btn btn-ghost" href={file} download>Скачать</a>
+          ) : (
+            <button type="button" className="btn btn-ghost" disabled title="PDF пока не загружен">Скачать</button>
+          )}
           <button type="button" className="btn btn-dark" onClick={() => void share()}>Поделиться</button>
         </footer>
       </div>

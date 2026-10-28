@@ -273,6 +273,18 @@ test("certificate carousel opens a document", async ({ page }) => {
   await expect(page.getByRole("dialog", { name: "CE-IVDR" })).toBeVisible();
 });
 
+test("russian registration certificate opens with both sheets and downloads the PDF", async ({ page }) => {
+  await page.goto("/certificates");
+  await ready(page);
+  await page.getByRole("button", { name: "Открыть PDF" }).nth(3).click();
+  const dialog = page.getByRole("dialog", { name: "РЗН 2022/18604" });
+  await expect(dialog.getByText("Лист 1 из 2")).toBeVisible();
+  await dialog.getByRole("button", { name: "Следующий лист" }).click();
+  await expect(dialog.getByText("Лист 2 из 2")).toBeVisible();
+  await expect(dialog.getByRole("link", { name: "Скачать" })).toHaveAttribute("href", "/docs/fox-ru-rzn-2022-18604.pdf");
+  expect((await page.request.get("/docs/fox-ru-rzn-2022-18604.pdf")).headers()["content-type"]).toContain("pdf");
+});
+
 test("privacy policy contains every numbered section", async ({ page }) => {
   await page.goto("/privacy");
   await ready(page);

@@ -4526,6 +4526,17 @@ body [data-s="l01"] .ls-seek b { position: relative; font-weight: 500; font-size
 .doc-viewer .doc-skel::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.7) 50%, transparent 70%); transform: translateX(-100%); animation: skel-shimmer 1.2s ease-in-out infinite; }
 @keyframes skel-shimmer { to { transform: translateX(100%); } }
 .doc-viewer .doc-note { margin: 0; font-size: 12px; line-height: 16px; color: rgba(11, 12, 8, 0.65); }
+.doc-viewer.is-sheet .doc-page { flex: 0 0 auto; height: min(68vh, 760px); }
+.doc-viewer.is-sheet .doc-page img { height: calc(min(68vh, 760px) - 32px); width: auto; max-height: none; max-width: 100%; object-fit: contain; }
+@media (max-width: 767px) {
+  .doc-viewer.is-sheet .doc-page { flex: 1 1 auto; height: auto; }
+  .doc-viewer.is-sheet .doc-page img { height: auto; max-height: 100%; }
+}
+.doc-viewer .doc-pager { display: flex; align-items: center; gap: 8px; }
+.doc-viewer .doc-pager span { margin-right: auto; }
+.doc-viewer .doc-pager button { width: 32px; height: 32px; border-radius: 999px; font-size: 20px; line-height: 1; color: #0b0c08; background: rgba(11, 12, 8, 0.06); }
+.doc-viewer .doc-pager button:disabled { opacity: 0.3; cursor: default; }
+.doc-viewer .doc-pager a { margin-left: 8px; color: #0b0c08; text-decoration: underline; text-underline-offset: 3px; }
 .doc-viewer .doc-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .doc-viewer .doc-actions .btn { width: 100%; justify-content: center; }
 .doc-viewer .doc-actions .btn:disabled { opacity: 0.4; cursor: not-allowed; }
