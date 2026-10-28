@@ -228,3 +228,40 @@ body .report-page .rf-stats > div { box-sizing: border-box; }
   }
 }
 body .report-page .rf-audiences > span { flex-shrink: 0; }
+
+/* R01 (28.10, Vitalii): the white chips merged with the white sheet under them. The lower part of the sheet gets a soft
+   dark shade (the sheet "goes into shadow" under the chips) and the chips get a deeper two-layer shadow. */
+@media (min-width: 1101px) {
+  body .report-page .rf-paper::after {
+    content: "";
+    position: absolute;
+    right: 40px;
+    bottom: 0;
+    height: min(calc(100cqh - 16px), 480px, calc((100cqw - 56px) * 1.3074));
+    aspect-ratio: 1002 / 1310;
+    z-index: 1;
+    border-radius: 8px;
+    background: linear-gradient(to top, rgba(16, 20, 0, 0.42) 0%, rgba(16, 20, 0, 0.18) 22%, rgba(16, 20, 0, 0) 48%);
+    pointer-events: none;
+  }
+  body .report-page .rf-paper img { z-index: 0; }
+  body .report-page .rf-audiences span { box-shadow: 0 10px 24px rgba(11, 12, 8, 0.22), 0 1px 3px rgba(11, 12, 8, 0.14); }
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  @container (min-width: 330px) {
+    body .report-page .rf-paper::after {
+      content: "";
+      position: absolute;
+      left: 10cqw;
+      top: 3cqw;
+      width: 72cqw;
+      height: 94.1cqw;
+      z-index: 1;
+      border-radius: 8px;
+      background: linear-gradient(to top, rgba(16, 20, 0, 0.42) 0%, rgba(16, 20, 0, 0.18) 22%, rgba(16, 20, 0, 0) 48%);
+      pointer-events: none;
+    }
+    body .report-page .rf-paper img { z-index: 0; }
+    body .report-page .rf-audiences span { box-shadow: 0 10px 24px rgba(11, 12, 8, 0.22), 0 1px 3px rgba(11, 12, 8, 0.14); }
+  }
+}
