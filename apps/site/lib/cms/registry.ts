@@ -2,7 +2,7 @@
    the default — the text the site showed before the admin existed. A field without a saved value shows its default,
    so the site never depends on the database. Plain module: used by the site (client and server) and by the admin. */
 
-import { COURSE_FAQ_DEFAULT, LESSONS_DEFAULT } from "@/lib/site-data/course";
+import { COURSE_FAQ_DEFAULT, LESSON5_PARTS, LESSONS_DEFAULT } from "@/lib/site-data/course";
 import { FAQ_GROUPS_DEFAULT } from "@/lib/site-data/faq";
 import { HOME_FAQ_DEFAULT } from "@/lib/site-data/home";
 import { PARTNERS } from "@/lib/labs";
@@ -105,10 +105,10 @@ export const PAGES: PageDef[] = [
         fields: [
           { key: "course.hero.chip", label: "Метка", type: "text", default: "Бесплатный курс для специалистов" },
           { key: "course.hero.title", label: "Заголовок", type: "textarea", default: "Научитесь применять FOX Food Xplorer в работе с пациентами" },
-          { key: "course.hero.lead", label: "Подзаголовок (компьютер)", type: "textarea", default: "За шесть видеоуроков вы разберёте основы иммунологической пищевой непереносимости, принципы работы FOX, структуру отчёта и алгоритм применения результатов в практике." },
-          { key: "course.hero.leadMobile", label: "Подзаголовок (телефон)", type: "textarea", default: "Шесть видеоуроков: от основ иммунологической пищевой непереносимости до работы с отчётом." },
+          { key: "course.hero.lead", label: "Подзаголовок (компьютер)", type: "textarea", default: "За шесть видеоуроков вы разберёте основы пищевой непереносимости и её влияние на здоровье, принцип работы теста FOX, работу с результатами в вашей специальности и внедрение теста в практику." },
+          { key: "course.hero.leadMobile", label: "Подзаголовок (телефон)", type: "textarea", default: "Шесть видеоуроков: от основ пищевой непереносимости до внедрения теста в практику." },
           { key: "course.hero.cta", label: "Кнопка", type: "text", default: "Получить доступ", max: 32 },
-          { key: "course.hero.facts", label: "Факты под экраном", type: "lines", default: "6 видеоуроков по 12–18 минут\nКонспекты PDF к каждому уроку\nСертификат о прохождении\nБессрочный доступ", hint: "По одному на строку." },
+          { key: "course.hero.facts", label: "Факты под экраном", type: "lines", default: "6 видеоуроков по 30–60 минут\nКонспекты PDF к урокам\nИтоговый тест и сертификат\nБессрочный доступ", hint: "По одному на строку." },
         ],
       },
       {
@@ -116,7 +116,7 @@ export const PAGES: PageDef[] = [
         fields: [
           {
             key: "course.lessons", label: "Уроки", type: "list", fixed: true, itemTitle: "Урок", default: LESSONS_DEFAULT,
-            hint: "Уроков ровно шесть: от их числа зависят прогресс и сертификат.",
+            hint: "Уроков ровно шесть: от их числа зависят прогресс, итоговый тест и сертификат. Пока видео нет, длительность 0 — в кабинете вместо плеера будет «Видео скоро».",
             of: [
               { name: "title", label: "Название", type: "text" },
               { name: "short", label: "Короткое название (меню урока)", type: "text" },
@@ -125,6 +125,23 @@ export const PAGES: PageDef[] = [
               { name: "clock", label: "Длительность видео (мм:сс)", type: "text" },
               { name: "content", label: "О чём урок", type: "textarea" },
               { name: "after", label: "Что будете уметь", type: "textarea" },
+              { name: "video", label: "Видео урока (файл .mp4 или ссылка на плеер)", type: "url" },
+              { name: "pdf", label: "Конспект PDF (ссылка)", type: "url" },
+              { name: "notes", label: "Текст урока — пусто: текст из конспекта заказчика («## » — заголовок, «- » — пункт, «1. » — пункт по номеру)", type: "textarea" },
+            ],
+          },
+          {
+            key: "course.lesson5.parts", label: "Урок 5 по специальностям", type: "list", fixed: true, itemTitle: "Часть", default: LESSON5_PARTS,
+            hint: "Четыре части урока 5: слушатель переключает их на странице урока. Длительность 0 — «Видео скоро».",
+            of: [
+              { name: "title", label: "Название", type: "text" },
+              { name: "short", label: "Специальность (переключатель)", type: "text" },
+              { name: "lecturer", label: "Лектор", type: "text" },
+              { name: "minutes", label: "Длительность, минут", type: "number" },
+              { name: "clock", label: "Длительность видео (мм:сс)", type: "text" },
+              { name: "video", label: "Видео (файл .mp4 или ссылка на плеер)", type: "url" },
+              { name: "pdf", label: "Конспект PDF (ссылка)", type: "url" },
+              { name: "notes", label: "Текст — пусто: текст из конспекта заказчика", type: "textarea" },
             ],
           },
         ],

@@ -5,6 +5,7 @@ import "@/app/adaptive/course.css";
 import "@/app/adaptive/b2b-motion.css";
 import "../motion.css";
 import "../demo.css";
+import "../test.css";
 
 export const metadata: Metadata = { title: "Кабинет курса" };
 
