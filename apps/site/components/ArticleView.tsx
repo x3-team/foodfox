@@ -9,12 +9,11 @@ import { Header } from "@/components/Header";
 import {
   DISCLAIMER,
   UPDATED,
-  articles,
-  authorBySlug,
   categoryLabel,
   type Article,
   type Block,
 } from "@/lib/content";
+import { useBlog } from "@/components/ContentProvider";
 
 function Blocks({ blocks }: { blocks: Block[] }) {
   return (
@@ -110,6 +109,7 @@ function dotDate(value: string) {
 }
 
 export function ArticleView({ article }: { article: Article }) {
+  const { articles, authorBySlug } = useBlog();
   const author = authorBySlug(article.author)!;
   const headings = article.blocks?.filter((block) => block.type === "h2") ?? [];
   const useToc = headings.length >= 3;

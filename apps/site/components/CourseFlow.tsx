@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useContent } from "@/components/ContentProvider";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { BottomSheet } from "@/components/BottomSheet";
@@ -99,65 +100,6 @@ const AUDIENCE = [
   },
 ];
 
-const LESSONS = [
-  {
-    title: "Кому и зачем нужен FOX",
-    short: "Кому и зачем нужен FOX",
-    lecturer: "Светлана Каневская",
-    minutes: 14,
-    clock: "14:00",
-    content: "В каких клинических и консультационных сценариях можно использовать FOX. Жалобы со стороны ЖКТ, кожи и нервной системы, аутоиммунные заболевания, программы коррекции массы тела и работа с отёчностью.",
-    after: "Поймёте, каким пациентам можно предложить FOX и как корректно объяснить ценность исследования.",
-    about: "Когда исследование уместно на приёме и как объяснить его место в маршруте, не подменяя очную диагностику.",
-  },
-  {
-    title: "Основы иммунологической пищевой непереносимости",
-    short: "Основы иммунологической пищевой непереносимости",
-    lecturer: "Светлана Каневская",
-    minutes: 16,
-    clock: "16:40",
-    content: "Чем отсроченные иммунологические реакции отличаются от IgE-аллергии, целиакии и лактазной недостаточности. Что показывает пищеспецифический IgG внутри одного отчёта.",
-    after: "Сможете понятным языком объяснить пациенту механизмы пищевых реакций и роль IgG.",
-    about: "Чем отсроченные иммунологические реакции отличаются от IgE-аллергии, целиакии, лактазной недостаточности и других неиммунных реакций на пищу. Какую роль играют пищеспецифические IgG и почему результат нельзя трактовать отдельно от клинической картины.",
-    aboutMob: "Чем отсроченные иммунологические реакции отличаются от IgE-аллергии, целиакии и лактазной недостаточности. Как объяснить пациенту роль IgG.",
-  },
-  {
-    title: "Что такое FOX Food Xplorer",
-    short: "Что такое FOX Food Xplorer",
-    lecturer: "Алёна Вавилова",
-    minutes: 18,
-    clock: "18:00",
-    content: "Панель антигенов, группы продуктов, зоны и контрольные параметры. Как устроен отчёт и что сравнивать корректно только внутри одного бланка.",
-    after: "Разберёте структуру отчёта и сможете открыть его вместе с пациентом за первые минуты консультации.",
-  },
-  {
-    title: "Иммунологическая пищевая непереносимость и состояние организма",
-    short: "Непереносимость и состояние организма",
-    lecturer: "Ксения Эллинская",
-    minutes: 15,
-    clock: "15:00",
-    content: "ЖКТ, кожа, нервная система и аутоиммунные заболевания: где отчёт помогает сформировать пищевую гипотезу и где он не заменяет лечение.",
-    after: "Сформулируете гипотезу по рациону, не называя тест диагностикой или методом лечения.",
-  },
-  {
-    title: "FOX в разных специализациях",
-    short: "FOX в разных специализациях",
-    lecturer: "Дмитрий Эллинский",
-    minutes: 17,
-    clock: "17:00",
-    content: "Как один и тот же бланк читают гастроэнтеролог, дерматолог, эндокринолог и нутрициолог — без универсального меню.",
-    after: "Увидите, какие вопросы к отчёту уместны в вашей специализации.",
-  },
-  {
-    title: "Как внедрить FOX в работу",
-    short: "Как внедрить FOX в работу",
-    lecturer: "Светлана Каневская",
-    minutes: 12,
-    clock: "12:00",
-    content: "Разговор на приёме, элиминация с заменами, дневник и возвращение продуктов по одному. Сертификат открывается после всех шести уроков.",
-    after: "Соберёте понятный следующий шаг для пациента и не пообещаете того, чего в отчёте нет.",
-  },
-];
 
 const LECTURERS = [
   {
@@ -204,14 +146,6 @@ const INCLUDES = [
   ["/figma/icons/course/infinity.svg", "Бессрочный доступ", "Материалы остаются доступны после прохождения курса — к урокам и конспектам можно возвращаться."],
 ];
 
-const COURSE_FAQ = [
-  ["Курс действительно бесплатный?", "Да. Все шесть уроков, конспекты и гайд по отчёту доступны без оплаты и без привязки к закупке тестов. Достаточно регистрации по e-mail — доступ открывается сразу."],
-  ["Даёте ли вы баллы НМО?", "Нет. Курс не начисляет баллы НМО и не является программой непрерывного медицинского образования. Сертификат подтверждает только прохождение."],
-  ["Какие документы я получу после курса?", "После всех шести уроков открывается сертификат о прохождении. Конспекты PDF и гайд по отчёту доступны сразу после регистрации."],
-  ["Можно ли смотреть уроки с телефона?", "Да. Кабинет, видео и конспекты открываются с телефона — отдельное приложение не нужно."],
-  ["Как задать вопрос лектору?", "Вопрос отправляется из кабинета урока и попадает к автору этого урока."],
-  ["Нужно ли проходить уроки по порядку?", "Нет. Уроки можно смотреть в удобном порядке. Сертификат открывается, когда отмечены все шесть."],
-];
 
 const SPECIALTIES = ["Нутрициолог", "Диетолог", "Гастроэнтеролог", "Терапевт / врач общей практики", "Специалист по аутоиммунным заболеваниям", "Невролог"];
 
@@ -571,6 +505,8 @@ function AccessDialog({ onClose, href = "/course/lessons" }: { onClose: () => vo
 type BioOpen = { index: number; from: HTMLElement };
 function LecturerSheet({ open, onClose }: { open: BioOpen; onClose: () => void }) {
   const person = LECTURERS[open.index];
+  const content = useContent();
+  const LESSONS = useMemo(() => content.lessons(), [content]);
   const photoRef = useRef<HTMLImageElement>(null);
   const lessons = LESSONS.map((lesson, index) => ({ ...lesson, n: index + 1 })).filter((lesson) => lesson.lecturer === person.name);
   useLayoutEffect(() => {
@@ -619,6 +555,9 @@ function LecturerSheet({ open, onClose }: { open: BioOpen; onClose: () => void }
 }
 
 export function CoursePage() {
+  const content = useContent();
+  const LESSONS = useMemo(() => content.lessons(), [content]);
+  const COURSE_FAQ = content.get<Array<[string, string]>>("course.faq");
   const { demo, fresh, exit } = useDemo();
   const flow = useRegistration(demo);
   const [access, setAccess] = useState(false);
@@ -732,13 +671,13 @@ export function CoursePage() {
           <div className="wrap inner">
             <div className="kf-hero-row">
               <div className="kf-hero-copy">
-                <span className="kf-chip">Бесплатный курс для специалистов</span>
-                <h1>Научитесь применять FOX Food Xplorer в работе с пациентами</h1>
-                <p className="kf-lead-d">За шесть видеоуроков вы разберёте основы иммунологической пищевой непереносимости, принципы работы FOX, структуру отчёта и алгоритм применения результатов в практике.</p>
-                <p className="kf-lead-m">Шесть видеоуроков: от основ иммунологической пищевой непереносимости до работы с отчётом.</p>
+                <span className="kf-chip">{content.text("course.hero.chip")}</span>
+                <h1>{content.text("course.hero.title")}</h1>
+                <p className="kf-lead-d">{content.text("course.hero.lead")}</p>
+                <p className="kf-lead-m">{content.text("course.hero.leadMobile")}</p>
                 <img className="kf-hero-visual-m" src="/figma/course/hero-visual.jpg" alt="" />
                 <div className="kf-hero-cta">
-                  <button className="btn btn-light" type="button" onClick={flow.start}>Получить доступ</button>
+                  <button className="btn btn-light" type="button" onClick={flow.start}>{content.text("course.hero.cta")}</button>
                   <a className="text-link kf-light-link" href="#program">
                     Программа курса
                     <img src="/icons/arrow-right-light.svg" alt="" width={16} height={16} />
@@ -750,10 +689,7 @@ export function CoursePage() {
               <img className="kf-hero-visual" src="/figma/course/hero-visual.jpg" alt="" />
             </div>
             <div className="kf-facts">
-              <span>6 видеоуроков по 12–18 минут</span>
-              <span>Конспекты PDF к каждому уроку</span>
-              <span>Сертификат о прохождении</span>
-              <span>Бессрочный доступ</span>
+              {content.lines("course.hero.facts").map((fact) => <span key={fact}>{fact}</span>)}
             </div>
           </div>
         </section>
@@ -955,6 +891,8 @@ export function CoursePage() {
 const SHEET_STOPS = [0.5, 0.92];
 
 export function LessonsPage() {
+  const content = useContent();
+  const LESSONS = useMemo(() => content.lessons(), [content]);
   const [current, setCurrent] = useState(1);
   const [sheet, setSheet] = useState(false);
   const [done, setDone] = useState<number[]>([0]);

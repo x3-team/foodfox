@@ -10,8 +10,6 @@ import {
   CATEGORIES,
   TAGS,
   UPDATED,
-  articles,
-  authorBySlug,
   categoryLabel,
   matchesQuery,
   materialsWord,
@@ -19,12 +17,13 @@ import {
   type Article,
   type Category,
 } from "@/lib/content";
+import { useBlog } from "@/components/ContentProvider";
 
 const PAGE_SIZE = 6;
 // power2.inOut — FLIP of the cards that stay (A2 / U02)
 const FLIP_EASE = "cubic-bezier(.45, 0, .55, 1)";
 
-function feedList(category: string, tags: string[], query: string) {
+function feedList(articles: Article[], category: string, tags: string[], query: string) {
   return articles.filter((article) => {
     if (category !== "all" && article.category !== category) return false;
     if (tags.length && !tags.every((tag) => article.tags.includes(tag))) return false;
@@ -32,9 +31,9 @@ function feedList(category: string, tags: string[], query: string) {
   });
 }
 
-function pageSlice(category: string, tags: string[], query: string, page: number) {
+function pageSlice(articles: Article[], category: string, tags: string[], query: string, page: number) {
   const featured = category === "all" && tags.length === 0 && !query.trim();
-  const list = feedList(category, tags, query).filter((article) => (featured ? !article.featured : true));
+  const list = feedList(articles, category, tags, query).filter((article) => (featured ? !article.featured : true));
   const total = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
   const safe = Math.min(page, total);
   return list.slice((safe - 1) * PAGE_SIZE, safe * PAGE_SIZE);
@@ -63,6 +62,7 @@ function SearchParamsSync({ onChange }: { onChange: (value: URLSearchParams) => 
 }
 
 export function BlogFeed() {
+  const { articles, authorBySlug } = useBlog();
   const router = useRouter();
   const [params, setParams] = useState(() => new URLSearchParams());
   const category = (params.get("category") as Category | null) ?? "all";
@@ -151,7 +151,7 @@ export function BlogFeed() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const filtered = useMemo(() => feedList(category, tags, query), [category, tags.join("|"), query]);
+  const filtered = useMemo(() => feedList(articles, category, tags, query), [articles, category, tags.join("|"), query]);
 
   const showFeatured = category === "all" && tags.length === 0 && !query.trim();
   const gridArticles = filtered.filter((article) => (showFeatured ? !article.featured : true));
@@ -188,7 +188,7 @@ export function BlogFeed() {
       if (dx || dy) card.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: 400, easing: FLIP_EASE });
     });
   }, [listKey]);
-  const suggestions = searchTopics(suggestQuery, minSuggest);
+  const suggestions = searchTopics(articles, suggestQuery, minSuggest);
   const featured = articles.find((article) => article.featured);
   const featuredAuthor = featured ? authorBySlug(featured.author) : undefined;
 
@@ -233,7 +233,7 @@ export function BlogFeed() {
     // Only the tags change → the cards that stay slide to their new places (FLIP 400 мс), only the others fade out.
     const tagOnly = cat === category && q === query && nextPage === safePage && nextTags.join("|") !== tags.join("|");
     if (tagOnly && grid) {
-      const keep = new Set(pageSlice(cat, nextTags, q, nextPage).map((article) => article.slug));
+      const keep = new Set(pageSlice(articles, cat, nextTags, q, nextPage).map((article) => article.slug));
       const rects = new Map<string, DOMRect>();
       grid.querySelectorAll<HTMLElement>(".card[data-slug]").forEach((card) => {
         if (keep.has(card.dataset.slug!)) rects.set(card.dataset.slug!, card.getBoundingClientRect());
@@ -262,7 +262,7 @@ export function BlogFeed() {
       if (draftTags.length && !draftTags.every((tag) => article.tags.includes(tag))) return false;
       return matchesQuery(article, query);
     }).length;
-  }, [category, draftTags.join("|"), query]);
+  }, [articles, category, draftTags.join("|"), query]);
 
   const countLabel = (() => {
     const n = filtered.length;

@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { PartnerShell } from "@/components/partner/PartnerShell";
-import { payouts } from "@/lib/partner-demo";
+import { usePartnerData } from "@/components/partner/PartnerData";
+import type { Payout } from "@/lib/partner-data";
 
 export default function PartnerPayoutsPage() {
+  const { payouts, money, fee, source } = usePartnerData();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
 
@@ -12,7 +14,7 @@ export default function PartnerPayoutsPage() {
     setBusy(true);
     window.setTimeout(() => {
       setBusy(false);
-      setNote("Запрос на сентябрь уже отправлен — 19 200 ₽ в обработке.");
+      setNote(source === "demo" ? "Запрос на сентябрь уже отправлен — 19 200 ₽ в обработке." : "Выплата придёт 5-го числа. Если нужна раньше — напишите менеджеру.");
     }, 700);
   }
 
@@ -28,10 +30,10 @@ export default function PartnerPayoutsPage() {
         <article className="rounded-[22px] bg-[#21251D] px-[26px] py-6 text-[#F8F9F6]">
           <p className="text-[13px] text-[#A8AAA3]">Доступно к выплате</p>
           <p className="mt-3 text-[40px] font-light leading-none text-[#E7F551]">
-            19 200 ₽
+            {money.available}
           </p>
           <p className="mt-3 max-w-[280px] text-[13px] leading-5 text-[#A8AAA3]">
-            8 подтверждённых отчётов · ближайшая выплата 5 октября
+            {money.availableHint}
           </p>
           <button
             type="button"
@@ -44,9 +46,9 @@ export default function PartnerPayoutsPage() {
           {note ? <p className="mt-3 text-[12px] text-[#E7F551]">{note}</p> : null}
         </article>
         {[
-          ["На проверке", "7 200 ₽", "3 отчёта ждут подтверждения лаборатории"],
-          ["Выплачено за 2026", "142 800 ₽", "за 9 месяцев · 59 отчётов"],
-          ["Ставка", "2 400 ₽", "за подтверждённый отчёт"],
+          ["На проверке", money.review, money.reviewHint],
+          [money.paidLabel, money.paid, money.paidHint],
+          ["Ставка", `${new Intl.NumberFormat("ru-RU").format(fee)} ₽`, "за подтверждённый отчёт"],
         ].map(([label, value, hint]) => (
           <article
             key={label}
@@ -71,7 +73,7 @@ export default function PartnerPayoutsPage() {
             <button
               type="button"
               className="font-medium text-[#4A6B1F]"
-              onClick={() => downloadCsv()}
+              onClick={() => downloadCsv(payouts)}
             >
               Скачать акт · CSV
             </button>
@@ -138,7 +140,7 @@ export default function PartnerPayoutsPage() {
   );
 }
 
-function downloadCsv() {
+function downloadCsv(payouts: Payout[]) {
   const header = "Дата,Период,Отчётов,Способ,Сумма,Статус";
   const body = payouts
     .map((row) =>

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -7,8 +8,13 @@ import "./frame.css";
 import "@/app/adaptive/report.css";
 import "@/app/adaptive/b2b-motion.css";
 import "./motion.css";
+import { seoMetadata } from "@/lib/cms/seo";
 
-export const metadata = { title: "Отчёт FOX: как читать" };
+const baseMetadata: Metadata = { title: "Отчёт FOX: как читать" };
+
+export function generateMetadata(): Promise<Metadata> {
+  return seoMetadata("/report", baseMetadata);
+}
 
 const TOC = [
   ["zones", "Три зоны реактивности"],

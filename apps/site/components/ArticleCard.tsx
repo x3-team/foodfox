@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useEffect, type RefObject } from "react";
-import { authorBySlug, categoryLabel, type Article } from "@/lib/content";
+import { categoryLabel, type Article } from "@/lib/content";
+import { useBlog } from "@/components/ContentProvider";
 
 /**
  * Scroll entrance for blog / service grids (A1 · S04 · C1 · U03 · B4 · L02 · L04 · V02).
@@ -131,6 +132,7 @@ export function RevealNoScript() {
 }
 
 export function ArticleCard({ article }: { article: Article; index?: number }) {
+  const { authorBySlug } = useBlog();
   const author = authorBySlug(article.author);
   return (
     <Link

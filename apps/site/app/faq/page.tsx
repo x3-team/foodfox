@@ -2,8 +2,13 @@ import type { Metadata } from "next";
 import { FaqPage } from "@/components/ServicePages";
 import "./frame.css";
 import "@/app/adaptive/service.css";
+import { seoMetadata } from "@/lib/cms/seo";
 
-export const metadata: Metadata = { title: "Вопросы и ответы" };
+const baseMetadata: Metadata = { title: "Вопросы и ответы" };
+
+export function generateMetadata(): Promise<Metadata> {
+  return seoMetadata("/faq", baseMetadata);
+}
 
 export default function Page() {
   return <FaqPage />;

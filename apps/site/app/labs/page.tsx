@@ -5,8 +5,13 @@ import { LabsPage } from "@/components/ServicePages";
 const CITY_COOKIE = "fox_city"; // same name as in LabsPage (a client module — its constants are not importable here)
 import "./frame.css";
 import "@/app/adaptive/labs.css";
+import { seoMetadata } from "@/lib/cms/seo";
 
-export const metadata: Metadata = { title: "Где сдать тест" };
+const baseMetadata: Metadata = { title: "Где сдать тест" };
+
+export function generateMetadata(): Promise<Metadata> {
+  return seoMetadata("/labs", baseMetadata);
+}
 
 // The saved city (cookie) is read on the server: the first-visit question «Ваш город — Москва?» is then part of the
 // HTML in its final place instead of appearing after hydration and shifting the page (CLS).
