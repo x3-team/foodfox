@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { requireStaff } from "@/lib/admin/auth";
+import { can, isRole, requireStaff, ROLE_LABEL } from "@/lib/admin/auth";
 import { q } from "@/lib/admin/db";
 import { dateTime } from "@/lib/admin/format";
 
@@ -9,6 +9,7 @@ export const metadata: Metadata = { title: "Журнал действий" };
 const ENTITIES: Record<string, string> = {
   lead: "Заявки", session: "Входы", user: "Пользователи", content: "Страницы", media: "Медиатека", seo: "SEO",
   price: "Цены", course: "Курс", article: "Блог", author: "Авторы", review: "Отзывы", partner: "Партнёры",
+  app_user: "Клиенты приложения", report: "Отчёты", medical: "Доступ к медданным",
 };
 const PER_PAGE = 50;
 
@@ -19,7 +20,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
   const where: string[] = [];
   const params: unknown[] = [];
   const add = (sql: string, value: unknown) => { params.push(value); where.push(sql.replace("?", `$${params.length}`)); };
-  if (staff.role !== "admin") add("actor_id = ?", staff.id);
+  if (!can(staff, "audit_all")) add("actor_id = ?", staff.id);
   else if (sp.actor && /^[0-9a-f-]{36}$/i.test(sp.actor)) add("actor_id = ?::uuid", sp.actor);
   if (sp.entity) add("entity = ?", sp.entity);
   if (sp.from && /^\d{4}-\d{2}-\d{2}$/.test(sp.from)) add("(created_at AT TIME ZONE 'Europe/Moscow')::date >= ?::date", sp.from);
@@ -34,7 +35,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
   const rows = await q<{ id: string; created_at: Date; actor_name: string; actor_role: string | null; action: string; entity: string; entity_id: string | null; summary: string; before: unknown; after: unknown; ip: string | null }>(
     `SELECT * FROM audit_log ${sql} ORDER BY created_at DESC LIMIT ${PER_PAGE} OFFSET ${(page - 1) * PER_PAGE}`, params,
   );
-  const actors = staff.role === "admin" ? await q<{ id: string; name: string; email: string }>("SELECT id, name, email FROM admin_users ORDER BY name") : [];
+  const actors = can(staff, "audit_all") ? await q<{ id: string; name: string; email: string }>("SELECT id, name, email FROM admin_users ORDER BY name") : [];
   const pages = Math.max(1, Math.ceil(total / PER_PAGE));
   const qs = (patch: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
@@ -45,6 +46,8 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
   const link = (entity: string, id: string | null) => {
     if (!id || id.includes(",")) return null;
     if (entity === "lead") return `/admin/leads/${id}`;
+    if (entity === "app_user" || entity === "medical") return `/admin/app/users/${id}`;
+    if (entity === "report") return `/admin/app/reports/${id}`;
     return null;
   };
 
@@ -53,12 +56,12 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
       <div className="a-head">
         <div>
           <h1>Журнал действий</h1>
-          <p>{staff.role === "admin" ? "Кто, что и когда менял в админке. Записи нельзя изменить или удалить." : "Ваши действия в админке"}</p>
+          <p>{can(staff, "audit_all") ? "Кто, что и когда менял в админке. Записи нельзя изменить или удалить." : "Ваши действия в админке"}</p>
         </div>
       </div>
       <form className="a-filters" method="get">
         <label className="a-field is-search"><span>Поиск</span><input className="a-input" name="q" defaultValue={sp.q} placeholder="Текст записи или номер объекта" /></label>
-        {staff.role === "admin" && (
+        {can(staff, "audit_all") && (
           <label className="a-field"><span>Кто</span>
             <select className="a-input" name="actor" defaultValue={sp.actor ?? ""}>
               <option value="">Все</option>
@@ -88,7 +91,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
                   return (
                     <tr key={r.id}>
                       <td data-label="Когда" className="nowrap num">{dateTime(r.created_at)}</td>
-                      <td data-label="Кто">{r.actor_name || "—"}{r.actor_role ? <span className="sub">{r.actor_role === "admin" ? "админ" : "менеджер"}</span> : null}</td>
+                      <td data-label="Кто">{r.actor_name || "—"}{r.actor_role ? <span className="sub">{isRole(r.actor_role) ? ROLE_LABEL[r.actor_role].toLowerCase() : r.actor_role}</span> : null}</td>
                       <td className="a-cell-main" style={{ maxWidth: 520 }}>
                         {href ? <Link href={href} style={{ fontWeight: 400 }}>{r.summary}</Link> : <span>{r.summary}</span>}
                         {hasDiff && (

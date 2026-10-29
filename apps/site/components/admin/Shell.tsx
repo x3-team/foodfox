@@ -8,13 +8,11 @@ import type { NavItem } from "./nav";
 
 type Props = {
   nav: NavItem[];
-  me: { name: string; email: string; role: "admin" | "manager" };
+  me: { name: string; email: string; roleLabel: string; mfa: boolean };
   counts: Record<string, number>;
   logout: () => Promise<void>;
   children: React.ReactNode;
 };
-
-const ROLE = { admin: "Администратор", manager: "Менеджер" };
 
 function isActive(path: string, href: string) {
   return href === "/admin" ? path === "/admin" : path === href || path.startsWith(`${href}/`);
@@ -33,7 +31,7 @@ export function Shell({ nav, me, counts, logout, children }: Props) {
 
   const current = nav.find((item) => isActive(path, item.href));
   const initials = (me.name || me.email).split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
-  const tabs = ["/admin", "/admin/leads", "/admin/content"].map((href) => nav.find((item) => item.href === href)).filter(Boolean) as NavItem[];
+  const tabs = (["/admin", "/admin/leads", "/admin/app/reports", "/admin/app/users", "/admin/content"].map((href) => nav.find((item) => item.href === href)).filter(Boolean) as NavItem[]).slice(0, 3);
 
   return (
     <div className={`a-shell${open ? " is-open" : ""}`}>
@@ -67,7 +65,7 @@ export function Shell({ nav, me, counts, logout, children }: Props) {
             <span className="a-avatar">{initials}</span>
             <span>
               <b>{me.name || me.email}</b>
-              <small>{ROLE[me.role]}</small>
+              <small>{me.roleLabel}{me.mfa ? "" : " · без 2FA"}</small>
             </span>
           </Link>
           <Link href="/" target="_blank" className="a-nav-ext" style={{ color: "rgba(248,249,246,.7)", fontSize: 14, padding: "8px 0", display: "flex", gap: 8, alignItems: "center", textDecoration: "none" }}>

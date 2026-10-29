@@ -3,6 +3,7 @@ import { setSessionCookie } from "@/lib/auth";
 import { buildAuthResponse } from "@/lib/auth-request";
 import { createRefreshToken, verifyPhoneOtp } from "@/lib/db";
 import { normalizePhone } from "@/lib/otp";
+import { isBlocked } from "@/lib/account-guard";
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,6 +22,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Код неверный или истёк" },
         { status: 401 },
+      );
+    }
+
+    if (await isBlocked(session.userId)) {
+      return NextResponse.json(
+        { error: "Аккаунт заблокирован. Напишите в поддержку FOX." },
+        { status: 403 },
       );
     }
 

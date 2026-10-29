@@ -14,6 +14,8 @@ export interface SessionData {
   email: string;
   displayName: string;
   role: UserRole;
+  /** Issue time, seconds. Tokens older than users.sessions_revoked_at are refused (lib/account-guard.ts). */
+  iat?: number;
 }
 
 export class AuthError extends Error {
@@ -65,7 +67,8 @@ export function verifyPassword(password: string, stored: string): boolean {
 }
 
 export function encodeSession(data: SessionData): string {
-  const body = Buffer.from(JSON.stringify(data)).toString("base64url");
+  const stamped: SessionData = { ...data, iat: Math.floor(Date.now() / 1000) };
+  const body = Buffer.from(JSON.stringify(stamped)).toString("base64url");
   const sig = createHmac("sha256", secret()).update(body).digest("base64url");
   return `${body}.${sig}`;
 }

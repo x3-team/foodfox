@@ -1,15 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { requireStaff } from "@/lib/admin/auth";
+import { can, requireStaff } from "@/lib/admin/auth";
 import { q } from "@/lib/admin/db";
 import { ago, dateShort, moscowDay, plural } from "@/lib/admin/format";
 import { LEAD_STATUSES, kindLabel, type Lead } from "@/lib/admin/leads";
+import { AppSummary } from "@/components/admin/AppSummary";
 
 export const metadata: Metadata = { title: "Сводка" };
 
 export default async function Dashboard({ searchParams }: { searchParams: Promise<{ denied?: string }> }) {
   const staff = await requireStaff("dashboard");
   const { denied } = await searchParams;
+  const showApp = can(staff, "app_users") || can(staff, "app_metrics") || can(staff, "app_reports");
+  if (!can(staff, "leads")) {
+    return (
+      <>
+        {denied && <div className="a-error" style={{ marginBottom: 24 }}>Этот раздел вам закрыт. Если он нужен для работы, попросите администратора поменять роль.</div>}
+        <div className="a-head"><div><h1>Сводка</h1><p>{staff.name || staff.email}</p></div></div>
+        {showApp ? <AppSummary staff={staff} /> : <p className="muted">Разделы для вашей роли — в меню слева.</p>}
+      </>
+    );
+  }
   const [stats] = await q<{ fresh: number; today: number; week: number; stale: number; prev_week: number }>(`
     SELECT count(*) FILTER (WHERE status = 'new')::int AS fresh,
            count(*) FILTER (WHERE (created_at AT TIME ZONE 'Europe/Moscow')::date = (now() AT TIME ZONE 'Europe/Moscow')::date AND status <> 'spam')::int AS today,
@@ -24,10 +35,10 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     SELECT kind, count(*)::int AS n FROM leads WHERE created_at > now() - interval '30 days' AND status <> 'spam' GROUP BY kind ORDER BY n DESC`);
   const latest = await q<Lead>("SELECT * FROM leads WHERE status <> 'spam' ORDER BY created_at DESC LIMIT 6");
   const feed = await q<{ id: string; actor_name: string; summary: string; created_at: Date }>(
-    staff.role === "admin"
+    can(staff, "audit_all")
       ? "SELECT id, actor_name, summary, created_at FROM audit_log ORDER BY created_at DESC LIMIT 8"
       : "SELECT id, actor_name, summary, created_at FROM audit_log WHERE actor_id = $1 ORDER BY created_at DESC LIMIT 8",
-    staff.role === "admin" ? [] : [staff.id],
+    can(staff, "audit_all") ? [] : [staff.id],
   );
 
   const days: Array<{ day: string; n: number }> = [];
@@ -45,7 +56,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      {denied && <div className="a-error" style={{ marginBottom: 24 }}>Этот раздел доступен только администратору.</div>}
+      {denied && <div className="a-error" style={{ marginBottom: 24 }}>Этот раздел вам закрыт. Если он нужен для работы, попросите администратора поменять роль.</div>}
       <div className="a-head">
         <div>
           <h1>{hello}{staff.name ? `, ${staff.name.split(" ")[0]}` : ""}</h1>
@@ -97,6 +108,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         </section>
       </div>
 
+      {showApp && <div style={{ marginBottom: 24 }}><AppSummary staff={staff} /></div>}
+
       <div className="a-grid a-grid-2">
         <section className="a-card">
           <div className="a-card-head"><h2>Последние заявки</h2><Link href="/admin/leads">Все</Link></div>
@@ -115,7 +128,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           ) : <p className="muted">Заявок ещё не было. Они появятся здесь сразу после отправки любой формы на сайте.</p>}
         </section>
         <section className="a-card">
-          <div className="a-card-head"><h2>{staff.role === "admin" ? "Последние действия" : "Мои действия"}</h2><Link href="/admin/audit">Журнал</Link></div>
+          <div className="a-card-head"><h2>{can(staff, "audit_all") ? "Последние действия" : "Мои действия"}</h2><Link href="/admin/audit">Журнал</Link></div>
           {feed.length ? (
             <ul className="a-feed">
               {feed.map((e) => (
