@@ -23,6 +23,7 @@ import {
   offlineChatNotice,
   parseRequestedWeek,
 } from "@/lib/heli";
+import { getAssistantConfig } from "@/lib/assistant-config";
 
 // Reads the caller's session, so it must never be prerendered; stated
 // explicitly to match the rest of the API and keep it that way.
@@ -106,7 +107,8 @@ export async function POST(req: NextRequest) {
 
     let reply: string;
     const heli = createHeliClient();
-    const model = process.env.HELI_CHAT_MODEL ?? "gpt-4o-mini";
+    const assistant = await getAssistantConfig();
+    const model = assistant.model ?? process.env.HELI_CHAT_MODEL ?? "gpt-4o-mini";
     if (!heli) {
       reply = offlineChatNotice();
       await addChatMessage(clientId, "assistant", reply);
@@ -118,10 +120,11 @@ export async function POST(req: NextRequest) {
       const t0 = Date.now();
       const response = await chatWithHeli(
         heli,
-        buildSystemPrompt(chatCtx, message),
+        buildSystemPrompt(chatCtx, message, assistant.instructions),
         history,
         message,
         model,
+        { temperature: assistant.temperature, maxTokens: assistant.maxTokens },
       );
       reply = response.choices[0]?.message?.content?.trim() ?? "";
       void recordLlmRequest(getDbPool(), clientId, {

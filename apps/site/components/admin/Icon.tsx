@@ -28,6 +28,12 @@ const PATHS: Record<string, string> = {
   upload: "M12 16V4M7 9l5-5 5 5M4 20h16",
   copy: "M8 8h12v12H8zM4 16V4h12",
   back: "M15 5l-7 7 7 7",
+  calendar: "M4 6h16v15H4zM4 10h16M8 3v5M16 3v5M8 14h3M8 17h6",
+  recipe: "M6 13h12a6 6 0 0 1-12 0zM4 13h16M9 9c0-2 2-2 2-4M14 9c0-2 2-2 2-4",
+  catalog: "M4 5h16M4 12h16M4 19h10M18 17l2 2-2 2",
+  chat: "M4 5h16v11H9l-5 4zM8 10h8M8 13h5",
+  send: "M21 3L3 10.5l7 2.5 2.5 7zM10 13l11-10",
+  chart: "M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-3",
 };
 
 export function Icon({ name, size = 20 }: { name: keyof typeof PATHS | string; size?: number }) {

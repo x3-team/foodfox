@@ -32,8 +32,9 @@ function matchZone(productName: string, list: string[]): string | null {
 export function analyzeRecipe(
   title: string,
   zones: { green: string[]; yellow: string[]; red: string[] },
+  foxProducts?: string[],
 ): RecipeMatch {
-  const ingredients = RECIPE_INGREDIENTS[title] ?? [];
+  const ingredients = foxProducts?.length ? foxProducts : RECIPE_INGREDIENTS[title] ?? [];
   const mapped: RecipeMatch["ingredients"] = [];
   const warnings: string[] = [];
   let hasRed = false;

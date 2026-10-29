@@ -17,7 +17,7 @@ import {
   type SessionData,
   type UserRole,
 } from "./auth";
-import { analyzeRecipe } from "./recipe-match";
+import { analyzeRecipe, RECIPE_INGREDIENTS } from "./recipe-match";
 import { saveReportPdf } from "./report-storage";
 import {
   RECIPES_CATALOG,
@@ -56,6 +56,8 @@ export interface RecipeRow {
   servings?: number | null;
   tips?: string[];
   ingredientsList?: { name: string; amount: string }[];
+  /** FOX products the recipe is made of (recipe_ingredients), matched against the client's zones. */
+  foxProducts?: string[];
   suitable?: boolean;
   allGreen?: boolean;
   warnings?: string[];
@@ -86,6 +88,7 @@ function mapRecipeRow(row: {
   servings?: number | null;
   tips?: unknown;
   ingredients_list?: unknown;
+  fox_products?: string[] | null;
 }): RecipeRow {
   return {
     id: row.id,
@@ -100,6 +103,7 @@ function mapRecipeRow(row: {
     servings: row.servings ?? null,
     tips: (row.tips as string[]) ?? [],
     ingredientsList: (row.ingredients_list as { name: string; amount: string }[]) ?? [],
+    ...(row.fox_products?.length ? { foxProducts: row.fox_products } : {}),
   };
 }
 
@@ -215,9 +219,20 @@ async function syncRecipesCatalog(p: Pool) {
     ALTER TABLE recipes ADD COLUMN IF NOT EXISTS tips JSONB NOT NULL DEFAULT '[]';
     ALTER TABLE recipes ADD COLUMN IF NOT EXISTS ingredients_list JSONB NOT NULL DEFAULT '[]';
     CREATE UNIQUE INDEX IF NOT EXISTS recipes_title_unique ON recipes (title);
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS admin_edited_at TIMESTAMPTZ;
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS source_title TEXT;
   `);
 
+  // A recipe the admin has edited, renamed or archived (apps/site /admin/app/recipes) is theirs now: the code
+  // catalogue no longer overwrites it, and a renamed one is not inserted again under its old title.
+  const { rows: retired } = await p.query<{ title: string }>(
+    `SELECT source_title AS title FROM recipes WHERE source_title IS NOT NULL`,
+  );
+  const skip = new Set(retired.map((r) => r.title));
+
   for (const entry of RECIPES_CATALOG) {
+    if (skip.has(entry.title)) continue;
     await p.query(
       `INSERT INTO recipes (
          title, description, lead, steps, tags, photo_url,
@@ -234,7 +249,8 @@ async function syncRecipesCatalog(p: Pool) {
          servings = EXCLUDED.servings,
          tips = EXCLUDED.tips,
          ingredients_list = EXCLUDED.ingredients_list,
-         updated_at = now()`,
+         updated_at = now()
+       WHERE recipes.admin_edited_at IS NULL`,
       [
         entry.title,
         entry.description,
@@ -248,6 +264,17 @@ async function syncRecipesCatalog(p: Pool) {
         JSON.stringify(entry.tips),
         JSON.stringify(entry.ingredients),
       ],
+    );
+  }
+
+  // FOX products of the seeded recipes, for recipes that have none linked yet; the admin edits them afterwards.
+  for (const [title, products] of Object.entries(RECIPE_INGREDIENTS)) {
+    await p.query(
+      `INSERT INTO recipe_ingredients (recipe_id, food_item_id)
+       SELECT r.id, f.id FROM recipes r JOIN food_items f ON f.fox_name = ANY($2::text[])
+        WHERE r.title = $1 AND r.admin_edited_at IS NULL
+          AND NOT EXISTS (SELECT 1 FROM recipe_ingredients ri WHERE ri.recipe_id = r.id)`,
+      [title, products],
     );
   }
 }
@@ -1048,7 +1075,7 @@ export async function getRecipesForClient(
   };
 
   const scored = recipes.map((recipe) => {
-    const match = analyzeRecipe(recipe.title, zones);
+    const match = analyzeRecipe(recipe.title, zones, recipe.foxProducts);
     return {
       ...recipe,
       suitable: match.suitable,
@@ -1145,9 +1172,12 @@ export async function getRecipes(): Promise<RecipeRow[]> {
   if (!p) return memory!.recipes;
 
   const { rows } = await p.query(
-    `SELECT id, title, description, lead, steps, tags, photo_url,
-            prep_time, cook_time, servings, tips, ingredients_list
-     FROM recipes WHERE published = true ORDER BY title`,
+    `SELECT r.id, r.title, r.description, r.lead, r.steps, r.tags, r.photo_url,
+            r.prep_time, r.cook_time, r.servings, r.tips, r.ingredients_list,
+            (SELECT array_agg(f.fox_name ORDER BY f.fox_name)
+               FROM recipe_ingredients ri JOIN food_items f ON f.id = ri.food_item_id
+              WHERE ri.recipe_id = r.id) AS fox_products
+     FROM recipes r WHERE r.published = true ORDER BY r.title`,
   );
   return rows.map((row) => mapRecipeRow(row));
 }

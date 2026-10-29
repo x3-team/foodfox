@@ -112,3 +112,22 @@ export async function appCounts(): Promise<AppCounts | null> {
            (SELECT count(*)::int FROM nutrition_plans WHERE status = 'active') AS plans`).catch(() => []);
   return rows[0] ?? null;
 }
+
+/* Segments of app clients for in-app messages. Every segment leaves out blocked accounts and partners; `c` is clients. */
+export const SEGMENTS = {
+  all: { label: "Все клиенты", hint: "у кого есть чат с помощником", sql: "TRUE" },
+  no_report: { label: "Без отчёта", hint: "зарегистрировались, но ещё не загрузили PDF", sql: "NOT EXISTS (SELECT 1 FROM reports r WHERE r.client_id = c.id)" },
+  report_issue: { label: "Отчёт не распознан", hint: "последний отчёт с ошибкой или на проверке", sql: "(SELECT r.status FROM reports r WHERE r.client_id = c.id ORDER BY r.created_at DESC LIMIT 1) IN ('failed', 'review')" },
+  plan_active: { label: "Идёт план", hint: "8-недельный план активен", sql: "EXISTS (SELECT 1 FROM nutrition_plans p WHERE p.client_id = c.id AND p.status = 'active')" },
+  plan_start: { label: "Первая неделя плана", hint: "план начался в последние 7 дней", sql: "EXISTS (SELECT 1 FROM nutrition_plans p WHERE p.client_id = c.id AND p.status = 'active' AND p.started_at > current_date - 7)" },
+  inactive: { label: "Не заходили 14 дней", hint: "с аккаунтом старше двух недель", sql: "c.created_at < now() - interval '14 days' AND NOT EXISTS (SELECT 1 FROM analytics_events e WHERE e.client_id = c.id AND e.created_at > now() - interval '14 days')" },
+} as const;
+export type Segment = keyof typeof SEGMENTS;
+export const isSegment = (v: unknown): v is Segment => typeof v === "string" && v in SEGMENTS;
+
+/** SELECT of client ids in a segment that have a chat thread to write into. */
+export function segmentClients(segment: Segment): string {
+  return `SELECT c.id FROM clients c JOIN users u ON u.id = c.user_id
+           WHERE u.role = 'client' AND NOT (u.blocked_at IS NOT NULL AND (u.blocked_until IS NULL OR u.blocked_until > now()))
+             AND EXISTS (SELECT 1 FROM chat_threads t WHERE t.client_id = c.id) AND (${SEGMENTS[segment].sql})`;
+}

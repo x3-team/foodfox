@@ -70,3 +70,46 @@ CREATE TABLE IF NOT EXISTS report_reviews (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_report_reviews_report ON report_reviews (report_id, created_at DESC);
+
+-- Assistant settings edited in the admin: every save is a new version, one is active. apps/web reads the active
+-- one (lib/assistant-config.ts) and falls back to DEFAULT_INSTRUCTIONS in lib/heli.ts when there is none.
+CREATE TABLE IF NOT EXISTS assistant_prompts (
+    id              BIGSERIAL PRIMARY KEY,
+    instructions    TEXT NOT NULL,
+    model           TEXT,
+    temperature     NUMERIC(3, 2),
+    max_tokens      INT,
+    note            TEXT NOT NULL DEFAULT '',
+    is_active       BOOLEAN NOT NULL DEFAULT false,
+    created_by      UUID REFERENCES admin_users(id) ON DELETE SET NULL,
+    created_by_name TEXT NOT NULL DEFAULT '',
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS assistant_prompts_one_active ON assistant_prompts (is_active) WHERE is_active;
+
+-- Recipes: a recipe the admin edited is no longer overwritten by the catalogue in code (apps/web syncRecipesCatalog);
+-- source_title keeps the catalogue title of a renamed one so it is not seeded again.
+DO $$
+BEGIN
+  IF to_regclass('public.recipes') IS NOT NULL THEN
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS admin_edited_at TIMESTAMPTZ;
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
+    ALTER TABLE recipes ADD COLUMN IF NOT EXISTS source_title TEXT;
+  END IF;
+END $$;
+
+-- In-app messages sent from the admin to a segment of clients (they land in the assistant chat as system messages).
+CREATE TABLE IF NOT EXISTS push_campaigns (
+    id              BIGSERIAL PRIMARY KEY,
+    title           TEXT NOT NULL,
+    body            TEXT NOT NULL,
+    segment         TEXT NOT NULL,
+    channel         TEXT NOT NULL DEFAULT 'inapp' CHECK (channel IN ('inapp', 'push')),
+    status          TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'failed')),
+    recipients      INT NOT NULL DEFAULT 0,
+    created_by      UUID REFERENCES admin_users(id) ON DELETE SET NULL,
+    created_by_name TEXT NOT NULL DEFAULT '',
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    sent_at         TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_push_campaigns_created ON push_campaigns (created_at DESC);

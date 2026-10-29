@@ -31,7 +31,7 @@ export function Shell({ nav, me, counts, logout, children }: Props) {
 
   const current = nav.find((item) => isActive(path, item.href));
   const initials = (me.name || me.email).split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
-  const tabs = (["/admin", "/admin/leads", "/admin/app/reports", "/admin/app/users", "/admin/content"].map((href) => nav.find((item) => item.href === href)).filter(Boolean) as NavItem[]).slice(0, 3);
+  const tabs = (["/admin", "/admin/leads", "/admin/app/reports", "/admin/app/users", "/admin/partners", "/admin/app/recipes", "/admin/content", "/admin/app/metrics"].map((href) => nav.find((item) => item.href === href)).filter(Boolean) as NavItem[]).slice(0, 3);
 
   return (
     <div className={`a-shell${open ? " is-open" : ""}`}>
