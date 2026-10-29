@@ -1,13 +1,26 @@
 import "dart:convert";
 import "dart:async";
 import "dart:io";
+import "dart:math";
 
 import "package:foodfox/config/api_config.dart";
+import "package:foodfox/models/diary.dart";
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/demo_backend.dart";
+import "package:foodfox/services/telemetry.dart";
 import "package:foodfox/utils/api_cache.dart";
 import "package:foodfox/utils/network_errors.dart";
 import "package:http/http.dart" as http;
+
+/// What the server made of an uploaded report.
+class UploadOutcome {
+  const UploadOutcome({required this.parsedCount, this.confidence});
+
+  final int parsedCount;
+
+  /// `high`, `medium` or `low`, as the parser rated it.
+  final String? confidence;
+}
 
 class FoodFoxApi {
   FoodFoxApi({http.Client? client}) : _client = client ?? http.Client();
@@ -40,6 +53,8 @@ class FoodFoxApi {
     final headers = {
       "Authorization": "Basic $credentials",
       "Accept": "application/json",
+      // Matches this call to the server's error log (docs/MONITORING.md).
+      "X-Request-Id": _requestId(),
     };
     if (_accessToken != null) {
       headers["X-Fox-Token"] = _accessToken!;
@@ -48,6 +63,13 @@ class FoodFoxApi {
     }
     return headers;
   }
+
+  static final _random = Random.secure();
+
+  static String _requestId() => List.generate(
+    16,
+    (_) => _random.nextInt(256).toRadixString(16).padLeft(2, "0"),
+  ).join();
 
   Uri _uri(String path) => Uri.parse("${ApiConfig.baseUrl}$path");
 
@@ -71,6 +93,9 @@ class FoodFoxApi {
         await Future<void>.delayed(Duration(milliseconds: 350 * attempt));
       }
     }
+    Telemetry.event(FoxEvent.apiNetworkError, {
+      "error": lastError.runtimeType.toString(),
+    });
     throw Exception(formatNetworkError(lastError ?? "Network error"));
   }
 
@@ -90,6 +115,15 @@ class FoodFoxApi {
 
   Future<Map<String, dynamic>> _decode(http.Response response) async {
     _captureSession(response);
+    if (response.statusCode >= 500) {
+      final request = response.request;
+      Telemetry.apiFailure(
+        method: request?.method ?? "?",
+        path: request?.url.path ?? "?",
+        status: response.statusCode,
+        requestId: response.headers["x-request-id"],
+      );
+    }
     final body = response.body.isEmpty ? "{}" : response.body;
     final data = jsonDecode(body) as Map<String, dynamic>;
     if (response.statusCode >= 400) {
@@ -148,11 +182,13 @@ class FoodFoxApi {
     final token = _refreshToken;
     if (token == null || token.isEmpty) return false;
     try {
-      final response = await _client.post(
-        _uri("/api/auth/refresh"),
-        headers: {..._headers, "Content-Type": "application/json"},
-        body: jsonEncode({"refreshToken": token}),
-      );
+      final response = await _client
+          .post(
+            _uri("/api/auth/refresh"),
+            headers: {..._headers, "Content-Type": "application/json"},
+            body: jsonEncode({"refreshToken": token}),
+          )
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode >= 400) return false;
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       _captureTokens(data);
@@ -162,10 +198,15 @@ class FoodFoxApi {
     }
   }
 
+  /// Drops every trace of the previous account, the bundled demo included.
+  ///
+  /// The demo backend used to survive this, so the next person to sign in on
+  /// the device, a brand new client too, was served the demo report.
   void logout() {
     _accessToken = null;
     _refreshToken = null;
     _sessionCookie = null;
+    _demo = null;
     _cache.clear();
   }
 
@@ -376,14 +417,55 @@ class FoodFoxApi {
     );
   }
 
-  Future<void> uploadPdf(List<int> bytes, String filename) async {
+  /// Symptom diary: today's plan context and the last [days] of entries.
+  /// Health data, so it is never put in the response cache.
+  Future<DiaryData> fetchDiary({int days = 62}) async {
+    final demo = _demo;
+    if (demo != null) return demo.diary();
+    return _withRetry(() async {
+      final response = await _client.get(
+        _uri("/api/diary?days=$days"),
+        headers: _headers,
+      );
+      return DiaryData.fromJson(await _decode(response));
+    });
+  }
+
+  /// Creates or replaces the entry for [DiaryDraft.date].
+  Future<DiaryEntry> saveDiaryEntry(DiaryDraft draft) async {
+    final demo = _demo;
+    if (demo != null) return demo.saveDiary(draft);
+    return _withRetry(() async {
+      final response = await _client.put(
+        _uri("/api/diary"),
+        headers: {..._headers, "Content-Type": "application/json"},
+        body: jsonEncode(draft.toJson()),
+      );
+      final data = await _decode(response);
+      return DiaryEntry.fromJson(data["entry"] as Map<String, dynamic>);
+    }, attempts: 2);
+  }
+
+  Future<void> deleteDiaryEntry(String date) async {
+    final demo = _demo;
+    if (demo != null) return demo.deleteDiary(date);
+    await _withRetry(() async {
+      final response = await _client.delete(
+        _uri("/api/diary?date=$date"),
+        headers: _headers,
+      );
+      await _decode(response);
+    }, attempts: 2);
+  }
+
+  Future<UploadOutcome> uploadPdf(List<int> bytes, String filename) async {
     if (_demo != null) {
       throw Exception(
         "В демо-режиме отчёт не загружается: разбор PDF выполняется на сервере. "
         "Результаты во вкладке «Результаты» — из демо-отчёта.",
       );
     }
-    await _withRetry(() async {
+    return _withRetry(() async {
       final request = http.MultipartRequest(
         "POST",
         _uri("/api/reports/upload"),
@@ -394,9 +476,17 @@ class FoodFoxApi {
       );
       final streamed = await _client.send(request);
       final response = await http.Response.fromStream(streamed);
-      await _decode(response);
+      final data = await _decode(response);
       invalidateDataCache();
-    });
+      final quality = data["parseQuality"] as Map<String, dynamic>?;
+      return UploadOutcome(
+        parsedCount: data["parsedCount"] as int? ?? 0,
+        confidence: quality?["confidence"] as String?,
+      );
+      // Parsing takes up to a couple of minutes on the server. A retry after a
+      // timeout would upload the same report again, so the person retries
+      // from the error screen instead.
+    }, attempts: 1, timeout: const Duration(seconds: 150));
   }
 
   void dispose() => _client.close();

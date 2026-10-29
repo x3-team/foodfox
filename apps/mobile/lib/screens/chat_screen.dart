@@ -4,20 +4,30 @@ import "package:flutter/material.dart";
 
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/foodfox_api.dart";
+import "package:foodfox/services/telemetry.dart";
 import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/utils/lazy_tab_loader.dart";
 import "package:foodfox/utils/network_errors.dart";
 import "package:foodfox/widgets/network_error_panel.dart";
+import "package:foodfox/widgets/ui/fox_keyboard.dart";
 import "package:foodfox/widgets/ui/fox_ui.dart";
 
 /// Screens 10–12 — the AI assistant. It only ever sees this client's report,
 /// plan phase and allowed products; the context is assembled server-side.
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.api, this.initialMessage});
+  const ChatScreen({
+    super.key,
+    required this.api,
+    this.initialMessage,
+    this.onOpenDiary,
+  });
 
   final FoodFoxApi api;
   final String? initialMessage;
+
+  /// Opens the symptom diary from the assistant's daily nudge.
+  final VoidCallback? onOpenDiary;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -108,6 +118,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     try {
       final messages = await widget.api.sendChat(text);
+      Telemetry.event(FoxEvent.chatMessageSent, {"preset": preset != null});
       if (!mounted) return;
       setState(() {
         _messages = messages;
@@ -174,6 +185,21 @@ class _ChatScreenState extends State<ChatScreen> {
 
     for (final m in _messages) {
       items.add(_Bubble(message: m));
+      if (m.isDiaryReminder && widget.onOpenDiary != null) {
+        items.add(const SizedBox(height: 8));
+        items.add(
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FoxButton(
+              label: "Открыть дневник",
+              kind: FoxButtonKind.accent,
+              size: FoxButtonSize.small,
+              expand: false,
+              onPressed: widget.onOpenDiary,
+            ),
+          ),
+        );
+      }
       items.add(const SizedBox(height: 12));
     }
     if (_sending) {
@@ -461,63 +487,69 @@ class _Composer extends StatelessWidget {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 10, 24, 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: FoxTokens.bgCard,
-                  borderRadius: BorderRadius.circular(FoxTokens.radiusChip),
-                  border: Border.all(color: FoxTokens.borderLight),
-                ),
-                child: TextField(
-                  controller: controller,
-                  minLines: 1,
-                  maxLines: 4,
-                  style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
-                  decoration: InputDecoration(
-                    hintText: "Спросите про продукт или план…",
-                    hintStyle: FoxType.bodyS.copyWith(
-                      color: FoxTokens.textSecondary,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 14,
-                    ),
+        // The send button counts as part of the field, so sending keeps the
+        // keyboard up for the next question instead of dropping it.
+        child: TextFieldTapRegion(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: FoxTokens.bgCard,
+                    borderRadius: BorderRadius.circular(FoxTokens.radiusChip),
+                    border: Border.all(color: FoxTokens.borderLight),
                   ),
-                  onSubmitted: (_) => onSend(),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            FoxPressable(
-              onTap: sending ? null : () => onSend(),
-              child: AnimatedContainer(
-                duration: FoxMotion.quick,
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: sending ? FoxTokens.bgGrey : FoxTokens.accentLime,
-                  shape: BoxShape.circle,
-                ),
-                child: sending
-                    ? const Padding(
-                        padding: EdgeInsets.all(14),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: FoxTokens.textSecondary,
-                        ),
-                      )
-                    : const Icon(
-                        Icons.arrow_upward_rounded,
-                        size: 22,
-                        color: FoxTokens.textPrimary,
+                  child: TextField(
+                    controller: controller,
+                    textInputAction: TextInputAction.send,
+                    onTapOutside: foxTapOutside,
+                    minLines: 1,
+                    maxLines: 4,
+                    style: FoxType.bodyS.copyWith(color: FoxTokens.textPrimary),
+                    decoration: InputDecoration(
+                      hintText: "Спросить",
+                      hintStyle: FoxType.bodyS.copyWith(
+                        color: FoxTokens.textSecondary,
                       ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 14,
+                      ),
+                    ),
+                    onSubmitted: (_) => onSend(),
+                  ),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 10),
+              FoxPressable(
+                onTap: sending ? null : () => onSend(),
+                child: AnimatedContainer(
+                  duration: FoxMotion.quick,
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: sending ? FoxTokens.bgGrey : FoxTokens.accentLime,
+                    shape: BoxShape.circle,
+                  ),
+                  child: sending
+                      ? const Padding(
+                          padding: EdgeInsets.all(14),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: FoxTokens.textSecondary,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.arrow_upward_rounded,
+                          size: 22,
+                          color: FoxTokens.textPrimary,
+                        ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     ),

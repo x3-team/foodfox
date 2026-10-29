@@ -41,11 +41,13 @@ echo "==> Config"
 flag() { [[ -n "${1:-}" ]] && echo "set" || echo "MISSING"; }
 echo "    DATABASE_URL:     $(flag "${DATABASE_URL:-}")"
 echo "    SESSION_SECRET:   $(flag "${SESSION_SECRET:-}")"
+echo "    FOX_HEALTH_DATA_KEY: $(flag "${FOX_HEALTH_DATA_KEY:-}")"
 echo "    FOX_HELI_API_KEY: $(flag "${FOX_HELI_API_KEY:-}")"
 echo "    HELI_BASE_URL:    ${HELI_BASE_URL:-<code default>}"
 echo "    HELI_CHAT_MODEL:  ${HELI_CHAT_MODEL:-<code default>}"
 echo "    FOX_DEMO_PHONES:  ${FOX_DEMO_PHONES:-<code default>}"
 echo "    FOX_DEMO_OTP:     ${FOX_DEMO_OTP:-<code default>}"
+echo "    FOX_ERRORS_DSN:   $(flag "${FOX_ERRORS_DSN:-}")"
 
 echo "==> Build Next.js"
 npm ci --include=dev

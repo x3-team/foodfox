@@ -25,6 +25,8 @@ import {
   type RecipeStep,
 } from "./recipes-catalog";
 import { getDbClient, runWithClientContext } from "./db-context";
+import { DIARY_REMINDER_TEXT } from "./diary";
+import { memoryDiary } from "./diary-memory";
 import { trackEvent } from "./analytics";
 import {
   demoCodeFor,
@@ -105,7 +107,7 @@ function mapRecipeRow(row: {
 export interface ChatMessageRow {
   id: string;
   role: "user" | "assistant" | "system";
-  messageType: "chat" | "daily_reminder" | "plan_update" | "system";
+  messageType: "chat" | "daily_reminder" | "diary_reminder" | "plan_update" | "system";
   content: string;
   readAt: string | null;
   createdAt: string;
@@ -185,7 +187,11 @@ export async function ensureSchema(): Promise<void> {
   } catch {
     // schema may already exist
   }
-  for (const name of ["002_auth_telemetry_rls.sql", "003_phone_auth.sql"]) {
+  for (const name of [
+    "002_auth_telemetry_rls.sql",
+    "003_phone_auth.sql",
+    "010_symptom_diary.sql",
+  ]) {
     try {
       const sql = readFileSync(
         join(process.cwd(), "../../packages/database/migrations", name),
@@ -1260,6 +1266,24 @@ export async function ensureTodayReminder(clientId: string): Promise<void> {
         createdAt: new Date().toISOString(),
       });
     }
+    const filled = Array.from(memoryDiary.values()).some(
+      (r) => r.clientId === clientId && r.date >= today,
+    );
+    const nudged = memory!.messages.some(
+      (m) =>
+        m.messageType === "diary_reminder" && m.createdAt.slice(0, 10) === today,
+    );
+    if (!filled && !nudged) {
+      memory!.messages.push({
+        id: `diary-${Date.now()}`,
+        role: "assistant",
+        messageType: "diary_reminder",
+        content: DIARY_REMINDER_TEXT,
+        readAt: null,
+        // Right after the daily reminder, ahead of anything said today.
+        createdAt: new Date(Date.now() + 1).toISOString(),
+      });
+    }
     return;
   }
 
@@ -1270,13 +1294,55 @@ export async function ensureTodayReminder(clientId: string): Promise<void> {
        AND cm.created_at::date = CURRENT_DATE`,
     [clientId],
   );
-  if (existing.rows[0]) return;
+  if (!existing.rows[0]) {
+    await p.query(
+      `INSERT INTO chat_messages (thread_id, role, message_type, content)
+       VALUES ($1, 'assistant', 'daily_reminder', $2)`,
+      [ctx.threadId, `${header}\n${content}`],
+    );
+  }
+  await ensureDiaryReminder(p, clientId, ctx.threadId);
+}
 
-  await p.query(
-    `INSERT INTO chat_messages (thread_id, role, message_type, content)
-     VALUES ($1, 'assistant', 'daily_reminder', $2)`,
-    [ctx.threadId, `${header}\n${content}`],
-  );
+/**
+ * Soft nudge to fill the symptom diary: at most once a day, only on a plan,
+ * and not when today already has an entry. The app shows an «open the diary»
+ * button under it. A failure here must never break the chat.
+ */
+async function ensureDiaryReminder(
+  p: Pool,
+  clientId: string,
+  threadId: string,
+): Promise<void> {
+  try {
+    // The app keys entries by the client's local day, which runs up to a
+    // day ahead of the server's UTC date.
+    const filled = await runWithClientContext(p, clientId, () =>
+      getDbClient()!.query(
+        `SELECT 1 FROM diary_entries
+         WHERE client_id = $1 AND entry_date BETWEEN CURRENT_DATE AND CURRENT_DATE + 1
+         LIMIT 1`,
+        [clientId],
+      ),
+    );
+    if (filled.rows[0]) return;
+    const sent = await p.query(
+      `SELECT 1 FROM chat_messages cm
+       JOIN chat_threads ct ON ct.id = cm.thread_id
+       WHERE ct.client_id = $1 AND cm.message_type = 'diary_reminder'
+         AND cm.created_at::date = CURRENT_DATE
+       LIMIT 1`,
+      [clientId],
+    );
+    if (sent.rows[0]) return;
+    await p.query(
+      `INSERT INTO chat_messages (thread_id, role, message_type, content)
+       VALUES ($1, 'assistant', 'diary_reminder', $2)`,
+      [threadId, DIARY_REMINDER_TEXT],
+    );
+  } catch (e) {
+    console.error("diary reminder skipped:", (e as Error).message);
+  }
 }
 
 export async function getChatMessages(clientId: string): Promise<ChatMessageRow[]> {

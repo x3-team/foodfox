@@ -6,13 +6,18 @@ import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_tokens.dart";
 import "package:foodfox/utils/lazy_tab_loader.dart";
 import "package:foodfox/widgets/network_error_panel.dart";
+import "package:foodfox/widgets/no_report_state.dart";
 import "package:foodfox/widgets/ui/fox_ui.dart";
 
 /// Screen 05 — the current phase, the four-step timeline and today's rotation.
 class PlanScreen extends StatefulWidget {
-  const PlanScreen({super.key, required this.api});
+  const PlanScreen({super.key, required this.api, this.onUpload, this.onAsk});
 
   final FoodFoxApi api;
+
+  /// Shown as the S3 call to action while there is no report, so no plan.
+  final VoidCallback? onUpload;
+  final void Function(String question)? onAsk;
 
   @override
   State<PlanScreen> createState() => _PlanScreenState();
@@ -68,6 +73,15 @@ class _PlanScreenState extends State<PlanScreen> {
     final today = _today;
     final step = _planStep(_currentWeek);
     final shownWeek = _currentWeek.clamp(1, 6);
+    final upload = widget.onUpload;
+
+    if (!_loading && _error == null && _planMeta == null && upload != null) {
+      return RefreshIndicator(
+        onRefresh: _load,
+        color: FoxTokens.bgGreen,
+        child: NoReportState(onUpload: upload, onAsk: widget.onAsk),
+      );
+    }
 
     return RefreshIndicator(
       onRefresh: _load,

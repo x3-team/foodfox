@@ -1,9 +1,32 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { decodeSession, SESSION_COOKIE } from "@/lib/auth-edge";
 
+// Same name as REQUEST_ID_HEADER in lib/monitoring.ts, which pulls in
+// next/headers and cannot be imported on the edge.
+const REQUEST_ID_HEADER = "x-request-id";
+
 const PROTECTED = ["/upload", "/results", "/plan", "/recipes", "/chat", "/account"];
 
+/**
+ * Tags every request with an id that the error log, the collector and the
+ * app's own error reports all carry, so one failure can be followed across
+ * them. The app sends its own id; anything else gets a fresh one.
+ */
 export async function middleware(request: NextRequest) {
+  const incoming = request.headers.get(REQUEST_ID_HEADER) ?? "";
+  const requestId = /^[\w-]{8,64}$/.test(incoming)
+    ? incoming
+    : crypto.randomUUID();
+  const forwarded = new Headers(request.headers);
+  forwarded.set(REQUEST_ID_HEADER, requestId);
+
+  const response = await route(request, forwarded);
+  response.headers.set(REQUEST_ID_HEADER, requestId);
+  return response;
+}
+
+async function route(request: NextRequest, forwarded: Headers) {
+  const next = () => NextResponse.next({ request: { headers: forwarded } });
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   let session = token ? await decodeSession(token) : null;
@@ -22,7 +45,7 @@ export async function middleware(request: NextRequest) {
     if (session) {
       return NextResponse.redirect(new URL("/upload", request.url));
     }
-    return NextResponse.next();
+    return next();
   }
 
   if (
@@ -32,11 +55,11 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/api/auth/otp") ||
     pathname === "/api/health"
   ) {
-    return NextResponse.next();
+    return next();
   }
 
   if (pathname.startsWith("/api/auth")) {
-    return NextResponse.next();
+    return next();
   }
 
   const needsAuth =
@@ -52,7 +75,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(login);
   }
 
-  return NextResponse.next();
+  return next();
 }
 
 export const config = {

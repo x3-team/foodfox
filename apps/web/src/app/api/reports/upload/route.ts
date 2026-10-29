@@ -3,6 +3,7 @@ import { PDFParse } from "pdf-parse";
 import { getAuthClientId, handleAuthError } from "@/lib/api-auth";
 import { getResultsForClient, saveReportFromPdf } from "@/lib/db";
 import { countZones } from "@/lib/fox-parser";
+import { reportServerError } from "@/lib/monitoring";
 
 export async function POST(req: NextRequest) {
   try {
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     const auth = handleAuthError(e);
     if (auth) return auth;
-    console.error(e);
+    reportServerError(e, { route: "POST /api/reports/upload" });
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Ошибка парсинга" },
       { status: 500 },

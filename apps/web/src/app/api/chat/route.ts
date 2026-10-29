@@ -23,6 +23,7 @@ import {
   offlineChatNotice,
   parseRequestedWeek,
 } from "@/lib/heli";
+import { reportServerError } from "@/lib/monitoring";
 
 // Reads the caller's session, so it must never be prerendered; stated
 // explicitly to match the rest of the API and keep it that way.
@@ -36,6 +37,7 @@ export async function GET() {
   } catch (e) {
     const auth = handleAuthError(e);
     if (auth) return auth;
+    reportServerError(e, { route: "GET /api/chat" });
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
@@ -48,6 +50,7 @@ export async function PATCH() {
   } catch (e) {
     const auth = handleAuthError(e);
     if (auth) return auth;
+    reportServerError(e, { route: "PATCH /api/chat" });
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
@@ -135,7 +138,11 @@ export async function POST(req: NextRequest) {
         reply = heliErrorNotice();
       }
     } catch (err) {
-      console.error("Heli chat error:", err);
+      reportServerError(err, {
+        route: "POST /api/chat",
+        clientId,
+        tags: { subsystem: "heli" },
+      });
       reply = heliErrorNotice();
     }
 
@@ -145,13 +152,17 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     const auth = handleAuthError(e);
     if (auth) return auth;
-    console.error(e);
+    reportServerError(e, { route: "POST /api/chat" });
     if (clientId) {
       try {
         const messages = await getChatMessages(clientId);
         return NextResponse.json({ messages });
       } catch (inner) {
-        console.error("chat recovery failed:", inner);
+        reportServerError(inner, {
+          route: "POST /api/chat",
+          clientId,
+          tags: { subsystem: "chat-recovery" },
+        });
       }
     }
     return NextResponse.json(

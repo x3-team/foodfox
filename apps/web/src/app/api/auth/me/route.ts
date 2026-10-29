@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthClientId, getAuthSession, handleAuthError } from "@/lib/api-auth";
 import { getClientProfile } from "@/lib/db";
+import { reportServerError } from "@/lib/monitoring";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export async function GET() {
   } catch (e) {
     const auth = handleAuthError(e);
     if (auth) return auth;
-    console.error(e);
+    reportServerError(e, { route: "GET /api/auth/me" });
     return NextResponse.json({ error: "Ошибка профиля" }, { status: 500 });
   }
 }

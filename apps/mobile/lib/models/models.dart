@@ -191,7 +191,11 @@ class ChatMessage {
   final String content;
 
   bool get isUser => role == "user";
-  bool get isReminder => messageType == "daily_reminder";
+  bool get isReminder =>
+      messageType == "daily_reminder" || messageType == "diary_reminder";
+
+  /// The assistant's daily nudge to fill the symptom diary.
+  bool get isDiaryReminder => messageType == "diary_reminder";
 }
 
 Zone _zoneFromString(String value) {

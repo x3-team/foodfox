@@ -3,6 +3,7 @@ import { buildAuthResponse } from "@/lib/auth-request";
 import { setSessionCookie } from "@/lib/auth";
 import { createRefreshToken, getDbPool, loginUser } from "@/lib/db";
 import { trackEvent } from "@/lib/analytics";
+import { reportServerError } from "@/lib/monitoring";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(buildAuthResponse(session, refreshToken));
   } catch (e) {
-    console.error(e);
+    reportServerError(e, { route: "POST /api/auth/login" });
     return NextResponse.json({ error: "Ошибка входа" }, { status: 500 });
   }
 }
