@@ -159,7 +159,8 @@ export function isValidProductName(name: string): boolean {
   if (isNarrativeLine(name)) return false;
   if (isControlRow(name)) return false;
   if (isSectionHeader(name)) return false;
-  if (/^(page|стр|--\s*\d|patient|пациент|fox|food xplorer)/i.test(name)) return false;
+  // Page / header labels. "стр" must be followed by a number: «Страус» is a product.
+  if (/^(page\b|стр\.?\s*\d|--\s*\d|patient\b|пациент|fox\b|food xplorer)/i.test(name)) return false;
   if (/^\d[\d\s\-–—.]*мкг/i.test(name)) return false;
   if (/^(\d+\s*-\s*|≥\s*\d+\s*$)/.test(name.trim())) return false;
   if (/^\d+\s*-\s*\d/i.test(name)) return false;
@@ -230,11 +231,31 @@ function parseCombinedLine(
 ): { pendingName: string | null; partialName: string | null; deferredValue: { value: string; isFloor: boolean } | null } {
   nameQueue.length = 0;
 
-  // "М-трансглутаминаза," + "мясной клей 48,70 мкг/мл"
-  if (pendingName && /,\s*$/.test(pendingName)) {
+  // Molecular sub-line: pending "Молоко коровье Bos d 4 *" + "(Alpha-Lactalbumin) 48,41 мкг/мл ..."
+  if (pendingName) {
+    const sub = line.match(MOLECULAR_SUBLINE_RE);
+    if (sub) {
+      pushResult(results, seen, pendingName, sub[1], FLOOR_MARK_RE.test(line));
+      pendingName = null;
+      line = line.replace(MOLECULAR_SUBLINE_RE, "").trim();
+      if (!line) return { pendingName, partialName, deferredValue };
+    }
+  }
+
+  // Name wrapped onto the next line:
+  //   "М-трансглутаминаза," + "мясной клей 48,70 мкг/мл"
+  //   "... мкг/мл М-трансглутаминаза, мясной" + "клей 43,74 мкг/мл"
+  //   "... мкг/мл Радиччо (красный салатный" + "цикорий) < 5,00 мкг/мл"
+  if (pendingName) {
     FOX_ENTRY_RE.lastIndex = 0;
     const commaJoin = FOX_ENTRY_RE.exec(line);
-    if (commaJoin) {
+    const wraps =
+      commaJoin &&
+      commaJoin.index === 0 &&
+      (/,\s*$/.test(pendingName) ||
+        hasUnclosedParen(pendingName) ||
+        /^[a-zа-яё]/.test(commaJoin[1].trim()));
+    if (commaJoin && wraps) {
       pushResult(
         results,
         seen,
@@ -257,24 +278,22 @@ function parseCombinedLine(
     }
   }
 
-  // Molecular sub-line: pending "Молоко коровье Bos d 4 *" + "(Alpha-Lactalbumin) 48,41 мкг/мл ..."
-  if (pendingName) {
-    const sub = line.match(MOLECULAR_SUBLINE_RE);
-    if (sub) {
-      pushResult(results, seen, pendingName, sub[1], FLOOR_MARK_RE.test(line));
-      pendingName = null;
-      line = line.replace(MOLECULAR_SUBLINE_RE, "").trim();
-      if (!line) return { pendingName, partialName, deferredValue };
-    }
-  }
-
   pendingName = null;
   FOX_ENTRY_RE.lastIndex = 0;
   let match: RegExpExecArray | null;
+  let consumed = 0;
   while ((match = FOX_ENTRY_RE.exec(line)) !== null) {
     const segment = match[0];
     const isFloor = FLOOR_MARK_RE.test(segment);
     pushResult(results, seen, match[1], match[2], isFloor);
+    consumed = match.index + segment.length;
+  }
+
+  // Right-column name whose value is on the next line (2026 FOX export):
+  // "Пахта 46,06 мкг/мл Молоко коровье Bos d 8 *" + "(Casein) 49,80 мкг/мл"
+  const tail = line.slice(consumed).trim();
+  if (consumed > 0 && tail && /^[A-Za-zА-Яа-яЁё]/.test(tail) && !HAS_UNIT_RE.test(tail)) {
+    pendingName = tail;
   }
   return { pendingName, partialName, deferredValue };
 }
@@ -305,11 +324,12 @@ export function parseFoxPdfText(text: string): ParsedResult[] {
       continue;
     }
 
-    // Continuation: "* 6,76 мкг/мл" after product name on previous line
+    // Continuation: "* 6,76 мкг/мл" after product name on previous line.
+    // The asterisk marks a molecular antigen; keep it on the name like Bos d 4 *.
     const cont = line.match(new RegExp(`^\\*\\s*(?:${LTE})?${NUM}\\s*${UNIT}`, "i"));
     if (cont && pendingName) {
       const isFloor = FLOOR_MARK_RE.test(line);
-      pushResult(results, seen, pendingName, cont[1], isFloor);
+      pushResult(results, seen, `${pendingName.replace(/\s*\*\s*$/, "")} *`, cont[1], isFloor);
       pendingName = null;
       continue;
     }
@@ -318,7 +338,7 @@ export function parseFoxPdfText(text: string): ParsedResult[] {
     if (HAS_UNIT_RE.test(line) && /лактоферрин/i.test(line)) {
       const ccdIdx = nameQueue.lastIndexOf("CCD");
       if (ccdIdx >= 0) {
-        const val = line.match(new RegExp(`(?:${LTE})${NUM}\\s*${UNIT}`, "i"));
+        const val = line.match(new RegExp(`(?:${LTE})?${NUM}\\s*${UNIT}`, "i"));
         if (val) {
           pushResult(results, seen, "CCD", val[1], FLOOR_MARK_RE.test(line));
           nameQueue.splice(ccdIdx, 1);
