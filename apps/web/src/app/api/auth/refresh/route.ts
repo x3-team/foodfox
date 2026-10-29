@@ -6,6 +6,7 @@ import {
   refreshSessionFromToken,
   revokeRefreshToken,
 } from "@/lib/db";
+import { isBlocked } from "@/lib/account-guard";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     const session = await refreshSessionFromToken(refreshToken);
-    if (!session) {
+    if (!session || (await isBlocked(session.userId))) {
       return NextResponse.json({ error: "Invalid refresh token" }, { status: 401 });
     }
 
