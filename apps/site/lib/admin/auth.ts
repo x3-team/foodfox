@@ -29,7 +29,7 @@ export const ROLE_HINT: Record<Role, string> = {
   accountant: "Партнёры: начисления, выплаты, акты; паспортные данные и реквизиты партнёров",
   moderator: "Клиенты приложения и их отчёты: сверка, правка, повторная обработка",
   editor: "Страницы, блог, медиа, отзывы; продукты, зоны, рецепты и планы приложения",
-  support: "Заявки и клиенты приложения без медданных: поиск, блокировка, выход со всех устройств; реестр согласий",
+  support: "Обращения клиентов, заявки, клиенты приложения без медданных: поиск, блокировка, выход со всех устройств; реестр согласий",
   analyst: "Сводка и метрики приложения, без персональных данных",
 };
 
@@ -66,6 +66,8 @@ export const ACCESS = {
   prices: ["admin"],
   seo: ["admin"],
   users: ["admin"],
+  /** Client requests to a live specialist. */
+  tickets: ["admin", "support"],
   /** Legal documents and their versions. */
   legal: ["admin"],
   /** The consent register and withdrawals: client service answers the letters. */
@@ -113,6 +115,7 @@ export const AREA_LABEL: Record<Area, { label: string; group: string; hint?: str
   prices: { label: "Цены", group: "Сайт" },
   seo: { label: "SEO", group: "Сайт" },
   users: { label: "Сотрудники, роли и удаление записей", group: "Система" },
+  tickets: { label: "Обращения клиентов к специалисту", group: "Приложение" },
   legal: { label: "Правовые документы и их версии", group: "Система" },
   consents: { label: "Реестр согласий и отзыв согласия", group: "Система" },
 };

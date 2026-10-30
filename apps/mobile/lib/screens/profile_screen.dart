@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 
 import "package:foodfox/models/models.dart";
 import "package:foodfox/services/auth_store.dart";
+import "package:foodfox/screens/support_screen.dart";
 import "package:foodfox/services/foodfox_api.dart";
 import "package:foodfox/theme/fox_motion.dart";
 import "package:foodfox/theme/fox_tokens.dart";
@@ -129,7 +130,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        _NutritionistCard(),
+        _NutritionistCard(
+          onConnect: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => SupportScreen(api: widget.api),
+            ),
+          ),
+        ),
         const SizedBox(height: 16),
         FoxCard(
           padding: EdgeInsets.zero,
@@ -354,6 +361,10 @@ class _MenuRow extends StatelessWidget {
 }
 
 class _NutritionistCard extends StatelessWidget {
+  const _NutritionistCard({required this.onConnect});
+
+  final VoidCallback onConnect;
+
   @override
   Widget build(BuildContext context) => FoxCard(
     tone: FoxCardTone.dark,
@@ -409,7 +420,7 @@ class _NutritionistCard extends StatelessWidget {
           label: "Подключить специалиста",
           kind: FoxButtonKind.accent,
           size: FoxButtonSize.small,
-          onPressed: () {},
+          onPressed: onConnect,
         ),
       ],
     ),
