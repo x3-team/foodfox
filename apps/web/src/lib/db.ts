@@ -27,6 +27,7 @@ import {
 import { getDbClient, runWithClientContext } from "./db-context";
 import { trackEvent } from "./analytics";
 import { recordCurrentConsents, type ConsentMeta } from "./consents";
+import { checkSmsLimits, sendCodeSms, smsProvider, SmsError } from "./sms";
 import {
   demoCodeFor,
   generateOtp,
@@ -363,7 +364,7 @@ export async function getOrCreateDemoClient(): Promise<string> {
 }
 
 /** Issue a one-time code for a phone number. Returns the delivery metadata. */
-export async function requestPhoneOtp(phone: string): Promise<{
+export async function requestPhoneOtp(phone: string, ip: string | null = null): Promise<{
   resendAfterMs: number;
   demoCode: string | null;
 }> {
@@ -387,18 +388,29 @@ export async function requestPhoneOtp(phone: string): Promise<{
   }
 
   const demo = demoCodeFor(phone);
+  const viaSms = !demo && smsProvider() !== null;
+  if (!demo && !viaSms && process.env.NODE_ENV === "production") {
+    throw new SmsError("Вход по SMS пока не подключён. Напишите в поддержку FOX");
+  }
+  if (viaSms) await checkSmsLimits(p, phone, ip);
   const code = demo ?? generateOtp();
-  await p.query(
+  const inserted = await p.query(
     `INSERT INTO otp_codes (phone, code_hash, expires_at)
-     VALUES ($1, $2, now() + interval '5 minutes')`,
+     VALUES ($1, $2, now() + interval '5 minutes') RETURNING id`,
     [phone, hashOtp(phone, code)],
   );
 
-  if (!demo) {
-    // SMS gateway is wired in deployment; the code is never logged in prod.
-    if (process.env.NODE_ENV !== "production") {
-      console.info(`[otp] ${phone} → ${code}`);
+  if (viaSms) {
+    try {
+      await sendCodeSms(p, phone, code, ip);
+    } catch (e) {
+      // A code that never reached the phone must not hold the resend timer.
+      await p.query(`DELETE FROM otp_codes WHERE id = $1`, [inserted.rows[0].id]);
+      throw e;
     }
+  } else if (!demo) {
+    // No SMS provider in development: the code goes to the console, never in production.
+    console.info(`[otp] ${phone} → ${code}`);
   }
 
   trackEvent(p, null, "user_logged_in", { stage: "otp_requested" });
