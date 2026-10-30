@@ -84,8 +84,24 @@ const SECTION_HEADER_RE =
 const CATEGORY_INDEX_RE =
   /^(?:молоко и яйц(?:о|а)|рыба и морепродукты|мясо|овощи|специи|зерновые и семена|орехи|бобовые(?: культуры)?|фрукты|съедобные грибы|новые продукты|кофе и чай|другие)\s+\d+$/i;
 
+// Latin letters that look like Cyrillic ones. Lab PDFs sometimes type them inside Russian words («Cавойская» with a
+// Latin C), which would make a second product in the catalog.
+const HOMOGLYPHS: Record<string, string> = {
+  A: "А", B: "В", C: "С", E: "Е", H: "Н", K: "К", M: "М", O: "О", P: "Р", T: "Т", X: "Х",
+  a: "а", c: "с", e: "е", o: "о", p: "р", x: "х", y: "у",
+};
+
+/** Replaces look-alike Latin letters in words that are otherwise Cyrillic; Latin words («CCD», «Bos d 4») stay. */
+export function fixMixedScript(text: string): string {
+  return text.replace(/[A-Za-z\u0400-\u04FF]+/g, (word) =>
+    /[\u0400-\u04FF]/.test(word) && /[A-Za-z]/.test(word)
+      ? word.replace(/[A-Za-z]/g, (ch) => HOMOGLYPHS[ch] ?? ch)
+      : word,
+  );
+}
+
 function normalizeName(raw: string): string {
-  return raw
+  return fixMixedScript(raw)
     .replace(/\s+/g, " ")
     .replace(/\s*,\s*$/, "")
     .replace(/\s*≤\s*$/, "")
