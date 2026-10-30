@@ -1,0 +1,153 @@
+/* /report — motion by the Figma notes R00–R08 (page 1107:340) and the phone notes M12–M14.
+   Loaded after frame.css and adaptive/report.css. Blocks with item-level motion are taken out of the global
+   section rise (otherwise the block and its cards moved twice). */
+
+/* R00: the figures 286 / 13 / 3 / 12 — opacity + y 12, stagger 60 мс (no counting numbers). */
+.report-page .rf-stats > div, .report-page .rf-stats-m > div { --rv-y: 12px; }
+
+/* R01 zone cards / R05 action cards — opacity + y 24, stagger 80 мс; the block itself does not move. */
+[data-s="zones"].rf-sec:not(.is-in) > .rf-zones,
+[data-s="after"].rf-sec:not(.is-in) > .rf-actions,
+[data-s="units"].rf-sec:not(.is-in) > .rf-deck { opacity: 1; transform: none; }
+[data-s="zones"].rf-sec.is-in > .rf-zones,
+[data-s="after"].rf-sec.is-in > .rf-actions,
+[data-s="units"].rf-sec.is-in > .rf-deck { animation: none; }
+
+/* R01 on a phone / narrow tablet (≤1100): the three cards stack, so each one used to be its own reveal item and
+   entered alone (delays 0 / 0 / 0 — storyboard 1235:2975 shows the three cards arriving as one cascade). Now the
+   block `.rf-zones[data-rv]` is the reveal unit: when it crosses the viewport line, the cards cascade 0 / 80 / 160 мс
+   (opacity + y 24, 600 мс power2.out) like the desktop row; the cards' own data-rv state is ignored here. */
+.report-page .rf-zones[data-rv] { opacity: 1; transform: none; animation: none; }
+@media (max-width: 1100px) {
+  body .report-page .rf-zones > .rf-zone[data-rv] { animation: none; }
+  body .report-page .rf-zones[data-rv]:not(.rv-in) > .rf-zone { opacity: 0; transform: translateY(24px); }
+  body .report-page .rf-zones[data-rv].rv-in > .rf-zone { opacity: 1; transform: none; }
+  body .report-page .rf-zones[data-rv].rv-in:not(.rv-now) > .rf-zone { animation: rv-rise 600ms cubic-bezier(0.33, 1, 0.68, 1) backwards; }
+  body .report-page .rf-zones[data-rv].rv-in:not(.rv-now) > .rf-zone:nth-child(2) { animation-delay: 80ms; }
+  body .report-page .rf-zones[data-rv].rv-in:not(.rv-now) > .rf-zone:nth-child(3) { animation-delay: 160ms; }
+}
+
+/* R04 anti-CCD and R06 limits: «без анимации» — no entrance at all (the global rise used to run on them). */
+[data-s="ccd"].rf-sec:not(.is-in) > *,
+[data-s="limits"].rf-sec:not(.is-in) > * { opacity: 1; transform: none; }
+[data-s="ccd"].rf-sec.is-in > *,
+[data-s="limits"].rf-sec.is-in > * { animation: none; }
+
+/* R02: the leaving page fades out (250 мс) with the 16px shift while the next one fades in. */
+.report-page .rf-sheet img.rf-out { position: absolute; left: 0; top: 0; width: 100%; z-index: 0; pointer-events: none; animation: rf-out-next 250ms ease-out forwards; }
+.report-page .rf-sheet img.rf-out-prev { animation-name: rf-out-prev; }
+@keyframes rf-out-next { to { opacity: 0; transform: translateX(-16px); } }
+@keyframes rf-out-prev { to { opacity: 0; transform: translateX(16px); } }
+
+/* R03 (note 1181:1341, storyboard 1383:4721): the fan. Entrance — the cards are dealt out of one stack in the middle,
+   stagger 90 мс. Hover — the card rises (y −24, rotate → 0, on top, shadow L, 2px outline), the neighbours move 24px
+   apart; 380 мс cubic-bezier(.2,.8,.2,1). Before: neighbours did not move, 300 мс, no entrance of its own, and the
+   lifted card flickered when the pointer was in its bottom 24px (the card moved away from under it). */
+@media (min-width: 1101px) {
+  .report-page .rf-deck { container-type: inline-size; }
+  .report-page .rf-deck[data-rv] { opacity: 1; transform: none; animation: none; }
+  .report-page .uml-card { transition: transform 380ms cubic-bezier(0.2, 0.8, 0.2, 1), translate 380ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 380ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .report-page .uml-card.low { --deal: calc(50cqw - 50%); }
+  .report-page .uml-card.mid { --deal: calc(24cqw - 50%); }
+  .report-page .uml-card.high { --deal: calc(50% - 50cqw); }
+  .report-page .rf-deck:not(.rv-in) .uml-card { opacity: 0; translate: var(--deal) 0; transform: none; }
+  .report-page .rf-deck.rv-in:not(.rv-now) .uml-card { animation: rf-deal 640ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+  .report-page .rf-deck.rv-in:not(.rv-now) .uml-card.mid { animation-delay: 90ms; }
+  .report-page .rf-deck.rv-in:not(.rv-now) .uml-card.high { animation-delay: 180ms; }
+  @keyframes rf-deal { from { opacity: 0; translate: var(--deal) 0; transform: none; } 30% { opacity: 1; } }
+  /* keeps the lifted card hovered: it rises 24px and un-rotates (its lowest corner goes up ~45px) */
+  .report-page .uml-card:hover::after { content: ""; position: absolute; left: -12px; right: -12px; top: 100%; height: 56px; }
+}
+@media (min-width: 1101px) and (hover: hover) {
+  .report-page .rf-deck:has(.low:hover) .uml-card.mid,
+  .report-page .rf-deck:has(.low:hover) .uml-card.high,
+  .report-page .rf-deck:has(.mid:hover) .uml-card.high { translate: 24px 0; }
+  .report-page .rf-deck:has(.mid:hover) .uml-card.low,
+  .report-page .rf-deck:has(.high:hover) .uml-card.low,
+  .report-page .rf-deck:has(.high:hover) .uml-card.mid { translate: -24px 0; }
+}
+@media (max-width: 1100px) {
+  /* Fan shown as a row / column here: the cards rise one after another. */
+  .report-page .rf-deck.rv-in:not(.rv-now) .uml-card { animation: rv-rise 600ms cubic-bezier(0.22, 0.61, 0.36, 1) backwards; }
+  .report-page .rf-deck.rv-in:not(.rv-now) .uml-card.mid { animation-delay: 90ms; }
+  .report-page .rf-deck.rv-in:not(.rv-now) .uml-card.high { animation-delay: 180ms; }
+  .report-page .rf-deck[data-rv] { opacity: 1; transform: none; animation: none; }
+  .report-page .rf-deck:not(.rv-in) .uml-card { opacity: 0; }
+}
+
+/* R07 / M14 FAQ: height 300 мс ease-out (phone: 280 мс cubic-bezier(.2,.8,.2,1)), chevron 180° in 250 мс,
+   the answer text fades in 80 мс after the box starts to open. */
+.rf-faq-item img { transition: transform 250ms ease-out; }
+.rf-faq-item.is-open .rf-faq-a p { animation: rf-faq-text 220ms ease-out 80ms backwards; }
+@keyframes rf-faq-text { from { opacity: 0; } }
+@media (max-width: 767px) {
+  .rf-faq-a { transition-duration: 280ms; transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+}
+
+/* M12 (phone): the current section name in the sticky plate changes with a slide up 8px + fade, 180 мс. */
+@media (max-width: 1100px) {
+  body .report-page .rf-toc-m strong { animation: rf-toc-swap 180ms ease-out; }
+  @keyframes rf-toc-swap { from { opacity: 0; transform: translateY(8px); } }
+  /* M12: «Цветная точка слева перекрашивается под зону раздела» — 8px dot, recoloured in the same 180 мс. */
+  body .report-page .rf-toc-m .rf-toc-dot { display: block; flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: #4a6b1f; transition: background-color 180ms ease-out; }
+  body .report-page .rf-toc-m .rf-toc-dot.is-y { background: #8a6416; }
+  body .report-page .rf-toc-m .rf-toc-dot.is-r { background: #a03a22; }
+}
+.rf-toc-dot { display: none; }
+
+/* M13 (phone): the tapped marker turns lime with a pulse (1 → 1.15 → 1, 300 мс), the other markers dim to 60%;
+   its description card lights up lime. */
+@media (max-width: 767px) {
+  body .report-page .rf-sheet .rf-pin { transition: background-color 200ms ease-out, box-shadow 200ms ease-out, opacity 200ms ease-out; }
+  body .report-page .rf-sheet .rf-pin.is-on { animation: rf-pulse 300ms ease-out; }
+  body .report-page .rf-sheet .rf-pin:not(.is-on) { opacity: 0.6; }
+  @keyframes rf-pulse { 50% { transform: scale(1.15); } }
+  body .report-page .rf-marker.is-on { animation: rf-card-lit 900ms ease-out; }
+  @keyframes rf-card-lit { from { background-color: #f6fbc8; border-color: #e7f551; } }
+  /* M13: «↑ К отчёту» on the active card — a dark pill at the card's top-right edge (storyboard frame 3); it scrolls
+     back to the sheet with the same marker active. The card is now a group with two sibling buttons (select / back). */
+  body .report-page .rf-marker { position: relative; }
+  body .report-page .rf-marker .rf-back {
+    position: absolute; right: 12px; top: -14px; z-index: 1; display: inline-flex; align-items: center; gap: 4px;
+    height: 28px; padding: 0 12px; border: 0; border-radius: 999px; background: #0b0c08; color: #e7f551;
+    font: inherit; font-size: 12px; line-height: 16px; white-space: nowrap; cursor: pointer;
+    animation: rf-back-in 200ms ease-out 200ms backwards;
+  }
+  @keyframes rf-back-in { from { opacity: 0; transform: translateY(4px); } }
+}
+.rf-back { display: none; }
+/* the card button fills the card (layout of the old <button class="rf-marker">), its hit area is the whole card */
+.report-page .rf-marker > .rf-marker-main {
+  display: flex; flex: 1 1 auto; gap: inherit; align-items: inherit; min-width: 0; padding: 0; margin: 0; border: 0;
+  background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.report-page .rf-marker { position: relative; }
+.report-page .rf-marker > .rf-marker-main::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.report-page .rf-marker > .rf-marker-main:focus-visible { outline: none; }
+.report-page .rf-marker:has(> .rf-marker-main:focus-visible) { outline: 3px solid #e7f551; outline-offset: 2px; }
+@media (min-width: 768px) { .report-page .rf-marker .rf-back { display: none; } }
+
+/* Smart Animate hovers (Figma prototype reactions, EASE_OUT = ease-out): ToC/Item 150 мс (label 65% → 100% ink,
+   marker shows), FAQ/Item hover 150 мс (underline fades in) / click 300 мс, Button/Icon 150 мс (fill #F2F2F2),
+   Link/Arrow 200 мс. R01 zone card hover «тень S → M, 200мс» (note). */
+.report-page .toc > a { transition: color 150ms ease-out; }
+.report-page .toc > a::before { transition: opacity 150ms ease-out; }
+.rf-faq-item button > span { text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: transparent; transition: text-decoration-color 150ms ease-out; }
+.rf-faq-item button:hover > span { text-decoration-color: currentColor; }
+.rf-icon-btn, .report-page .toc a.rf-icon-btn { transition: background-color 150ms ease-out, border-color 150ms ease-out, opacity 150ms ease-out; }
+@media (hover: hover) { .rf-icon-btn:not(:disabled):hover { background: #f2f2f2; } }
+.rf-light-link { text-decoration-line: underline; text-underline-offset: 4px; text-decoration-color: transparent; transition: text-decoration-color 200ms ease-out; }
+.rf-light-link:hover { text-decoration-color: currentColor; }
+.rf-zone { transition: border-color 200ms ease-out, box-shadow 200ms ease-out; }
+.rf-zone-head i { transition: transform 200ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .report-page .rf-sheet img.rf-out { display: none; }
+  .report-page .rf-deck .uml-card { translate: none !important; }
+  .report-page .rf-deck.rv-in .uml-card { animation: rv-fade 100ms ease-out backwards !important; }
+  body .report-page .rf-zones[data-rv]:not(.rv-in) > .rf-zone { transform: none; }
+  body .report-page .rf-zones[data-rv].rv-in:not(.rv-now) > .rf-zone { animation: rv-fade 100ms ease-out backwards !important; }
+  .rf-faq-item.is-open .rf-faq-a p, body .report-page .rf-toc-m strong { animation: none !important; }
+  body .report-page .rf-sheet .rf-pin.is-on, body .report-page .rf-marker.is-on { animation: none !important; }
+  body .report-page .rf-marker .rf-back { animation: rv-fade 100ms ease-out backwards; }
+}

@@ -1,0 +1,333 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { BottomSheet } from "@/components/BottomSheet";
+import { prefersReducedMotion, useDialog } from "@/components/useDialog";
+import { useContent } from "@/components/ContentProvider";
+
+export const NAV = [
+  { href: "/specialists", label: "Для специалистов" },
+  { href: "/labs", label: "Где сдать тест" },
+  { href: "/certificates", label: "Сертификаты" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/reviews", label: "Отзывы" },
+  { href: "/contacts", label: "Контакты" },
+  { href: "/blog", label: "Блог" },
+];
+
+// Figma «Мобильное меню · 390×844» (1298:1430): ten items in this order; «Для специалистов» lives in the pill below.
+const MENU = [
+  { href: "/", label: "О тесте FOX" },
+  { href: "/#checker", label: "Симптомы" },
+  { href: "/#kak-sdat", label: "Как сдать тест" },
+  { href: "/labs", label: "Где сдать тест" },
+  { href: "/report", label: "Как читать отчёт" },
+  { href: "/certificates", label: "Сертификаты" },
+  { href: "/reviews", label: "Отзывы" },
+  { href: "/blog", label: "Блог" },
+  { href: "/faq", label: "Вопросы и ответы" },
+  { href: "/contacts", label: "Контакты" },
+];
+
+// Figma Header / B2B (1120:3114): anchors of /specialists + «Пациентам →» switch on the right.
+const B2B = [
+  { href: "/specialists#method", label: "О методе" },
+  { href: "/specialists#areas", label: "Области применения" },
+  { href: "/specialists#route", label: "Маршрут" },
+  { href: "/specialists#protocol", label: "Протокол" },
+  { href: "/specialists#report", label: "Отчёт" },
+  { href: "/specialists#experts", label: "Эксперты" },
+  { href: "/specialists#course", label: "Курс" },
+  { href: "/specialists#labs", label: "Лаборатории" },
+];
+
+// Figma Header / Course (1133:717): badge + section anchors + «Получить доступ».
+const COURSE = [
+  { href: "/course#audience", label: "Для кого" },
+  { href: "/course#program", label: "Программа" },
+  { href: "/course#lectors", label: "Лекторы" },
+  { href: "/course#includes", label: "Что входит" },
+  { href: "/course#faq", label: "Вопросы" },
+];
+
+// G06 close: the whole close takes 200 мс. The items leave in reverse order inside it (delay (N−i)×8 мс, 120 мс
+// each: the last one is gone at 200 мс) while the panel rolls up over the same 200 мс.
+const MENU_STEP = 8;
+const MENU_ITEM_OUT = 120;
+const MENU_CLOSE_MS = MENU.length * MENU_STEP + MENU_ITEM_OUT;
+
+export const PARTNER_LOGIN = "https://foodfox.yuri.guru/partner";
+export const PARTNER_APPLY = "https://foodfox.yuri.guru/partner/apply";
+
+export function Header() {
+  const path = usePathname();
+  const content = useContent();
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [menu, setMenuOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [mobileNav, setMobileNav] = useState(false);
+  const [phoneNav, setPhoneNav] = useState(false);
+  const [partnerSheet, setPartnerSheet] = useState(false);
+  const closePartnerSheet = useCallback(() => setPartnerSheet(false), []);
+  const lastY = useRef(0);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const swipe = useRef<number | null>(null);
+  const closeTimer = useRef(0);
+  // G06: closing plays the opening in reverse — the items leave bottom-up (30 мс step), then the shutter rolls up
+  // in 200 мс — before the panel unmounts. Reduced motion: a 100 мс fade.
+  const setMenu = (next: boolean | ((value: boolean) => boolean)) => {
+    const value = typeof next === "function" ? next(menu) : next;
+    window.clearTimeout(closeTimer.current);
+    if (value) {
+      setClosing(false);
+      setMenuOpen(true);
+      setHidden(false);
+      return;
+    }
+    if (!menu) return;
+    setClosing(true);
+    closeTimer.current = window.setTimeout(() => {
+      setClosing(false);
+      setMenuOpen(false);
+    }, prefersReducedMotion() ? 100 : MENU_CLOSE_MS);
+  };
+  useDialog(menuRef, () => setMenu(false), menu && !closing);
+  const lessons = path.startsWith("/course/lessons");
+  const [lessonN, setLessonN] = useState(2);
+  useEffect(() => {
+    const onLesson = (event: Event) => setLessonN(Number((event as CustomEvent<number>).detail) || 1);
+    window.addEventListener("fox:lesson", onLesson);
+    return () => window.removeEventListener("fox:lesson", onLesson);
+  }, []);
+  const variant = path.startsWith("/specialists") ? "b2b" : path.startsWith("/course") ? "course" : "site";
+  const darkHero = path === "/" || path.startsWith("/specialists");
+  // G01 («на тёмном hero шапка прозрачная»): the home header on phones (≤767) is transparent over the dark hero, white
+  // logo — the customer's decision over the light bar the 390 frame (1424:48354) draws. The light Default bar
+  // (#F8F9F6, dark logo) stays on the tablet home (768–1100, as before) and on /specialists at 390 (frame 1317:6392).
+  const homeMobileStack = (path === "/" && mobileNav && !phoneNav) || (path.startsWith("/specialists") && phoneNav);
+  const onDark = !scrolled && darkHero && !lessons && !homeMobileStack;
+  const items = variant === "b2b" ? B2B : variant === "course" ? COURSE : NAV;
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1100px)");
+    const phone = window.matchMedia("(max-width: 767px)");
+    const syncMobile = () => { setMobileNav(mq.matches); setPhoneNav(phone.matches); };
+    syncMobile();
+    mq.addEventListener("change", syncMobile);
+    phone.addEventListener("change", syncMobile);
+    return () => { mq.removeEventListener("change", syncMobile); phone.removeEventListener("change", syncMobile); };
+  }, []);
+
+  useEffect(() => {
+    // G01: Scrolled after 80 px; hidden after 400 px (80 on phones) while scrolling down, back on any scroll up.
+    // Direction is measured from the point where it last turned, not per event: slow trackpad / finger scrolling
+    // fires 1–5 px steps, which never passed the old «> 6 px per event» test (the header never hid or came back),
+    // while ±6 px jitter could flip it. Hiding needs 10 px of travel down; any scroll up brings it back. While a window / sheet / the menu locks the page (useDialog sets
+    // html.is-locked) the header ignores scrolling altogether, so opening «Связаться» at the top neither shrinks nor
+    // hides it and it is the same after closing (G10). Coming back needs no travel at all («любой скролл вверх»).
+    const mq = window.matchMedia("(max-width: 1100px)");
+    let turn = window.scrollY;
+    let dir = 0;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const y = Math.max(0, window.scrollY);
+      const last = lastY.current;
+      lastY.current = y;
+      if (document.documentElement.classList.contains("is-locked")) {
+        turn = y;
+        dir = 0;
+        return;
+      }
+      // 8 px of hysteresis around 80 px: resting right on the threshold (touch bounce, a wheel tick of a few px)
+      // must not flip the background and the logo colour back and forth.
+      setScrolled((was) => (was ? y > 72 : y > 80));
+      if (menu || y < 40) {
+        turn = y;
+        setHidden(false);
+        return;
+      }
+      if (y === last) return;
+      const down = y > last;
+      if ((down && dir < 0) || (!down && dir > 0)) turn = last;
+      dir = down ? 1 : -1;
+      if (down && y > (mq.matches ? 80 : 400) && y - turn >= 10) setHidden(true);
+      else if (!down) setHidden(false);
+    };
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    lastY.current = window.scrollY;
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.cancelAnimationFrame(frame);
+    };
+  }, [menu]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("is-scrolled", scrolled);
+  }, [scrolled]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+    setClosing(false);
+  }, [path]);
+
+  useEffect(() => {
+    if (menu) setHidden(false);
+  }, [menu]);
+
+  return (
+    <header
+      className={`site-header${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}${onDark ? " on-dark" : ""}${homeMobileStack && !scrolled && !menu ? " is-home-top" : ""} header-${variant}`}
+    >
+      <div className="header-left">
+        <Link href="/" className="logo" aria-label="FOX Food Xplorer">
+          <img src={onDark || menu ? "/icons/logo-light.svg" : "/icons/logo-dark.svg"} alt="" />
+        </Link>
+        {variant === "course" && <span className="course-badge">Курс для специалистов</span>}
+        <nav className="nav" aria-label="Разделы">
+          {items.map((item) => (
+            <Link key={item.href} href={item.href} aria-current={path === item.href || (item.href !== "/" && path.startsWith(item.href)) ? "page" : undefined}>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+      <div className="header-right">
+        {variant === "b2b" && (
+          <Link className="b2b-switch" href="/">
+            Пациентам
+            <img src="/icons/arrow-right.svg" alt="" />
+          </Link>
+        )}
+        {variant === "site" && (
+          <Link className="example-link" href="/report">
+            Пример результата
+            <img src="/icons/download.svg" alt="" />
+          </Link>
+        )}
+        {lessons ? (
+          <span className="lesson-progress" aria-label={`Пройдено ${lessonN} из 6 уроков`}>
+            {lessonN} из 6 уроков
+            <i><b style={{ width: `${(lessonN / 6) * 100}%` }} /></i>
+          </span>
+        ) : null}
+        <a
+          className={`partner-dot${lessons ? " is-lessons" : ""}${variant === "course" && !lessons ? " has-label" : ""}`}
+          href={PARTNER_LOGIN}
+          aria-label={variant === "course" && !lessons ? "Войти в кабинет партнёра" : "Кабинет партнёра"}
+          onClick={(event) => {
+            // M08: on phones the icon opens a sheet «Войти» / «Стать партнёром» instead of leaving the page.
+            if (!window.matchMedia("(max-width: 1100px)").matches) return;
+            event.preventDefault();
+            setPartnerSheet(true);
+          }}
+        >
+          <img src={onDark || menu ? "/icons/user-light.svg" : "/icons/user.svg"} alt="" />
+          {/* Figma Header / Course 1133:717 «partner-login»: icon + «Войти» on desktop; the phone header keeps the circle. */}
+          {variant === "course" && !lessons && <span className="partner-label">Войти</span>}
+        </a>
+        {lessons ? (
+          <span className="cabinet-pill my-lessons">
+            <img src="/figma/course/my-avatar.webp" alt="" width={32} height={32} />
+            Мои уроки
+          </span>
+        ) : variant === "site" ? (
+          <>
+            {/* Figma Header (1069:409): «Пример результата» + one button; white on the transparent state. */}
+            <button className={`btn ${onDark ? "btn-light" : "btn-dark"}`} type="button" onClick={() => window.dispatchEvent(new Event("fox:book"))}>Записаться на тест</button>
+          </>
+        ) : (
+          path === "/course" ? (
+            <button className="btn btn-dark" type="button" onClick={() => window.dispatchEvent(new Event("fox:course"))}>Получить доступ</button>
+          ) : variant === "b2b" ? (
+            // Figma Header / B2B 1120:3114 and «Специалистам · Default / Scrolled» 1296:488.
+            <Link className="btn btn-dark" href="/course">Зарегистрироваться на курс</Link>
+          ) : (
+            <Link className="btn btn-dark" href="/course">Получить доступ</Link>
+          )
+        )}
+        <button
+          className={`menu-capsule burger${menu && !closing ? " is-x" : ""}`}
+          aria-label="Меню"
+          aria-expanded={menu}
+          aria-controls="mobile-menu"
+          onClick={() => setMenu(!menu || closing)}
+        >
+          <span className="menu-capsule-label">{menu && !closing ? "Закрыть" : "Меню"}</span>
+          <span className="menu-capsule-burger" aria-hidden>
+            <span />
+            <span />
+            <span />
+          </span>
+        </button>
+      </div>
+      {partnerSheet && (
+        <BottomSheet label="Кабинет партнёра" className="partner-bs" onClose={closePartnerSheet} portal>
+          <a className="btn btn-dark" href={PARTNER_LOGIN}>Войти</a>
+          <a className="btn btn-ghost" href={PARTNER_APPLY}>Стать партнёром</a>
+        </BottomSheet>
+      )}
+      {menu && (
+        <div
+          id="mobile-menu"
+          ref={menuRef}
+          className={`mobile-menu${closing ? " is-closing" : ""}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Меню"
+          onTouchStart={(event) => {
+            swipe.current = event.touches[0]?.clientY ?? null;
+          }}
+          onTouchEnd={(event) => {
+            const start = swipe.current;
+            swipe.current = null;
+            const end = event.changedTouches[0]?.clientY ?? start;
+            // G06: a swipe up closes the menu when the list is not scrolled.
+            if (start !== null && end !== null && start - end > 60 && (menuRef.current?.scrollTop ?? 0) <= 0) setMenu(false);
+          }}
+        >
+          {/* G06: items cascade from 120мс with a 30мс step; the bottom block comes last, +80мс. */}
+          {MENU.map((item, index) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => item.href.includes("#") && setMenu(false)}
+              style={{ animationDelay: `${120 + index * 30}ms`, "--out-d": `${(MENU.length - index) * MENU_STEP}ms` } as React.CSSProperties}
+              aria-current={(item.href === "/" ? path === "/" : !item.href.includes("#") && path.startsWith(item.href)) ? "page" : undefined}
+            >
+              {item.label} <img src="/icons/arrow-right-light.svg" alt="" />
+            </Link>
+          ))}
+          {/* Figma 1298:1430 bottom block: white CTA on the full width, «Для специалистов» + «Кабинет партнёра», phone + Telegram. */}
+          <div className="mobile-menu-foot mm-bottom" style={{ animationDelay: `${120 + (MENU.length - 1) * 30 + 80}ms`, "--out-d": "0ms" } as React.CSSProperties}>
+            <button className="btn btn-light mm-cta" type="button" onClick={() => { setMenu(false); window.dispatchEvent(new Event("fox:book")); }}>Записаться на тест</button>
+            <div className="mm-pills">
+              <Link className="mm-pill" href="/specialists" aria-current={path.startsWith("/specialists") ? "page" : undefined}>
+                <img src="/icons/award-light.svg" alt="" />
+                Для специалистов
+              </Link>
+              <a className="mm-pill" href={PARTNER_LOGIN}>
+                <img src="/icons/user-light.svg" alt="" />
+                Кабинет партнёра
+              </a>
+            </div>
+            <div className="mm-contacts">
+              <a href={content.telHref}>{content.text("contacts.phone")}</a>
+              <a href={content.text("contacts.telegram")}>
+                <img src="/icons/share/telegram.svg" alt="" />
+                Telegram
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}

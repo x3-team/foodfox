@@ -6,7 +6,7 @@ export const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 24 * 30;
 const SESSION_MAX_AGE = ACCESS_TOKEN_MAX_AGE;
 export const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 90;
 
-export type UserRole = "client" | "admin" | "nutritionist";
+export type UserRole = "client" | "admin" | "nutritionist" | "partner";
 
 export interface SessionData {
   userId: string;
@@ -14,6 +14,8 @@ export interface SessionData {
   email: string;
   displayName: string;
   role: UserRole;
+  /** Issue time, seconds. Tokens older than users.sessions_revoked_at are refused (lib/account-guard.ts). */
+  iat?: number;
 }
 
 export class AuthError extends Error {
@@ -65,7 +67,8 @@ export function verifyPassword(password: string, stored: string): boolean {
 }
 
 export function encodeSession(data: SessionData): string {
-  const body = Buffer.from(JSON.stringify(data)).toString("base64url");
+  const stamped: SessionData = { ...data, iat: Math.floor(Date.now() / 1000) };
+  const body = Buffer.from(JSON.stringify(stamped)).toString("base64url");
   const sig = createHmac("sha256", secret()).update(body).digest("base64url");
   return `${body}.${sig}`;
 }

@@ -1,17 +1,22 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin", "cyrillic"],
+// Inter (opsz 14, as served by Google Fonts) from the repo; the build-time
+// Google Fonts fetch made VPS deploys fail intermittently.
+const inter = localFont({
+  src: "../fonts/Inter-var.woff2",
+  weight: "400 700",
+  style: "normal",
   variable: "--font-sans",
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "FoodFox — FOX Food Xplorer",
   description: "Персональный план питания по результатам FOX IgG",
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({

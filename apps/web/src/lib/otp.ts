@@ -32,10 +32,42 @@ export function hashOtp(phone: string, code: string): string {
 }
 
 /**
+ * Partner-cabinet demo: the same number and code as the mobile app demo, so
+ * one test account opens both. The partner role is granted per login (verify
+ * with intent "partner"), never stored, so the mobile client login on this
+ * number stays a client. See verifyPhoneOtp in lib/db.ts.
+ */
+export const PARTNER_DEMO_PHONE_DEFAULT = "79251111111";
+
+export function partnerDemoPhone(): string {
+  return (
+    normalizePhone(process.env.FOX_PARTNER_DEMO_PHONE ?? PARTNER_DEMO_PHONE_DEFAULT) ??
+    PARTNER_DEMO_PHONE_DEFAULT
+  );
+}
+
+export function isPartnerDemoPhone(phone: string): boolean {
+  return phone === partnerDemoPhone();
+}
+
+/**
+ * Echo the fixed code in the HTTP response only when the operator turned demo
+ * mode on. Login still accepts the fixed code when the flag is off.
+ */
+export function isDemoMode(): boolean {
+  const flag = (process.env.FOX_DEMO_MODE ?? "").trim().toLowerCase();
+  return flag === "1" || flag === "true" || flag === "yes";
+}
+
+/**
  * Demo numbers bypass the SMS gateway and always accept a fixed code, so the
- * app can be reviewed without a live provider.
+ * app can be reviewed without a live provider. Every other number gets null.
  */
 export function demoCodeFor(phone: string): string | null {
+  if (isPartnerDemoPhone(phone)) {
+    // Defaults to the client demo code: the number is shared with the app.
+    return process.env.FOX_PARTNER_DEMO_OTP ?? process.env.FOX_DEMO_OTP ?? "1111";
+  }
   // Normalise the configured list the same way the caller's number was
   // normalised. Operators write these by hand in .env and reasonably reach for
   // "+7 925 111-11-11"; comparing raw strings silently issues a real random
@@ -45,4 +77,22 @@ export function demoCodeFor(phone: string): string | null {
     .map((p) => normalizePhone(p))
     .filter((p): p is string => p !== null);
   return demo.includes(phone) ? (process.env.FOX_DEMO_OTP ?? "1111") : null;
+}
+
+/**
+ * JSON body for POST /api/auth/otp/request.
+ * `demoCode` is present only for a demo number and only when FOX_DEMO_MODE is set.
+ */
+export function otpRequestPayload(
+  phone: string,
+  resendAfterMs: number,
+  demoCode: string | null,
+): { ok: true; phone: string; resendAfterMs: number; demoCode?: string } {
+  const body: { ok: true; phone: string; resendAfterMs: number; demoCode?: string } = {
+    ok: true,
+    phone,
+    resendAfterMs,
+  };
+  if (demoCode && isDemoMode()) body.demoCode = demoCode;
+  return body;
 }

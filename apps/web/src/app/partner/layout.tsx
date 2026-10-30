@@ -1,8 +1,11 @@
-import { Manrope } from "next/font/google";
+import localFont from "next/font/local";
 
-const manrope = Manrope({
-  subsets: ["latin", "cyrillic"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+// Manrope served from the repo (was next/font/google; build-time fetch broke deploys).
+const manrope = localFont({
+  src: "../../fonts/Manrope-var.woff2",
+  weight: "300 800",
+  style: "normal",
+  display: "swap",
 });
 
 export const metadata = {
@@ -15,7 +18,7 @@ export default function PartnerLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${manrope.className} min-h-screen bg-[#F8F9F6]`}>
+    <div className={`${manrope.className} min-h-screen overflow-x-hidden bg-[#F8F9F6]`}>
       {children}
     </div>
   );

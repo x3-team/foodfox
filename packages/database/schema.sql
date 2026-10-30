@@ -9,7 +9,7 @@ CREATE TABLE users (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email       TEXT UNIQUE NOT NULL,
     password_hash TEXT,
-    role        TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('client', 'nutritionist', 'admin')),
+    role        TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('client', 'nutritionist', 'admin', 'partner')),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
