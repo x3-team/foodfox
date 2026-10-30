@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { hasDatabase, q } from "@/lib/admin/db";
+import { recordCurrentConsents } from "@/lib/admin/consents";
 import { normalizeLead, pagePath, utmFrom } from "@/lib/admin/leads";
 
 /* Every form of the site posts here (kind: contact, course, review, city-wait, book-wait). Leads go to the `leads`
@@ -61,6 +62,13 @@ export async function POST(request: NextRequest) {
         (request.headers.get("user-agent") || "").slice(0, 300),
       ],
     );
+    // Forms with the consent checkbox send consent: true; the register keeps which versions were accepted.
+    if (body.consent === true) {
+      await recordCurrentConsents({
+        subject: "lead", subjectId: row.id, contact: lead.email || lead.phone || null, source: "site",
+        ip, userAgent: request.headers.get("user-agent"),
+      }).catch((error) => console.error("[lead] consent not recorded", error));
+    }
     return NextResponse.json({ ok: true, id: row.id });
   } catch (error) {
     console.error("[lead] save failed", error);

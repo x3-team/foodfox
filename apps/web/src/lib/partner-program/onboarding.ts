@@ -4,6 +4,7 @@ import { CONTRACT_VERSION, contractFor, contractSettings, isLegalForm, LEGAL_FOR
 import { inTx, queueEvent, requirePartnerPool, sessionPhone } from "./db";
 import { pdEnabled, sealJson, storeSealedFile } from "./seal";
 import * as v from "./validate";
+import { recordConsent, recordCurrentConsents, type ConsentMeta } from "@/lib/consents";
 
 /* Joining the program, step by step as in БПИТ12.8:
    врач? → гражданство РФ? → форма (ИП / СЗ / ФЛ) → договор (принимаю / не принимаю) → личные данные и сканы.
@@ -141,7 +142,7 @@ export async function readUpload(form: FormData, field: string, label: string): 
 }
 
 /** The last step: personal data and scans. Creates (or refreshes) the partner card with status «Анкета». */
-export async function submit(userId: string, form: FormData): Promise<OnboardingState> {
+export async function submit(userId: string, form: FormData, meta: ConsentMeta = {}): Promise<OnboardingState> {
   if (!pdEnabled()) throw new Error("Приём документов временно выключен. Мы сообщим, когда можно будет продолжить");
   const p = await requirePartnerPool();
   const phone = await phoneFor(p, userId);
@@ -173,7 +174,7 @@ export async function submit(userId: string, form: FormData): Promise<Onboarding
   const hints = { passport: v.mask(pd.passport.replace(" ", "")), inn: v.mask(pd.inn), account: v.mask(pd.bank.account), bik: pd.bank.bik };
   const payoutMethod = `${LEGAL_FORMS[legalForm].short} · счёт ${hints.account}`;
 
-  await inTx(p, async (c) => {
+  const { partnerId, version } = await inTx(p, async (c) => {
     const existing = await c.query(`SELECT id, status FROM partners WHERE phone = $1 FOR UPDATE`, [phone]);
     if (["approved", "certified"].includes(existing.rows[0]?.status)) throw new Error("Вы уже партнёр — войдите в кабинет");
     // The version the partner actually accepted, not today's: the staff re-ask whoever accepted an older one.
@@ -206,6 +207,10 @@ export async function submit(userId: string, form: FormData): Promise<Onboarding
     await queueEvent(c, partnerId, "crm.partner_created", { legalForm });
     await queueEvent(c, partnerId, "mail.accountant_new_partner", { legalForm });
     await queueEvent(c, partnerId, "mail.service_contract_copy", { legalForm, contractVersion: version });
+    return { partnerId, version };
   });
+  // Outside the transaction: a register that is not migrated yet must not roll the application back.
+  await recordCurrentConsents(p, { subject: "partner", subjectId: partnerId, contact: phone, source: "partner", ...meta });
+  await recordConsent(p, { subject: "partner", subjectId: partnerId, contact: phone, kind: "partner_contract", version, source: "partner", acceptedAt: rows[0].contract_accepted_at, ...meta });
   return onboardingState(userId);
 }
