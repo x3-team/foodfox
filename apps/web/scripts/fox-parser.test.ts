@@ -4,7 +4,7 @@
  * Run: npx tsx scripts/fox-parser.test.ts
  */
 import assert from "node:assert/strict";
-import { parseFoxPdfText, countZones } from "../src/lib/fox-parser";
+import { parseFoxPdfText, countZones, fixMixedScript } from "../src/lib/fox-parser";
 
 function test(name: string, fn: () => void) {
   try {
@@ -15,6 +15,13 @@ function test(name: string, fn: () => void) {
     throw e;
   }
 }
+
+test("replaces Latin look-alike letters inside Russian names", () => {
+  const r = parseFoxPdfText("\u0043авойская капуста 5,10 мкг/мл");
+  assert.equal(r[0].foxName, "Савойская капуста");
+  assert.equal(fixMixedScript("CCD"), "CCD");
+  assert.equal(fixMixedScript("Молоко коровье Bos d 4 *"), "Молоко коровье Bos d 4 *");
+});
 
 test("filters narrative interpretation lines", () => {
   const text = `
