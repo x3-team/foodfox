@@ -221,7 +221,7 @@ function BlockInput({ block, onChange }: { block: Block; onChange: (change: Part
   }
 }
 
-function TagInput({ value, suggestions, label, onChange }: { value: string[]; suggestions: string[]; label: string; onChange: (v: string[]) => void }) {
+export function TagInput({ value, suggestions, label, onChange }: { value: string[]; suggestions: string[]; label: string; onChange: (v: string[]) => void }) {
   const [draft, setDraft] = useState("");
   const add = (raw: string) => {
     const tag = raw.trim();

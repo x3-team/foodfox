@@ -11,6 +11,11 @@ const PATHS: Record<string, string> = {
   seo: "M10.5 18a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15zM21 21l-5.2-5.2",
   users: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4.4 3.6-8 8-8s8 3.6 8 8",
   audit: "M12 7v5l3 3M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z",
+  phone: "M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM11 18h2",
+  report: "M6 2h8l4 4v16H6zM14 2v4h4M9 12h6M9 16h4M9 8h2",
+  lock: "M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4",
+  shield: "M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z",
+  refresh: "M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4",
   menu: "M3 6h18M3 12h18M3 18h18",
   close: "M6 6l12 12M18 6L6 18",
   more: "M5 12h.01M12 12h.01M19 12h.01",
@@ -23,6 +28,12 @@ const PATHS: Record<string, string> = {
   upload: "M12 16V4M7 9l5-5 5 5M4 20h16",
   copy: "M8 8h12v12H8zM4 16V4h12",
   back: "M15 5l-7 7 7 7",
+  calendar: "M4 6h16v15H4zM4 10h16M8 3v5M16 3v5M8 14h3M8 17h6",
+  recipe: "M6 13h12a6 6 0 0 1-12 0zM4 13h16M9 9c0-2 2-2 2-4M14 9c0-2 2-2 2-4",
+  catalog: "M4 5h16M4 12h16M4 19h10M18 17l2 2-2 2",
+  chat: "M4 5h16v11H9l-5 4zM8 10h8M8 13h5",
+  send: "M21 3L3 10.5l7 2.5 2.5 7zM10 13l11-10",
+  chart: "M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-3",
 };
 
 export function Icon({ name, size = 20 }: { name: keyof typeof PATHS | string; size?: number }) {

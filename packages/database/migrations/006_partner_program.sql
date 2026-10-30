@@ -2,9 +2,9 @@
 -- Builds on the partner tables of 005_site_admin.sql. Safe to run more than once: apps/site applies it on start
 -- (lib/admin/db.ts) and apps/web before the partner cabinet touches these tables (lib/partner-program/db.ts).
 
--- The accountant reads partners' personal data, marks acts and payments; nobody else sees passports in full.
-ALTER TABLE admin_users DROP CONSTRAINT IF EXISTS admin_users_role_check;
-ALTER TABLE admin_users ADD CONSTRAINT admin_users_role_check CHECK (role IN ('admin', 'manager', 'accountant'));
+-- The accountant role (reads partners' personal data, marks acts and payments) comes with the staff roles of
+-- 011_app_admin.sql. This file must not touch admin_users_role_check: it runs on every start, and a narrower
+-- CHECK here would fail on staff with the newer roles.
 
 -- Legal side of a partner (БПИТ12.8): tax form, accepted contract, and the steps the accountant and the client
 -- service specialist take after the application (1С:ДО approval, ФНС registration of a natural person, 1С:ERP).

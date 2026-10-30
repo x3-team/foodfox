@@ -2,15 +2,14 @@
 
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
-import { assertStaff, type Role } from "@/lib/admin/auth";
+import { assertStaff, isRole, ROLE_LABEL as ROLE_TITLE, type Role } from "@/lib/admin/auth";
 import { audit } from "@/lib/admin/audit";
 import { one, q } from "@/lib/admin/db";
 import { hashPassword, passwordProblem, verifyPassword } from "@/lib/admin/password";
 
 export type UserResult = { ok: boolean; message?: string; password?: string };
 
-const ROLE_LABEL: Record<Role, string> = { admin: "администратор", manager: "менеджер", accountant: "бухгалтер" };
-const isRole = (value: string): value is Role => value === "admin" || value === "manager" || value === "accountant";
+const ROLE_LABEL = Object.fromEntries(Object.entries(ROLE_TITLE).map(([k, v]) => [k, v.toLowerCase()])) as Record<Role, string>;
 
 /** Readable one-time password: no 0/O/1/l, letters and digits guaranteed. */
 function tempPassword(): string {
@@ -50,7 +49,7 @@ export async function updateUser(id: string, patch: { role?: string; is_active?:
   if (!user) return { ok: false, message: "Пользователь не найден" };
   const losesAdmin = (patch.role && patch.role !== "admin") || patch.is_active === false;
   if (user.role === "admin" && losesAdmin && (await otherActiveAdmins(id)) === 0) {
-    return { ok: false, message: "Нельзя оставить сайт без администратора" };
+    return { ok: false, message: "Нельзя оставить админку без администратора" };
   }
   if (patch.role !== undefined) {
     if (!isRole(patch.role)) return { ok: false, message: "Неизвестная роль" };
@@ -81,6 +80,18 @@ export async function resetPassword(id: string): Promise<UserResult> {
   await q("DELETE FROM admin_sessions WHERE user_id = $1", [id]);
   await audit(staff, { action: "reset_password", entity: "user", entityId: id, summary: `Сброшен пароль: ${user.name || user.email}` });
   return { ok: true, password };
+}
+
+/** For a staff member who lost the phone: 2FA off, all sessions closed; they enrol again from the profile. */
+export async function resetMfa(id: string): Promise<UserResult> {
+  const staff = await assertStaff("users");
+  const user = await one<{ email: string; name: string }>("SELECT email, name FROM admin_users WHERE id = $1 AND totp_enabled_at IS NOT NULL", [id]);
+  if (!user) return { ok: false, message: "Двухфакторный вход у сотрудника не включён" };
+  await q("UPDATE admin_users SET totp_secret = NULL, totp_enabled_at = NULL, totp_last_step = 0, updated_at = now() WHERE id = $1", [id]);
+  await q("DELETE FROM admin_sessions WHERE user_id = $1 AND id <> $2", [id, staff.sessionId]);
+  await audit(staff, { action: "mfa_reset", entity: "user", entityId: id, summary: `Сброшен двухфакторный вход: ${user.name || user.email}` });
+  revalidatePath("/admin/users");
+  return { ok: true, message: "Двухфакторный вход сброшен" };
 }
 
 export async function endSessions(id: string): Promise<UserResult> {
