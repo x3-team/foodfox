@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import { LEGAL_FORMS, type LegalForm } from "@/lib/partner-program/contracts";
+import { contractSettings, LEGAL_FORMS, type LegalForm } from "@/lib/partner-program/contracts";
 import { activePartnerId, partnerPool } from "@/lib/partner-program/db";
 import { loadAct, type ActData } from "@/lib/partner-program/rewards";
 import { PrintButton } from "./PrintButton";
@@ -26,12 +26,21 @@ export default async function ActPage({ params }: { params: { id: string } }) {
   const act = partnerId ? await loadAct(partnerId, params.id) : DEMO;
   if (!act) notFound();
   const form = LEGAL_FORMS[act.partner.legalForm as LegalForm];
+  const template = pool ? (await contractSettings(pool)).actTemplate : "";
 
   return (
     <div className="min-h-screen bg-[#F8F9F6] px-4 py-8 text-[#0B0C08] print:bg-white print:p-0">
       <div className="mx-auto max-w-[794px] rounded-[22px] bg-white px-6 py-8 shadow-sm sm:px-12 print:rounded-none print:shadow-none">
         <div className="flex items-start justify-between gap-4 print:hidden">
-          <p className="text-[13px] text-[#5C5E57]">Распечатайте, подпишите и отправьте скан в кабинете, а оригинал — Почтой России.</p>
+          <p className="text-[13px] text-[#5C5E57]">
+            Распечатайте, подпишите и отправьте скан в кабинете, а оригинал — Почтой России.
+            {template ? (
+              <>
+                {" "}Бланк компании:{" "}
+                <a href={template} target="_blank" rel="noreferrer" className="font-medium text-[#4A6B1F] underline underline-offset-4">скачать шаблон акта</a>.
+              </>
+            ) : null}
+          </p>
           <PrintButton />
         </div>
         <h1 className="mt-6 text-center text-[20px] font-medium">Акт выполненных работ № {act.actNo}</h1>

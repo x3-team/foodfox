@@ -12,9 +12,33 @@ export const LEGAL_FORMS: Record<LegalForm, { label: string; short: string; hint
 
 export const isLegalForm = (v: unknown): v is LegalForm => v === "ip" || v === "sz" || v === "fl";
 
+import type { Pool } from "pg";
+
 export const CONTRACT_VERSION = "draft-2026-10";
 
-export function contractFor(form: LegalForm): { version: string; title: string; sections: { heading: string; text: string }[] } {
+/* Templates the staff upload in the admin (Страницы → «Договор и акт партнёра», site_content partners.*): a PDF per
+   tax form, the act template and the version recorded when a partner accepts. Empty means the draft text below. */
+export type ContractSettings = { version: string; pdf: Record<LegalForm, string>; actTemplate: string };
+
+export async function contractSettings(p: Pool): Promise<ContractSettings> {
+  const { rows } = await p
+    .query<{ key: string; value: unknown }>(`SELECT key, value FROM site_content WHERE key LIKE 'partners.%'`)
+    .catch(() => ({ rows: [] as { key: string; value: unknown }[] }));
+  const get = (key: string) => {
+    const value = rows.find((r) => r.key === key)?.value;
+    return typeof value === "string" ? value.trim() : "";
+  };
+  return {
+    version: get("partners.contractVersion") || CONTRACT_VERSION,
+    pdf: { ip: get("partners.contractIp"), sz: get("partners.contractSz"), fl: get("partners.contractFl") },
+    actTemplate: get("partners.actTemplate"),
+  };
+}
+
+export function contractFor(
+  form: LegalForm,
+  settings?: ContractSettings,
+): { version: string; title: string; pdf: string; sections: { heading: string; text: string }[] } {
   const party = {
     ip: "индивидуальный предприниматель, действующий на основании свидетельства о регистрации (ОГРНИП)",
     sz: "физическое лицо, применяющее специальный налоговый режим «Налог на профессиональный доход»",
@@ -25,9 +49,18 @@ export function contractFor(form: LegalForm): { version: string; title: string; 
     sz: "Исполнитель после получения оплаты формирует чек в приложении «Мой налог» и передаёт его Заказчику. Утрата статуса плательщика НПД Исполнитель сообщает Заказчику в течение 3 рабочих дней.",
     fl: "Заказчик как налоговый агент удерживает НДФЛ из вознаграждения и уплачивает страховые взносы в установленном законом порядке.",
   }[form];
+  const title = `Договор партнёра программы FOX Food Xplorer (${LEGAL_FORMS[form].short})`;
+  const pdf = settings?.pdf[form] ?? "";
+  if (pdf) {
+    return {
+      version: settings!.version, title, pdf,
+      sections: [{ heading: `Редакция ${settings!.version}`, text: "Полный текст договора — в PDF по ссылке ниже. Прочитайте его перед тем, как принять." }],
+    };
+  }
   return {
-    version: CONTRACT_VERSION,
-    title: `Договор партнёра программы FOX Food Xplorer (${LEGAL_FORMS[form].short})`,
+    version: settings?.version ?? CONTRACT_VERSION,
+    title,
+    pdf: "",
     sections: [
       { heading: "Образец", text: "Это черновик для проверки процесса. Действующий текст договора пришлёт юридическая служба АлексЛаб, и вас попросят принять его ещё раз." },
       { heading: "1. Стороны", text: `ООО «АлексЛаб» (Заказчик) и ${party} (Исполнитель), принявший условия настоящего договора в кабинете партнёра или в Telegram-боте программы.` },

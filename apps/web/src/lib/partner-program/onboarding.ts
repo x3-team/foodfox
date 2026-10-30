@@ -1,6 +1,6 @@
 import type { Pool } from "pg";
 import { formatPhone } from "@/lib/otp";
-import { CONTRACT_VERSION, contractFor, isLegalForm, LEGAL_FORMS, type LegalForm } from "./contracts";
+import { CONTRACT_VERSION, contractFor, contractSettings, isLegalForm, LEGAL_FORMS, type LegalForm } from "./contracts";
 import { inTx, queueEvent, requirePartnerPool, sessionPhone } from "./db";
 import { pdEnabled, sealJson, storeSealedFile } from "./seal";
 import * as v from "./validate";
@@ -25,7 +25,7 @@ export type OnboardingState = {
   documentsEnabled: boolean;
 };
 
-type Row = { status: OnboardingStatus; is_doctor: boolean | null; citizen_rf: boolean | null; legal_form: LegalForm | null; contract_accepted_at: Date | null };
+type Row = { status: OnboardingStatus; is_doctor: boolean | null; citizen_rf: boolean | null; legal_form: LegalForm | null; contract_version: string | null; contract_accepted_at: Date | null };
 
 function stepOf(row: Row | undefined): Step {
   if (!row || row.is_doctor === null) return "doctor";
@@ -56,7 +56,7 @@ export async function onboardingState(userId: string): Promise<OnboardingState> 
     isDoctor: row?.is_doctor ?? null,
     citizenRf: row?.citizen_rf ?? null,
     legalForm: row?.legal_form ?? null,
-    contract: row?.legal_form ? contractFor(row.legal_form) : null,
+    contract: row?.legal_form ? contractFor(row.legal_form, await contractSettings(p)) : null,
     partnerStatus: (partner.rows[0]?.status as string | undefined) ?? null,
     documentsEnabled: pdEnabled(),
   };
@@ -112,7 +112,7 @@ export async function answer(userId: string, step: string, value: unknown): Prom
   } else if (step === "contract") {
     if (typeof value !== "boolean") throw new Error("Примите договор или откажитесь");
     if (value) {
-      await p.query(`UPDATE partner_onboarding SET contract_version = $2, contract_accepted_at = now(), updated_at = now() WHERE phone = $1`, [phone, CONTRACT_VERSION]);
+      await p.query(`UPDATE partner_onboarding SET contract_version = $2, contract_accepted_at = now(), updated_at = now() WHERE phone = $1`, [phone, (await contractSettings(p)).version]);
     } else {
       await p.query(`UPDATE partner_onboarding SET status = 'declined', updated_at = now() WHERE phone = $1`, [phone]);
     }
@@ -176,17 +176,19 @@ export async function submit(userId: string, form: FormData): Promise<Onboarding
   await inTx(p, async (c) => {
     const existing = await c.query(`SELECT id, status FROM partners WHERE phone = $1 FOR UPDATE`, [phone]);
     if (["approved", "certified"].includes(existing.rows[0]?.status)) throw new Error("Вы уже партнёр — войдите в кабинет");
-    const values = [name, mail, specialty, city, legalForm, rows[0].contract_accepted_at, payoutMethod];
+    // The version the partner actually accepted, not today's: the staff re-ask whoever accepted an older one.
+    const version = rows[0].contract_version || CONTRACT_VERSION;
+    const values = [name, mail, specialty, city, legalForm, rows[0].contract_accepted_at, payoutMethod, version];
     const partnerId: string = existing.rows[0]
       ? (await c.query(
-          `UPDATE partners SET full_name = $2, email = $3, specialty = $4, city = $5, legal_form = $6, contract_version = '${CONTRACT_VERSION}',
+          `UPDATE partners SET full_name = $2, email = $3, specialty = $4, city = $5, legal_form = $6, contract_version = $9,
                   contract_accepted_at = $7, payout_method = $8, pd_consent_at = now(), status = 'applied', updated_at = now()
             WHERE id = $1 RETURNING id`,
           [existing.rows[0].id, ...values],
         )).rows[0].id
       : (await c.query(
           `INSERT INTO partners (phone, full_name, email, specialty, city, legal_form, contract_version, contract_accepted_at, payout_method, pd_consent_at, status)
-           VALUES ($1, $2, $3, $4, $5, $6, '${CONTRACT_VERSION}', $7, $8, now(), 'applied') RETURNING id`,
+           VALUES ($1, $2, $3, $4, $5, $6, $9, $7, $8, now(), 'applied') RETURNING id`,
           [phone, ...values],
         )).rows[0].id;
     await c.query(
@@ -203,7 +205,7 @@ export async function submit(userId: string, form: FormData): Promise<Onboarding
     // The three parallel sends of БПИТ12.8 after the personal data step.
     await queueEvent(c, partnerId, "crm.partner_created", { legalForm });
     await queueEvent(c, partnerId, "mail.accountant_new_partner", { legalForm });
-    await queueEvent(c, partnerId, "mail.service_contract_copy", { legalForm, contractVersion: CONTRACT_VERSION });
+    await queueEvent(c, partnerId, "mail.service_contract_copy", { legalForm, contractVersion: version });
   });
   return onboardingState(userId);
 }

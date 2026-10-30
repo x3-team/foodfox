@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon } from "@/components/admin/Icon";
-import { requireStaff } from "@/lib/admin/auth";
+import { can, requireStaff } from "@/lib/admin/auth";
 import { q } from "@/lib/admin/db";
 import { ago } from "@/lib/admin/format";
 import { formatPhone, LEGAL_FORMS, monthOf, PARTNER_STATUSES, rub, STATEMENT_STATUSES, type LegalForm, type Partner, type StatementStatus } from "@/lib/admin/partners";
@@ -13,7 +13,7 @@ const TABS = ["partners", "applications", "codes", "acts", "doctors"] as const;
 type Tab = (typeof TABS)[number];
 
 export default async function PartnersPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string; tab?: string }> }) {
-  await requireStaff("partners");
+  const staff = await requireStaff("partners");
   const sp = await searchParams;
   const tab: Tab = (TABS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Tab) : "partners";
   // Finished months turn into monthly reports here too, not only when a partner opens the cabinet.
@@ -165,7 +165,7 @@ export default async function PartnersPage({ searchParams }: { searchParams: Pro
                     <td data-label="Контакты">{a.phone}<span className="sub">{a.email}</span></td>
                     <td data-label="Специализация">{String(a.payload.specialty ?? "") || "—"}<span className="sub">{String(a.payload.certificate ?? "")}</span></td>
                     <td data-label="Пришла" className="nowrap">{ago(a.created_at)}</td>
-                    <td data-label=""><ApplicationActions leadId={a.id} /></td>
+                    <td data-label=""><ApplicationActions leadId={a.id} canDelete={can(staff, "users")} /></td>
                   </tr>
                 ))}
               </tbody>

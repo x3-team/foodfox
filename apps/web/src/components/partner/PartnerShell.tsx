@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { usePartnerData } from "@/components/partner/PartnerData";
+import { markLoggedOut } from "@/lib/partner-demo-autologin";
 
 const nav = [
   { href: "/partner/home", label: "Дашборд" },
@@ -34,9 +35,11 @@ export function PartnerShell({ children }: { children: React.ReactNode }) {
   async function logout() {
     setLeaving(true);
     try {
+      markLoggedOut();
       await fetch("/api/auth/logout", { method: "POST" });
     } finally {
-      window.location.href = "/partner?manual=1";
+      // replace, not href: Back must not return to the cabinet page from the history.
+      window.location.replace("/partner?manual=1");
     }
   }
 

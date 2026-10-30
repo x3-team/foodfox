@@ -15,7 +15,7 @@ type State = {
   status: "in_progress" | "doctor" | "not_citizen" | "declined" | "submitted";
   step: Step;
   legalForm: LegalForm | null;
-  contract: { version: string; title: string; sections: { heading: string; text: string }[] } | null;
+  contract: { version: string; title: string; pdf: string; sections: { heading: string; text: string }[] } | null;
   partnerStatus: string | null;
   documentsEnabled: boolean;
 };
@@ -217,6 +217,11 @@ function ContractStep({ contract, busy, onAnswer, onBack }: { contract: NonNulla
           </div>
         ))}
       </div>
+      {contract.pdf ? (
+        <a href={contract.pdf} target="_blank" rel="noreferrer" className="text-[15px] font-medium text-[#4A6B1F] underline underline-offset-4">
+          Открыть договор (PDF)
+        </a>
+      ) : null}
       <div className="grid grid-cols-2 gap-3">
         <button type="button" disabled={busy} className={button} onClick={() => onAnswer(true)}>Принимаю</button>
         <button type="button" disabled={busy} className={secondary} onClick={() => onAnswer(false)}>Не принимаю</button>

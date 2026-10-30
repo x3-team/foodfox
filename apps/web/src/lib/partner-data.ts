@@ -65,14 +65,13 @@ export async function loadPartnerData(session: SessionData): Promise<PartnerData
     const nextPayout = new Date(now.getFullYear(), now.getMonth() + (now.getDate() >= 5 ? 1 : 0), 5);
     const statements = await loadStatements(pool, p.id);
     const code = (p.promo_code as string | null) ?? "";
-    const [last = "", first = ""] = String(p.full_name).split(/\s+/);
 
     return {
       source: "db",
       fee,
       statements,
       partner: {
-        name: first || last,
+        name: greetingName(String(p.full_name)),
         fullName: p.full_name,
         email: p.email || "—",
         phone: formatPhone(p.phone),
@@ -113,4 +112,28 @@ export async function loadPartnerData(session: SessionData): Promise<PartnerData
     console.error("[partner] cabinet data", error);
     return DEMO;
   }
+}
+
+const PATRONYMIC = /(вич|вна|ична|инична|оглы|кызы)$/i;
+const SURNAME = /(ова|ева|ёва|ина|ына|ская|цкая|ов|ев|ёв|ин|ын|ский|цкий|ской|енко|ко|ук|юк|ич|дзе|швили|ян|янц)$/i;
+
+/* Given names with a surname-like ending, so «Ирина Аудитова» does not greet «Аудитова». */
+const NAME_LIKE_SURNAME = new Set([
+  "ирина", "марина", "галина", "алина", "полина", "кристина", "карина", "арина", "регина", "валентина", "ангелина",
+  "нина", "алевтина", "антонина", "екатерина", "ольга", "вениамин", "валентин", "константин", "веньямин", "мартин",
+]);
+
+/** How the cabinet greets the partner. The applications store «Фамилия Имя Отчество», but the admin may type
+    «Имя Фамилия»: with a patronymic it is «Имя Отчество», otherwise the word that does not look like a surname. */
+export function greetingName(fullName: string): string {
+  const words = fullName.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "";
+  if (words.length === 1) return words[0];
+  const p = words.findIndex((w, i) => i > 0 && PATRONYMIC.test(w));
+  if (p > 0) return `${words[p - 1]} ${words[p]}`;
+  const [a, b] = words;
+  if (NAME_LIKE_SURNAME.has(a.toLowerCase())) return a;
+  if (NAME_LIKE_SURNAME.has(b.toLowerCase())) return b;
+  if (SURNAME.test(b) && !SURNAME.test(a)) return a;
+  return b;
 }

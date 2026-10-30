@@ -5,6 +5,7 @@ import { can, requireStaff } from "@/lib/admin/auth";
 import { one, q } from "@/lib/admin/db";
 import { formatPhone, rub, type LegalForm, type Partner, type StatementStatus } from "@/lib/admin/partners";
 import { DEFAULTS } from "@/lib/cms/registry";
+import { PartnerDelete } from "./PartnerDelete";
 import { PartnerForm } from "./PartnerForm";
 import { PartnerLegal } from "./PartnerLegal";
 import { PartnerMoney } from "./PartnerMoney";
@@ -51,6 +52,9 @@ export default async function PartnerPage({ params }: { params: Promise<{ id: st
           <h1>{partner?.full_name ?? "Новый партнёр"}</h1>
           {partner && <p>{formatPhone(partner.phone)}{partner.promo_code ? ` · промокод ${partner.promo_code}` : ""}</p>}
         </div>
+        {partner && can(staff, "users") && ["applied", "rejected"].includes(partner.status) && !reports.length && !payouts.length && !statements.length && (
+          <PartnerDelete id={partner.id} name={partner.full_name} />
+        )}
       </div>
       {partner && (
         <div className="a-grid a-grid-4" style={{ marginBottom: 24 }}>

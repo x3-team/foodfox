@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { assertStaff } from "@/lib/admin/auth";
 import { audit, diff } from "@/lib/admin/audit";
 import { one, q, tx } from "@/lib/admin/db";
-import { openJson, type PartnerPd } from "@/lib/admin/pd-seal";
+import { unlink } from "fs/promises";
+import { join } from "path";
+import { openJson, pdDir, type PartnerPd } from "@/lib/admin/pd-seal";
 import { isPartnerStatus, normalizePhone, PARTNER_STATUSES, promoFrom, REPORT_STATUSES, type Partner } from "@/lib/admin/partners";
 import { DEFAULTS } from "@/lib/cms/registry";
 
@@ -286,5 +288,31 @@ export async function eventDone(eventId: string): Promise<Result> {
   if (!r) return { ok: false, message: "Уже отмечено" };
   await audit(staff, { action: "event_done", entity: "partner", entityId: r.partner_id, summary: `Выполнено вручную: ${r.kind}` });
   if (r.partner_id) revalidatePath(`/admin/partners/${r.partner_id}`);
+  return { ok: true };
+}
+
+/** Deletes a candidate who never became a partner: application, personal data and the sealed scans on disk.
+    Admins only. A partner with reports, payouts or acts stays (block them instead): those records back the money. */
+export async function deletePartner(id: string): Promise<Result> {
+  const staff = await assertStaff("users");
+  const partner = await one<Partner>("SELECT * FROM partners WHERE id = $1", [id]);
+  if (!partner) return { ok: false, message: "Партнёр не найден" };
+  if (!["applied", "rejected"].includes(partner.status)) return { ok: false, message: "Удалить можно только анкету или отклонённого кандидата. Действующего партнёра заблокируйте." };
+  const [{ n }] = await q<{ n: number }>(
+    `SELECT ((SELECT count(*) FROM partner_reports WHERE partner_id = $1) + (SELECT count(*) FROM partner_payouts WHERE partner_id = $1)
+           + (SELECT count(*) FROM partner_statements WHERE partner_id = $1))::int AS n`, [id],
+  );
+  if (n > 0) return { ok: false, message: "У кандидата уже есть отчёты, выплаты или акты — удалять нельзя, заблокируйте его." };
+  const files = await q<{ path: string }>("SELECT path FROM partner_documents WHERE partner_id = $1", [id]);
+  await q("DELETE FROM partners WHERE id = $1", [id]); // partner_pd and partner_documents go by ON DELETE CASCADE
+  for (const f of files) {
+    if (!f.path.includes("..")) await unlink(join(pdDir(), f.path)).catch(() => {});
+  }
+  await audit(staff, {
+    action: "delete", entity: "partner", entityId: id,
+    summary: `Удалена анкета партнёра ${partner.full_name}: личные данные и сканы (${files.length})`,
+    before: { full_name: partner.full_name, phone: partner.phone, status: partner.status },
+  });
+  revalidatePath("/admin", "layout");
   return { ok: true };
 }
