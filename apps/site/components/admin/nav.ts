@@ -25,6 +25,7 @@ export const NAV: NavItem[] = [
   { href: "/admin/media", label: "Медиатека", icon: "media", area: "media", group: "Сайт" },
   { href: "/admin/users", label: "Сотрудники", icon: "users", area: "users", group: "Система" },
   { href: "/admin/audit", label: "Журнал действий", icon: "audit", area: "audit", group: "Система" },
+  { href: "/admin/backups", label: "Резервные копии", icon: "download", area: "backups", group: "Система" },
 ];
 
 /** The visible items, with each group heading kept only on the first item of its group. */

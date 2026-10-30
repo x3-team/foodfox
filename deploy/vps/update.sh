@@ -86,6 +86,9 @@ SITE_PORT="${SITE_PORT:-3041}"
 # Uploads of the admin media library live outside the checkout, so git reset on deploy never touches them.
 export FOX_MEDIA_DIR="${FOX_MEDIA_DIR:-/var/www/foodfox-data/media}"
 mkdir -p "$FOX_MEDIA_DIR"
+# Nightly backups (deploy/vps/backup.sh); the admin page «Резервные копии» reads their manifests from here.
+export FOX_BACKUP_DIR="${FOX_BACKUP_DIR:-/var/www/foodfox-data/backups}"
+mkdir -p "$FOX_BACKUP_DIR"
 export SITE_ASSET_PREFIX=/_site
 echo "==> Marketing site (apps/site → 127.0.0.1:${SITE_PORT})"
 echo "    node $(node -v); memory:"
@@ -139,3 +142,14 @@ esac
 # apps/web and apps/site; nginx -t gates the reload.
 echo "==> Nginx"
 SITE_PORT="$SITE_PORT" WEB_PORT="$PORT" bash "$APP_ROOT/deploy/vps/nginx-apply.sh"
+
+# Nightly backup in the deploy user's crontab, set once and kept in sync with this line. 00:30 UTC = 03:30 MSK.
+echo "==> Backup schedule"
+if command -v crontab >/dev/null 2>&1; then
+  CRON_LINE="30 0 * * * APP_ROOT=$APP_ROOT FOX_BACKUP_DIR=$FOX_BACKUP_DIR bash $APP_ROOT/deploy/vps/backup.sh >> $FOX_BACKUP_DIR/backup.log 2>&1 # foodfox-backup"
+  { crontab -l 2>/dev/null | grep -v '# foodfox-backup$' || true; echo "$CRON_LINE"; } | crontab -
+  echo "    $CRON_LINE"
+  command -v rsync >/dev/null 2>&1 || echo "!! rsync is not installed: backups fall back to full copies (apt install rsync)" >&2
+else
+  echo "!! crontab is not available — backups are NOT scheduled" >&2
+fi
