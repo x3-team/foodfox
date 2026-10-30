@@ -1,17 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { MediaItem } from "@/app/admin/api/media/route";
+import type { MediaItem } from "@/lib/admin/media";
 import { deleteMedia, saveAlt, usage } from "@/app/admin/(panel)/media/actions";
 import { Icon } from "./Icon";
+import { isLarge, uploadLarge } from "./upload";
 
-const ACCEPT = "image/jpeg,image/png,image/webp,image/gif,image/avif,application/pdf";
+const IMAGES = "image/jpeg,image/png,image/webp,image/gif,image/avif";
+const ACCEPT: Record<string, string> = { image: IMAGES, file: "application/pdf", video: "video/mp4,video/webm", all: `${IMAGES},application/pdf,video/mp4,video/webm` };
+const HINT: Record<string, string> = {
+  image: "JPG, PNG, WebP, GIF или AVIF до 20 МБ. Сами сделаем WebP нужных размеров.",
+  file: "PDF до 1,5 ГБ.",
+  video: "MP4 (H.264) или WebM до 1,5 ГБ. Большой файл грузится частями, обрыв связи не начинает загрузку заново.",
+  all: "Картинки до 20 МБ (сами сделаем WebP нужных размеров), PDF, видео MP4 или WebM до 1,5 ГБ.",
+};
 
 function size(bytes: number) {
   return bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} МБ` : `${Math.max(1, Math.round(bytes / 1024))} КБ`;
 }
 
-type Props = { onPick?: (item: MediaItem) => void; kind?: "image" | "file" };
+type Props = { onPick?: (item: MediaItem) => void; kind?: "image" | "file" | "video" };
 
 /** The media library: drop zone, search, grid, details panel. With onPick it works as the picker of the editors. */
 export function MediaLibrary({ onPick, kind }: Props) {
@@ -21,6 +29,7 @@ export function MediaLibrary({ onPick, kind }: Props) {
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
   const [current, setCurrent] = useState<MediaItem | null>(null);
+  const [progress, setProgress] = useState<{ name: string; share: number } | null>(null);
   const [toast, setToast] = useState<{ text: string; error?: boolean } | null>(null);
   const input = useRef<HTMLInputElement>(null);
 
@@ -50,23 +59,40 @@ export function MediaLibrary({ onPick, kind }: Props) {
     const list = Array.from(files);
     if (!list.length) return;
     setBusy(true);
-    const form = new FormData();
-    list.forEach((file) => form.append("files", file));
+    const added: MediaItem[] = [];
+    const errors: string[] = [];
     try {
-      const res = await fetch("/admin/api/media", { method: "POST", body: form });
-      const data = await res.json();
-      if (data.items?.length) {
-        setItems((prev) => [...data.items, ...prev]);
-        say(`Загружено: ${data.items.length}`);
-        if (onPick && data.items.length === 1) setCurrent(data.items[0]);
+      const small = list.filter((file) => !isLarge(file));
+      if (small.length) {
+        const form = new FormData();
+        small.forEach((file) => form.append("files", file));
+        const res = await fetch("/admin/api/media", { method: "POST", body: form });
+        const data = await res.json().catch(() => ({ errors: ["Не загрузилось"] }));
+        added.push(...(data.items ?? []));
+        errors.push(...(data.errors ?? []));
       }
-      if (data.errors?.length) say(data.errors.join("; "), true);
+      // Videos and big PDFs one by one, in chunks, with a progress bar.
+      for (const file of list.filter(isLarge)) {
+        try {
+          setProgress({ name: file.name, share: 0 });
+          added.push(await uploadLarge(file, (share) => setProgress({ name: file.name, share })));
+        } catch (error) {
+          errors.push(error instanceof Error && error.message ? `${file.name}: ${error.message.replace(`${file.name}: `, "")}` : `${file.name}: не загрузился`);
+        }
+      }
     } catch {
-      say("Не загрузилось, проверьте соединение", true);
+      errors.push("Не загрузилось, проверьте соединение");
     } finally {
       setBusy(false);
+      setProgress(null);
       if (input.current) input.current.value = "";
     }
+    if (added.length) {
+      setItems((prev) => [...added, ...prev]);
+      say(`Загружено: ${added.length}`);
+      if (onPick && added.length === 1) setCurrent(added[0]);
+    }
+    if (errors.length) say(errors.join("; "), true);
   }
 
   return (
@@ -80,10 +106,16 @@ export function MediaLibrary({ onPick, kind }: Props) {
         <Icon name="upload" size={24} />
         <div>
           <b>{busy ? "Загружаем…" : "Перетащите файлы сюда"}</b>
-          <span className="muted">JPG, PNG, WebP, GIF, AVIF или PDF до 20 МБ. Для картинок сами сделаем WebP нужных размеров.</span>
+          <span className="muted">{HINT[kind ?? "all"]}</span>
+          {progress && (
+            <span className="a-progress" role="progressbar" aria-label={`Загрузка ${progress.name}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.share * 100)}>
+              <i style={{ width: `${progress.share * 100}%` }} />
+              <small>{progress.name} · {Math.floor(progress.share * 100)}%</small>
+            </span>
+          )}
         </div>
         <button className="a-btn is-small" type="button" disabled={busy} onClick={() => input.current?.click()}>Выбрать файлы</button>
-        <input ref={input} type="file" multiple accept={kind === "image" ? ACCEPT.replace(",application/pdf", "") : ACCEPT} hidden onChange={(e) => e.target.files && void upload(e.target.files)} />
+        <input ref={input} type="file" multiple accept={ACCEPT[kind ?? "all"]} hidden onChange={(e) => e.target.files && void upload(e.target.files)} />
       </div>
 
       <div className="a-filters" style={{ marginTop: 16 }}>
@@ -98,7 +130,7 @@ export function MediaLibrary({ onPick, kind }: Props) {
             {items.map((item) => (
               <li key={item.id}>
                 <button type="button" aria-pressed={current?.id === item.id} onClick={() => setCurrent(item)} onDoubleClick={() => onPick?.(item)}>
-                  {item.mime.startsWith("image/") ? <img src={item.thumb} alt={item.alt} loading="lazy" /> : <span className="a-file-ico">PDF</span>}
+                  {item.mime.startsWith("image/") ? <img src={item.thumb} alt={item.alt} loading="lazy" /> : <span className="a-file-ico">{item.mime.startsWith("video/") ? "Видео" : "PDF"}</span>}
                   <span className="a-media-name">{item.name}</span>
                 </button>
               </li>
@@ -139,7 +171,9 @@ function MediaPanel({ item, onPick, onClose, onSaved, onDeleted, say }: {
         <h3 style={{ overflowWrap: "anywhere" }}>{item.name}</h3>
         <button type="button" className="a-btn is-ghost is-small" onClick={onClose} aria-label="Закрыть"><Icon name="close" size={16} /></button>
       </div>
-      {isImage ? <img className="a-media-preview" src={item.src} alt={alt} /> : <a className="a-link" href={item.url} target="_blank" rel="noreferrer">Открыть файл</a>}
+      {isImage ? <img className="a-media-preview" src={item.src} alt={alt} />
+        : item.mime.startsWith("video/") ? <video className="a-media-preview" src={item.url} controls preload="metadata" />
+        : <a className="a-link" href={item.url} target="_blank" rel="noreferrer">Открыть файл</a>}
       <dl className="a-dl" style={{ gridTemplateColumns: "96px minmax(0,1fr)", margin: "16px 0", fontSize: 14 }}>
         <dt>Размер</dt><dd>{size(item.size)}{item.width ? ` · ${item.width}×${item.height}` : ""}</dd>
         <dt>Загружен</dt><dd>{new Date(item.createdAt).toLocaleString("ru-RU")}</dd>

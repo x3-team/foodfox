@@ -20,7 +20,11 @@ function clean(field: Field, value: unknown): unknown {
       const v = str(value).replace(/\r\n/g, "\n");
       if (field.type === "url" && v && !/^(https?:\/\/|\/|#|mailto:|tel:)/.test(v)) throw new Error(`«${field.label}»: ссылка должна начинаться с https:// или /`);
       if ("max" in field && field.max && v.length > field.max) throw new Error(`«${field.label}»: не длиннее ${field.max} символов`);
-      if (!v.trim() && field.type !== "url") throw new Error(`«${field.label}» не может быть пустым`);
+      if (!v.trim()) {
+        // An empty optional field (a link, the price «от») means «do not show».
+        if (field.type === "url" || ("optional" in field && field.optional)) return "";
+        throw new Error(`«${field.label}» не может быть пустым`);
+      }
       return v;
     }
     case "number": {
@@ -48,13 +52,22 @@ function clean(field: Field, value: unknown): unknown {
       if (field.fixed && value.length !== field.default.length) throw new Error(`«${field.label}»: число элементов менять нельзя`);
       return value.map((item, index) => {
         const base = (field.default[index] ?? {}) as Record<string, unknown>;
-        const out: Record<string, unknown> = {};
+        // Keys the editor does not show (count of a FAQ group, the id of a lesson) come from the default item, so a
+        // list put back as it was equals the default and its row is removed instead of freezing the default in the database.
+        const out: Record<string, unknown> = { ...base };
         for (const f of field.of) {
           const v = (item as Record<string, unknown>)?.[f.name];
           if (f.readonly) { out[f.name] = base[f.name]; continue; }
           if (f.type === "number") out[f.name] = Number(v) || 0;
           else if (f.type === "boolean") out[f.name] = Boolean(v);
           else if (f.type === "qa") out[f.name] = clean({ key: "", label: `${field.itemTitle} ${index + 1}`, type: "qa", default: [] }, v);
+          else if (f.type === "video" || f.type === "pdf") {
+            // A file is optional: none leaves no key, so an item without a file still equals its default.
+            const src = str(v, 300).trim();
+            const ext = f.type === "video" ? "(mp4|m4v|webm)" : "pdf";
+            if (src && !new RegExp(`^/media/[0-9a-f-]{36}/[\\w.-]+\\.${ext}$`).test(src)) throw new Error(`${field.itemTitle} ${index + 1}, «${f.label}»: ${f.type === "video" ? "видео MP4 или WebM" : "PDF"} из медиатеки`);
+            if (src) out[f.name] = src; else delete out[f.name];
+          }
           else out[f.name] = str(v).trim();
         }
         return out;
@@ -89,13 +102,19 @@ function cleanCollection(key: string, value: unknown): unknown[] {
   if (key === BLOG_AUTHORS_KEY) {
     return value.map((raw) => {
       const a = raw as Record<string, unknown>;
-      if (!AUTHORS_DEFAULT.some((x) => x.slug === a.slug)) throw new Error("Неизвестный автор");
+      const author = AUTHORS_DEFAULT.find((x) => x.slug === a.slug);
+      if (!author) throw new Error("Неизвестный автор");
       const img = (v: unknown) => { const s = str(v, 300).trim(); if (s && !s.startsWith("/")) throw new Error("Фото автора — из медиатеки или путь с /"); return s || undefined; };
-      return {
-        slug: a.slug, name: str(a.name, 120).trim() || undefined, role: str(a.role, 200).trim() || undefined, bio: str(a.bio, 2000).trim() || undefined,
+      const patch: Record<string, unknown> = {
+        name: str(a.name, 120).trim() || undefined, role: str(a.role, 200).trim() || undefined, bio: str(a.bio, 2000).trim() || undefined,
         avatar: img(a.avatar), portrait: img(a.portrait), listed: typeof a.listed === "boolean" ? a.listed : undefined,
       };
-    });
+      // Only what differs from the author in code is kept: an author put back as it was leaves no patch, and a list
+      // of no patches equals the default, so the row is removed.
+      const own = author as unknown as Record<string, unknown>;
+      for (const k of Object.keys(patch)) if (patch[k] === undefined || patch[k] === own[k] || (k === "listed" && patch[k] === (own.listed ?? true))) delete patch[k];
+      return Object.keys(patch).length ? { slug: a.slug, ...patch } : null;
+    }).filter(Boolean);
   }
   throw new Error(`Неизвестная коллекция ${key}`);
 }

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { assertStaff } from "@/lib/admin/auth";
 import { audit } from "@/lib/admin/audit";
-import { clientTitle, GRANT_MINUTES, MEDICAL_REASONS } from "@/lib/admin/app";
+import { callWeb, clientTitle, GRANT_MINUTES, MEDICAL_REASONS } from "@/lib/admin/app";
 import { one, q, tx } from "@/lib/admin/db";
 
 export type AppResult = { ok: boolean; message?: string };
@@ -19,6 +19,14 @@ async function appUser(id: string): Promise<AppUser | null> {
   );
 }
 const who = (u: AppUser) => clientTitle(u.display_name, u.phone);
+
+/* The app server caches "is this account blocked" for 30 s; this drops it so the change applies on the next request.
+   Best effort: without it the change still applies within those 30 s. */
+async function refreshGuard(id: string) {
+  await callWeb(`/internal/users/${id}/guard`, { method: "POST", signal: AbortSignal.timeout(5_000) }).catch((error) => {
+    console.warn("[admin] app guard reset failed", error instanceof Error ? error.message : error);
+  });
+}
 
 /** Blocks sign-in and every app request; the phone stays taken so the person cannot register again under it. */
 export async function blockAppUser(id: string, input: { reason: string; days: number | null }): Promise<AppResult> {
@@ -42,6 +50,7 @@ export async function blockAppUser(id: string, input: { reason: string; days: nu
       after: { reason, days },
     }, c);
   });
+  await refreshGuard(id);
   revalidatePath(`/admin/app/users/${id}`);
   return { ok: true, message: "Клиент заблокирован и выведен со всех устройств" };
 }
@@ -52,6 +61,7 @@ export async function unblockAppUser(id: string): Promise<AppResult> {
   if (!user) return { ok: false, message: "Клиент не найден" };
   await q("UPDATE users SET blocked_at = NULL, blocked_until = NULL, blocked_reason = NULL, updated_at = now() WHERE id = $1", [id]);
   await audit(staff, { action: "unblock", entity: "app_user", entityId: id, summary: `Разблокирован ${who(user)}` });
+  await refreshGuard(id);
   revalidatePath(`/admin/app/users/${id}`);
   return { ok: true, message: "Клиент разблокирован" };
 }
@@ -67,6 +77,7 @@ export async function signOutAppUser(id: string): Promise<AppResult> {
     await audit(staff, { action: "end_sessions", entity: "app_user", entityId: id, summary: `${who(user)} выведен со всех устройств (${r.rowCount ?? 0})` }, c);
     return r.rowCount ?? 0;
   });
+  await refreshGuard(id);
   revalidatePath(`/admin/app/users/${id}`);
   return { ok: true, message: rows ? `Завершено входов: ${rows}` : "Все входы завершены" };
 }

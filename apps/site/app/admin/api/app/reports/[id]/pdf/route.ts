@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { audit } from "@/lib/admin/audit";
-import { can, currentStaff } from "@/lib/admin/auth";
+import { can, currentStaff, mfaOk } from "@/lib/admin/auth";
 import { callWeb, medicalGrant } from "@/lib/admin/app";
 import { one } from "@/lib/admin/db";
 
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 /** The client's PDF for the moderator: role, 2FA and an open grant for this client, each view logged. */
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const staff = await currentStaff();
-  if (!staff || !can(staff, "medical") || !staff.mfa) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!staff || !can(staff, "medical") || !mfaOk(staff)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "not found" }, { status: 404 });
   const report = await one<{ client_id: string; user_id: string }>("SELECT r.client_id, c.user_id FROM reports r JOIN clients c ON c.id = r.client_id WHERE r.id = $1", [id]);

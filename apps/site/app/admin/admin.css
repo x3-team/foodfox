@@ -80,6 +80,7 @@
 
 .a-main { min-width: 0; padding: 40px var(--a-gutter) 64px; }
 .a-main-inner { max-width: 1344px; margin: 0 auto; }
+.a-build { max-width: 1344px; margin: 48px auto 0; color: var(--a-ink-45); font-size: 12px; font-variant-numeric: tabular-nums; }
 .a-top { display: none; }
 .a-scrim { display: none; }
 .a-tabs { display: none; }
@@ -353,6 +354,13 @@ a.a-stat:hover { border-color: var(--a-line-2); }
 .a-drop > div { flex: 1 1 240px; display: flex; flex-direction: column; gap: 4px; }
 .a-drop b { font-weight: 500; }
 .a-drop span.muted { font-size: 14px; }
+.a-file-field { display: flex; flex-direction: column; gap: 8px; }
+.a-file-field video { width: 100%; max-width: 480px; aspect-ratio: 16 / 9; border-radius: 12px; background: #000; }
+.a-file-field .a-progress { max-width: 480px; }
+.a-progress { position: relative; display: block; height: 6px; margin-top: 8px; border-radius: 999px; background: var(--a-line); }
+.a-progress i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--a-dark); transition: width 200ms; }
+.a-progress small { position: absolute; top: 10px; left: 0; font-size: 13px; color: var(--a-ink-65); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.a-drop:has(.a-progress) > div { padding-bottom: 20px; }
 .a-drop.is-drag { border-color: var(--a-dark); background: var(--a-lime-soft); }
 .a-media-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
 .a-media-body.has-panel { grid-template-columns: minmax(0, 1fr) 360px; }

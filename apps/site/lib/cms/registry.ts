@@ -12,7 +12,7 @@ import { ARTICLES_DEFAULT } from "@/lib/cms/blog";
 export type ImageValue = { src: string; srcSet?: string; alt?: string };
 
 export type Field =
-  | { key: string; label: string; type: "text" | "textarea" | "url"; default: string; hint?: string; max?: number }
+  | { key: string; label: string; type: "text" | "textarea" | "url"; default: string; hint?: string; max?: number; optional?: boolean }
   | { key: string; label: string; type: "lines"; default: string; hint?: string }
   | { key: string; label: string; type: "number"; default: number; hint?: string }
   | { key: string; label: string; type: "boolean"; default: boolean; hint?: string }
@@ -24,8 +24,10 @@ export type Field =
 export type ItemField = {
   name: string;
   label: string;
-  type: "text" | "textarea" | "number" | "boolean" | "url" | "qa";
+  /** video / pdf: a file of the media library, uploaded right in the editor (big ones in chunks, with progress). */
+  type: "text" | "textarea" | "number" | "boolean" | "url" | "qa" | "video" | "pdf";
   readonly?: boolean;
+  hint?: string;
 };
 
 export type Section = { title: string; fields: Field[] };
@@ -122,6 +124,8 @@ export const PAGES: PageDef[] = [
               { name: "short", label: "Короткое название (меню урока)", type: "text" },
               { name: "lecturer", label: "Лектор", type: "text" },
               { name: "minutes", label: "Длительность, минут", type: "number" },
+              { name: "video", label: "Видео урока", type: "video", hint: "MP4 (H.264) или WebM до 1,5 ГБ. Пока видео нет, в уроке показывается заставка." },
+              { name: "notes", label: "Конспект PDF", type: "pdf", hint: "Откроется по кнопке «Конспект PDF» в уроке." },
               { name: "clock", label: "Длительность видео (мм:сс)", type: "text" },
               { name: "content", label: "О чём урок", type: "textarea" },
               { name: "after", label: "Что будете уметь", type: "textarea" },
@@ -180,7 +184,7 @@ export const PAGES: PageDef[] = [
    site said so in several places, so the switch keeps that until an admin turns it on. */
 export const PRICE_FIELDS: Field[] = [
   { key: "prices.show", label: "Показывать цены на сайте", type: "boolean", default: false },
-  { key: "prices.from", label: "Цена теста «от» (общая)", type: "text", default: "", hint: "Например «от 9 900 ₽». Пусто — не показывать." },
+  { key: "prices.from", label: "Цена теста «от» (общая)", type: "text", default: "", optional: true, hint: "Например «от 9 900 ₽». Пусто — не показывать." },
   { key: "prices.course", label: "Курс для специалистов", type: "text", default: "Бесплатно" },
   { key: "prices.partnerFee", label: "Вознаграждение партнёра за отчёт, ₽", type: "number", default: 2400, hint: "Подставляется в начисления партнёрам." },
 ];

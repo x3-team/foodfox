@@ -11,6 +11,8 @@ type Props = {
   me: { name: string; email: string; roleLabel: string; mfa: boolean };
   counts: Record<string, number>;
   logout: () => Promise<void>;
+  /** Version, commit and build time for the footer. */
+  build?: string;
   children: React.ReactNode;
 };
 
@@ -18,7 +20,7 @@ function isActive(path: string, href: string) {
   return href === "/admin" ? path === "/admin" : path === href || path.startsWith(`${href}/`);
 }
 
-export function Shell({ nav, me, counts, logout, children }: Props) {
+export function Shell({ nav, me, counts, logout, build, children }: Props) {
   const path = usePathname() ?? "/admin";
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [path]);
@@ -78,6 +80,7 @@ export function Shell({ nav, me, counts, logout, children }: Props) {
       </aside>
       <div className="a-main" id="admin-main" role="main">
         <div className="a-main-inner">{children}</div>
+        {build && <footer className="a-build" title="Версия, коммит и время сборки">{build}</footer>}
       </div>
       <nav className="a-tabs" aria-label="Быстрые разделы">
         {tabs.map((item) => (

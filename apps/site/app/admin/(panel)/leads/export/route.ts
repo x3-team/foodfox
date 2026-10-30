@@ -16,7 +16,8 @@ const cell = (value: unknown) => {
 
 export async function GET(request: NextRequest) {
   const staff = await currentStaff();
-  if (!staff || !can(staff, "leads")) return NextResponse.redirect(new URL("/admin/login", request.url));
+  // Relative Location: behind nginx request.url is the upstream http://localhost:<port>, not the public domain.
+  if (!staff || !can(staff, "leads")) return new NextResponse(null, { status: 307, headers: { Location: "/admin/login?next=/admin/leads" } });
   const f = filtersFrom(Object.fromEntries(request.nextUrl.searchParams));
   const where = leadWhere(f, staff.id);
   const rows = await q<Lead>(

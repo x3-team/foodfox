@@ -5,7 +5,9 @@ import { getDbPool } from "./db";
  * 011_app_admin.sql). Access tokens are stateless, so every authenticated
  * request asks the database whether the account is blocked or its tokens
  * were revoked after this one was issued. Answers are cached for 30 s per
- * user to keep that to one cheap query per user per half-minute.
+ * user to keep that to one cheap query per user per half-minute; the admin
+ * drops a user's entry right after blocking, unblocking or signing them out
+ * (POST /internal/users/:id/guard), so those apply at once.
  */
 
 interface GuardState {
@@ -15,7 +17,9 @@ interface GuardState {
 }
 
 const TTL_MS = 30_000;
-const cache = new Map<string, GuardState>();
+// On globalThis so every route bundle of this process shares one cache and one reset clears it.
+const g = globalThis as unknown as { __foxAccountGuard?: Map<string, GuardState> };
+const cache: Map<string, GuardState> = (g.__foxAccountGuard ??= new Map());
 let columnsMissing = false;
 
 async function load(userId: string): Promise<GuardState | null> {
@@ -61,4 +65,9 @@ export async function sessionAllowed(userId: string, issuedAtSec: number | undef
   if (state.blockedUntil && state.blockedUntil > Date.now()) return false;
   if (state.revokedAt && (issuedAtSec ?? 0) * 1000 < state.revokedAt) return false;
   return true;
+}
+
+/** Forgets the cached answer for one user: the next request reads blocked/revoked from the database. */
+export function forgetAccount(userId: string): void {
+  cache.delete(userId);
 }
