@@ -174,6 +174,56 @@ class FoodFoxApi {
     await _decode(response);
   }
 
+  /// Requests to a live specialist («Подключить специалиста»). Raw maps:
+  /// id, topic, status, subject, createdAt, updatedAt, unread, messages.
+  Future<List<Map<String, dynamic>>> fetchSupportTickets() async {
+    if (_demo != null) return const [];
+    return _withRetry(() async {
+      final response = await _client.get(_uri("/api/support"), headers: _headers);
+      final data = await _decode(response);
+      return (data["tickets"] as List<dynamic>? ?? [])
+          .cast<Map<String, dynamic>>();
+    });
+  }
+
+  Future<Map<String, dynamic>> fetchSupportTicket(String id) async {
+    return _withRetry(() async {
+      final response =
+          await _client.get(_uri("/api/support/$id"), headers: _headers);
+      final data = await _decode(response);
+      return data["ticket"] as Map<String, dynamic>;
+    });
+  }
+
+  Future<Map<String, dynamic>> createSupportTicket(
+    String topic,
+    String message,
+  ) async {
+    if (_demo != null) {
+      throw Exception("В демо-режиме обращения не отправляются");
+    }
+    final response = await _client.post(
+      _uri("/api/support"),
+      headers: {..._headers, "Content-Type": "application/json"},
+      body: jsonEncode({"topic": topic, "message": message}),
+    );
+    final data = await _decode(response);
+    return data["ticket"] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> replySupportTicket(
+    String id,
+    String message,
+  ) async {
+    final response = await _client.post(
+      _uri("/api/support/$id"),
+      headers: {..._headers, "Content-Type": "application/json"},
+      body: jsonEncode({"message": message}),
+    );
+    final data = await _decode(response);
+    return data["ticket"] as Map<String, dynamic>;
+  }
+
   void logout() {
     _accessToken = null;
     _refreshToken = null;

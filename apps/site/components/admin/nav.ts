@@ -10,6 +10,7 @@ export const NAV: NavItem[] = [
   { href: "/admin/partners", label: "Партнёры", icon: "partners", area: "partners" },
   { href: "/admin/reviews", label: "Отзывы", icon: "reviews", area: "reviews" },
   { href: "/admin/app/users", label: "Клиенты", icon: "phone", area: "app_users", group: "Приложение" },
+  { href: "/admin/support", label: "Обращения", icon: "chat", area: "tickets", group: "Приложение" },
   { href: "/admin/app/reports", label: "Отчёты", icon: "report", area: "app_reports", group: "Приложение" },
   { href: "/admin/app/plans", label: "Планы питания", icon: "calendar", area: "app_plans", group: "Приложение" },
   { href: "/admin/app/recipes", label: "Рецепты", icon: "recipe", area: "app_recipes", group: "Приложение" },

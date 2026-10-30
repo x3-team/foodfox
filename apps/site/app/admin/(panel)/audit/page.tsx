@@ -10,7 +10,7 @@ const ENTITIES: Record<string, string> = {
   lead: "Заявки", session: "Входы", user: "Пользователи", content: "Страницы", media: "Медиатека", seo: "SEO",
   price: "Цены", course: "Курс", article: "Блог", author: "Авторы", review: "Отзывы", partner: "Партнёры",
   app_user: "Клиенты приложения", report: "Отчёты", medical: "Доступ к медданным", tariff: "Тарифы партнёров",
-  legal_document: "Правовые документы", consent: "Согласия",
+  legal_document: "Правовые документы", consent: "Согласия", ticket: "Обращения",
 };
 const PER_PAGE = 50;
 
@@ -49,6 +49,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
     if (entity === "lead") return `/admin/leads/${id}`;
     if (entity === "app_user" || entity === "medical") return `/admin/app/users/${id}`;
     if (entity === "report") return `/admin/app/reports/${id}`;
+    if (entity === "ticket") return `/admin/support/${id}`;
     return null;
   };
 
