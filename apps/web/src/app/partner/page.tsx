@@ -11,6 +11,8 @@ import {
   phoneDigits,
 } from "@/components/partner/AuthSplit";
 import {
+  clearLoggedOut,
+  loggedOutHere,
   PARTNER_DEMO_AUTOLOGIN,
   PARTNER_DEMO_AUTOLOGIN_CODE,
   PARTNER_DEMO_AUTOLOGIN_PHONE,
@@ -38,8 +40,9 @@ function PartnerLoginForm() {
       setError(CLIENT_ROLE_ERROR);
       return;
     }
-    // TEMPORARY demo auto-login, see lib/partner-demo-autologin.ts.
-    if (!PARTNER_DEMO_AUTOLOGIN || params.has("manual") || autoLoginStarted.current) return;
+    // TEMPORARY demo auto-login, see lib/partner-demo-autologin.ts. Never when the middleware bounced a
+    // cabinet page here (?next=): that is a visitor without a session, not a demo viewer.
+    if (!PARTNER_DEMO_AUTOLOGIN || params.has("manual") || params.has("next") || loggedOutHere() || autoLoginStarted.current) return;
     autoLoginStarted.current = true;
     void demoAutoLogin();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -119,6 +122,7 @@ function PartnerLoginForm() {
         setError(body.error ?? CLIENT_ROLE_ERROR);
         return;
       }
+      clearLoggedOut();
       router.push("/partner/home");
       router.refresh();
     } catch {
@@ -206,7 +210,7 @@ function Heading() {
         Вход в кабинет
       </h2>
       <p className="mt-1.5 text-[14px] text-[#5C5E57]">
-        Код из СМС, как в приложении. Для сертифицированных нутрициологов и врачей.
+        Код из СМС, как в приложении. Для нутрициологов, косметологов, хелс-коучей и фитнес-тренеров.
       </p>
     </div>
   );

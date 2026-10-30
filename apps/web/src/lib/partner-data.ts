@@ -1,8 +1,10 @@
 import type { SessionData } from "@/lib/auth";
-import { sharedPool } from "@/lib/db";
 import { formatPhone } from "@/lib/otp";
 import * as demo from "@/lib/partner-demo";
 import type { PartnerReport, ReportStatus } from "@/lib/partner-demo";
+import { LEGAL_FORMS, type LegalForm } from "@/lib/partner-program/contracts";
+import { partnerPool } from "@/lib/partner-program/db";
+import { loadStatements, type Statement } from "@/lib/partner-program/rewards";
 
 /* What the partner cabinet shows. A partner an admin created in the site admin (/admin/partners, tables from
    packages/database/migrations/005_site_admin.sql) sees their own profile, reports and payouts; the demo login and
@@ -13,9 +15,13 @@ export type Payout = { date: string; period: string; count: string; method: stri
 export type Kpi = { label: string; value: string; hint: string; tone: "dark" | "light" };
 /** The cards on «Начисления и выплаты». */
 export type Money = { available: string; availableHint: string; review: string; reviewHint: string; paidLabel: string; paid: string; paidHint: string };
-export type PartnerData = { source: "db" | "demo"; partner: PartnerProfile; reports: PartnerReport[]; payouts: Payout[]; kpis: Kpi[]; money: Money; fee: number };
+export type PartnerData = {
+  source: "db" | "demo"; partner: PartnerProfile; reports: PartnerReport[]; payouts: Payout[]; kpis: Kpi[]; money: Money; fee: number;
+  /** Monthly reports and acts (БПИТ10.1.1). */
+  statements: Statement[];
+};
 
-const DEMO: PartnerData = { source: "demo", partner: demo.partner, reports: demo.reports, payouts: demo.payouts, kpis: demo.kpis, money: demo.money, fee: 2400 };
+const DEMO: PartnerData = { source: "demo", partner: demo.partner, reports: demo.reports, payouts: demo.payouts, kpis: demo.kpis, money: demo.money, fee: 2400, statements: demo.statements };
 
 const STATUS: Record<string, string> = { applied: "анкета на рассмотрении", approved: "одобрен", certified: "сертифицирован", blocked: "заблокирован", rejected: "отклонён" };
 const rub = (n: number) => `${new Intl.NumberFormat("ru-RU").format(n)} ₽`;
@@ -23,9 +29,9 @@ const day = (d: Date | string | null) => (d ? new Intl.DateTimeFormat("ru-RU", {
 const month = (d: Date) => new Intl.DateTimeFormat("ru-RU", { timeZone: "Europe/Moscow", month: "long", year: "numeric" }).format(d).replace(" г.", "");
 
 export async function loadPartnerData(session: SessionData): Promise<PartnerData> {
-  const pool = sharedPool();
-  if (!pool) return DEMO;
   try {
+    const pool = await partnerPool();
+    if (!pool) return DEMO;
     const user = await pool.query(`SELECT phone FROM users WHERE id = $1`, [session.userId]);
     const phone = user.rows[0]?.phone as string | undefined;
     if (!phone) return DEMO;
@@ -57,14 +63,15 @@ export async function loadPartnerData(session: SessionData): Promise<PartnerData
     const available = Math.max(0, earned - paidOrPending);
     const paidThisYear = payoutRows.rows.filter((r) => r.status === "paid" && new Date(r.paid_at).getFullYear() === now.getFullYear());
     const nextPayout = new Date(now.getFullYear(), now.getMonth() + (now.getDate() >= 5 ? 1 : 0), 5);
+    const statements = await loadStatements(pool, p.id);
     const code = (p.promo_code as string | null) ?? "";
-    const [last = "", first = ""] = String(p.full_name).split(/\s+/);
 
     return {
       source: "db",
       fee,
+      statements,
       partner: {
-        name: first || last,
+        name: greetingName(String(p.full_name)),
         fullName: p.full_name,
         email: p.email || "—",
         phone: formatPhone(p.phone),
@@ -74,7 +81,7 @@ export async function loadPartnerData(session: SessionData): Promise<PartnerData
         period: month(now).replace(/^./, (c) => c.toUpperCase()),
         code: code || "—",
         link: code ? `foodfox.ru/t/${code}` : "—",
-        payoutMethod: p.payout_method || "не указан",
+        payoutMethod: p.payout_method || (p.legal_form ? LEGAL_FORMS[p.legal_form as LegalForm].short : "не указан"),
       },
       reports,
       payouts: payoutRows.rows.map((r) => ({
@@ -105,4 +112,28 @@ export async function loadPartnerData(session: SessionData): Promise<PartnerData
     console.error("[partner] cabinet data", error);
     return DEMO;
   }
+}
+
+const PATRONYMIC = /(вич|вна|ична|инична|оглы|кызы)$/i;
+const SURNAME = /(ова|ева|ёва|ина|ына|ская|цкая|ов|ев|ёв|ин|ын|ский|цкий|ской|енко|ко|ук|юк|ич|дзе|швили|ян|янц)$/i;
+
+/* Given names with a surname-like ending, so «Ирина Аудитова» does not greet «Аудитова». */
+const NAME_LIKE_SURNAME = new Set([
+  "ирина", "марина", "галина", "алина", "полина", "кристина", "карина", "арина", "регина", "валентина", "ангелина",
+  "нина", "алевтина", "антонина", "екатерина", "ольга", "вениамин", "валентин", "константин", "веньямин", "мартин",
+]);
+
+/** How the cabinet greets the partner. The applications store «Фамилия Имя Отчество», but the admin may type
+    «Имя Фамилия»: with a patronymic it is «Имя Отчество», otherwise the word that does not look like a surname. */
+export function greetingName(fullName: string): string {
+  const words = fullName.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "";
+  if (words.length === 1) return words[0];
+  const p = words.findIndex((w, i) => i > 0 && PATRONYMIC.test(w));
+  if (p > 0) return `${words[p - 1]} ${words[p]}`;
+  const [a, b] = words;
+  if (NAME_LIKE_SURNAME.has(a.toLowerCase())) return a;
+  if (NAME_LIKE_SURNAME.has(b.toLowerCase())) return b;
+  if (SURNAME.test(b) && !SURNAME.test(a)) return a;
+  return b;
 }

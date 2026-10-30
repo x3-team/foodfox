@@ -1,29 +1,45 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireStaff } from "@/lib/admin/auth";
+import { can, requireStaff } from "@/lib/admin/auth";
 import { one, q } from "@/lib/admin/db";
-import { formatPhone, rub, type Partner } from "@/lib/admin/partners";
+import { formatPhone, rub, type LegalForm, type Partner, type StatementStatus } from "@/lib/admin/partners";
 import { DEFAULTS } from "@/lib/cms/registry";
+import { PartnerDelete } from "./PartnerDelete";
 import { PartnerForm } from "./PartnerForm";
+import { PartnerLegal } from "./PartnerLegal";
 import { PartnerMoney } from "./PartnerMoney";
+import { PartnerStatements } from "./PartnerStatements";
+
+type Program = {
+  legal_form: LegalForm | null; contract_version: string; contract_accepted_at: Date | null; contract_agreed_at: Date | null;
+  fns_registered_at: Date | null; erp_registered_at: Date | null;
+};
+const iso = (d: Date | null) => (d ? new Date(d).toISOString() : null);
 
 export const metadata: Metadata = { title: "Партнёр" };
 
 export default async function PartnerPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireStaff("partners");
+  const staff = await requireStaff("partners");
   const { id } = await params;
   const isNew = id === "new";
   if (!isNew && !/^[0-9a-f-]{36}$/.test(id)) notFound();
-  const partner = isNew ? null : await one<Partner>("SELECT * FROM partners WHERE id = $1", [id]);
+  const partner = isNew ? null : await one<Partner & Program>("SELECT * FROM partners WHERE id = $1", [id]);
   if (!isNew && !partner) notFound();
+  if (partner) await q("SELECT partner_close_months($1)", [id]);
   const feeRow = await one<{ value: number }>("SELECT value FROM site_content WHERE key = 'prices.partnerFee'");
   const defaultFee = Number(feeRow?.value ?? DEFAULTS["prices.partnerFee"]);
-  const reports = partner ? await q<{ id: string; report_number: string; client_name: string; lab: string; test_date: Date | null; status: "credited" | "review" | "missing"; fee: number; created_at: Date }>(
+  const reports = partner ? await q<{ id: string; report_number: string; client_name: string; lab: string; test_date: Date | null; status: "credited" | "review" | "missing"; fee: number; created_at: Date; source: string; photo_doc_id: string | null }>(
     "SELECT * FROM partner_reports WHERE partner_id = $1 ORDER BY created_at DESC", [id],
   ) : [];
   const payouts = partner ? await q<{ id: string; period: string; amount: number; reports: number; status: "pending" | "paid"; paid_at: Date | null; created_at: Date }>(
     "SELECT * FROM partner_payouts WHERE partner_id = $1 ORDER BY created_at DESC", [id],
+  ) : [];
+  const pdRow = partner ? await one<{ hints: Record<string, string> }>("SELECT hints FROM partner_pd WHERE partner_id = $1", [id]) : null;
+  const docs = partner ? await q<{ id: string; kind: string; created_at: Date }>("SELECT id, kind, created_at FROM partner_documents WHERE partner_id = $1 AND kind NOT IN ('analysis', 'act_scan') ORDER BY created_at", [id]) : [];
+  const events = partner ? await q<{ id: string; kind: string; created_at: Date; status: string }>("SELECT id, kind, created_at, status FROM partner_events WHERE partner_id = $1 ORDER BY created_at DESC LIMIT 50", [id]) : [];
+  const statements = partner ? await q<{ id: string; period: string; reports: number; amount: number; status: StatementStatus; dispute_note: string; scan_doc_id: string | null; scan_received_at: Date | null; original_sent_at: Date | null; original_track: string; original_received_at: Date | null; paid_at: Date | null; act_returned_at: Date | null }>(
+    "SELECT *, period::text AS period FROM partner_statements WHERE partner_id = $1 ORDER BY partner_statements.period DESC", [id],
   ) : [];
   const earned = reports.filter((r) => r.status === "credited").reduce((s, r) => s + r.fee, 0);
   const paid = payouts.reduce((s, p) => s + p.amount, 0);
@@ -36,6 +52,9 @@ export default async function PartnerPage({ params }: { params: Promise<{ id: st
           <h1>{partner?.full_name ?? "Новый партнёр"}</h1>
           {partner && <p>{formatPhone(partner.phone)}{partner.promo_code ? ` · промокод ${partner.promo_code}` : ""}</p>}
         </div>
+        {partner && can(staff, "users") && ["applied", "rejected"].includes(partner.status) && !reports.length && !payouts.length && !statements.length && (
+          <PartnerDelete id={partner.id} name={partner.full_name} />
+        )}
       </div>
       {partner && (
         <div className="a-grid a-grid-4" style={{ marginBottom: 24 }}>
@@ -47,12 +66,35 @@ export default async function PartnerPage({ params }: { params: Promise<{ id: st
       )}
       <div className="a-grid a-grid-side">
         <div className="a-stack">
+          {partner && (
+            <PartnerLegal
+              partnerId={partner.id}
+              legalForm={partner.legal_form}
+              contractVersion={partner.contract_version}
+              contractAcceptedAt={iso(partner.contract_accepted_at)}
+              steps={{ contract: iso(partner.contract_agreed_at), fns: iso(partner.fns_registered_at), erp: iso(partner.erp_registered_at) }}
+              hints={pdRow?.hints ?? null}
+              canPd={can(staff, "pd")}
+              docs={docs.map((d) => ({ id: d.id, kind: d.kind, createdAt: d.created_at.toISOString() }))}
+              events={events.map((e) => ({ id: String(e.id), kind: e.kind, createdAt: e.created_at.toISOString(), status: e.status }))}
+            />
+          )}
+          {partner && (
+            <PartnerStatements
+              canPay={can(staff, "pd")}
+              statements={statements.map((s) => ({
+                id: String(s.id), period: s.period, reports: s.reports, amount: s.amount, status: s.status, disputeNote: s.dispute_note,
+                scanDocId: s.scan_doc_id, scanReceived: iso(s.scan_received_at), originalSent: iso(s.original_sent_at), originalTrack: s.original_track,
+                originalReceived: iso(s.original_received_at), paidAt: iso(s.paid_at), actReturned: iso(s.act_returned_at),
+              }))}
+            />
+          )}
           {partner ? (
             <PartnerMoney
               partnerId={partner.id}
               available={Math.max(0, earned - paid)}
               unpaidReports={Math.max(0, reports.filter((r) => r.status === "credited").length - payouts.reduce((s, p) => s + p.reports, 0))}
-              reports={reports.map((r) => ({ id: r.id, number: r.report_number, client: r.client_name, lab: r.lab, date: r.test_date ? new Date(r.test_date).toISOString().slice(0, 10) : "", status: r.status, fee: r.fee }))}
+              reports={reports.map((r) => ({ id: r.id, number: r.report_number, client: r.client_name, lab: r.lab, date: r.test_date ? new Date(r.test_date).toISOString().slice(0, 10) : "", status: r.status, fee: r.fee, fromPartner: r.source === "partner", photo: r.photo_doc_id }))}
               payouts={payouts.map((p) => ({ id: p.id, period: p.period, amount: p.amount, reports: p.reports, status: p.status, paidAt: p.paid_at ? new Date(p.paid_at).toISOString() : null }))}
             />
           ) : (

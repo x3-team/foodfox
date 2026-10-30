@@ -33,7 +33,7 @@ export function AuthSplit({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <p className="text-[13px] text-[#A8AAA3]">
-          Сертификация после курса FOX · выплаты самозанятым и ИП
+          Договор с ИП, самозанятыми и физлицами · только для граждан РФ
         </p>
       </aside>
       <section className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8 xl:px-10">

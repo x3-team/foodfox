@@ -174,6 +174,26 @@ export const PAGES: PageDef[] = [
       },
     ],
   },
+  {
+    id: "partner-docs",
+    title: "Договор и акт партнёра",
+    path: "/partner/apply",
+    sections: [
+      {
+        title: "Шаблоны документов партнёрской программы",
+        fields: [
+          {
+            key: "partners.contractVersion", label: "Версия договора", type: "text", default: "draft-2026-10", max: 40,
+            hint: "Записывается партнёру при принятии договора. Поменяйте, когда загрузите новый текст: в карточках будет видно, кто принял старую версию.",
+          },
+          { key: "partners.contractIp", label: "Договор для ИП (PDF)", type: "url", default: "", hint: "Загрузите PDF в «Медиатеку» и вставьте ссылку. Пусто — в анкете показывается черновой текст." },
+          { key: "partners.contractSz", label: "Договор для самозанятого (PDF)", type: "url", default: "" },
+          { key: "partners.contractFl", label: "Договор для физлица (PDF)", type: "url", default: "" },
+          { key: "partners.actTemplate", label: "Шаблон акта выполненных работ (PDF или DOCX)", type: "url", default: "", hint: "Ссылка появится на странице акта в кабинете партнёра. Пусто — партнёр печатает акт, собранный кабинетом." },
+        ],
+      },
+    ],
+  },
 ];
 
 /* Prices are edited on their own admin page but stored the same way. FOX does not publish prices by default: the

@@ -24,7 +24,7 @@ export const ROLE_LABEL: Record<Role, string> = {
 export const ROLE_HINT: Record<Role, string> = {
   admin: "Всё, включая сотрудников, цены, SEO и медданные клиентов",
   manager: "Заявки, партнёры, отзывы, страницы, блог, медиа; клиенты приложения без медданных",
-  accountant: "Партнёры: начисления и выплаты",
+  accountant: "Партнёры: начисления, выплаты, акты; паспортные данные и реквизиты партнёров",
   moderator: "Клиенты приложения и их отчёты: сверка, правка, повторная обработка",
   editor: "Страницы, блог, медиа, отзывы; продукты, зоны, рецепты и планы приложения",
   support: "Заявки и клиенты приложения без медданных: поиск, блокировка, выход со всех устройств",
@@ -56,6 +56,8 @@ export const ACCESS = {
   blog: ["admin", "manager", "editor"],
   reviews: ["admin", "manager", "editor"],
   partners: ["admin", "manager", "accountant"],
+  /** Partners' passport data, bank details and scans; every view goes to the log. */
+  pd: ["admin", "accountant"],
   course: ["admin", "manager", "editor"],
   prices: ["admin"],
   seo: ["admin"],

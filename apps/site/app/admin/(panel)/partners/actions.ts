@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { assertStaff } from "@/lib/admin/auth";
 import { audit, diff } from "@/lib/admin/audit";
-import { one, q } from "@/lib/admin/db";
+import { one, q, tx } from "@/lib/admin/db";
+import { unlink } from "fs/promises";
+import { join } from "path";
+import { openJson, pdDir, type PartnerPd } from "@/lib/admin/pd-seal";
 import { isPartnerStatus, normalizePhone, PARTNER_STATUSES, promoFrom, REPORT_STATUSES, type Partner } from "@/lib/admin/partners";
 import { DEFAULTS } from "@/lib/cms/registry";
 
@@ -126,10 +129,21 @@ export async function addReport(partnerId: string, input: { number: string; clie
 export async function setReportStatus(reportId: string, status: string): Promise<Result> {
   const staff = await assertStaff("partners");
   if (!(status in REPORT_STATUSES)) return { ok: false, message: "Неизвестный статус" };
-  const r = await one<{ partner_id: string; report_number: string; status: string; fee: number }>("SELECT partner_id, report_number, status, fee FROM partner_reports WHERE id = $1", [reportId]);
+  const r = await one<{ partner_id: string; report_number: string; status: string; fee: number; closed: boolean; statement_id: string | null }>(
+    `SELECT r.partner_id, r.report_number, r.status, r.fee, r.statement_id, coalesce(s.status IN ('confirmed', 'paid'), false) AS closed
+       FROM partner_reports r LEFT JOIN partner_statements s ON s.id = r.statement_id WHERE r.id = $1`,
+    [reportId],
+  );
   if (!r) return { ok: false, message: "Отчёт не найден" };
+  if (r.closed) return { ok: false, message: "Анализ уже в подтверждённом акте — его не изменить" };
   const fee = status === "credited" ? (r.fee || (await defaultFee(r.partner_id))) : 0;
-  await q("UPDATE partner_reports SET status = $2, fee = $3 WHERE id = $1", [reportId, status, fee]);
+  // The confirmation date puts the analysis into that month's report (partner_close_months, migration 006).
+  await q(
+    `UPDATE partner_reports SET status = $2, fee = $3, verified_at = CASE WHEN $2 = 'credited' THEN coalesce(verified_at, now()) ELSE NULL END,
+            statement_id = CASE WHEN $2 = 'credited' THEN statement_id ELSE NULL END WHERE id = $1`,
+    [reportId, status, fee],
+  );
+  if (r.statement_id) await recountStatement(r.statement_id);
   await audit(staff, { action: "report_status", entity: "partner", entityId: r.partner_id, summary: `Отчёт ${r.report_number}: ${REPORT_STATUSES[r.status as keyof typeof REPORT_STATUSES]} → ${REPORT_STATUSES[status as keyof typeof REPORT_STATUSES]}`, before: { status: r.status, fee: r.fee }, after: { status, fee } });
   revalidatePath(`/admin/partners/${r.partner_id}`);
   return { ok: true };
@@ -137,8 +151,11 @@ export async function setReportStatus(reportId: string, status: string): Promise
 
 export async function deleteReport(reportId: string): Promise<Result> {
   const staff = await assertStaff("partners");
-  const r = await one<{ partner_id: string; report_number: string }>("DELETE FROM partner_reports WHERE id = $1 RETURNING partner_id, report_number", [reportId]);
+  const closed = await one("SELECT 1 FROM partner_reports r JOIN partner_statements s ON s.id = r.statement_id WHERE r.id = $1 AND s.status IN ('confirmed', 'paid')", [reportId]);
+  if (closed) return { ok: false, message: "Анализ уже в подтверждённом акте — его не отвязать" };
+  const r = await one<{ partner_id: string; report_number: string; statement_id: string | null }>("DELETE FROM partner_reports WHERE id = $1 RETURNING partner_id, report_number, statement_id", [reportId]);
   if (!r) return { ok: false, message: "Отчёт не найден" };
+  if (r.statement_id) await recountStatement(r.statement_id);
   await audit(staff, { action: "report_delete", entity: "partner", entityId: r.partner_id, summary: `Отчёт ${r.report_number} отвязан от партнёра` });
   revalidatePath(`/admin/partners/${r.partner_id}`);
   return { ok: true };
@@ -164,4 +181,138 @@ export async function markPaid(payoutId: string): Promise<Result> {
   await audit(staff, { action: "payout_paid", entity: "partner", entityId: r.partner_id, summary: `Выплата ${r.amount} ₽ за ${r.period} — выплачено` });
   revalidatePath(`/admin/partners/${r.partner_id}`);
   return { ok: true, message: "Отмечено как выплачено" };
+}
+
+/* ---- Partner program by БПИТ12.8 and БПИТ10.1.1 (migration 006) ---- */
+
+/** An open monthly report follows its analyses; a confirmed one never changes. */
+async function recountStatement(statementId: string) {
+  await q(
+    `UPDATE partner_statements st SET reports = x.n, amount = x.total, updated_at = now()
+       FROM (SELECT count(*)::int AS n, coalesce(sum(fee), 0)::int AS total FROM partner_reports WHERE statement_id = $1) x
+      WHERE st.id = $1 AND st.status IN ('sent', 'disputed')`,
+    [statementId],
+  );
+}
+
+const LEGAL_STEPS = {
+  contract: { column: "contract_agreed_at", label: "договор согласован в 1С:ДО" },
+  fns: { column: "fns_registered_at", label: "физлицо зарегистрировано в ФНС" },
+  erp: { column: "erp_registered_at", label: "договор заведён в 1С:ERP" },
+} as const;
+
+/** Marks (or unmarks) a step the client service specialist or the accountant took outside the site. */
+export async function setLegalStep(partnerId: string, step: string, done: boolean): Promise<Result> {
+  const staff = await assertStaff("partners");
+  if (!(step in LEGAL_STEPS)) return { ok: false, message: "Неизвестный шаг" };
+  const { column, label } = LEGAL_STEPS[step as keyof typeof LEGAL_STEPS];
+  const r = await one<{ full_name: string }>(
+    `UPDATE partners SET ${column} = ${done ? "now()" : "NULL"}, updated_at = now() WHERE id = $1 RETURNING full_name`, [partnerId],
+  );
+  if (!r) return { ok: false, message: "Партнёр не найден" };
+  await audit(staff, { action: "legal_step", entity: "partner", entityId: partnerId, summary: `${r.full_name}: ${done ? "" : "снята отметка — "}${label}` });
+  revalidatePath(`/admin/partners/${partnerId}`);
+  return { ok: true };
+}
+
+/** Opens the partner's passport, ИНН, address and bank details. Each look is written to the audit log. */
+export async function revealPd(partnerId: string): Promise<Result & { pd?: PartnerPd }> {
+  const staff = await assertStaff("pd");
+  const row = await one<{ sealed: string; full_name: string }>(
+    "SELECT d.sealed, p.full_name FROM partner_pd d JOIN partners p ON p.id = d.partner_id WHERE d.partner_id = $1", [partnerId],
+  );
+  if (!row) return { ok: false, message: "Данных нет" };
+  let pd: PartnerPd;
+  try { pd = openJson<PartnerPd>(row.sealed); } catch (error) { return { ok: false, message: (error as Error).message }; }
+  await audit(staff, { action: "pd_view", entity: "partner", entityId: partnerId, summary: `Просмотр персональных данных: ${row.full_name}` });
+  return { ok: true, pd };
+}
+
+type StatementRow = { id: string; partner_id: string; status: string; amount: number; reports: number; period: string; full_name: string; payout_method: string };
+
+/** Staff side of the monthly report: resend after a dispute, act scan or original received, paid, partner's copy sent. */
+export async function statementStep(statementId: string, step: string): Promise<Result> {
+  const staff = await assertStaff(step === "pay" ? "pd" : "partners");
+  const s = await one<StatementRow>(
+    `SELECT s.id, s.partner_id, s.status, s.amount, s.reports, s.period::text AS period, p.full_name, p.payout_method
+       FROM partner_statements s JOIN partners p ON p.id = s.partner_id WHERE s.id = $1`, [statementId],
+  );
+  if (!s) return { ok: false, message: "Отчёт не найден" };
+  const label = new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(s.period)).replace(" г.", "");
+  const confirmed = s.status === "confirmed" || s.status === "paid";
+  let summary: string;
+  if (step === "resend") {
+    if (s.status !== "disputed") return { ok: false, message: "Отчёт не на сверке" };
+    await tx(async (c) => {
+      await c.query(
+        `UPDATE partner_statements st SET status = 'sent', reports = x.n, amount = x.total, updated_at = now()
+           FROM (SELECT count(*)::int AS n, coalesce(sum(fee), 0)::int AS total FROM partner_reports WHERE statement_id = $1 AND status = 'credited') x
+          WHERE st.id = $1`, [statementId],
+      );
+      await c.query("UPDATE partner_reports SET statement_id = NULL WHERE statement_id = $1 AND status <> 'credited'", [statementId]);
+      await c.query("INSERT INTO partner_events (partner_id, kind, payload) VALUES ($1, 'notify.statement_ready', $2)", [s.partner_id, JSON.stringify({ statementId, resent: true })]);
+    });
+    summary = `Отчёт за ${label} сверен и отправлен партнёру ещё раз`;
+  } else if (step === "scan" || step === "original" || step === "returned") {
+    if (!confirmed) return { ok: false, message: "Партнёр ещё не подтвердил отчёт" };
+    const column = { scan: "scan_received_at", original: "original_received_at", returned: "act_returned_at" }[step];
+    await q(`UPDATE partner_statements SET ${column} = coalesce(${column}, now()), updated_at = now() WHERE id = $1`, [statementId]);
+    summary = { scan: `Получен скан акта за ${label}`, original: `Получен оригинал акта за ${label}`, returned: `Экземпляр акта за ${label} отправлен партнёру` }[step];
+  } else if (step === "pay") {
+    if (s.status !== "confirmed") return { ok: false, message: s.status === "paid" ? "Уже оплачено" : "Партнёр ещё не подтвердил отчёт" };
+    const got = await one("SELECT 1 FROM partner_statements WHERE id = $1 AND (scan_received_at IS NOT NULL OR original_received_at IS NOT NULL)", [statementId]);
+    if (!got) return { ok: false, message: "Сначала отметьте, что получен скан или оригинал акта" };
+    await tx(async (c) => {
+      const payout = await c.query(
+        "INSERT INTO partner_payouts (partner_id, period, amount, reports, status, paid_at) VALUES ($1, $2, $3, $4, 'paid', now()) RETURNING id",
+        [s.partner_id, label, s.amount, s.reports],
+      );
+      await c.query("UPDATE partner_statements SET status = 'paid', paid_at = now(), payout_id = $2, updated_at = now() WHERE id = $1", [statementId, payout.rows[0].id]);
+    });
+    summary = `Оплачен акт за ${label}: ${s.amount} ₽`;
+  } else {
+    return { ok: false, message: "Неизвестное действие" };
+  }
+  await audit(staff, { action: `statement_${step}`, entity: "partner", entityId: s.partner_id, summary: `${s.full_name}: ${summary}` });
+  revalidatePath(`/admin/partners/${s.partner_id}`);
+  revalidatePath("/admin/partners");
+  return { ok: true, message: "Готово" };
+}
+
+/** A queued outside step done by hand (until the Bitrix24, 1С, mail or Raptor adapter takes it). */
+export async function eventDone(eventId: string): Promise<Result> {
+  const staff = await assertStaff("partners");
+  const r = await one<{ partner_id: string | null; kind: string }>(
+    "UPDATE partner_events SET status = 'done', done_at = now() WHERE id = $1 AND status <> 'done' RETURNING partner_id, kind", [eventId],
+  );
+  if (!r) return { ok: false, message: "Уже отмечено" };
+  await audit(staff, { action: "event_done", entity: "partner", entityId: r.partner_id, summary: `Выполнено вручную: ${r.kind}` });
+  if (r.partner_id) revalidatePath(`/admin/partners/${r.partner_id}`);
+  return { ok: true };
+}
+
+/** Deletes a candidate who never became a partner: application, personal data and the sealed scans on disk.
+    Admins only. A partner with reports, payouts or acts stays (block them instead): those records back the money. */
+export async function deletePartner(id: string): Promise<Result> {
+  const staff = await assertStaff("users");
+  const partner = await one<Partner>("SELECT * FROM partners WHERE id = $1", [id]);
+  if (!partner) return { ok: false, message: "Партнёр не найден" };
+  if (!["applied", "rejected"].includes(partner.status)) return { ok: false, message: "Удалить можно только анкету или отклонённого кандидата. Действующего партнёра заблокируйте." };
+  const [{ n }] = await q<{ n: number }>(
+    `SELECT ((SELECT count(*) FROM partner_reports WHERE partner_id = $1) + (SELECT count(*) FROM partner_payouts WHERE partner_id = $1)
+           + (SELECT count(*) FROM partner_statements WHERE partner_id = $1))::int AS n`, [id],
+  );
+  if (n > 0) return { ok: false, message: "У кандидата уже есть отчёты, выплаты или акты — удалять нельзя, заблокируйте его." };
+  const files = await q<{ path: string }>("SELECT path FROM partner_documents WHERE partner_id = $1", [id]);
+  await q("DELETE FROM partners WHERE id = $1", [id]); // partner_pd and partner_documents go by ON DELETE CASCADE
+  for (const f of files) {
+    if (!f.path.includes("..")) await unlink(join(pdDir(), f.path)).catch(() => {});
+  }
+  await audit(staff, {
+    action: "delete", entity: "partner", entityId: id,
+    summary: `Удалена анкета партнёра ${partner.full_name}: личные данные и сканы (${files.length})`,
+    before: { full_name: partner.full_name, phone: partner.phone, status: partner.status },
+  });
+  revalidatePath("/admin", "layout");
+  return { ok: true };
 }

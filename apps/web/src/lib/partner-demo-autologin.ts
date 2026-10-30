@@ -7,7 +7,9 @@
  *
  * Off switch without code changes: NEXT_PUBLIC_PARTNER_DEMO_AUTOLOGIN=0 (or
  * "false") in apps/web/.env, then rebuild — NEXT_PUBLIC_* is inlined at build.
- * One visit without it: open /partner?manual=1 (logout goes there too).
+ * One visit without it: open /partner?manual=1. After «Выйти» it stays off in that browser until the next
+ * sign-in (markLoggedOut / clearLoggedOut), otherwise any guarded page would bounce to /partner and sign the
+ * demo partner straight back in.
  *
  * The phone and code must match the server's partner demo account
  * (lib/otp.ts: FOX_PARTNER_DEMO_PHONE / FOX_DEMO_OTP defaults). If the
@@ -18,3 +20,17 @@ const flag = (process.env.NEXT_PUBLIC_PARTNER_DEMO_AUTOLOGIN ?? "").trim().toLow
 export const PARTNER_DEMO_AUTOLOGIN = !["0", "false", "no", "off"].includes(flag);
 export const PARTNER_DEMO_AUTOLOGIN_PHONE = "79251111111";
 export const PARTNER_DEMO_AUTOLOGIN_CODE = "1111";
+
+const LOGGED_OUT = "fox_partner_logged_out";
+
+export function markLoggedOut(): void {
+  try { window.localStorage.setItem(LOGGED_OUT, "1"); } catch { /* storage blocked: only ?manual=1 protects */ }
+}
+
+export function clearLoggedOut(): void {
+  try { window.localStorage.removeItem(LOGGED_OUT); } catch { /* nothing to clear */ }
+}
+
+export function loggedOutHere(): boolean {
+  try { return window.localStorage.getItem(LOGGED_OUT) === "1"; } catch { return false; }
+}
