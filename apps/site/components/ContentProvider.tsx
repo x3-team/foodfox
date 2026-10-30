@@ -3,7 +3,7 @@
 import { createContext, useContext, useMemo } from "react";
 import { blogFrom } from "@/lib/cms/blog";
 import { DEFAULTS, PRICE_LABS_KEY, type ImageValue } from "@/lib/cms/registry";
-import { LESSONS_DEFAULT, type Lesson } from "@/lib/site-data/course";
+import { LESSONS_DEFAULT, type Lesson, type LessonPart } from "@/lib/site-data/course";
 import { PARTNERS, type Partner } from "@/lib/labs";
 import type { FaqGroup } from "@/lib/site-data/faq";
 
@@ -24,7 +24,12 @@ export function useContent() {
     const telHref = `tel:+${text("contacts.phone").replace(/\D/g, "").replace(/^8(?=\d{10}$)/, "7")}`;
     const lessons = (): Lesson[] => {
       const saved = get<Partial<Lesson>[]>("course.lessons");
-      return LESSONS_DEFAULT.map((lesson, index) => ({ ...lesson, ...(saved?.[index] ?? {}) }));
+      const parts = get<Partial<LessonPart>[]>("course.lesson5.parts");
+      return LESSONS_DEFAULT.map((lesson, index) => ({
+        ...lesson,
+        ...(saved?.[index] ?? {}),
+        parts: lesson.parts?.map((part, n) => ({ ...part, ...(parts?.[n] ?? {}) })),
+      }));
     };
     const faqGroups = () => get<FaqGroup[]>("faq.groups").map((group) => ({ ...group, count: countLabel(group.items.length) }));
     const showPrices = Boolean(get<boolean>("prices.show"));

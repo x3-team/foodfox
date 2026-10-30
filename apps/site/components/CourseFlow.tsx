@@ -8,6 +8,9 @@ import { Header } from "@/components/Header";
 import { BottomSheet } from "@/components/BottomSheet";
 import { useDialog } from "@/components/useDialog";
 import { useReveal } from "@/components/useReveal";
+import { FINAL_TEST } from "@/lib/site-data/course-test";
+import { NOTES } from "@/lib/site-data/course-notes";
+import type { Lesson } from "@/lib/site-data/course";
 
 /** Scrolls the window to `top` in `ms` (ease-in-out) and calls `done` on arrival; a wheel / touch by the visitor
     stops it (done is still called). The native smooth scroll has no duration and takes 0.5–1 s on long jumps. */
@@ -40,21 +43,21 @@ const AUDIENCE = [
     title: "Нутрициологи и диетологи",
     text: "Персонализация рациона при повторяющихся пищевых реакциях, длительных самостоятельных ограничениях и отсутствии понятной связи между едой и самочувствием.",
     course: "Как интерпретировать отчёт FOX, составлять план элиминации, подбирать полноценные замены и возвращать продукты в рацион.",
-    lesson: 2,
+    lesson: 4,
   },
   {
     icon: "/figma/icons/spec-2.svg",
     title: "Гастроэнтерологи",
     text: "Пациенты с СРК, вздутием, болью, постпрандиальным дискомфортом, запором или нестабильным стулом.",
     course: "В каких случаях FOX можно использовать после базового обследования и как встроить результат в комплексную работу с рационом.",
-    lesson: 1,
+    lesson: 4,
   },
   {
     icon: "/figma/icons/spec-3.svg",
     title: "Терапевты и врачи общей практики",
     text: "Полисимптомные пациенты, у которых сочетаются жалобы со стороны ЖКТ, кожи и нервной системы, но связь с продуктами неясна.",
     course: "Как определить место FOX в диагностическом маршруте и объяснить пациенту роль исследования.",
-    lesson: 0,
+    lesson: 3,
   },
   {
     icon: "/figma/icons/spec-4.svg",
@@ -82,66 +85,68 @@ const AUDIENCE = [
     title: "Дерматологи и косметологи",
     text: "Атопический дерматит, акне, розацеа, высыпания и ограниченный эффект наружной терапии или процедур.",
     course: "Как оценивать роль рациона в комплексной работе с кожей и использовать FOX для формирования диетических гипотез.",
-    lesson: 3,
+    lesson: 4,
   },
   {
     icon: "/figma/icons/spec-8.svg",
     title: "Эндокринологи и специалисты по массе тела",
     text: "Трудности со снижением веса, стойкая отёчность и слабая приверженность рациону из-за дискомфорта после еды.",
     course: "Как использовать FOX для построения переносимого рациона, не представляя тест как метод похудения.",
-    lesson: 4,
+    lesson: 3,
   },
   {
     icon: "/figma/icons/spec-9.svg",
     title: "Педиатры",
     text: "Сложные ЖКТ- и кожные жалобы у детей, когда специалист предполагает связь с рационом.",
     course: "Как безопасно интерпретировать отчёт, оценивать риск дефицитов и планировать элиминацию только с полноценными заменами.",
-    lesson: 5,
+    lesson: 1,
   },
 ];
 
 
+/* Lecturers named in the client's course structure (2026-10-28). Lesson 5 parts for the cosmetologist and the
+   dermatologist have no lecturer named yet. */
 const LECTURERS = [
   {
     name: "Светлана Каневская",
-    role: "Ведущий лектор · д. м. н., профессор, гастроэнтеролог-нутрициолог",
-    facts: ["Более 25 лет клинической практики", "Автор клинических протоколов по пищевой непереносимости"],
-    chip: "Ведёт уроки 1, 2 и 6",
+    role: "Ведущий лектор · д. м. н., профессор, основатель международной школы профессора Каневской",
+    facts: ["25 лет клинической практики, в том числе с тяжёлыми случаями", "25 лет преподавания врачам и ординаторам"],
+    chip: "Ведёт уроки 2, 3, 4 и 5.4",
     href: "/blog/authors/svetlana-kanevskaya",
     photo: "/figma/specialists/svetlana.webp",
   },
   {
     name: "Алёна Вавилова",
     role: "Клинический нутрициолог, health-coach",
-    facts: ["Более семи лет в нутрициологии", "Основатель сообщества нутрициологов Москвы"],
-    chip: "Ведёт урок 3",
+    facts: ["Более шести лет в нутрициологии, более 200 клиентов", "Основатель сообщества нутрициологов Москвы"],
+    chip: "Ведёт уроки 1, 5.1 и 6",
     href: "/blog/authors/alyona-vavilova",
     photo: "/figma/specialists/alyona.webp",
   },
   {
     name: "Ксения Эллинская",
-    role: "К. м. н., врач-дерматовенеролог, косметолог, нутрициолог",
-    facts: ["21 год клинической практики", "Автор профессионального блога, 85 000+ подписчиков"],
-    chip: "Ведёт урок 4",
+    role: "Врач-косметолог, дерматовенеролог, нутрициолог",
+    facts: ["Автор блога о коже, 85 000+ подписчиков", "Онлайн-проект для пациенток с проблемной кожей: более 5000 выпускниц"],
+    chip: "Ведёт урок 5.2 · косметология",
     href: "/blog/authors/kseniya-ellinskaya",
     photo: "/figma/specialists/ksenia.webp",
   },
   {
     name: "Дмитрий Эллинский",
-    role: "Врач-дерматовенеролог, трихолог, нутрициолог",
-    facts: ["15 лет клинической практики", "Главный дерматолог холдинга «СМ-Клиника»"],
-    chip: "Ведёт урок 5",
+    role: "Врач-дерматовенеролог, трихолог, косметолог",
+    facts: ["Главный дерматолог холдинга «СМ-Клиника»", "Ведёт пациентов с кожными и трихологическими жалобами"],
+    chip: "Ведёт урок 5.3 · дерматология",
     href: "/blog/authors/dmitry-ellinskiy",
     photo: "/figma/specialists/dmitry.webp",
   },
 ];
 
 const INCLUDES = [
-  ["/figma/icons/course/play.svg", "6 видеоуроков", "Короткие блоки по 12–18 минут: от основ иммунологической пищевой непереносимости до внедрения FOX в практику."],
+  ["/figma/icons/course/play.svg", "6 видеоуроков", "Уроки по 30–60 минут: от основ пищевой непереносимости до внедрения теста в практику, с отдельными уроками для вашей специальности."],
   ["/figma/icons/course/download.svg", "Конспекты к каждому уроку", "PDF с ключевыми тезисами, схемами и алгоритмами. К материалам можно возвращаться во время консультаций."],
   ["/figma/icons/course/file.svg", "Практический гайд по работе с отчётом", "Опорный шестинедельный протокол элиминации, правила возвращения продуктов, дневник симптомов и рекомендации по подбору замен."],
   ["/figma/icons/course/search.svg", "Клинические кейсы", "Разборы пациентов с готовыми отчётами FOX: ЖКТ, кожа, нервная система, аутоиммунные заболевания."],
-  ["/figma/icons/course/award.svg", "Сертификат о прохождении", "Подтверждает участие в курсе и знакомство с методикой работы с FOX."],
+  ["/figma/icons/course/award.svg", "Итоговый тест и сертификат", "15 вопросов по материалам курса с пояснениями к каждому ответу. После теста открывается сертификат о прохождении."],
   ["/figma/icons/course/chat.svg", "Экспертная Q&A", "Возможность задать вопрос авторам курса и обсудить сложные случаи из своей практики."],
   ["/figma/icons/course/infinity.svg", "Бессрочный доступ", "Материалы остаются доступны после прохождения курса — к урокам и конспектам можно возвращаться."],
 ];
@@ -155,6 +160,8 @@ const SPECIALTIES = ["Нутрициолог", "Диетолог", "Гастро
 const DEMO_USER = { email: "demo@foodfox.ru", name: "Анна Демидова", spec: "Гастроэнтеролог" };
 const DEMO_KEY = "fox-demo";
 const DEMO_PROGRESS = "fox-demo-progress";
+/* The visitor's own progress (lessons watched, final test) stays in this browser. */
+const COURSE_PROGRESS = "fox-course-progress";
 
 function useDemo() {
   const [demo, setDemo] = useState(false);
@@ -489,7 +496,7 @@ function AccessDialog({ onClose, href = "/course/lessons" }: { onClose: () => vo
             <span className="lead">Все шесть уроков и материалы доступны в личном кабинете.</span>
           </p>
           <ul className="access-chips">
-            {["6 уроков", "Конспекты PDF", "Гайд по отчёту", "Сертификат после 6/6"].map((item) => <li key={item}>{item}</li>)}
+            {["6 уроков", "Конспекты PDF", "Гайд по отчёту", "Сертификат после теста"].map((item) => <li key={item}>{item}</li>)}
           </ul>
           <Link className="btn btn-dark" href={href} data-autofocus>Перейти к уроку 1</Link>
           <p className="reg-hint">Ссылку на кабинет мы также продублировали в письме.</p>
@@ -508,7 +515,12 @@ function LecturerSheet({ open, onClose }: { open: BioOpen; onClose: () => void }
   const content = useContent();
   const LESSONS = useMemo(() => content.lessons(), [content]);
   const photoRef = useRef<HTMLImageElement>(null);
-  const lessons = LESSONS.map((lesson, index) => ({ ...lesson, n: index + 1 })).filter((lesson) => lesson.lecturer === person.name);
+  // «5.2 · Косметология» for a part of lesson 5, «2 · Основы…» for a whole lesson.
+  const lessons = LESSONS.flatMap((lesson, index) =>
+    lesson.parts
+      ? lesson.parts.flatMap((part, n) => (part.lecturer.includes(person.name) ? [`${index + 1}.${n + 1} · ${part.short}`] : []))
+      : lesson.lecturer.includes(person.name) ? [`${index + 1} · ${lesson.short}`] : [],
+  );
   useLayoutEffect(() => {
     const img = photoRef.current;
     const source = open.from.querySelector<HTMLImageElement>("img");
@@ -543,7 +555,7 @@ function LecturerSheet({ open, onClose }: { open: BioOpen; onClose: () => void }
         <img ref={photoRef} className="kf-bio-photo" src={person.photo.replace(".webp", "-512.webp")} alt="" width={76} height={76} />
         <h2>{person.name}</h2>
         <p className="kf-bio-role">{person.role}</p>
-        <p className="kf-bio-lessons">Уроки: {lessons.map((lesson) => `${lesson.n} · ${lesson.short}`).join("; ")}</p>
+        <p className="kf-bio-lessons">Уроки: {lessons.join("; ")}</p>
         <ul>{person.facts.map((fact) => <li key={fact}>— {fact}</li>)}</ul>
         <Link className="text-link" href={person.href}>
           Профиль автора
@@ -732,7 +744,7 @@ export function CoursePage() {
           <div className="wrap kf-program">
             <div className="kf-program-head">
               <h2>Программа курса</h2>
-              <p>6 уроков · ≈ 90 минут · конспекты PDF</p>
+              <p>6 уроков · 2 недели · итоговый тест</p>
             </div>
             <div className="kf-acc" ref={acc}>
               {LESSONS.map((lesson, index) => {
@@ -743,7 +755,7 @@ export function CoursePage() {
                       <span className="kf-num">{index + 1}</span>
                       <span>
                         <strong>{lesson.title}</strong>
-                        <small>{lesson.lecturer} · {lesson.minutes} мин</small>
+                        <small>{lesson.lecturer}{lesson.minutes ? ` · ${lesson.minutes} мин` : ""}</small>
                       </span>
                       <img src="/icons/chevron-down.svg" alt="" width={24} height={24} />
                     </button>
@@ -798,7 +810,7 @@ export function CoursePage() {
                         {person.facts.map((fact) => <span key={fact}>— {fact}</span>)}
                       </span>
                     </span>
-                    <span className={`kf-chip-lime${lit === person.name ? " is-lit" : ""}`}>{person.chip}</span>
+                    <span className={`kf-chip-lime${lit.includes(person.name) ? " is-lit" : ""}`}>{person.chip}</span>
                   </span>
                 </Link>
               ))}
@@ -888,51 +900,215 @@ export function CoursePage() {
   );
 }
 
+type TestState = { best: number; passed: boolean };
+const NO_TEST: TestState = { best: 0, passed: false };
+
+/** «45 мин» (or «видеоурок») once the lesson has a video, «видео скоро» before; lesson 5 says how many specialties it has. */
+const lessonLength = (lesson: Lesson, hasVideo = false) =>
+  lesson.parts ? `${lesson.parts.length} специальности` : lesson.minutes ? `${lesson.minutes} мин` : hasVideo ? "видеоурок" : "видео скоро";
+
+/** Video URLs of a lesson: the admin field (one per line) wins, else the files found in the server folder. */
+const videoList = (field: string | undefined, found: string[] | undefined) => {
+  const own = (field ?? "").split("\n").map((line) => line.trim()).filter(Boolean);
+  return own.length ? own : found ?? [];
+};
+
+/** Lesson text: «## » starts a heading, «- » a list item, «1. » a numbered item, every other line is a paragraph. */
+function LessonNotes({ text }: { text: string }) {
+  const blocks: React.ReactNode[] = [];
+  let items: string[] = [];
+  let ordered = false;
+  const flush = () => {
+    const list = items.map((item, index) => <li key={index}>{item}</li>);
+    if (items.length) blocks.push(ordered ? <ol key={blocks.length}>{list}</ol> : <ul key={blocks.length}>{list}</ul>);
+    items = [];
+  };
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    const numbered = /^\d+\.\s/.exec(line);
+    if (line.startsWith("- ") || numbered) {
+      if (items.length && ordered !== Boolean(numbered)) flush();
+      ordered = Boolean(numbered);
+      items.push(numbered ? line.slice(numbered[0].length) : line.slice(2));
+      continue;
+    }
+    flush();
+    if (!line) continue;
+    if (line.startsWith("## ")) blocks.push(<h2 key={blocks.length}>{line.slice(3)}</h2>);
+    else blocks.push(<p key={blocks.length}>{line}</p>);
+  }
+  flush();
+  return (
+    <article className="ls-notes" aria-label="Текст урока">
+      <p className="ls-kicker">Текст урока</p>
+      {blocks}
+    </article>
+  );
+}
+
+/* Final test: one question at a time; a tap locks the answer and shows the note for it (and for the right answer when
+   the pick was wrong). Finishing it opens the certificate; there is no pass mark. With `auto` (demo
+   autopilot) it answers right by itself. */
+function FinalTest({ auto, best, onResult, onClose, onAutoDone }: { auto: boolean; best: number; onResult: (score: number) => void; onClose: () => void; onAutoDone: () => void }) {
+  const [index, setIndex] = useState(0);
+  const [picked, setPicked] = useState<number | null>(null);
+  const [score, setScore] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const question = FINAL_TEST[index];
+  const top = useRef<HTMLDivElement>(null);
+  function pick(option: number) {
+    if (picked !== null) return;
+    setPicked(option);
+    if (question.options[option].ok) setScore((value) => value + 1);
+  }
+  function next() {
+    if (index + 1 < FINAL_TEST.length) { setIndex(index + 1); setPicked(null); }
+    else { setFinished(true); onResult(score); }
+    top.current?.scrollIntoView({ block: "nearest" });
+  }
+  function again() { setIndex(0); setPicked(null); setScore(0); setFinished(false); }
+  useEffect(() => {
+    if (!auto) return;
+    if (finished) { onAutoDone(); return; }
+    const timer = window.setTimeout(() => (picked === null ? pick(question.options.findIndex((option) => option.ok)) : next()), picked === null ? 500 : 700);
+    return () => window.clearTimeout(timer);
+  });
+  if (finished) {
+    return (
+      <section className="ft ft-result" ref={top} aria-live="polite">
+        <p className="ls-kicker">Итоговый тест · результат</p>
+        <h1>Тест пройден</h1>
+        <p className="ft-score"><b>{score}</b> из {FINAL_TEST.length}</p>
+        <p>Сертификат о прохождении курса доступен в программе курса. Тест можно пройти ещё раз — пояснения к ответам помогут повторить материал{best > score ? `, лучший результат (${best}) сохранится` : ""}.</p>
+        <div className="ft-actions">
+          <button type="button" className="btn btn-dark" onClick={onClose}>К программе курса</button>
+          <button type="button" className="btn btn-ghost" onClick={again}>Пройти ещё раз</button>
+        </div>
+      </section>
+    );
+  }
+  return (
+    <section className="ft" ref={top}>
+      <div className="ft-head">
+        <p className="ls-kicker">Итоговый тест · вопрос {index + 1} из {FINAL_TEST.length}</p>
+        <button type="button" className="ft-close" onClick={onClose}>Выйти из теста</button>
+      </div>
+      <i className="ft-bar" aria-hidden><b style={{ width: `${((index + (picked === null ? 0 : 1)) / FINAL_TEST.length) * 100}%` }} /></i>
+      <h1 key={index}>{question.q}</h1>
+      <div className="ft-options" role="group" aria-label="Варианты ответа">
+        {question.options.map((option, n) => {
+          const state = picked === null ? "" : option.ok ? " is-ok" : n === picked ? " is-bad" : " is-dim";
+          const showNote = picked !== null && (n === picked || option.ok);
+          return (
+            <button key={`${index}-${n}`} type="button" className={`ft-option${state}`} aria-pressed={picked === n} disabled={picked !== null && n !== picked} onClick={() => pick(n)}>
+              <span className="ft-mark" aria-hidden>{picked !== null && option.ok ? "✓" : picked === n ? "✕" : String.fromCharCode(1040 + n)}</span>
+              <span>
+                <strong>{option.text}</strong>
+                {showNote ? <small>{option.note}</small> : null}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {picked !== null ? (
+        <div className="ft-actions">
+          <button type="button" className="btn btn-dark" onClick={next}>{index + 1 < FINAL_TEST.length ? "Следующий вопрос" : "Узнать результат"}</button>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 const SHEET_STOPS = [0.5, 0.92];
 
 export function LessonsPage() {
   const content = useContent();
   const LESSONS = useMemo(() => content.lessons(), [content]);
-  const [current, setCurrent] = useState(1);
+  const [current, setCurrent] = useState(0);
   const [sheet, setSheet] = useState(false);
-  const [done, setDone] = useState<number[]>([0]);
+  const [done, setDone] = useState<number[]>([]);
+  const [test, setTest] = useState<TestState>(NO_TEST);
+  const [testing, setTesting] = useState(false);
+  const [autoTest, setAutoTest] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [failed, setFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const lesson = LESSONS[current];
+  // Lesson 5 is four lessons by specialty: the picked part brings its own title, lecturer, video, notes and PDF.
+  const [part, setPart] = useState(0);
+  const base = LESSONS[current];
+  const sub = base.parts?.[part];
+  const lesson: Lesson = sub ? { ...base, ...sub } : base;
+  const lessonNo = sub ? `${current + 1}.${part + 1}` : String(current + 1);
 
-  // Demo: the course starts from lesson 1 with nothing watched, progress is kept for the tab, and the autopilot walks
-  // through all six lessons, marking each one watched, until the certificate opens.
+  // The client's lesson texts load on demand (course-notes/); a text saved in the admin replaces them.
+  const notesKey = sub ? `${current + 1}-${part + 1}` : String(current + 1);
+  const [loadedNotes, setLoadedNotes] = useState<{ key: string; text: string }>({ key: "", text: "" });
+  useEffect(() => {
+    if (lesson.notes || !NOTES[notesKey]) return;
+    let live = true;
+    NOTES[notesKey]().then((module) => { if (live) setLoadedNotes({ key: notesKey, text: module.default }); }).catch(() => {});
+    return () => { live = false; };
+  }, [notesKey, lesson.notes]);
+  const notes = lesson.notes || (loadedNotes.key === notesKey ? loadedNotes.text : "");
+
+  // Videos uploaded to the server folder (/course/media lists them by lesson); a lesson split in two has two clips.
+  const [found, setFound] = useState<Record<string, string[]>>({});
+  useEffect(() => {
+    let live = true;
+    fetch("/course/media").then((response) => (response.ok ? response.json() : null)).then((data) => { if (live && data?.videos) setFound(data.videos); }).catch(() => {});
+    return () => { live = false; };
+  }, []);
+  const clips = videoList(lesson.video, found[notesKey]);
+  const [clip, setClip] = useState(0);
+  useEffect(() => setClip(0), [current, part]);
+  const video = clips[Math.min(clip, clips.length - 1)] ?? "";
+  const hasVideo = (item: Lesson, index: number) => videoList(item.video, found[String(index + 1)]).length > 0;
+  const hasNotes = Boolean(lesson.notes || NOTES[notesKey]);
+
+  // Progress (lesson, watched lessons, final test) is kept in this browser; the demo keeps its own copy for the tab.
+  // The demo autopilot walks through all six lessons, marking each one watched, then answers the final test.
   const { demo, exit } = useDemo();
   const restored = useRef(false);
   useEffect(() => {
-    if (!demo) return;
-    let saved: { current?: number; done?: number[] } | null = null;
-    try { saved = JSON.parse(window.sessionStorage.getItem(DEMO_PROGRESS) || "null"); } catch { saved = null; }
+    let saved: { current?: number; part?: number; done?: number[]; test?: Partial<TestState> } | null = null;
+    try { saved = JSON.parse((demo ? window.sessionStorage.getItem(DEMO_PROGRESS) : window.localStorage.getItem(COURSE_PROGRESS)) || "null"); } catch { saved = null; }
     setCurrent(typeof saved?.current === "number" ? Math.min(5, Math.max(0, saved.current)) : 0);
+    setPart(typeof saved?.part === "number" ? Math.min(3, Math.max(0, saved.part)) : 0);
     setDone(Array.isArray(saved?.done) ? saved.done.filter((n) => Number.isInteger(n) && n >= 0 && n < 6) : []);
+    const best = Number(saved?.test?.best);
+    const restoredTest = Number.isFinite(best) && best >= 0 ? { best: Math.min(best, FINAL_TEST.length), passed: Boolean(saved?.test?.passed) } : NO_TEST;
+    setTest(restoredTest);
+    // what was already unlocked before this visit does not toast again
+    toasted.current = { test: Array.isArray(saved?.done) && saved.done.length >= 6, cert: restoredTest.passed };
     restored.current = true;
   }, [demo]);
   useEffect(() => {
-    if (!demo || !restored.current) return;
-    try { window.sessionStorage.setItem(DEMO_PROGRESS, JSON.stringify({ current, done })); } catch { /* ignore */ }
-  }, [demo, current, done]);
+    if (!restored.current) return;
+    const value = JSON.stringify({ current, part, done, test });
+    try {
+      if (demo) window.sessionStorage.setItem(DEMO_PROGRESS, value);
+      else window.localStorage.setItem(COURSE_PROGRESS, value);
+    } catch { /* storage blocked: progress lives until the tab closes */ }
+  }, [demo, current, part, done, test]);
   const [touring, setTouring] = useState(false);
   const tourTimers = useRef<number[]>([]);
-  const stopTour = useCallback(() => { tourTimers.current.forEach((timer) => window.clearTimeout(timer)); tourTimers.current = []; setTouring(false); }, []);
+  const stopTour = useCallback(() => { tourTimers.current.forEach((timer) => window.clearTimeout(timer)); tourTimers.current = []; setTouring(false); setAutoTest(false); }, []);
   useEffect(() => () => tourTimers.current.forEach((timer) => window.clearTimeout(timer)), []);
   function tour() {
     stopTour();
     setTouring(true);
+    setTesting(false);
     setDone([]);
+    setTest(NO_TEST);
     let t = 0;
     const at = (ms: number, fn: () => void) => { t += ms; tourTimers.current.push(window.setTimeout(fn, t)); };
     LESSONS.forEach((_, index) => {
       at(index ? 1600 : 100, () => { setCurrent(index); window.scrollTo({ top: 0, behavior: reduceMotion() ? "auto" : "smooth" }); });
       at(1400, () => setDone((prev) => (prev.includes(index) ? prev : [...prev, index])));
     });
-    at(400, () => setTouring(false));
+    // then the final test answers itself (FinalTest auto) and the tour ends on its result
+    at(600, () => { setTesting(true); setAutoTest(true); window.scrollTo({ top: 0, behavior: reduceMotion() ? "auto" : "smooth" }); });
   }
 
   const [tab, setTab] = useState<"about" | "files" | "ask">("about");
@@ -966,7 +1142,7 @@ export function LessonsPage() {
     setPlaying(false);
     setFailed(false);
     if (videoRef.current) videoRef.current.currentTime = 0;
-  }, [current]);
+  }, [current, part, clip, video]);
 
   const closeSheet = useCallback(() => setSheet(false), []);
 
@@ -978,11 +1154,11 @@ export function LessonsPage() {
       const share = node.currentTime / node.duration;
       setProgress(share);
       // L01 / M18: a lesson is marked watched automatically at ≥ 90% of the video.
-      if (share >= 0.9) setDone((prev) => (prev.includes(current) ? prev : [...prev, current]));
+      if (share >= 0.9 && clip >= clips.length - 1) setDone((prev) => (prev.includes(current) ? prev : [...prev, current]));
     };
     node.addEventListener("timeupdate", onTime);
     return () => node.removeEventListener("timeupdate", onTime);
-  }, [current]);
+  }, [current, part, clip, video]);
 
   function toggle() {
     const node = videoRef.current;
@@ -995,7 +1171,7 @@ export function LessonsPage() {
   useEffect(() => {
     const node = videoRef.current;
     if (node && (node.error || node.networkState === HTMLMediaElement.NETWORK_NO_SOURCE)) setFailed(true);
-  }, [current]);
+  }, [current, part, clip, video]);
 
   // C09 (Figma 1206:1322): «Видео не загрузилось» — «Повторить» reloads the source; progress is kept by the player.
   function retry() {
@@ -1005,9 +1181,13 @@ export function LessonsPage() {
   }
 
   // C6: the clock follows the timeline (elapsed share of the lesson length).
-  const [mm, ss] = lesson.clock.split(":").map(Number);
-  const elapsed = Math.round(progress * (mm * 60 + ss));
-  const elapsedLabel = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
+  const [duration, setDuration] = useState(0);
+  const [mm = 0, ss = 0] = (lesson.clock || "").split(":").map(Number);
+  const total = mm * 60 + ss || Math.round(duration);
+  const clock = (sec: number) => `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+  const elapsedLabel = clock(Math.round(progress * total));
+  const totalLabel = lesson.clock || clock(total);
+  const videoFile = /\.(mp4|webm|m4v|mov)(\?|#|$)/i.test(video);
 
   /* M18: turning the phone to landscape while a lesson plays puts the player in full screen; back to portrait leaves
      it. The Fullscreen API may refuse a request that does not come from a tap (an orientation change is not a user
@@ -1064,9 +1244,9 @@ export function LessonsPage() {
   useEffect(() => {
     const timer = window.setTimeout(() => setShownStep(current + 1), reduceMotion() ? 0 : 300);
     return () => window.clearTimeout(timer);
-  }, [current]);
+  }, [current, part, clip, video]);
 
-  const passed = Math.max(done.length, current + 1);
+  const passed = done.length;
   const lastTap = useRef<{ t: number; side: "back" | "fwd" | null } | null>(null);
   const [seek, setSeek] = useState<{ side: "back" | "fwd"; n: number } | null>(null);
   // L01: controls hide after 2 s without movement while playing (opacity 150 мс) and come back on movement or focus.
@@ -1079,16 +1259,25 @@ export function LessonsPage() {
     idleTimer.current = window.setTimeout(() => setIdle(true), window.matchMedia("(hover: none)").matches ? 2500 : 2000);
   }, []);
   useEffect(() => { if (playing) wake(); else { window.clearTimeout(idleTimer.current); setIdle(false); } }, [playing, wake]);
-  // L01: at 6/6 the certificate card unlocks (300 мс) and a toast confirms it.
-  const unlocked = done.length >= 6;
-  const firstUnlock = useRef(true);
+  // L01: at 6/6 the final test opens; the certificate card unlocks (300 мс) once the test is passed, a toast confirms each.
+  const testOpen = done.length >= 6;
+  const unlocked = test.passed;
+  const toasted = useRef({ test: false, cert: false });
   useEffect(() => {
-    if (!unlocked) return;
-    if (firstUnlock.current) { firstUnlock.current = false; window.dispatchEvent(new CustomEvent("fox:toast", { detail: "Сертификат доступен" })); }
-  }, [unlocked]);
+    if (!restored.current) return;
+    const toast = (detail: string) => window.dispatchEvent(new CustomEvent("fox:toast", { detail }));
+    if (testOpen && !unlocked && !toasted.current.test) { toasted.current.test = true; toast("Итоговый тест открыт"); }
+    if (unlocked && !toasted.current.cert) { toasted.current.cert = true; toast("Сертификат доступен"); }
+  }, [testOpen, unlocked]);
+  const certNote = unlocked
+    ? `Тест пройден, лучший результат: ${test.best} из ${FINAL_TEST.length}`
+    : testOpen
+      ? `${FINAL_TEST.length} вопросов по материалам курса. Сертификат — после теста`
+      : `Откроется после всех шести уроков · ${passed} из 6`;
+  const testCta = test.best ? "Пройти тест ещё раз" : "Пройти итоговый тест";
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("fox:lesson", { detail: current + 1 }));
-  }, [current]);
+  }, [current, part, clip, video]);
 
   return (
     <>
@@ -1116,14 +1305,15 @@ export function LessonsPage() {
                       <span className="ls-badge">{done.includes(index) ? <img src="/figma/icons/check.svg" alt="" width={14} height={14} /> : index + 1}</span>
                       <span>
                         <strong>{item.short}</strong>
-                        <small>{item.minutes} мин{state === "current" ? " · смотрите сейчас" : state === "done" ? " · просмотрено" : ""}</small>
+                        <small>{lessonLength(item, hasVideo(item, index))}{state === "current" ? " · смотрите сейчас" : state === "done" ? " · просмотрено" : ""}</small>
                       </span>
                     </button>
                   );
                 })}
                 <div className={`ls-cert${unlocked ? " is-open" : ""}`}>
-                  <strong>Сертификат</strong>
-                  <p>Станет доступен после всех шести уроков · {passed} из 6</p>
+                  <strong>{unlocked ? "Сертификат" : "Итоговый тест"}</strong>
+                  <p>{certNote}</p>
+                  {testOpen && !unlocked ? <button type="button" className="btn btn-dark ls-test-btn" onClick={() => { setTesting(true); setSheet(false); }}>{testCta}</button> : null}
                 </div>
               </div>
             </BottomSheet>
@@ -1141,7 +1331,7 @@ export function LessonsPage() {
                     <span>
                       <strong>{item.short}</strong>
                       <small>
-                        {item.minutes} мин
+                        {lessonLength(item, hasVideo(item, index))}
                         {state === "done" ? " · просмотрено" : state === "current" ? " · смотрите сейчас" : ""}
                       </small>
                     </span>
@@ -1151,18 +1341,73 @@ export function LessonsPage() {
             </div>
             <div className={`ls-cert${unlocked ? " is-open" : ""}`}>
               <div>
-                <strong>Сертификат</strong>
-                <p>Станет доступен после всех шести уроков · {passed} из 6</p>
+                <strong>{unlocked ? "Сертификат" : "Итоговый тест"}</strong>
+                <p>{certNote}</p>
               </div>
-              <button type="button" className="ls-cert-btn" disabled={!unlocked}>Скачать сертификат</button>
+              {testOpen && !unlocked ? (
+                <button type="button" className="btn btn-dark ls-test-btn" onClick={() => setTesting(true)}>{testCta}</button>
+              ) : (
+                <button type="button" className="ls-cert-btn" disabled={!unlocked}>Скачать сертификат</button>
+              )}
             </div>
           </aside>
+          {testing ? (
+            <div className="ls-main">
+              <FinalTest
+                auto={autoTest}
+                best={test.best}
+                onResult={(score) => setTest((prev) => ({ best: Math.max(prev.best, score), passed: true }))}
+                onClose={() => { setTesting(false); setAutoTest(false); if (autoTest) setTouring(false); window.scrollTo({ top: 0 }); }}
+                onAutoDone={() => { setAutoTest(false); setTouring(false); }}
+              />
+            </div>
+          ) : (
           <div className="ls-main">
             <div className="ls-title">
-              <p>Урок {current + 1} · {lesson.lecturer}<span className="ls-min"> · {lesson.minutes} мин</span></p>
+              <p>Урок {lessonNo} · {lesson.lecturer}{lesson.minutes ? <span className="ls-min"> · {lesson.minutes} мин</span> : null}</p>
               <h1>{lesson.title}</h1>
             </div>
-            {/* L01: Space — play/pause, ←/→ — ±5 с (when the player has focus). */}
+            {base.parts ? (
+              <div className="ls-parts" role="group" aria-label="Урок 5: специальность">
+                {base.parts.map((item, n) => (
+                  <button key={item.short} type="button" className={n === part ? "is-on" : ""} aria-pressed={n === part} onClick={() => setPart(n)}>
+                    <small>5.{n + 1}</small>
+                    {item.short}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            {clips.length > 1 ? (
+              <div className="ls-clips" role="group" aria-label="Части видео">
+                {clips.map((url, n) => (
+                  <button key={url} type="button" className={n === clip ? "is-on" : ""} aria-pressed={n === clip} onClick={() => setClip(n)}>Часть {n + 1}</button>
+                ))}
+              </div>
+            ) : null}
+            {/* Lesson videos come from the server folder or the admin; without one the player shows «Видео скоро». */}
+            {!videoFile ? (
+              video ? (
+                <div className="ls-player ls-embed">
+                  <iframe src={video} title={`Видео: ${lesson.title}`} allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowFullScreen />
+                </div>
+              ) : (
+                <div className="ls-player ls-soon" aria-label="Видео урока">
+                  <div className="ls-stage">
+                    <img className="ls-poster" src="/figma/course/lesson-poster.webp" alt="" />
+                    <div className="ls-fail" role="status">
+                      <h2>Видео урока скоро появится</h2>
+                      <p>{hasNotes ? "Пока можно прочитать текст урока ниже" : "Описание урока — ниже"}{lesson.pdf ? " и скачать конспект." : "."} Урок можно отметить просмотренным, чтобы открыть итоговый тест.</p>
+                      {lesson.pdf ? (
+                        <div>
+                          <a className="btn ls-fail-pdf" href={lesson.pdf} target="_blank" rel="noopener">Конспект PDF</a>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : (
+            /* L01: Space — play/pause, ←/→ — ±5 с (when the player has focus). */
             <div ref={playerRef} className={`ls-player${playing ? " is-playing" : ""}${playing && idle ? " is-idle" : ""}${landscape ? " is-landscape" : ""}`} aria-label="Плеер урока" tabIndex={0} onMouseMove={wake} onFocus={wake} onKeyDown={(event) => {
               const node = videoRef.current;
               if (!node || (event.target as HTMLElement).tagName === "INPUT") return;
@@ -1174,7 +1419,7 @@ export function LessonsPage() {
               {/* M20: switching lessons crossfades the player (240 мс). */}
               <div
                 className="ls-stage"
-                key={current}
+                key={`${current}-${part}-${clip}`}
                 onTouchEnd={(event) => {
                   // M18: a double tap on the left / right third seeks ∓10 s (round ripple + «10»).
                   const node = videoRef.current;
@@ -1210,14 +1455,17 @@ export function LessonsPage() {
                   onPause={() => setPlaying(false)}
                   onError={() => { setFailed(true); setPlaying(false); }}
                   onLoadedData={() => setFailed(false)}
+                  onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
                 >
-                  {/* VP9 — для сборок Chromium без H.264; ошибка «Видео не загрузилось» — только если не подошёл ни один источник */}
-                  <source src="/course/lesson-loop.webm" type="video/webm" />
-                  <source src="/course/lesson-loop.mp4" type="video/mp4" onError={() => { setFailed(true); setPlaying(false); }} />
+                  <source src={video} onError={() => { setFailed(true); setPlaying(false); }} />
                 </video>
                 {!playing && <img className="ls-poster" src="/figma/course/lesson-poster.webp" alt="" />}
                 {/* M18: at 90% of the video the lesson is marked watched and «Следующий урок →» slides up at the bottom of the player. */}
-                {progress >= 0.9 && current < 5 && !failed ? (
+                {progress >= 0.9 && !failed && clip < clips.length - 1 ? (
+                  <button type="button" className="ls-next-plate" onClick={(event) => { event.stopPropagation(); setClip(clip + 1); }}>
+                    Часть {clip + 2} <span aria-hidden>→</span>
+                  </button>
+                ) : progress >= 0.9 && current < 5 && !failed ? (
                   <button type="button" className="ls-next-plate" onClick={(event) => { event.stopPropagation(); setCurrent(current + 1); }}>
                     Следующий урок <span aria-hidden>→</span>
                   </button>
@@ -1228,7 +1476,7 @@ export function LessonsPage() {
                     <p>Проверьте соединение и повторите. Прогресс урока сохранён — продолжите с той же секунды.</p>
                     <div>
                       <button type="button" className="btn btn-dark" onClick={retry}>Повторить</button>
-                      <a className="btn ls-fail-pdf" href="/report">Скачать конспект PDF</a>
+                      {lesson.pdf ? <a className="btn ls-fail-pdf" href={lesson.pdf} target="_blank" rel="noopener">Скачать конспект PDF</a> : null}
                     </div>
                   </div>
                 ) : (
@@ -1253,11 +1501,12 @@ export function LessonsPage() {
                     node.currentTime = (Number(event.target.value) / 1000) * node.duration;
                   }}
                 />
-                <span>{elapsedLabel} / {lesson.clock}</span>
+                <span>{elapsedLabel} / {totalLabel}</span>
                 <span className="ls-chip">CC</span>
                 <span className="ls-chip">1×</span>
               </div>
             </div>
+            )}
             <div className="ls-actions">
               <button
                 type="button"
@@ -1267,7 +1516,8 @@ export function LessonsPage() {
                 Отметить как просмотренный
               </button>
               <div className="ls-pair">
-                <a className="ls-quiet" href="/report">{"Конспект"}<span className="ls-d">{"\u00a0урока"}</span>{"\u00a0PDF"}</a>
+                {lesson.pdf ? <a className="ls-quiet" href={lesson.pdf} target="_blank" rel="noopener">{"Конспект"}<span className="ls-d">{"\u00a0урока"}</span>{"\u00a0PDF"}</a> : <span className="ls-quiet ls-off">Конспект PDF скоро</span>}
+                {lesson.files?.map((file) => <a key={file.href} className="ls-quiet" href={file.href} target="_blank" rel="noopener" title={file.title}>{file.short}</a>)}
                 {current < 5 ? (
                   <button type="button" className="text-link" onClick={() => setCurrent(current + 1)}>
                     <span>Следующий<span className="ls-d">&nbsp;урок</span></span>
@@ -1285,7 +1535,14 @@ export function LessonsPage() {
             <div className="ls-about" key={tab} ref={aboutRef}>
               <p className="ls-kicker">{tab === "files" ? "Материалы" : tab === "ask" ? "Вопрос лектору" : "О чём этот урок"}</p>
               <p>
-                {tab === "ask" ? "Напишите вопрос к этому уроку — лектор ответит в кабинете курса." : (
+                {tab === "ask" ? "Напишите вопрос к этому уроку — лектор ответит в кабинете курса." : tab === "files" ? (
+                  lesson.pdf || lesson.files?.length ? (
+                    <span className="ls-files">
+                      {lesson.pdf ? <a className="text-link" href={lesson.pdf} target="_blank" rel="noopener">Конспект урока, PDF</a> : null}
+                      {lesson.files?.map((file) => <a key={file.href} className="text-link" href={file.href} target="_blank" rel="noopener">{file.title}</a>)}
+                    </span>
+                  ) : "Конспект появится вместе с видео урока."
+                ) : (
                   <>
                     <span className="ls-about-desk">{lesson.about ?? lesson.content}</span>
                     <span className="ls-about-mob">{"aboutMob" in lesson && lesson.aboutMob ? lesson.aboutMob : lesson.about ?? lesson.content}</span>
@@ -1303,16 +1560,24 @@ export function LessonsPage() {
                 <p>{lesson.after}</p>
               </div>
             </div>
+            {testOpen && !unlocked ? (
+              <div className="ls-test-cta">
+                <p><strong>Все уроки отмечены</strong>{certNote}</p>
+                <button type="button" className="btn btn-dark" onClick={() => { setTesting(true); window.scrollTo({ top: 0 }); }}>{testCta}</button>
+              </div>
+            ) : null}
+            {notes ? <LessonNotes key={notesKey} text={notes} /> : null}
           </div>
+          )}
           {demo && (
-            <DemoBar hint={`Кабинет демо-слушателя: ${DEMO_USER.name}. Уроки можно щёлкать в программе курса или запустить автопросмотр.`}>
+            <DemoBar hint={`Кабинет демо-слушателя: ${DEMO_USER.name}. Уроки можно щёлкать в программе курса или запустить автопросмотр — он пройдёт и итоговый тест.`}>
               {touring ? (
                 <button type="button" className="demo-act" onClick={stopTour}>■ Остановить автопросмотр</button>
               ) : (
-                <button type="button" className="demo-act" onClick={tour}>▶ Пройти все 6 уроков</button>
+                <button type="button" className="demo-act" onClick={tour}>▶ Пройти 6 уроков и тест</button>
               )}
-              <button type="button" className="demo-act is-ghost" disabled={touring || unlocked} onClick={() => setDone([0, 1, 2, 3, 4, 5])}>Отметить все — открыть сертификат</button>
-              <button type="button" className="demo-act is-ghost" disabled={touring} onClick={() => { setDone([]); setCurrent(0); firstUnlock.current = true; }}>Сбросить прогресс</button>
+              <button type="button" className="demo-act is-ghost" disabled={touring || testOpen} onClick={() => setDone([0, 1, 2, 3, 4, 5])}>Отметить все — открыть тест</button>
+              <button type="button" className="demo-act is-ghost" disabled={touring} onClick={() => { setDone([]); setCurrent(0); setPart(0); setTest(NO_TEST); setTesting(false); toasted.current = { test: false, cert: false }; }}>Сбросить прогресс</button>
               <Link className="demo-act is-ghost" href="/course?demo=1">Заново: регистрация</Link>
               <button type="button" className="demo-act is-ghost" onClick={exit}>Выйти из демо</button>
             </DemoBar>
@@ -1322,7 +1587,7 @@ export function LessonsPage() {
               <span className="ls-sticky-prog">Программа · урок {current + 1} из 6</span>
               <img className="ls-sticky-chev" src="/icons/chevron-down.svg" alt="" width={16} height={16} />
             </span>
-            <span className="ls-sticky-next">Далее: {current < 5 ? LESSONS[current + 1].short : "сертификат"}</span>
+            <span className="ls-sticky-next">Далее: {current < 5 ? LESSONS[current + 1].short : unlocked ? "сертификат" : "итоговый тест"}</span>
           </button>
         </section>
       </main>

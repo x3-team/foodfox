@@ -55,7 +55,7 @@ function clean(field: Field, value: unknown): unknown {
           if (f.type === "number") out[f.name] = Number(v) || 0;
           else if (f.type === "boolean") out[f.name] = Boolean(v);
           else if (f.type === "qa") out[f.name] = clean({ key: "", label: `${field.itemTitle} ${index + 1}`, type: "qa", default: [] }, v);
-          else out[f.name] = str(v).trim();
+          else out[f.name] = str(v, f.type === "textarea" ? 200000 : 5000).trim();
         }
         return out;
       });

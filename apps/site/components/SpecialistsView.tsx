@@ -222,10 +222,10 @@ const LABS: Array<[string, string]> = [
 ];
 
 const LECTURERS = [
-  ["Светлана Каневская", "Д. м. н., профессор, гастроэнтеролог-нутрициолог · уроки 1, 2, 6", "/figma/specialists/svetlana.webp"],
-  ["Алёна Вавилова", "Клинический нутрициолог · урок 3", "/figma/specialists/alyona.webp"],
-  ["Ксения Эллинская", "К. м. н., дерматовенеролог · урок 4", "/figma/specialists/ksenia.webp"],
-  ["Дмитрий Эллинский", "Дерматовенеролог, трихолог · урок 5", "/figma/specialists/dmitry.webp"],
+  ["Светлана Каневская", "Д. м. н., профессор, гастроэнтеролог-нутрициолог · уроки 2, 3, 4, 5.4", "/figma/specialists/svetlana.webp"],
+  ["Алёна Вавилова", "Клинический нутрициолог · уроки 1, 5.1, 6", "/figma/specialists/alyona.webp"],
+  ["Ксения Эллинская", "К. м. н., дерматовенеролог · урок 5.2", "/figma/specialists/ksenia.webp"],
+  ["Дмитрий Эллинский", "Дерматовенеролог, трихолог · урок 5.3", "/figma/specialists/dmitry.webp"],
 ];
 
 const HERO_TILES: Array<[string, string, string, string]> = [
