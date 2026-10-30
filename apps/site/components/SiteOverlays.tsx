@@ -618,7 +618,7 @@ function BookModal({ initialLab, onClose }: { initialLab?: string; onClose: () =
       const response = await fetch("/api/lead", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ kind: "book-wait", city, contact: mail }),
+        body: JSON.stringify({ kind: "book-wait", city, contact: mail, consent: true }),
       });
       if (!response.ok) throw new Error("fail");
       const rest = 600 - (performance.now() - started);

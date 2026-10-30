@@ -3,6 +3,7 @@ import { buildAuthResponse } from "@/lib/auth-request";
 import { setSessionCookie } from "@/lib/auth";
 import { createRefreshToken, getDbPool, registerUser } from "@/lib/db";
 import { trackEvent } from "@/lib/analytics";
+import { requestMeta } from "@/lib/consents";
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const session = await registerUser(email, password, displayName, { consent });
+    const session = await registerUser(email, password, displayName, { consent, ...requestMeta(req.headers) });
     setSessionCookie(session);
     const refreshToken = await createRefreshToken(session.userId);
     trackEvent(getDbPool(), session.clientId, "user_registered", { consent });

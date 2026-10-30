@@ -4,6 +4,7 @@ import { buildAuthResponse } from "@/lib/auth-request";
 import { createRefreshToken, verifyPhoneOtp } from "@/lib/db";
 import { normalizePhone } from "@/lib/otp";
 import { isBlocked } from "@/lib/account-guard";
+import { requestMeta } from "@/lib/consents";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Неверный код" }, { status: 400 });
     }
 
-    const session = await verifyPhoneOtp(phone, code, body.intent === "partner");
+    const session = await verifyPhoneOtp(phone, code, body.intent === "partner", requestMeta(req.headers));
     if (!session) {
       return NextResponse.json(
         { error: "Код неверный или истёк" },

@@ -26,6 +26,7 @@ import {
 } from "./recipes-catalog";
 import { getDbClient, runWithClientContext } from "./db-context";
 import { trackEvent } from "./analytics";
+import { recordCurrentConsents, type ConsentMeta } from "./consents";
 import {
   demoCodeFor,
   generateOtp,
@@ -427,6 +428,7 @@ export async function verifyPhoneOtp(
   phone: string,
   code: string,
   partnerIntent = false,
+  meta: ConsentMeta = {},
 ): Promise<SessionData | null> {
   await ensureSchema();
   const p = requirePool();
@@ -497,6 +499,8 @@ export async function verifyPhoneOtp(
     [user.rows[0].id, "Клиент"],
   );
   const clientId = client.rows[0].id as string;
+  // The sign-in screen of the app does not let the code through without the consent checkbox.
+  await recordCurrentConsents(p, { subject: "client", subjectId: user.rows[0].id, contact: phone, source: "app", ...meta });
 
   await ensureChatThread(p, clientId, null);
   await seedWelcomeMessage(p, clientId);
@@ -515,7 +519,7 @@ export async function registerUser(
   email: string,
   password: string,
   displayName: string,
-  opts?: { consent?: boolean },
+  opts?: { consent?: boolean } & ConsentMeta,
 ): Promise<SessionData> {
   await ensureSchema();
   const p = requirePool();
@@ -538,6 +542,9 @@ export async function registerUser(
     ],
   );
   const clientId = client.rows[0].id;
+  if (opts?.consent) {
+    await recordCurrentConsents(p, { subject: "client", subjectId: user.rows[0].id, contact: normalized, source: "app", ip: opts.ip, userAgent: opts.userAgent });
+  }
 
   await ensureChatThread(p, clientId, null);
   await seedWelcomeMessage(p, clientId);

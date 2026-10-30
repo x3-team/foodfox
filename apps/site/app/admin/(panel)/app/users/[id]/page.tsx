@@ -4,10 +4,12 @@ import { notFound } from "next/navigation";
 import { AppNotReady } from "@/components/admin/AppNotReady";
 import { Icon } from "@/components/admin/Icon";
 import { can, requireStaff } from "@/lib/admin/auth";
+import { CONSENT_KINDS } from "@/lib/admin/consents";
 import { appReady, clientTitle, fullPhone, isReportStatus, LOW_CONFIDENCE, medicalGrant, REPORT_STATUSES } from "@/lib/admin/app";
 import { one, q } from "@/lib/admin/db";
 import { ago, dateShort, dateTime } from "@/lib/admin/format";
 import { MedicalGate } from "../../MedicalGate";
+import { WithdrawButton } from "../../../legal/WithdrawButton";
 import { UserActions } from "./UserActions";
 
 export const metadata: Metadata = { title: "Клиент" };
@@ -49,6 +51,13 @@ export default async function AppUserPage({ params }: { params: Promise<{ id: st
         [cid],
       )
     : [];
+  // The register (013_legal_consents.sql); an empty list until the migration has run.
+  const consents = await q<{ kind: string; version: string; accepted_at: Date; withdrawn_at: Date | null; stop_by: Date | null }>(
+    "SELECT kind, version, accepted_at, withdrawn_at, stop_by FROM consents WHERE subject_type = 'client' AND subject_id = $1 ORDER BY accepted_at DESC",
+    [id],
+  ).catch(() => []);
+  const activeConsents = consents.filter((c) => !c.withdrawn_at);
+  const withdrawn = consents.find((c) => c.withdrawn_at);
   const plan = cid
     ? await one<{ status: string; started_at: Date; weeks_total: number }>(
         "SELECT status, started_at, weeks_total FROM nutrition_plans WHERE client_id = $1 ORDER BY created_at DESC LIMIT 1",
@@ -93,7 +102,15 @@ export default async function AppUserPage({ params }: { params: Promise<{ id: st
               <dt>Телефон</dt><dd className="num">{fullPhone(user.phone)}</dd>
               <dt>Почта</dt><dd>{user.email && !user.email.endsWith("@phone.foodfox") ? user.email : "—"}</dd>
               <dt>ID</dt><dd className="num faint" style={{ fontSize: 13 }}>{user.id}</dd>
-              <dt>Согласие на обработку</dt><dd>{user.privacy_consent_at ? dateTime(user.privacy_consent_at) : "—"}</dd>
+              <dt>Согласие на обработку</dt>
+              <dd>
+                {activeConsents.length
+                  ? activeConsents.map((c) => <span key={`${c.kind}${c.version}`} style={{ display: "block" }}>{CONSENT_KINDS[c.kind] ?? c.kind}, версия {c.version} · {dateShort(c.accepted_at)}</span>)
+                  : withdrawn
+                    ? <span className="a-badge is-off">отозвано {dateShort(withdrawn.withdrawn_at)}{withdrawn.stop_by ? `, прекратить обработку до ${dateShort(withdrawn.stop_by)}` : ""}</span>
+                    : user.privacy_consent_at ? dateTime(user.privacy_consent_at) : "—"}
+                {activeConsents.length > 0 && can(staff, "consents") && <div style={{ marginTop: 8 }}><WithdrawButton subject="client" subjectId={user.id} label="Отозвать согласие" /></div>}
+              </dd>
               <dt>Промокод партнёра</dt><dd>{user.referral_code || "—"}</dd>
             </dl>
           </section>

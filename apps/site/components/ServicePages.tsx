@@ -1497,7 +1497,7 @@ function ReviewForm() {
     const rest = () => new Promise((resolve) => window.setTimeout(resolve, Math.max(0, 600 - (performance.now() - started))));
     try {
       if (!navigator.onLine) throw new Error("offline");
-      const response = await fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "review", ...data, text }) });
+      const response = await fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "review", ...data, text, consent: true }) });
       if (!response.ok) throw new Error(String(response.status));
       await rest();
       setBusy(false);

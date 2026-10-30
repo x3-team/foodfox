@@ -245,7 +245,7 @@ function useRegistration(demo = false) {
     setBusy(true);
     try {
       await Promise.all([
-        demoRef.current ? Promise.resolve() : fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "course", email, name, specialty: spec }) }),
+        demoRef.current ? Promise.resolve() : fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind: "course", email, name, specialty: spec, consent: true }) }),
         new Promise((resolve) => window.setTimeout(resolve, 600)),
       ]);
       setSent(true);

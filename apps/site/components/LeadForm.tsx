@@ -161,7 +161,7 @@ export function LeadForm({
         fetch("/api/lead", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ kind: "contact", who, ...values }),
+          body: JSON.stringify({ kind: "contact", who, ...values, consent: true }),
         }),
         600,
       );
