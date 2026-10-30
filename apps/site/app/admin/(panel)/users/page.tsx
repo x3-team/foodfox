@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireStaff, ROLE_HINT, ROLE_LABEL, ROLES, type Role } from "@/lib/admin/auth";
 import { q } from "@/lib/admin/db";
 import { UsersManager, type UserRow } from "./UsersManager";
@@ -24,6 +25,10 @@ export default async function UsersPage() {
           <p>Кто входит в админку и что ему открыто. Отчёты и медданные клиентов приложения открываются только с двухфакторным входом.</p>
         </div>
       </div>
+      <nav className="a-tabs-inline">
+        <Link href="/admin/users" aria-current="page">Сотрудники</Link>
+        <Link href="/admin/users/rights">Права ролей</Link>
+      </nav>
       <UsersManager users={users} roles={ROLES.map((id) => ({ id, label: ROLE_LABEL[id], hint: ROLE_HINT[id] }))} />
     </>
   );
