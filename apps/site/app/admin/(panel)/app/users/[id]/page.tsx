@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppNotReady } from "@/components/admin/AppNotReady";
 import { Icon } from "@/components/admin/Icon";
-import { can, requireStaff } from "@/lib/admin/auth";
+import { can, mfaOk, requireStaff } from "@/lib/admin/auth";
 import { appReady, clientTitle, fullPhone, isReportStatus, LOW_CONFIDENCE, medicalGrant, REPORT_STATUSES } from "@/lib/admin/app";
 import { one, q } from "@/lib/admin/db";
 import { ago, dateShort, dateTime } from "@/lib/admin/format";
@@ -59,7 +59,7 @@ export default async function AppUserPage({ params }: { params: Promise<{ id: st
     "SELECT id, actor_name, summary, created_at FROM audit_log WHERE entity IN ('app_user', 'medical', 'report') AND entity_id = $1 ORDER BY created_at DESC LIMIT 12",
     [id],
   );
-  const grant = cid && can(staff, "medical") && staff.mfa ? await medicalGrant(staff, cid) : null;
+  const grant = cid && can(staff, "medical") && mfaOk(staff) ? await medicalGrant(staff, cid) : null;
   const zones = grant && reports[0]
     ? await q<{ zone: string; n: number }>("SELECT zone, count(*)::int AS n FROM test_results WHERE report_id = $1 GROUP BY zone", [reports[0].id])
     : [];
@@ -128,7 +128,7 @@ export default async function AppUserPage({ params }: { params: Promise<{ id: st
           <MedicalGate
             userId={user.id}
             allowed={can(staff, "medical")}
-            mfa={staff.mfa}
+            mfa={mfaOk(staff)}
             grantUntil={grant ? grant.toISOString() : null}
             hasData={reports.length > 0}
           >

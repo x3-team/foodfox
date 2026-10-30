@@ -2,16 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { audit } from "@/lib/admin/audit";
 import { can, currentStaff } from "@/lib/admin/auth";
 import { q } from "@/lib/admin/db";
-import { mainUrl, srcSetOf, storeUpload, type MediaRow } from "@/lib/admin/media";
+import { mediaView, storeUpload, type MediaItem, type MediaRow } from "@/lib/admin/media";
 
 export const dynamic = "force-dynamic";
 
-const view = (r: MediaRow) => ({
-  id: r.id, name: r.original_name, mime: r.mime, size: Number(r.size), width: r.width, height: r.height, alt: r.alt,
-  url: r.url, src: r.mime.startsWith("image/") ? mainUrl(r) : r.url, srcSet: srcSetOf(r), thumb: r.variants[0]?.url ?? r.url,
-  createdAt: new Date(r.created_at).toISOString(),
-});
-export type MediaItem = ReturnType<typeof view>;
+export type { MediaItem } from "@/lib/admin/media";
+const view = mediaView;
 
 /** List for the media page and the picker in the editors. */
 export async function GET(request: NextRequest) {
@@ -23,7 +19,8 @@ export async function GET(request: NextRequest) {
   const params: unknown[] = [];
   if (text) { params.push(`%${text}%`); where.push(`(original_name ILIKE $${params.length} OR alt ILIKE $${params.length})`); }
   if (kind === "image") where.push("mime LIKE 'image/%'");
-  if (kind === "file") where.push("mime NOT LIKE 'image/%'");
+  if (kind === "file") where.push("mime NOT LIKE 'image/%' AND mime NOT LIKE 'video/%'");
+  if (kind === "video") where.push("mime LIKE 'video/%'");
   const rows = await q<MediaRow>(`SELECT * FROM media ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY created_at DESC LIMIT 300`, params);
   return NextResponse.json({ items: rows.map(view) });
 }

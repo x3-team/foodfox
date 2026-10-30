@@ -79,6 +79,14 @@ export type Area = keyof typeof ACCESS;
 /** Areas that open only with two-factor sign-in switched on. */
 export const MFA_AREAS: readonly Area[] = ["medical", "app_reports"];
 
+/** FOX_ADMIN_REQUIRE_MFA=0 (false, no, off) lifts that rule on a test server; any other value or none keeps it. */
+export function mfaRequired(): boolean {
+  return !["0", "false", "no", "off"].includes((process.env.FOX_ADMIN_REQUIRE_MFA ?? "").trim().toLowerCase());
+}
+
+/** The staff member may open the MFA areas: 2FA is on, or the rule is off on this server. */
+export const mfaOk = (staff: Pick<Staff, "mfa">) => staff.mfa || !mfaRequired();
+
 export function can(staff: Pick<Staff, "role"> | null, area: Area): boolean {
   return Boolean(staff && (ACCESS[area] as readonly Role[]).includes(staff.role));
 }
@@ -120,7 +128,7 @@ export async function requireStaff(area?: Area): Promise<Staff> {
     redirect("/admin/login");
   }
   if (area && !can(staff, area)) redirect("/admin?denied=1");
-  if (area && MFA_AREAS.includes(area) && !staff.mfa) redirect("/admin/account?mfa=required");
+  if (area && MFA_AREAS.includes(area) && !mfaOk(staff)) redirect("/admin/account?mfa=required");
   return staff;
 }
 
@@ -129,7 +137,7 @@ export async function assertStaff(area?: Area): Promise<Staff> {
   const staff = await currentStaff();
   if (!staff) throw new Error("Войдите заново");
   if (area && !can(staff, area)) throw new Error("Недостаточно прав");
-  if (area && MFA_AREAS.includes(area) && !staff.mfa) throw new Error("Включите двухфакторный вход в профиле");
+  if (area && MFA_AREAS.includes(area) && !mfaOk(staff)) throw new Error("Включите двухфакторный вход в профиле");
   return staff;
 }
 

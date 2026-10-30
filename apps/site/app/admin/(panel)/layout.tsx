@@ -18,8 +18,15 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     ? ((await q<{ n: number }>(`SELECT count(*)::int AS n FROM reports WHERE ${queueWhere()}`).catch(() => []))[0]?.n ?? 0)
     : 0;
   return (
-    <Shell nav={nav} me={{ name: staff.name, email: staff.email, roleLabel: ROLE_LABEL[staff.role], mfa: staff.mfa }} counts={{ "/admin/leads": counts.leads, "/admin/reviews": counts.reviews, "/admin/partners": counts.partners, "/admin/app/reports": queue }} logout={logoutAction}>
+    <Shell nav={nav} me={{ name: staff.name, email: staff.email, roleLabel: ROLE_LABEL[staff.role], mfa: staff.mfa }} counts={{ "/admin/leads": counts.leads, "/admin/reviews": counts.reviews, "/admin/partners": counts.partners, "/admin/app/reports": queue }} logout={logoutAction} build={buildLabel()}>
       {children}
     </Shell>
   );
+}
+
+/** «v1.0.0 · 0c7bdfe · 30.10.2026 14:05» from next.config.mjs, in Moscow time like the rest of the admin. */
+function buildLabel(): string {
+  const time = process.env.FOX_BUILD_TIME;
+  const when = time ? new Intl.DateTimeFormat("ru-RU", { timeZone: "Europe/Moscow", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(time)).replace(",", "") : "";
+  return [process.env.FOX_BUILD_VERSION && `v${process.env.FOX_BUILD_VERSION}`, process.env.FOX_BUILD_SHA, when].filter(Boolean).join(" · ");
 }

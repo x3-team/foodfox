@@ -1,6 +1,10 @@
 /* Course data: defaults for the site and for the admin (lib/cms/registry.ts). */
 
-export type Lesson = { title: string; short: string; lecturer: string; minutes: number; clock: string; content: string; after: string; about?: string; aboutMob?: string };
+export type Lesson = {
+  title: string; short: string; lecturer: string; minutes: number; clock: string; content: string; after: string; about?: string; aboutMob?: string;
+  /** /media/<id>/original.mp4|webm and /media/<id>/original.pdf, set in /admin/content/course. */
+  video?: string; notes?: string;
+};
 
 export const LESSONS_DEFAULT: Lesson[] = [
   {

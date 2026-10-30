@@ -901,6 +901,9 @@ export function LessonsPage() {
   const [failed, setFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const lesson = LESSONS[current];
+  // The lesson's own video and notes from /admin/content/course; until they are uploaded the loop and /report stay.
+  const notesHref = lesson.notes || "/report";
+  const notesProps = lesson.notes ? { target: "_blank", rel: "noreferrer" } : {};
 
   // Demo: the course starts from lesson 1 with nothing watched, progress is kept for the tab, and the autopilot walks
   // through all six lessons, marking each one watched, until the certificate opens.
@@ -1201,6 +1204,7 @@ export function LessonsPage() {
                   </span>
                 )}
                 <video
+                  key={lesson.video ?? "loop"}
                   ref={videoRef}
                   className="player-poster"
                   poster="/figma/course/lesson-poster.webp"
@@ -1212,8 +1216,14 @@ export function LessonsPage() {
                   onLoadedData={() => setFailed(false)}
                 >
                   {/* VP9 — для сборок Chromium без H.264; ошибка «Видео не загрузилось» — только если не подошёл ни один источник */}
-                  <source src="/course/lesson-loop.webm" type="video/webm" />
-                  <source src="/course/lesson-loop.mp4" type="video/mp4" onError={() => { setFailed(true); setPlaying(false); }} />
+                  {lesson.video ? (
+                    <source src={lesson.video} type={lesson.video.endsWith(".webm") ? "video/webm" : "video/mp4"} onError={() => { setFailed(true); setPlaying(false); }} />
+                  ) : (
+                    <>
+                      <source src="/course/lesson-loop.webm" type="video/webm" />
+                      <source src="/course/lesson-loop.mp4" type="video/mp4" onError={() => { setFailed(true); setPlaying(false); }} />
+                    </>
+                  )}
                 </video>
                 {!playing && <img className="ls-poster" src="/figma/course/lesson-poster.webp" alt="" />}
                 {/* M18: at 90% of the video the lesson is marked watched and «Следующий урок →» slides up at the bottom of the player. */}
@@ -1228,7 +1238,7 @@ export function LessonsPage() {
                     <p>Проверьте соединение и повторите. Прогресс урока сохранён — продолжите с той же секунды.</p>
                     <div>
                       <button type="button" className="btn btn-dark" onClick={retry}>Повторить</button>
-                      <a className="btn ls-fail-pdf" href="/report">Скачать конспект PDF</a>
+                      <a className="btn ls-fail-pdf" href={notesHref} {...notesProps}>Скачать конспект PDF</a>
                     </div>
                   </div>
                 ) : (
@@ -1267,7 +1277,7 @@ export function LessonsPage() {
                 Отметить как просмотренный
               </button>
               <div className="ls-pair">
-                <a className="ls-quiet" href="/report">{"Конспект"}<span className="ls-d">{"\u00a0урока"}</span>{"\u00a0PDF"}</a>
+                <a className="ls-quiet" href={notesHref} {...notesProps}>{"Конспект"}<span className="ls-d">{"\u00a0урока"}</span>{"\u00a0PDF"}</a>
                 {current < 5 ? (
                   <button type="button" className="text-link" onClick={() => setCurrent(current + 1)}>
                     <span>Следующий<span className="ls-d">&nbsp;урок</span></span>

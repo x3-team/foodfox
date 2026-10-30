@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppNotReady } from "@/components/admin/AppNotReady";
 import { Icon } from "@/components/admin/Icon";
-import { can, requireStaff } from "@/lib/admin/auth";
+import { can, mfaOk, requireStaff } from "@/lib/admin/auth";
 import { appReady, clientTitle, isReportStatus, LOW_CONFIDENCE, maskPhone, medicalGrant, REPORT_STATUSES } from "@/lib/admin/app";
 import { one, q } from "@/lib/admin/db";
 import { ago, dateTime } from "@/lib/admin/format";
@@ -93,7 +93,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
       <div className="a-stack">
-        <MedicalGate userId={r.user_id} allowed={can(staff, "medical")} mfa={staff.mfa} grantUntil={grant ? grant.toISOString() : null} hasData={stats.total > 0 || Boolean(r.storage_key)}>
+        <MedicalGate userId={r.user_id} allowed={can(staff, "medical")} mfa={mfaOk(staff)} grantUntil={grant ? grant.toISOString() : null} hasData={stats.total > 0 || Boolean(r.storage_key)}>
           <div className="a-zones">
             <div className="a-zone z-red"><b>{stats.red}</b><small>красная</small></div>
             <div className="a-zone z-yellow"><b>{stats.yellow}</b><small>жёлтая</small></div>

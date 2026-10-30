@@ -6,6 +6,8 @@ import { fieldHistory, revisionValue, saveContent } from "@/app/admin/(panel)/co
 import type { Field, ImageValue, ItemField, Section } from "@/lib/cms/registry";
 import { Icon } from "./Icon";
 import { MediaLibrary } from "./MediaLibrary";
+import { isLarge, uploadLarge } from "./upload";
+import type { MediaItem } from "@/lib/admin/media";
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -155,6 +157,64 @@ export function ImageInput({ value, onChange }: { value: ImageValue; onChange: (
   );
 }
 
+/** A video or a PDF of one list item: upload right here (chunks with progress for big files), pick from the library,
+    replace or remove. The value is the file's /media URL. */
+export function FileInput({ kind, value, label, onChange }: { kind: "video" | "pdf"; value: string; label: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [share, setShare] = useState<number | null>(null);
+  const [error, setError] = useState("");
+  const input = useRef<HTMLInputElement>(null);
+  const upload = async (file: File) => {
+    setError("");
+    setShare(0);
+    try {
+      let item: MediaItem;
+      if (isLarge(file)) item = await uploadLarge(file, setShare);
+      else {
+        const form = new FormData();
+        form.append("files", file);
+        const data = await (await fetch("/admin/api/media", { method: "POST", body: form })).json();
+        if (!data.items?.[0]) throw new Error(data.errors?.[0] ?? "Не загрузилось");
+        item = data.items[0];
+      }
+      onChange(item.url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Не загрузилось");
+    } finally {
+      setShare(null);
+      if (input.current) input.current.value = "";
+    }
+  };
+  const name = value ? value.split("/").pop() : "";
+  return (
+    <div className="a-file-field">
+      {value && kind === "video" && <video src={value} controls preload="metadata" />}
+      <div className="a-actions" style={{ gap: 8 }}>
+        {value ? <a className="a-link" href={value} target="_blank" rel="noreferrer">{kind === "video" ? "Видео" : "Конспект"} · {name}</a> : <span className="muted">{kind === "video" ? "Видео не загружено" : "PDF не загружен"}</span>}
+      </div>
+      {share !== null && (
+        <span className="a-progress" role="progressbar" aria-label={`Загрузка: ${label}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(share * 100)}>
+          <i style={{ width: `${share * 100}%` }} /><small>Загружаем · {Math.floor(share * 100)}%</small>
+        </span>
+      )}
+      {error && <div className="a-error" role="alert">{error}</div>}
+      <div className="a-actions" style={{ gap: 8, marginTop: share !== null ? 24 : 0 }}>
+        <button className="a-btn is-ghost is-small" type="button" disabled={share !== null} onClick={() => input.current?.click()}>
+          <Icon name="upload" size={16} /> {value ? "Заменить" : "Загрузить"}
+        </button>
+        <button className="a-btn is-ghost is-small" type="button" disabled={share !== null} onClick={() => setOpen(true)}><Icon name="media" size={16} /> Из медиатеки</button>
+        {value && <button className="a-mini is-danger" type="button" disabled={share !== null} onClick={() => window.confirm("Убрать файл из урока? Сам файл останется в медиатеке.") && onChange("")}>Убрать</button>}
+        <input ref={input} type="file" hidden accept={kind === "video" ? "video/mp4,video/webm" : "application/pdf"} aria-label={label} onChange={(e) => e.target.files?.[0] && void upload(e.target.files[0])} />
+      </div>
+      {open && (
+        <Modal title={kind === "video" ? "Выберите видео" : "Выберите PDF"} onClose={() => setOpen(false)}>
+          <MediaLibrary kind={kind === "video" ? "video" : "file"} onPick={(item) => { onChange(item.url); setOpen(false); }} />
+        </Modal>
+      )}
+    </div>
+  );
+}
+
 export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
@@ -217,7 +277,13 @@ function ListInput({ field, value, onChange }: { field: Extract<Field, { type: "
           </button>
           {open === index && (
             <div className="a-form" style={{ gap: 16, marginTop: 12 }}>
-              {field.of.map((f: ItemField) => (
+              {field.of.map((f: ItemField) => f.type === "video" || f.type === "pdf" ? (
+                <div key={f.name} className="a-field">
+                  <span>{f.label}</span>
+                  <FileInput kind={f.type} value={String(item[f.name] ?? "")} label={`${field.itemTitle} ${index + 1}: ${f.label}`} onChange={(v) => setItem(index, f.name, v || undefined)} />
+                  {f.hint && <small className="faint">{f.hint}</small>}
+                </div>
+              ) : (
                 <label key={f.name} className="a-field">
                   <span>{f.label}</span>
                   {f.readonly ? <input className="a-input" value={String(item[f.name] ?? "")} readOnly disabled />
