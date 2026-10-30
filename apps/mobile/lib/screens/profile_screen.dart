@@ -32,6 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _phone;
   bool _biometrics = false;
   bool _biometricsAvailable = false;
+  bool _deleting = false;
 
   @override
   void initState() {
@@ -203,6 +204,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           kind: FoxButtonKind.outline,
           onPressed: widget.onSignOut,
         ),
+        const SizedBox(height: 8),
+        FoxButton(
+          label: _deleting ? "Удаляем…" : "Удалить аккаунт",
+          kind: FoxButtonKind.text,
+          onPressed: _deleting ? null : _confirmDelete,
+        ),
         const SizedBox(height: 16),
         Text(
           "IgG — не диагноз аллергии и не замена базовой диагностики. "
@@ -215,6 +222,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ]),
     );
+  }
+
+  Future<void> _confirmDelete() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Удалить аккаунт?"),
+        content: const Text(
+          "Удалим отчёты, результаты, план питания и переписку, номер телефона "
+          "сотрём. Восстановить их будет нельзя.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text("Отмена"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFFC8361D)),
+            child: const Text("Удалить"),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() => _deleting = true);
+    try {
+      await widget.api.deleteAccount();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Аккаунт удалён")),
+      );
+      widget.onSignOut();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _deleting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Не получилось удалить: $e")),
+      );
+    }
   }
 
   String _profileSubtitle(int week) {

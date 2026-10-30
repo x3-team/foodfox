@@ -1,5 +1,7 @@
 "use server";
 
+import { rm } from "fs/promises";
+import { join } from "path";
 import { revalidatePath } from "next/cache";
 import { assertStaff } from "@/lib/admin/auth";
 import { audit } from "@/lib/admin/audit";
@@ -96,4 +98,27 @@ export async function closeMedical(userId: string): Promise<AppResult> {
   await q("UPDATE admin_medical_grants SET expires_at = now() WHERE staff_id = $1 AND client_id = $2 AND expires_at > now()", [staff.id, user.client_id]);
   revalidatePath("/admin/app", "layout");
   return { ok: true };
+}
+
+/* The same folder apps/web writes report PDFs to (apps/web/src/lib/report-storage.ts). */
+const reportsDir = () => process.env.REPORT_STORAGE_DIR ?? join(process.cwd(), "../../data/reports");
+
+/** Deletes the account on the client's request by letter or call; the app does the same itself (DELETE /api/account).
+    `confirm` is the last four digits of the phone, typed by the admin. */
+export async function deleteAppAccount(id: string, confirm: string, reason: string): Promise<AppResult> {
+  const staff = await assertStaff("users");
+  const user = await appUser(id);
+  if (!user) return { ok: false, message: "Клиент не найден" };
+  const digits = (user.phone ?? "").replace(/\D/g, "").slice(-4);
+  if (digits && confirm.trim() !== digits) return { ok: false, message: "Последние 4 цифры телефона не совпадают" };
+  const why = reason.trim().slice(0, 500);
+  if (why.length < 3) return { ok: false, message: "Укажите основание: письмо, звонок, отзыв согласия" };
+  const rows = await q<{ client_id: string }>("SELECT client_id FROM fox_delete_client_account($1, 'admin', $2, $3)", [id, why, staff.id]);
+  for (const { client_id } of rows) {
+    if (/^[0-9a-f-]{36}$/i.test(client_id)) await rm(join(reportsDir(), client_id), { recursive: true, force: true });
+  }
+  await audit(staff, { action: "delete", entity: "app_user", entityId: id, summary: `Аккаунт клиента …${digits || "без телефона"} удалён и обезличен. Основание: ${why}` });
+  revalidatePath("/admin/app/users", "layout");
+  revalidatePath("/admin/legal", "layout");
+  return { ok: true, message: "Аккаунт удалён" };
 }

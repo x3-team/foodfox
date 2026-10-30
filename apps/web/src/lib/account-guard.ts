@@ -30,7 +30,8 @@ async function load(userId: string): Promise<GuardState | null> {
     );
     const row = rows[0];
     const state: GuardState = {
-      blockedUntil: row?.blocked_at
+      // No row: the account was deleted (lib/account-deletion.ts), its tokens must stop working at once.
+      blockedUntil: !row ? Infinity : row.blocked_at
         ? row.blocked_until
           ? new Date(row.blocked_until).getTime()
           : Infinity
@@ -47,6 +48,11 @@ async function load(userId: string): Promise<GuardState | null> {
     else console.error("account guard failed", e);
     return null;
   }
+}
+
+/** Drops the cached answer, so the next request of this user asks the database again. */
+export function forgetGuard(userId: string): void {
+  cache.delete(userId);
 }
 
 export async function isBlocked(userId: string): Promise<boolean> {

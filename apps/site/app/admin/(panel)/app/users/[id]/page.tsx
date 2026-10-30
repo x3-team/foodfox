@@ -10,6 +10,7 @@ import { one, q } from "@/lib/admin/db";
 import { ago, dateShort, dateTime } from "@/lib/admin/format";
 import { MedicalGate } from "../../MedicalGate";
 import { WithdrawButton } from "../../../legal/WithdrawButton";
+import { DeleteAccount } from "./DeleteAccount";
 import { UserActions } from "./UserActions";
 
 export const metadata: Metadata = { title: "Клиент" };
@@ -173,6 +174,7 @@ export default async function AppUserPage({ params }: { params: Promise<{ id: st
             </dl>
           </section>
           {can(staff, "app_block") && <UserActions id={user.id} blocked={blocked} devices={activity.devices} />}
+          {can(staff, "users") && <DeleteAccount id={user.id} hasPhone={Boolean(user.phone)} />}
           <section className="a-card">
             <div className="a-card-head"><h2>История</h2>{can(staff, "audit") && <Link href={`/admin/audit?q=${user.id}`}>Журнал</Link>}</div>
             {history.length ? (

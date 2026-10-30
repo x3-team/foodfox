@@ -66,6 +66,7 @@ export default async function AppUsersPage({ searchParams }: { searchParams: Pro
           <p>Поиск по телефону, имени, почте или ID. Телефон в списке скрыт, целиком он виден в карточке. Медданные открываются отдельно, по праву и с причиной.</p>
         </div>
       </div>
+      {sp.deleted === "1" && <div className="a-ok" role="status" style={{ marginBottom: 16 }}>Аккаунт удалён, данные клиента обезличены. Запись об удалении есть в журнале.</div>}
       <div className="a-chips">
         <Link className="a-chip" aria-current={!sp.status ? "true" : undefined} href={`/admin/app/users${qs({ status: undefined })}`}>Все</Link>
         <Link className="a-chip" aria-current={sp.status === "active" ? "true" : undefined} href={`/admin/app/users${qs({ status: "active" })}`}>Активные</Link>

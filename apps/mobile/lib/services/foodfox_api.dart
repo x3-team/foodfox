@@ -162,6 +162,18 @@ class FoodFoxApi {
     }
   }
 
+  /// Deletes the account on the server with the reports, plan and chat
+  /// (App Store / Google Play rule). The demo has nothing on the server.
+  Future<void> deleteAccount() async {
+    if (_demo != null) return;
+    final response = await _client.delete(
+      _uri("/api/account"),
+      headers: {..._headers, "Content-Type": "application/json"},
+      body: jsonEncode({"confirm": "DELETE"}),
+    );
+    await _decode(response);
+  }
+
   void logout() {
     _accessToken = null;
     _refreshToken = null;
