@@ -4,6 +4,7 @@ import { requireStaff, ROLE_LABEL, type Role } from "@/lib/admin/auth";
 import { q } from "@/lib/admin/db";
 import { dateTime } from "@/lib/admin/format";
 import { channels, isNotifyKind, kindsFor, NOTIFY_KINDS, render } from "@/lib/admin/notify";
+import { SMS_PROVIDERS, smsBalance, smsSetup, smsStats } from "@/lib/admin/sms";
 import { RunNow } from "./RunNow";
 
 export const metadata: Metadata = { title: "Уведомления" };
@@ -11,7 +12,8 @@ export const metadata: Metadata = { title: "Уведомления" };
 export default async function NotificationsPage() {
   await requireStaff("notifications");
   const ch = channels();
-  const [events, errors, people] = await Promise.all([
+  const sms = smsSetup();
+  const [events, errors, people, smsDay, balance] = await Promise.all([
     q<{ id: string; kind: string; ref_id: string | null; payload: Record<string, unknown>; created_at: Date; processed_at: Date | null; result: Record<string, unknown> | null }>(
       "SELECT * FROM staff_notifications ORDER BY id DESC LIMIT 50",
     ),
@@ -23,6 +25,8 @@ export default async function NotificationsPage() {
       `SELECT coalesce(nullif(name, ''), email) AS name, role, notify_email, notify_telegram, telegram_chat_id IS NOT NULL AS telegram, notify_kinds
          FROM admin_users WHERE is_active ORDER BY role, name`,
     ),
+    smsStats(),
+    smsBalance(),
   ]);
   const resultText = (r: Record<string, unknown> | null, processed: Date | null) => {
     if (!processed) return "в очереди";
@@ -51,6 +55,23 @@ export default async function NotificationsPage() {
           <p className="muted" style={{ margin: 0 }}>Бот от @BotFather: FOX_TELEGRAM_BOT_TOKEN и FOX_TELEGRAM_BOT_NAME{ch.botName ? ` (@${ch.botName})` : ""}. Сотрудник привязывает свой чат кнопкой в профиле.</p>
         </section>
       </div>
+
+      <section className="a-card" style={{ marginBottom: 24 }}>
+        <div className="a-card-head">
+          <h2>SMS с кодом входа</h2>
+          {sms.provider ? <span className="a-badge s-done">{SMS_PROVIDERS[sms.provider]}</span> : <span className="a-badge is-off">не подключено</span>}
+        </div>
+        {sms.provider ? (
+          <dl className="a-dl">
+            <dt>Баланс</dt><dd>{balance === null ? "не удалось узнать" : `${balance.toLocaleString("ru-RU")} ₽`}</dd>
+            <dt>За сутки</dt><dd>отправлено {smsDay?.sent ?? 0}, ошибок {smsDay?.failed ?? 0}{smsDay?.cost ? `, ${smsDay.cost.toLocaleString("ru-RU")} ₽` : ""}</dd>
+            <dt>Отправитель</dt><dd>{sms.sender || "по умолчанию у провайдера"}</dd>
+            {smsDay?.last_error && <><dt>Последняя ошибка</dt><dd>{smsDay.last_error} · {dateTime(smsDay.last_error_at)}</dd></>}
+          </dl>
+        ) : (
+          <p className="muted" style={{ margin: 0 }}>Без провайдера код приходит только на демо-номера. В apps/web/.env: FOX_SMS_PROVIDER=smsru и FOX_SMSRU_API_ID (ключ из кабинета sms.ru), или FOX_SMS_PROVIDER=smsc с FOX_SMSC_LOGIN и FOX_SMSC_PASSWORD. Имя отправителя FOX_SMS_SENDER — после регистрации у провайдера.</p>
+        )}
+      </section>
 
       {errors.length > 0 && (
         <section className="a-card" style={{ marginBottom: 24 }}>
