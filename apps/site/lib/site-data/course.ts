@@ -15,14 +15,14 @@ export type Lesson = {
 };
 
 export const LESSON5_PARTS: LessonPart[] = [
-  { title: "Пищевая непереносимость в нутрициологии", short: "Нутрициология", lecturer: "Алёна Вавилова", minutes: 0, clock: "" },
+  { title: "Пищевая непереносимость в нутрициологии", short: "Нутрициология", lecturer: "Алёна Вавилова", minutes: 0, clock: "", pdf: "/course/konspekt-urok-5-1.pdf" },
   { title: "Пищевая непереносимость в косметологии", short: "Косметология", lecturer: "Ксения Эллинская", minutes: 0, clock: "", pdf: "/course/konspekt-urok-5-2.pdf" },
   { title: "Пищевая непереносимость в дерматологии", short: "Дерматология", lecturer: "Дмитрий Эллинский", minutes: 0, clock: "", pdf: "/course/konspekt-urok-5-3.pdf" },
   { title: "Пищевая непереносимость в гастроэнтерологии", short: "Гастроэнтерология", lecturer: "Светлана Каневская", minutes: 0, clock: "", pdf: "/course/konspekt-urok-5-4.pdf" },
 ];
 
 /* Program from the client (00-struktura-kursa.xlsx, 2026-10-28). Lesson texts come with the client's packages:
-   all but lesson 3 by 2026-10-28. */
+   all six by 2026-10-30. */
 export const LESSONS_DEFAULT: Lesson[] = [
   {
     title: "Вводный урок: погружение в тему",
@@ -52,6 +52,7 @@ export const LESSONS_DEFAULT: Lesson[] = [
     clock: "",
     content: "Принцип работы теста и чем он отличается от других тестов. Как интерпретировать результаты. Кейсы и методология работы с результатами.",
     after: "Будете знать, из чего состоит тест, сможете читать результаты и поймёте, как встроить тест в свою работу.",
+    pdf: "/course/konspekt-urok-3.pdf",
   },
   {
     title: "Как пищевая непереносимость влияет на здоровье",
