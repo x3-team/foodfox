@@ -5,6 +5,7 @@ import { can, requireStaff } from "@/lib/admin/auth";
 import { one, q } from "@/lib/admin/db";
 import { formatPhone, rub, type LegalForm, type Partner, type StatementStatus } from "@/lib/admin/partners";
 import { DEFAULTS } from "@/lib/cms/registry";
+import { listTariffs, tariffSummary } from "@/lib/admin/tariffs";
 import { PartnerDelete } from "./PartnerDelete";
 import { PartnerForm } from "./PartnerForm";
 import { PartnerLegal } from "./PartnerLegal";
@@ -41,6 +42,9 @@ export default async function PartnerPage({ params }: { params: Promise<{ id: st
   const statements = partner ? await q<{ id: string; period: string; reports: number; amount: number; status: StatementStatus; dispute_note: string; scan_doc_id: string | null; scan_received_at: Date | null; original_sent_at: Date | null; original_track: string; original_received_at: Date | null; paid_at: Date | null; act_returned_at: Date | null }>(
     "SELECT *, period::text AS period FROM partner_statements WHERE partner_id = $1 ORDER BY partner_statements.period DESC", [id],
   ) : [];
+  const tariffs = await listTariffs();
+  const tariff = tariffs.find((t) => t.id === partner?.tariff_id) ?? tariffs.find((t) => t.is_default);
+  const feeNote = partner?.fee != null ? `индивидуально: ${rub(partner.fee)} за отчёт` : tariff ? `тариф «${tariff.name}»: ${tariffSummary(tariff)}` : `по ${rub(defaultFee)} за отчёт`;
   const earned = reports.filter((r) => r.status === "credited").reduce((s, r) => s + r.fee, 0);
   const paid = payouts.reduce((s, p) => s + p.amount, 0);
 
@@ -59,7 +63,7 @@ export default async function PartnerPage({ params }: { params: Promise<{ id: st
       {partner && (
         <div className="a-grid a-grid-4" style={{ marginBottom: 24 }}>
           <div className="a-card a-stat"><small>Отчётов клиентов</small><b>{reports.length}</b><span className="a-delta">на проверке: {reports.filter((r) => r.status === "review").length}</span></div>
-          <div className="a-card a-stat"><small>Начислено</small><b>{rub(earned)}</b><span className="a-delta">по {rub(partner.fee ?? defaultFee)} за отчёт</span></div>
+          <div className="a-card a-stat"><small>Начислено</small><b>{rub(earned)}</b><span className="a-delta">{feeNote}</span></div>
           <div className="a-card a-stat"><small>Выплачено и в обработке</small><b>{rub(paid)}</b><span className="a-delta">выплат: {payouts.length}</span></div>
           <div className={`a-card a-stat${earned - paid > 0 ? " is-hot" : ""}`}><small>К выплате</small><b>{rub(Math.max(0, earned - paid))}</b><span className="a-delta">начислено минус выплаты</span></div>
         </div>
@@ -104,10 +108,12 @@ export default async function PartnerPage({ params }: { params: Promise<{ id: st
         <PartnerForm
           id={partner?.id ?? null}
           defaultFee={defaultFee}
+          tariffs={tariffs.map((t) => ({ id: t.id, label: `${t.name}: ${tariffSummary(t)}`, isDefault: t.is_default }))}
           initial={{
             full_name: partner?.full_name ?? "", phone: partner ? formatPhone(partner.phone) : "", email: partner?.email ?? "", specialty: partner?.specialty ?? "",
             city: partner?.city ?? "", status: partner?.status ?? "approved", promo_code: partner?.promo_code ?? "", certificate_no: partner?.certificate_no ?? "",
             payout_method: partner?.payout_method ?? "", fee: partner?.fee == null ? "" : String(partner.fee), notes: partner?.notes ?? "",
+            tariff_id: partner?.tariff_id ?? "",
           }}
         />
       </div>

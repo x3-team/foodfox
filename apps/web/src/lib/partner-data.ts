@@ -38,8 +38,16 @@ export async function loadPartnerData(session: SessionData): Promise<PartnerData
     const found = await pool.query(`SELECT * FROM partners WHERE phone = $1 AND status IN ('approved', 'certified')`, [phone]);
     const p = found.rows[0];
     if (!p) return DEMO;
-    const feeRow = await pool.query(`SELECT value FROM site_content WHERE key = 'prices.partnerFee'`);
-    const fee = (p.fee as number | null) ?? Number(feeRow.rows[0]?.value ?? 2400);
+    // The base fee of the partner's tariff (or the default one, migration 012); steps by volume are applied by the
+    // admin when a report is credited, so «на проверке» shows the base amount.
+    const feeRow = await pool.query(
+      `SELECT coalesce(
+         (SELECT fee FROM partner_tariffs WHERE id = coalesce($1::uuid, (SELECT id FROM partner_tariffs WHERE is_default LIMIT 1))),
+         (SELECT CASE WHEN jsonb_typeof(value) = 'number' THEN value::text::int END FROM site_content WHERE key = 'prices.partnerFee'),
+         2400) AS fee`,
+      [p.tariff_id ?? null],
+    ).catch(async () => pool.query(`SELECT coalesce((SELECT CASE WHEN jsonb_typeof(value) = 'number' THEN value::text::int END FROM site_content WHERE key = 'prices.partnerFee'), 2400) AS fee`));
+    const fee = (p.fee as number | null) ?? Number(feeRow.rows[0]?.fee ?? 2400);
     const reportRows = await pool.query(`SELECT * FROM partner_reports WHERE partner_id = $1 ORDER BY coalesce(test_date, created_at::date) DESC, id DESC`, [p.id]);
     const payoutRows = await pool.query(`SELECT * FROM partner_payouts WHERE partner_id = $1 ORDER BY created_at DESC`, [p.id]);
 

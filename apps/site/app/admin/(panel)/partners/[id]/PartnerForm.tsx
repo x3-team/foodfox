@@ -5,7 +5,8 @@ import { useState, useTransition } from "react";
 import { PARTNER_STATUSES } from "@/lib/admin/partners";
 import { savePartner, type PartnerInput } from "../actions";
 
-export function PartnerForm({ id, initial, defaultFee }: { id: string | null; initial: PartnerInput; defaultFee: number }) {
+export function PartnerForm({ id, initial, defaultFee, tariffs }: { id: string | null; initial: PartnerInput; defaultFee: number; tariffs: { id: string; label: string; isDefault: boolean }[] }) {
+  const byDefault = tariffs.find((t) => t.isDefault);
   const router = useRouter();
   const [form, setForm] = useState(initial);
   const [pending, start] = useTransition();
@@ -44,7 +45,14 @@ export function PartnerForm({ id, initial, defaultFee }: { id: string | null; in
           <label className="a-field"><span>Сертификат курса</span><input className="a-input" value={form.certificate_no} onChange={set("certificate_no")} /></label>
         </div>
         <label className="a-field"><span>Способ выплаты</span><input className="a-input" value={form.payout_method} onChange={set("payout_method")} placeholder="Самозанятый · СБП •••• 4417" /></label>
-        <label className="a-field"><span>Вознаграждение за отчёт, ₽</span><input className="a-input" inputMode="numeric" value={form.fee} onChange={set("fee")} placeholder={`общее: ${defaultFee}`} /><small>Пусто — общее из раздела «Цены».</small></label>
+        <label className="a-field"><span>Тариф вознаграждения</span>
+          <select className="a-input" value={form.tariff_id} onChange={set("tariff_id")}>
+            <option value="">{byDefault ? `По умолчанию — ${byDefault.label}` : "По умолчанию"}</option>
+            {tariffs.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+          </select>
+          <small>Тарифы — в разделе «Партнёры → Тарифы». Сумма фиксируется при зачислении отчёта, смена тарифа прошлые месяцы не меняет.</small>
+        </label>
+        <label className="a-field"><span>Индивидуальная сумма за отчёт, ₽</span><input className="a-input" inputMode="numeric" value={form.fee} onChange={set("fee")} placeholder={byDefault ? "по тарифу" : `общее: ${defaultFee}`} /><small>Исключение для этого партнёра: заменяет тариф. Обычно пусто.</small></label>
         <label className="a-field"><span>Заметки (видны только в админке)</span><textarea className="a-input" rows={3} style={{ minHeight: 0 }} value={form.notes} onChange={set("notes")} /></label>
         <button className="a-btn" type="submit" disabled={pending || (!dirty && Boolean(id))}>{pending ? "Сохраняем…" : id ? "Сохранить" : "Добавить партнёра"}</button>
       </form>

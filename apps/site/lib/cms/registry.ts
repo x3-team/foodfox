@@ -202,7 +202,7 @@ export const PRICE_FIELDS: Field[] = [
   { key: "prices.show", label: "Показывать цены на сайте", type: "boolean", default: false },
   { key: "prices.from", label: "Цена теста «от» (общая)", type: "text", default: "", hint: "Например «от 9 900 ₽». Пусто — не показывать." },
   { key: "prices.course", label: "Курс для специалистов", type: "text", default: "Бесплатно" },
-  { key: "prices.partnerFee", label: "Вознаграждение партнёра за отчёт, ₽", type: "number", default: 2400, hint: "Подставляется в начисления партнёрам." },
+  { key: "prices.partnerFee", label: "Вознаграждение партнёра за отчёт, ₽", type: "number", default: 2400, hint: "Запасное значение. Начисления идут по тарифам (Партнёры → Тарифы); при первом запуске эта сумма стала тарифом «Базовый»." },
 ];
 
 /* Collections with their own admin pages (reviews, blog); validated in app/admin/(panel)/content/actions.ts. */

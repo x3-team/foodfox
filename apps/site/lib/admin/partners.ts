@@ -14,7 +14,7 @@ export type ReportStatus = keyof typeof REPORT_STATUSES;
 export type Partner = {
   id: string; phone: string; full_name: string; email: string; specialty: string; city: string; status: PartnerStatus;
   promo_code: string | null; certificate_no: string; payout_method: string; fee: number | null; notes: string;
-  lead_id: string | null; created_at: Date; updated_at: Date;
+  lead_id: string | null; tariff_id?: string | null; created_at: Date; updated_at: Date;
 };
 
 /** Same rule as apps/web/src/lib/otp.ts normalizePhone: 11 digits starting with 7. */

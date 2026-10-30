@@ -68,6 +68,7 @@ export default async function PartnersPage({ searchParams }: { searchParams: Pro
         <Link href="/admin/partners?tab=codes" aria-current={tab === "codes" ? "page" : undefined}>Проверка кодов · {codes.length}</Link>
         <Link href="/admin/partners?tab=acts" aria-current={tab === "acts" ? "page" : undefined}>Отчёты и акты · {actsToDo}</Link>
         <Link href="/admin/partners?tab=doctors" aria-current={tab === "doctors" ? "page" : undefined}>Врачи · {doctors.length}</Link>
+        <Link href="/admin/partners/tariffs">Тарифы</Link>
       </nav>
 
       {tab === "codes" && (
