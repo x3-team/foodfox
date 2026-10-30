@@ -68,6 +68,8 @@ export const ACCESS = {
   users: ["admin"],
   /** Client requests to a live specialist. */
   tickets: ["admin", "support"],
+  /** Notification channels and the delivery log; everyone sets their own in the profile. */
+  notifications: ["admin"],
   /** Legal documents and their versions. */
   legal: ["admin"],
   /** The consent register and withdrawals: client service answers the letters. */
@@ -116,6 +118,7 @@ export const AREA_LABEL: Record<Area, { label: string; group: string; hint?: str
   seo: { label: "SEO", group: "Сайт" },
   users: { label: "Сотрудники, роли и удаление записей", group: "Система" },
   tickets: { label: "Обращения клиентов к специалисту", group: "Приложение" },
+  notifications: { label: "Уведомления: каналы и журнал доставки", group: "Система" },
   legal: { label: "Правовые документы и их версии", group: "Система" },
   consents: { label: "Реестр согласий и отзыв согласия", group: "Система" },
 };

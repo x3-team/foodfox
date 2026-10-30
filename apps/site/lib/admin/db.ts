@@ -23,7 +23,7 @@ function pool(): Pool {
   return state.pool;
 }
 
-const MIGRATIONS = ["005_site_admin.sql", "006_partner_program.sql", "011_app_admin.sql", "012_partner_tariffs.sql", "013_legal_consents.sql", "014_account_deletion.sql", "015_support_tickets.sql"];
+const MIGRATIONS = ["005_site_admin.sql", "006_partner_program.sql", "011_app_admin.sql", "012_partner_tariffs.sql", "013_legal_consents.sql", "014_account_deletion.sql", "015_support_tickets.sql", "016_staff_notifications.sql"];
 
 async function migrate(): Promise<void> {
   const client = await pool().connect();
@@ -79,6 +79,17 @@ export async function q<T extends QueryResultRow = QueryResultRow>(text: string,
 export async function one<T extends QueryResultRow = QueryResultRow>(text: string, params: unknown[] = []): Promise<T | null> {
   const rows = await q<T>(text, params);
   return rows[0] ?? null;
+}
+
+/** A pooled connection for work that needs one session, such as an advisory lock. */
+export async function withClient<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+  await ready();
+  const client = await pool().connect();
+  try {
+    return await fn(client);
+  } finally {
+    client.release();
+  }
 }
 
 export async function tx<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {

@@ -24,6 +24,7 @@ export const NAV: NavItem[] = [
   { href: "/admin/prices", label: "Цены", icon: "prices", area: "prices", group: "Сайт" },
   { href: "/admin/seo", label: "SEO", icon: "seo", area: "seo", group: "Сайт" },
   { href: "/admin/media", label: "Медиатека", icon: "media", area: "media", group: "Сайт" },
+  { href: "/admin/notifications", label: "Уведомления", icon: "send", area: "notifications", group: "Система" },
   { href: "/admin/legal", label: "Документы и согласия", icon: "shield", area: "consents", group: "Система" },
   { href: "/admin/users", label: "Сотрудники", icon: "users", area: "users", group: "Система" },
   { href: "/admin/audit", label: "Журнал действий", icon: "audit", area: "audit", group: "Система" },
