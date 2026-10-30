@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Журнал действий" };
 const ENTITIES: Record<string, string> = {
   lead: "Заявки", session: "Входы", user: "Пользователи", content: "Страницы", media: "Медиатека", seo: "SEO",
   price: "Цены", course: "Курс", article: "Блог", author: "Авторы", review: "Отзывы", partner: "Партнёры",
-  app_user: "Клиенты приложения", report: "Отчёты", medical: "Доступ к медданным",
+  app_user: "Клиенты приложения", report: "Отчёты", medical: "Доступ к медданным", tariff: "Тарифы партнёров",
 };
 const PER_PAGE = 50;
 

@@ -9,9 +9,10 @@ import { join } from "path";
 import { openJson, pdDir, type PartnerPd } from "@/lib/admin/pd-seal";
 import { isPartnerStatus, normalizePhone, PARTNER_STATUSES, promoFrom, REPORT_STATUSES, type Partner } from "@/lib/admin/partners";
 import { DEFAULTS } from "@/lib/cms/registry";
+import { feeForNewCredit } from "@/lib/admin/tariffs";
 
 type Result = { ok: boolean; message?: string; id?: string };
-export type PartnerInput = { full_name: string; phone: string; email: string; specialty: string; city: string; status: string; promo_code: string; certificate_no: string; payout_method: string; fee: string; notes: string };
+export type PartnerInput = { full_name: string; phone: string; email: string; specialty: string; city: string; status: string; promo_code: string; certificate_no: string; payout_method: string; fee: string; notes: string; tariff_id: string };
 
 const t = (v: unknown, max = 300) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
@@ -28,6 +29,7 @@ function clean(input: PartnerInput) {
   return {
     full_name, phone, email: t(input.email, 200), specialty: t(input.specialty, 120), city: t(input.city, 120), status: input.status,
     promo_code: promo || null, certificate_no: t(input.certificate_no, 60), payout_method: t(input.payout_method, 200), fee, notes: t(input.notes, 4000),
+    tariff_id: /^[0-9a-f-]{36}$/.test(input.tariff_id ?? "") ? input.tariff_id : null,
   };
 }
 
@@ -42,13 +44,16 @@ export async function savePartner(id: string | null, input: PartnerInput): Promi
   const staff = await assertStaff("partners");
   let data;
   try { data = clean(input); } catch (error) { return { ok: false, message: (error as Error).message }; }
+  if (data.tariff_id && !(await one("SELECT 1 FROM partner_tariffs WHERE id = $1 AND archived_at IS NULL", [data.tariff_id]))) {
+    return { ok: false, message: "Тариф не найден или в архиве" };
+  }
   if (!data.promo_code && data.status !== "applied" && data.status !== "rejected") data.promo_code = promoFrom(data.full_name);
   try {
     if (!id) {
       const [row] = await q<{ id: string }>(
-        `INSERT INTO partners (full_name, phone, email, specialty, city, status, promo_code, certificate_no, payout_method, fee, notes)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`,
-        [data.full_name, data.phone, data.email, data.specialty, data.city, data.status, data.promo_code, data.certificate_no, data.payout_method, data.fee, data.notes],
+        `INSERT INTO partners (full_name, phone, email, specialty, city, status, promo_code, certificate_no, payout_method, fee, notes, tariff_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
+        [data.full_name, data.phone, data.email, data.specialty, data.city, data.status, data.promo_code, data.certificate_no, data.payout_method, data.fee, data.notes, data.tariff_id],
       );
       await audit(staff, { action: "create", entity: "partner", entityId: row.id, summary: `Добавлен партнёр ${data.full_name}`, after: data });
       revalidatePath("/admin/partners");
@@ -60,8 +65,8 @@ export async function savePartner(id: string | null, input: PartnerInput): Promi
     if (!d.changed) return { ok: true, message: "Изменений нет" };
     await q(
       `UPDATE partners SET full_name=$2, phone=$3, email=$4, specialty=$5, city=$6, status=$7, promo_code=$8, certificate_no=$9,
-              payout_method=$10, fee=$11, notes=$12, updated_at=now() WHERE id=$1`,
-      [id, data.full_name, data.phone, data.email, data.specialty, data.city, data.status, data.promo_code, data.certificate_no, data.payout_method, data.fee, data.notes],
+              payout_method=$10, fee=$11, notes=$12, tariff_id=$13, updated_at=now() WHERE id=$1`,
+      [id, data.full_name, data.phone, data.email, data.specialty, data.city, data.status, data.promo_code, data.certificate_no, data.payout_method, data.fee, data.notes, data.tariff_id],
     );
     const statusNote = before.status !== data.status ? `: ${PARTNER_STATUSES[before.status]} → ${PARTNER_STATUSES[data.status]}` : "";
     await audit(staff, { action: "update", entity: "partner", entityId: id, summary: `Партнёр ${data.full_name}${statusNote}`, before: d.before, after: d.after });
@@ -88,7 +93,7 @@ export async function partnerFromLead(leadId: string, status: "approved" | "reje
   }
   const result = await savePartner(null, {
     full_name: lead.name, phone: lead.phone, email: lead.email, specialty: String(lead.payload.specialty ?? ""), city: lead.city,
-    status: "approved", promo_code: "", certificate_no: String(lead.payload.certificate ?? ""), payout_method: "", fee: "", notes: "",
+    status: "approved", promo_code: "", certificate_no: String(lead.payload.certificate ?? ""), payout_method: "", fee: "", notes: "", tariff_id: "",
   });
   if (!result.ok || !result.id) return result;
   await q("UPDATE partners SET lead_id = $2 WHERE id = $1", [result.id, leadId]);
@@ -98,11 +103,10 @@ export async function partnerFromLead(leadId: string, status: "approved" | "reje
   return { ok: true, id: result.id, message: "Партнёр одобрен" };
 }
 
-async function defaultFee(partnerId: string): Promise<number> {
-  const p = await one<{ fee: number | null }>("SELECT fee FROM partners WHERE id = $1", [partnerId]);
-  if (p?.fee != null) return p.fee;
+/** The fee of a report credited now: the partner's own fee, else their tariff step (lib/admin/tariffs.ts). */
+async function creditFee(partnerId: string): Promise<{ fee: number; tariffId: string | null }> {
   const row = await one<{ value: number }>("SELECT value FROM site_content WHERE key = 'prices.partnerFee'");
-  return Number(row?.value ?? DEFAULTS["prices.partnerFee"]);
+  return feeForNewCredit(partnerId, Number(row?.value ?? DEFAULTS["prices.partnerFee"]));
 }
 
 export async function addReport(partnerId: string, input: { number: string; client: string; lab: string; date: string; status: string }): Promise<Result> {
@@ -111,11 +115,12 @@ export async function addReport(partnerId: string, input: { number: string; clie
   if (!/^[A-Z0-9-]{4,40}$/.test(number)) return { ok: false, message: "Номер отчёта: например FOX-2026-004182" };
   if (!(input.status in REPORT_STATUSES)) return { ok: false, message: "Неизвестный статус" };
   const date = /^\d{4}-\d{2}-\d{2}$/.test(input.date) ? input.date : null;
-  const fee = input.status === "credited" ? await defaultFee(partnerId) : 0;
+  const { fee, tariffId } = input.status === "credited" ? await creditFee(partnerId) : { fee: 0, tariffId: null };
   try {
     await q(
-      "INSERT INTO partner_reports (partner_id, report_number, client_name, lab, test_date, status, fee) VALUES ($1,$2,$3,$4,$5,$6,$7)",
-      [partnerId, number, t(input.client, 120), t(input.lab, 80), date, input.status, fee],
+      `INSERT INTO partner_reports (partner_id, report_number, client_name, lab, test_date, status, fee, tariff_id, verified_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8, CASE WHEN $6 = 'credited' THEN now() END)`,
+      [partnerId, number, t(input.client, 120), t(input.lab, 80), date, input.status, fee, tariffId],
     );
   } catch (error) {
     if ((error as Error).message.includes("partner_reports_number_unique")) return { ok: false, message: "Этот отчёт уже привязан к партнёру" };
@@ -136,12 +141,14 @@ export async function setReportStatus(reportId: string, status: string): Promise
   );
   if (!r) return { ok: false, message: "Отчёт не найден" };
   if (r.closed) return { ok: false, message: "Анализ уже в подтверждённом акте — его не изменить" };
-  const fee = status === "credited" ? (r.fee || (await defaultFee(r.partner_id))) : 0;
+  // A report that already had a fee keeps it; a new credit takes today's tariff step.
+  const { fee, tariffId } = status !== "credited" ? { fee: 0, tariffId: null } : r.fee ? { fee: r.fee, tariffId: undefined } : await creditFee(r.partner_id);
   // The confirmation date puts the analysis into that month's report (partner_close_months, migration 006).
   await q(
     `UPDATE partner_reports SET status = $2, fee = $3, verified_at = CASE WHEN $2 = 'credited' THEN coalesce(verified_at, now()) ELSE NULL END,
+            tariff_id = CASE WHEN $5 THEN $4::uuid ELSE tariff_id END,
             statement_id = CASE WHEN $2 = 'credited' THEN statement_id ELSE NULL END WHERE id = $1`,
-    [reportId, status, fee],
+    [reportId, status, fee, tariffId ?? null, tariffId !== undefined],
   );
   if (r.statement_id) await recountStatement(r.statement_id);
   await audit(staff, { action: "report_status", entity: "partner", entityId: r.partner_id, summary: `Отчёт ${r.report_number}: ${REPORT_STATUSES[r.status as keyof typeof REPORT_STATUSES]} → ${REPORT_STATUSES[status as keyof typeof REPORT_STATUSES]}`, before: { status: r.status, fee: r.fee }, after: { status, fee } });

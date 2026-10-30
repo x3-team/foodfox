@@ -58,6 +58,8 @@ export const ACCESS = {
   partners: ["admin", "manager", "accountant"],
   /** Partners' passport data, bank details and scans; every view goes to the log. */
   pd: ["admin", "accountant"],
+  /** Partner reward tariffs: money, so the admin and the accountant change them; managers see them. */
+  tariffs: ["admin", "accountant"],
   course: ["admin", "manager", "editor"],
   prices: ["admin"],
   seo: ["admin"],
