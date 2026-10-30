@@ -14,13 +14,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <div className="a-login-art" style={{ backgroundImage: "url(/figma/home/hero-desktop.webp)" }}>
         <img className="logo" src="/icons/logo-light.svg" alt="FOX Food Xplorer" />
         <h2>
-          Заявки, контент и партнёры <em>FOX</em> в одном месте
+          Сайт, партнёры и приложение <em>FOX</em> в одном месте
         </h2>
       </div>
       <div className="a-login-form">
         <div>
           <h1>Вход в админку</h1>
-          <p className="muted">Для администраторов и менеджеров сайта</p>
+          <p className="muted">Для сотрудников FOX</p>
           {hasDatabase() ? (
             <LoginForm next={next} />
           ) : (

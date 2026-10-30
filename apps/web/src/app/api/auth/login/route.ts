@@ -3,6 +3,7 @@ import { buildAuthResponse } from "@/lib/auth-request";
 import { setSessionCookie } from "@/lib/auth";
 import { createRefreshToken, getDbPool, loginUser } from "@/lib/db";
 import { trackEvent } from "@/lib/analytics";
+import { isBlocked } from "@/lib/account-guard";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,6 +21,9 @@ export async function POST(req: NextRequest) {
     const session = await loginUser(email, password);
     if (!session) {
       return NextResponse.json({ error: "Неверный email или пароль" }, { status: 401 });
+    }
+    if (await isBlocked(session.userId)) {
+      return NextResponse.json({ error: "Аккаунт заблокирован. Напишите в поддержку FOX." }, { status: 403 });
     }
 
     setSessionCookie(session);

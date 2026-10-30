@@ -3,11 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ago } from "@/lib/admin/format";
-import { createUser, endSessions, resetPassword, updateUser, type UserResult } from "./actions";
+import { createUser, endSessions, resetMfa, resetPassword, updateUser, type UserResult } from "./actions";
 
-export type UserRow = { id: string; email: string; name: string; role: "admin" | "manager"; active: boolean; sessions: number; lastLogin: string | null; me: boolean };
+export type UserRow = { id: string; email: string; name: string; role: string; active: boolean; mfa: boolean; sessions: number; lastLogin: string | null; me: boolean };
+type RoleOption = { id: string; label: string; hint: string };
 
-export function UsersManager({ users }: { users: UserRow[] }) {
+export function UsersManager({ users, roles }: { users: UserRow[]; roles: RoleOption[] }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [toast, setToast] = useState<{ text: string; error?: boolean } | null>(null);
@@ -44,8 +45,9 @@ export function UsersManager({ users }: { users: UserRow[] }) {
           <label className="a-field"><span>Имя</span><input className="a-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
           <label className="a-field"><span>Роль</span>
             <select className="a-input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-              <option value="manager">Менеджер</option><option value="admin">Администратор</option>
+              {roles.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
             </select>
+            <small>{roles.find((r) => r.id === form.role)?.hint}</small>
           </label>
           <button className="a-btn is-lime" type="submit" disabled={pending}>Добавить</button>
         </form>
@@ -54,7 +56,7 @@ export function UsersManager({ users }: { users: UserRow[] }) {
       <div className="a-table-wrap">
         <div className="a-table-scroll">
           <table className="a-table">
-            <thead><tr><th>Сотрудник</th><th>Роль</th><th>Статус</th><th>Последний вход</th><th>Действия</th></tr></thead>
+            <thead><tr><th>Сотрудник</th><th>Роль</th><th>Статус</th><th>2FA</th><th>Последний вход</th><th>Действия</th></tr></thead>
             <tbody>
               {users.map((u) => (
                 <tr key={u.id}>
@@ -62,15 +64,18 @@ export function UsersManager({ users }: { users: UserRow[] }) {
                   <td data-label="Роль">
                     <select className="a-input" style={{ minHeight: 36, padding: "6px 36px 6px 12px", width: "auto" }} value={u.role} disabled={pending}
                       onChange={(e) => run(() => updateUser(u.id, { role: e.target.value }))} aria-label={`Роль ${u.email}`}>
-                      <option value="manager">Менеджер</option><option value="admin">Администратор</option>
+                      {roles.map((r) => <option key={r.id} value={r.id} title={r.hint}>{r.label}</option>)}
                     </select>
                   </td>
                   <td data-label="Статус">{u.active ? <span className="a-badge s-done">Активен</span> : <span className="a-badge is-off">Заблокирован</span>}</td>
+                  <td data-label="2FA">{u.mfa ? <span className="a-badge s-done">Включён</span> : <span className="a-badge s-spam">Нет</span>}</td>
                   <td data-label="Последний вход" className="nowrap">{u.lastLogin ? ago(u.lastLogin) : "не входил"}{u.sessions ? <span className="sub">сессий: {u.sessions}</span> : null}</td>
                   <td data-label="Действия">
                     <div className="a-row-actions">
                       <button className="a-btn is-ghost is-small" type="button" disabled={pending}
                         onClick={() => window.confirm(`Сбросить пароль ${u.email}? Все его сессии закроются.`) && run(() => resetPassword(u.id), (r) => setSecret({ email: u.email, password: r.password! }))}>Новый пароль</button>
+                      {u.mfa && !u.me && <button className="a-btn is-ghost is-small" type="button" disabled={pending}
+                        onClick={() => window.confirm(`Сбросить двухфакторный вход ${u.email}? Сотрудник подключит его заново из профиля.`) && run(() => resetMfa(u.id))}>Сбросить 2FA</button>}
                       {u.sessions > 0 && !u.me && <button className="a-btn is-ghost is-small" type="button" disabled={pending} onClick={() => run(() => endSessions(u.id))}>Выйти везде</button>}
                       {!u.me && (u.active
                         ? <button className="a-btn is-danger is-small" type="button" disabled={pending} onClick={() => window.confirm(`Заблокировать ${u.email}?`) && run(() => updateUser(u.id, { is_active: false }))}>Заблокировать</button>

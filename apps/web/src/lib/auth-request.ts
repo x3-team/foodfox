@@ -8,6 +8,7 @@ import {
   SESSION_COOKIE,
   setSessionCookie,
 } from "./auth";
+import { sessionAllowed } from "./account-guard";
 
 export interface AuthTokenResponse {
   user: {
@@ -36,10 +37,16 @@ export function buildAuthResponse(
   };
 }
 
-/** Resolve session from HttpOnly cookie or Authorization: Bearer (mobile). */
+/** Resolve session from HttpOnly cookie or Authorization: Bearer (mobile); null when the account is blocked. */
 export async function resolveSessionFromRequest(
   req?: NextRequest,
 ): Promise<SessionData | null> {
+  const session = await decodeFromRequest(req);
+  if (session && !(await sessionAllowed(session.userId, session.iat))) return null;
+  return session;
+}
+
+async function decodeFromRequest(req?: NextRequest): Promise<SessionData | null> {
   const bearer = req?.headers.get("authorization") ?? headers().get("authorization");
   if (bearer?.startsWith("Bearer ")) {
     const token = bearer.slice(7).trim();

@@ -4,7 +4,7 @@ import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { hashPassword } from "./password";
 
 /* The site shares the Postgres of apps/web (DATABASE_URL from apps/web/.env, which deploy/vps/update.sh exports
-   before it starts the site). Admin tables come from packages/database/migrations/005_site_admin.sql and are applied
+   before it starts the site). Admin tables come from packages/database/migrations/005_site_admin.sql and 011_app_admin.sql and are applied
    once per process on first use. Without DATABASE_URL the site still renders; the admin says the database is off. */
 
 type State = { pool: Pool | null; ready: Promise<void> | null };
@@ -23,7 +23,7 @@ function pool(): Pool {
   return state.pool;
 }
 
-const MIGRATIONS = ["005_site_admin.sql"];
+const MIGRATIONS = ["005_site_admin.sql", "011_app_admin.sql"];
 
 async function migrate(): Promise<void> {
   const client = await pool().connect();
