@@ -6,24 +6,26 @@ import { one, q } from "./db";
 import { verifyPassword } from "./password";
 import { verifyCode } from "./totp";
 
-export const ROLES = ["admin", "manager", "accountant", "moderator", "editor", "support", "analyst"] as const;
+/* The first four are the customer's role scheme; the rest are narrower extra roles kept for staff who already have them. */
+export const ROLES = ["admin", "manager", "accountant", "support", "moderator", "editor", "analyst"] as const;
 export type Role = (typeof ROLES)[number];
 export const isRole = (value: string): value is Role => (ROLES as readonly string[]).includes(value);
+export const CORE_ROLES: readonly Role[] = ["admin", "manager", "accountant", "support"];
 
 export const ROLE_LABEL: Record<Role, string> = {
   admin: "Администратор",
-  manager: "Менеджер",
+  manager: "Менеджер партнёрки",
   accountant: "Бухгалтер",
   moderator: "Модератор отчётов",
   editor: "Контент-редактор",
-  support: "Поддержка",
+  support: "Клиентский сервис",
   analyst: "Аналитик",
 };
 
 /* One line per role for the staff page, so whoever hands out a role sees what it opens. */
 export const ROLE_HINT: Record<Role, string> = {
   admin: "Всё, включая сотрудников, цены, SEO и медданные клиентов",
-  manager: "Заявки, партнёры, отзывы, страницы, блог, медиа; клиенты приложения без медданных",
+  manager: "Партнёры, заявки и тарифы (просмотр); отзывы, страницы, блог, медиа; клиенты приложения без медданных",
   accountant: "Партнёры: начисления, выплаты, акты; паспортные данные и реквизиты партнёров",
   moderator: "Клиенты приложения и их отчёты: сверка, правка, повторная обработка",
   editor: "Страницы, блог, медиа, отзывы; продукты, зоны, рецепты и планы приложения",
@@ -79,6 +81,35 @@ export const ACCESS = {
   app_metrics: ["admin", "manager", "analyst"],
 } satisfies Record<string, readonly Role[]>;
 export type Area = keyof typeof ACCESS;
+
+/* Names for the rights screen (/admin/users/rights). Typed by Area, so a new area does not build without a name. */
+export const AREA_LABEL: Record<Area, { label: string; group: string; hint?: string }> = {
+  dashboard: { label: "Сводка", group: "Общее" },
+  audit: { label: "Журнал: свои действия", group: "Общее" },
+  audit_all: { label: "Журнал: все действия", group: "Общее" },
+  leads: { label: "Заявки с сайта", group: "Продажи и партнёры" },
+  partners: { label: "Партнёры, отчёты, выплаты", group: "Продажи и партнёры" },
+  pd: { label: "Паспортные данные и реквизиты партнёров", group: "Продажи и партнёры", hint: "каждый просмотр пишется в журнал" },
+  tariffs: { label: "Изменение тарифов партнёров", group: "Продажи и партнёры" },
+  app_users: { label: "Клиенты приложения", group: "Приложение" },
+  app_block: { label: "Блокировка клиентов и выход со всех устройств", group: "Приложение" },
+  app_reports: { label: "Отчёты клиентов", group: "Приложение", hint: "нужен двухфакторный вход" },
+  medical: { label: "Медданные клиентов (PDF, показатели, зоны)", group: "Приложение", hint: "нужен двухфакторный вход" },
+  app_catalog: { label: "Продукты и зоны", group: "Приложение" },
+  app_recipes: { label: "Рецепты", group: "Приложение" },
+  app_plans: { label: "Планы питания", group: "Приложение" },
+  app_assistant: { label: "Помощник", group: "Приложение" },
+  app_push: { label: "Рассылки", group: "Приложение" },
+  app_metrics: { label: "Метрики", group: "Приложение" },
+  content: { label: "Страницы", group: "Сайт" },
+  media: { label: "Медиатека", group: "Сайт" },
+  blog: { label: "Блог", group: "Сайт" },
+  reviews: { label: "Отзывы", group: "Сайт" },
+  course: { label: "Курс и программы", group: "Сайт" },
+  prices: { label: "Цены", group: "Сайт" },
+  seo: { label: "SEO", group: "Сайт" },
+  users: { label: "Сотрудники, роли и удаление записей", group: "Система" },
+};
 
 /** Areas that open only with two-factor sign-in switched on. */
 export const MFA_AREAS: readonly Area[] = ["medical", "app_reports"];
