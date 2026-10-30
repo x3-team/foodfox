@@ -5,6 +5,7 @@ import { q } from "@/lib/admin/db";
 import { ago, dateShort, moscowDay, plural } from "@/lib/admin/format";
 import { LEAD_STATUSES, kindLabel, type Lead } from "@/lib/admin/leads";
 import { AppSummary } from "@/components/admin/AppSummary";
+import { TodayCard } from "@/components/admin/TodayCard";
 
 export const metadata: Metadata = { title: "Сводка" };
 
@@ -17,6 +18,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       <>
         {denied && <div className="a-error" style={{ marginBottom: 24 }}>Этот раздел вам закрыт. Если он нужен для работы, попросите администратора поменять роль.</div>}
         <div className="a-head"><div><h1>Сводка</h1><p>{staff.name || staff.email}</p></div></div>
+        <TodayCard staff={staff} />
         {showApp ? <AppSummary staff={staff} /> : <p className="muted">Разделы для вашей роли — в меню слева.</p>}
       </>
     );
@@ -66,6 +68,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <Link className="a-btn is-lime" href="/admin/leads?status=new">Разобрать новые</Link>
         </div>
       </div>
+
+      <TodayCard staff={staff} />
 
       <div className="a-grid a-grid-4" style={{ marginBottom: 24 }}>
         <Link href="/admin/leads?status=new" className={`a-card a-stat${stats.fresh ? " is-hot" : ""}`}>
