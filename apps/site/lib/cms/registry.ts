@@ -116,7 +116,7 @@ export const PAGES: PageDef[] = [
         fields: [
           {
             key: "course.lessons", label: "Уроки", type: "list", fixed: true, itemTitle: "Урок", default: LESSONS_DEFAULT,
-            hint: "Уроков ровно шесть: от их числа зависят прогресс, итоговый тест и сертификат. Пока видео нет, длительность 0 — в кабинете вместо плеера будет «Видео скоро».",
+            hint: "Уроков ровно шесть: от их числа зависят прогресс, итоговый тест и сертификат. Видео берутся из папки /var/www/foodfox-course-media на сервере (файл с «Урок N» в имени или в папке); ссылка в поле «Видео» заменяет файл. Нет ни того, ни другого — в кабинете «Видео скоро».",
             of: [
               { name: "title", label: "Название", type: "text" },
               { name: "short", label: "Короткое название (меню урока)", type: "text" },
@@ -125,7 +125,7 @@ export const PAGES: PageDef[] = [
               { name: "clock", label: "Длительность видео (мм:сс)", type: "text" },
               { name: "content", label: "О чём урок", type: "textarea" },
               { name: "after", label: "Что будете уметь", type: "textarea" },
-              { name: "video", label: "Видео урока (файл .mp4 или ссылка на плеер)", type: "url" },
+              { name: "video", label: "Видео: пусто — файл из папки курса на сервере; чтобы заменить — ссылка на .mp4 или плеер (части — по строке)", type: "textarea" },
               { name: "pdf", label: "Конспект PDF (ссылка)", type: "url" },
               { name: "notes", label: "Текст урока — пусто: текст из конспекта заказчика («## » — заголовок, «- » — пункт, «1. » — пункт по номеру)", type: "textarea" },
             ],
@@ -139,7 +139,7 @@ export const PAGES: PageDef[] = [
               { name: "lecturer", label: "Лектор", type: "text" },
               { name: "minutes", label: "Длительность, минут", type: "number" },
               { name: "clock", label: "Длительность видео (мм:сс)", type: "text" },
-              { name: "video", label: "Видео (файл .mp4 или ссылка на плеер)", type: "url" },
+              { name: "video", label: "Видео: пусто — файл из папки курса на сервере; чтобы заменить — ссылка на .mp4 или плеер (части — по строке)", type: "textarea" },
               { name: "pdf", label: "Конспект PDF (ссылка)", type: "url" },
               { name: "notes", label: "Текст — пусто: текст из конспекта заказчика", type: "textarea" },
             ],

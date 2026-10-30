@@ -76,3 +76,12 @@
   .ls-parts { order: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 8px 0; }
   .ls-parts button { padding: 10px 12px; font-size: 14px; line-height: 18px; }
 }
+
+/* Lesson video in two parts: «Часть 1 / Часть 2» above the player. */
+.ls-clips { display: flex; gap: 8px; flex-wrap: wrap; }
+.ls-clips button { height: 36px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(11, 12, 8, 0.1); background: transparent; color: #0b0c08; font-size: 14px; line-height: 18px; transition: background-color 200ms ease-out, border-color 200ms ease-out; }
+.ls-clips button:hover { border-color: rgba(11, 12, 8, 0.3); }
+.ls-clips button.is-on { background: #101400; border-color: #101400; color: #f8f9f6; }
+@media (max-width: 1100px) {
+  .ls-clips { order: 1; margin-bottom: 8px; }
+}

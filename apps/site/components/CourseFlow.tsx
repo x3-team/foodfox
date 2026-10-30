@@ -903,8 +903,15 @@ export function CoursePage() {
 type TestState = { best: number; passed: boolean };
 const NO_TEST: TestState = { best: 0, passed: false };
 
-/** «45 мин» once the lesson video is published, «видео скоро» before; lesson 5 says how many specialties it has. */
-const lessonLength = (lesson: Lesson) => (lesson.parts ? `${lesson.parts.length} специальности` : lesson.minutes ? `${lesson.minutes} мин` : "видео скоро");
+/** «45 мин» (or «видеоурок») once the lesson has a video, «видео скоро» before; lesson 5 says how many specialties it has. */
+const lessonLength = (lesson: Lesson, hasVideo = false) =>
+  lesson.parts ? `${lesson.parts.length} специальности` : lesson.minutes ? `${lesson.minutes} мин` : hasVideo ? "видеоурок" : "видео скоро";
+
+/** Video URLs of a lesson: the admin field (one per line) wins, else the files found in the server folder. */
+const videoList = (field: string | undefined, found: string[] | undefined) => {
+  const own = (field ?? "").split("\n").map((line) => line.trim()).filter(Boolean);
+  return own.length ? own : found ?? [];
+};
 
 /** Lesson text: «## » starts a heading, «- » a list item, «1. » a numbered item, every other line is a paragraph. */
 function LessonNotes({ text }: { text: string }) {
@@ -1044,6 +1051,19 @@ export function LessonsPage() {
     return () => { live = false; };
   }, [notesKey, lesson.notes]);
   const notes = lesson.notes || (loadedNotes.key === notesKey ? loadedNotes.text : "");
+
+  // Videos uploaded to the server folder (/course/media lists them by lesson); a lesson split in two has two clips.
+  const [found, setFound] = useState<Record<string, string[]>>({});
+  useEffect(() => {
+    let live = true;
+    fetch("/course/media").then((response) => (response.ok ? response.json() : null)).then((data) => { if (live && data?.videos) setFound(data.videos); }).catch(() => {});
+    return () => { live = false; };
+  }, []);
+  const clips = videoList(lesson.video, found[notesKey]);
+  const [clip, setClip] = useState(0);
+  useEffect(() => setClip(0), [current, part]);
+  const video = clips[Math.min(clip, clips.length - 1)] ?? "";
+  const hasVideo = (item: Lesson, index: number) => videoList(item.video, found[String(index + 1)]).length > 0;
   const hasNotes = Boolean(lesson.notes || NOTES[notesKey]);
 
   // Progress (lesson, watched lessons, final test) is kept in this browser; the demo keeps its own copy for the tab.
@@ -1122,7 +1142,7 @@ export function LessonsPage() {
     setPlaying(false);
     setFailed(false);
     if (videoRef.current) videoRef.current.currentTime = 0;
-  }, [current, part]);
+  }, [current, part, clip, video]);
 
   const closeSheet = useCallback(() => setSheet(false), []);
 
@@ -1134,11 +1154,11 @@ export function LessonsPage() {
       const share = node.currentTime / node.duration;
       setProgress(share);
       // L01 / M18: a lesson is marked watched automatically at ≥ 90% of the video.
-      if (share >= 0.9) setDone((prev) => (prev.includes(current) ? prev : [...prev, current]));
+      if (share >= 0.9 && clip >= clips.length - 1) setDone((prev) => (prev.includes(current) ? prev : [...prev, current]));
     };
     node.addEventListener("timeupdate", onTime);
     return () => node.removeEventListener("timeupdate", onTime);
-  }, [current, part]);
+  }, [current, part, clip, video]);
 
   function toggle() {
     const node = videoRef.current;
@@ -1151,7 +1171,7 @@ export function LessonsPage() {
   useEffect(() => {
     const node = videoRef.current;
     if (node && (node.error || node.networkState === HTMLMediaElement.NETWORK_NO_SOURCE)) setFailed(true);
-  }, [current, part]);
+  }, [current, part, clip, video]);
 
   // C09 (Figma 1206:1322): «Видео не загрузилось» — «Повторить» reloads the source; progress is kept by the player.
   function retry() {
@@ -1167,7 +1187,6 @@ export function LessonsPage() {
   const clock = (sec: number) => `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
   const elapsedLabel = clock(Math.round(progress * total));
   const totalLabel = lesson.clock || clock(total);
-  const video = (lesson.video ?? "").trim();
   const videoFile = /\.(mp4|webm|m4v|mov)(\?|#|$)/i.test(video);
 
   /* M18: turning the phone to landscape while a lesson plays puts the player in full screen; back to portrait leaves
@@ -1225,7 +1244,7 @@ export function LessonsPage() {
   useEffect(() => {
     const timer = window.setTimeout(() => setShownStep(current + 1), reduceMotion() ? 0 : 300);
     return () => window.clearTimeout(timer);
-  }, [current, part]);
+  }, [current, part, clip, video]);
 
   const passed = done.length;
   const lastTap = useRef<{ t: number; side: "back" | "fwd" | null } | null>(null);
@@ -1258,7 +1277,7 @@ export function LessonsPage() {
   const testCta = test.best ? "Пройти тест ещё раз" : "Пройти итоговый тест";
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("fox:lesson", { detail: current + 1 }));
-  }, [current, part]);
+  }, [current, part, clip, video]);
 
   return (
     <>
@@ -1286,7 +1305,7 @@ export function LessonsPage() {
                       <span className="ls-badge">{done.includes(index) ? <img src="/figma/icons/check.svg" alt="" width={14} height={14} /> : index + 1}</span>
                       <span>
                         <strong>{item.short}</strong>
-                        <small>{lessonLength(item)}{state === "current" ? " · смотрите сейчас" : state === "done" ? " · просмотрено" : ""}</small>
+                        <small>{lessonLength(item, hasVideo(item, index))}{state === "current" ? " · смотрите сейчас" : state === "done" ? " · просмотрено" : ""}</small>
                       </span>
                     </button>
                   );
@@ -1312,7 +1331,7 @@ export function LessonsPage() {
                     <span>
                       <strong>{item.short}</strong>
                       <small>
-                        {lessonLength(item)}
+                        {lessonLength(item, hasVideo(item, index))}
                         {state === "done" ? " · просмотрено" : state === "current" ? " · смотрите сейчас" : ""}
                       </small>
                     </span>
@@ -1358,7 +1377,14 @@ export function LessonsPage() {
                 ))}
               </div>
             ) : null}
-            {/* Lesson videos are added in the admin as they are published; until then the player shows «Видео скоро». */}
+            {clips.length > 1 ? (
+              <div className="ls-clips" role="group" aria-label="Части видео">
+                {clips.map((url, n) => (
+                  <button key={url} type="button" className={n === clip ? "is-on" : ""} aria-pressed={n === clip} onClick={() => setClip(n)}>Часть {n + 1}</button>
+                ))}
+              </div>
+            ) : null}
+            {/* Lesson videos come from the server folder or the admin; without one the player shows «Видео скоро». */}
             {!videoFile ? (
               video ? (
                 <div className="ls-player ls-embed">
@@ -1393,7 +1419,7 @@ export function LessonsPage() {
               {/* M20: switching lessons crossfades the player (240 мс). */}
               <div
                 className="ls-stage"
-                key={current}
+                key={`${current}-${part}-${clip}`}
                 onTouchEnd={(event) => {
                   // M18: a double tap on the left / right third seeks ∓10 s (round ripple + «10»).
                   const node = videoRef.current;
@@ -1435,7 +1461,11 @@ export function LessonsPage() {
                 </video>
                 {!playing && <img className="ls-poster" src="/figma/course/lesson-poster.webp" alt="" />}
                 {/* M18: at 90% of the video the lesson is marked watched and «Следующий урок →» slides up at the bottom of the player. */}
-                {progress >= 0.9 && current < 5 && !failed ? (
+                {progress >= 0.9 && !failed && clip < clips.length - 1 ? (
+                  <button type="button" className="ls-next-plate" onClick={(event) => { event.stopPropagation(); setClip(clip + 1); }}>
+                    Часть {clip + 2} <span aria-hidden>→</span>
+                  </button>
+                ) : progress >= 0.9 && current < 5 && !failed ? (
                   <button type="button" className="ls-next-plate" onClick={(event) => { event.stopPropagation(); setCurrent(current + 1); }}>
                     Следующий урок <span aria-hidden>→</span>
                   </button>

@@ -89,6 +89,17 @@ if site:
         inner = "".join(f"{ind}    {line}\n" for line in body)
         return f"{ind}location {match} {{\n{inner}{ind}}}\n"
 
+    # Course videos straight from disk: nginx answers byte ranges, so seeking works and Node never streams video.
+    # Only video files; anything else in the folder (raw notes with the lecturers' contacts) is not served.
+    media_dir = os.environ.get("COURSE_MEDIA_DIR", "/var/www/foodfox-course-media").rstrip("/")
+    media = (
+        "    location ~* ^/course-media/(.+\\.(?:mp4|m4v|webm|mov))$ {\n"
+        f"        alias {media_dir}/$1;\n"
+        '        types { video/mp4 mp4 m4v; video/webm webm; video/quicktime mov; }\n'
+        '        add_header X-Robots-Tag "noindex, nofollow" always;\n'
+        '        add_header Cache-Control "public, max-age=86400";\n'
+        "    }\n"
+    )
     WEB_PAGES = "partner|login|account|chat|plan|recipes|results|upload"
     WEB_FILES = r"robots\.txt|favicon\.ico|icon\.png|fox-logo\.png|onboarding-hero\.jpg"
     block = (
@@ -99,6 +110,7 @@ if site:
         + loc("= /api/lead", site)
         + loc("^~ /_next/", web)
         + loc("^~ /_site/", site, "/")
+        + media
         + loc(f"~ ^/({WEB_PAGES})(/|$)", web)
         + loc(f"~ ^/({WEB_FILES})$", web)
         + loc("/", site)
