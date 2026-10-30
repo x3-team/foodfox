@@ -555,3 +555,13 @@ a.a-stat:hover { border-color: var(--a-line-2); }
 .a-thread p { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .a-thread-meta { font-size: 13px; color: var(--a-ink-65); }
 @media (max-width: 767px) { .a-thread li { max-width: 100%; } }
+/* «Что сделать сегодня» on the admin home. */
+.a-today ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
+.a-today a { display: flex; align-items: flex-start; gap: 14px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--a-line); text-decoration: none; color: inherit; transition: border-color 150ms; }
+.a-today a:hover { border-color: var(--a-line-2); }
+.a-today b { min-width: 32px; font-size: 24px; line-height: 28px; font-weight: 400; }
+.a-today span { display: flex; flex-direction: column; gap: 2px; padding-top: 3px; }
+.a-today small { font-size: 13px; color: var(--a-ink-65); }
+.a-today li.is-urgent a { border-color: var(--a-red); background: var(--a-red-soft); }
+.a-today li.is-urgent b, .a-today li.is-urgent small { color: var(--a-red); }
+@media (max-width: 767px) { .a-today ul { grid-template-columns: minmax(0, 1fr); } }
