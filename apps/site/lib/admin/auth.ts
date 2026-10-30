@@ -60,6 +60,7 @@ export const ACCESS = {
   prices: ["admin"],
   seo: ["admin"],
   users: ["admin"],
+  backups: ["admin"],
   audit: ALL,
   /** The whole log; everyone else sees only their own actions. */
   audit_all: ["admin"],

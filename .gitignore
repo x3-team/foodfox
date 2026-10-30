@@ -17,3 +17,4 @@ apps/site/playwright-report/
 apps/site/blob-report/
 apps/site/tsconfig.tsbuildinfo
 apps/site/.media/
+apps/site/.backups/
